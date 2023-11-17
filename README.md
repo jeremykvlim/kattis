@@ -1,6 +1,9 @@
 # Kattis-Solutions
 
-My solutions for Kattis problems. They are named <problemname>.<languagefile>. To find the problem, please go to https://open.kattis.com/problems/<problemname>.
+My solutions for Kattis problems. Solutions are named `"problemname".<languagefilename>`. To find the problem statement, please go to:
+```
+https://open.kattis.com/problems/"problemname"
+```
 
 Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizations and a separate self-practice category:
 
