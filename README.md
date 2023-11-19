@@ -5,6 +5,8 @@ My solutions for Kattis problems. Solutions are named `"problemname".<languagefi
 https://open.kattis.com/problems/"problemname"
 ```
 
+These problems are solved without comments because of potential plagiarism.
+
 Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizations and a separate self-practice category:
 
 * General Data Structures & Algorithms: CS2040 (Java), CS2040C (C++), CS2040S (Java), IT5003 (Python)
