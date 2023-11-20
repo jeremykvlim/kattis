@@ -1,8 +1,9 @@
 import java.io.*;
 
-public class wheresmyinternet {
+public class Solution {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
+        var pw = new PrintWriter(System.out);
         var input = br.readLine().split(" ");
         int n = Integer.parseInt(input[0]), m = Integer.parseInt(input[1]);
 
@@ -24,11 +25,12 @@ public class wheresmyinternet {
         var connected = true;
         for (int i = 2, root = find(1, sets); i < n + 1; i++)
             if (root != find(i, sets)) {
-                System.out.println(i);
+                pw.println(i);
                 connected = false;
             }
 
-        if (connected) System.out.println("Connected");
+        if (connected) pw.println("Connected");
+        pw.flush();
     }
 
     static int find(int p, int[] sets) {
