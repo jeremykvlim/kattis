@@ -5,7 +5,7 @@ My solutions for Kattis problems. Solutions are named `"problemname".<languagefi
 https://open.kattis.com/problems/"problemname"
 ```
 
-These problems are solved without comments because of potential plagiarism. **If a student gets flagged for plagiarism from my solutions, they have to be able to run through the logic of my code and justify how it solves the problem.**
+These problems are solved without comments because of potential plagiarism. If a student gets flagged for plagiarism, they have to be able to run through the logic of their code and justify how it solves the problem. Commentless solutions dissuade this from happening.
 
 Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizations and a separate self-practice category:
 
