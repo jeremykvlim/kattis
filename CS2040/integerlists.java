@@ -9,27 +9,25 @@ public class integerlists {
         while (tests-- > 0) {
             var program = br.readLine();
             int elements = Integer.parseInt(br.readLine());
+            
             if (elements == 0) {
                 var empty = br.readLine();
-                boolean error = false;
-                for (int i = 0; i < program.length(); i++)
-                    if (program.charAt(i) == 'D') {
-                        error = true;
-                        break;
-                    }
+                var error = program.contains("D");
                 if (!error) pw.println(empty);
                 else pw.println("error");
                 continue;
             }
-            var list = br.readLine().replaceAll("\\[","").replaceAll("]","");
-            var listArr = list.split(",");
+            
+            var list = br.readLine().replaceAll("\\[","").replaceAll("]","").split(",");
             var deque = new ArrayDeque<Integer>();
-            for (var s : listArr) {
+            
+            for (var s : list) {
                 int element = Integer.parseInt(s);
                 deque.add(element);
             }
-            boolean reversed = false;
-            boolean empty = false;
+            
+            boolean reversed = false, empty = false;
+            
             for (int i = 0; i < program.length(); i++) {
                 if (program.charAt(i) == 'R') reversed = !reversed;
                 else {
@@ -44,9 +42,11 @@ public class integerlists {
                     }
                 }
             }
+            
             if (empty) continue;
             int size = deque.size();
             pw.print("[");
+            
             if (!reversed)
                 for (int i = 0; i < size; i++) {
                     if (deque.size() != 1) pw.print(deque.removeFirst()+",");
@@ -57,6 +57,7 @@ public class integerlists {
                     if (deque.size() != 1) pw.print(deque.removeLast() + ",");
                     else pw.print(deque.removeLast());
                 }
+                
             pw.println("]");
         }
         pw.flush();
