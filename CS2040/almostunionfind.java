@@ -9,7 +9,7 @@ public class almostunionfind {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(System.out);
         for (var input = br.readLine(); input != null; input = br.readLine()) {
-            String[] inputs = input.split(" ");
+            var inputs = input.split(" ");
             int n = Integer.parseInt(inputs[0]), m = Integer.parseInt(inputs[1]);
             sets = new int[2*n + 1];
             int[] size = new int[2*n + 1];
