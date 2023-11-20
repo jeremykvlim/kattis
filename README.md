@@ -19,4 +19,4 @@ Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizat
 
 Kattis compiles using `g++ 11` for [C++](https://open.kattis.com/languages/cpp), `Java 11` for [Java](https://open.kattis.com/languages/java), `Python 3.8` for [Python](https://open.kattis.com/languages/python3), `Rust 1.66` for [Rust](https://open.kattis.com/languages/rust) and `Go 1.20` for [Golang](https://open.kattis.com/languages/go).
 
-Problems have to be solved using base programming language libraries or self-coded structures. External libraries, such as `Boost` for C++, `Apache Commons` for Java, `NumPy` for Python 3 and others are not available.
+Problems have to be solved using base programming language libraries or self-coded structures. External libraries, such as `Boost` for C++, `Apache Commons` for Java, `NumPy` for Python 3 and others are not available. However, you are allowed to attach multiple files in one submission, although I never bothered.
