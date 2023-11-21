@@ -3,10 +3,10 @@
 using namespace std;
 
 bool dfs(int i, int j, vector<vector<int>>& grid, vector<int>& visited, vector<int>& matched, vector<vector<int>>& col) {
-    for(int v = 1; v < grid.size(); v++) {
-        if(!visited[v] && !col[j][v]) {
+    for (int v = 1; v < grid.size(); v++) {
+        if (!visited[v] && !col[j][v]) {
             visited[v] = 1;
-            if(!matched[v] || dfs(i, matched[v], grid, visited, matched, col)) {
+            if (!matched[v] || dfs(i, matched[v], grid, visited, matched, col)) {
                 col[matched[v]][v] = 0;
                 col[j][v] = 1;
                 grid[i][v] = matched[v] = j;
@@ -23,10 +23,10 @@ int main() {
 
     vector<vector<int>> grid(n + 1, vector<int>(n + 1)), row(n + 1, vector<int>(n + 1)), col(n + 1, vector<int>(n + 1));
 
-    for(int i = 1; i <= k; i++) {
-        for(int j = 1; j <= n; j++) {
+    for (int i = 1; i <= k; i++) {
+        for (int j = 1; j <= n; j++) {
             cin >> grid[i][j];
-            if(row[grid[i][j]][i] || col[grid[i][j]][j]) {
+            if (row[grid[i][j]][i] || col[grid[i][j]][j]) {
                 cout << "no" << endl;
                 exit(0);
             }
