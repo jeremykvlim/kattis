@@ -6,8 +6,7 @@ public class guessthedatastructure {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(System.out);
 
-        String line;
-        while ((line = br.readLine()) != null) {
+        for (var line = br.readLine(); line != null; line = br.readLine()) {
             int n = Integer.parseInt(line), count = 0;
             int[] command = new int[n], x = new int[n];
 
