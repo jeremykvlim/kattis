@@ -12,11 +12,11 @@ public class bestrelayteam {
         }
         Arrays.sort(array);
 
-        double fastest = Double.POSITIVE_INFINITY;
+        var fastest = Double.POSITIVE_INFINITY;
         var bestTeam = new ArrayList<Runner>();
 
         for (var r : array) {
-            double time = 0;
+            var time = 0;
             var team = new ArrayList<Runner>();
             time += r.first;
             team.add(r);
