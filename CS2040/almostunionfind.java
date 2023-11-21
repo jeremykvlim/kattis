@@ -5,9 +5,10 @@ public class almostunionfind {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(System.out);
-        for (var input = br.readLine(); input != null; input = br.readLine()) {
-            var inputs = input.split(" ");
-            int n = Integer.parseInt(inputs[0]), m = Integer.parseInt(inputs[1]);
+        for (var line = br.readLine(); line != null; line = br.readLine()) {
+            var input = line.split(" ");
+            int n = Integer.parseInt(input[0]), m = Integer.parseInt(input[1]);
+            
             int[] sets = new int[2*n + 1], size = new int[2*n + 1];
             long[] sum = new long[2*n + 1];
             for (int i = 1, j = n + 1; i <= n; i++, j++) {
@@ -15,6 +16,7 @@ public class almostunionfind {
                 sum[j] = i;
                 size[j] = 1;
             }
+            
             while (m-- > 0) {
                 var command = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
                 if (command[0] == 1) {
