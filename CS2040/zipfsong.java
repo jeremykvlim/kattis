@@ -3,7 +3,7 @@ import java.util.*;
 
 public class zipfsong {
     public static void main(String[] args) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        var br = new BufferedReader(new InputStreamReader(System.in));
         var input = br.readLine().split(" ");
         int n = Integer.parseInt(input[0]), m = Integer.parseInt(input[1]);
         var array = new Pair[n];
