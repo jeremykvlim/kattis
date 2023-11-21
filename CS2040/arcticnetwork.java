@@ -23,7 +23,7 @@ public class arcticnetwork {
 
             for (int i = 0; i < p; i++)
                 for (int j = i + 1; j < p; j++)
-                    pq.add(new Edge(i, j, Math.hypot(Math.abs(outposts[i].first - outposts[j].first), Math.abs(outposts[i].second - outposts[j].second))));
+                    pq.add(new Edge(i, j, Math.hypot(outposts[i].first - outposts[j].first, outposts[i].second - outposts[j].second)));
 
             var output = 0.00;
             while (p > s && !pq.isEmpty()) {
