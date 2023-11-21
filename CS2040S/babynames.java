@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.*;
 
+//Solution checker for this problem is erroneous
 public class babynames {
     static class TrieNode {
         TrieNode[] letters = new TrieNode[26]; //potential nodes to continue the prefix
