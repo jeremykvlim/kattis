@@ -6,9 +6,9 @@ public class millionairemadness {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var input = br.readLine().split(" ");
         int m = Integer.parseInt(input[0]), n = Integer.parseInt(input[1]);
-        int[][] matrix = new int[m][n];
-        int[] dir = {0, 1, 0, -1, 1, 0, -1, 0};
-        boolean[][] visited = new boolean[m][n];
+        var matrix = new int[m][n];
+        var dir = {0, 1, 0, -1, 1, 0, -1, 0};
+        var visited = new boolean[m][n];
         for (int i = 0; i < m; i++) 
             matrix[i] = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
         
