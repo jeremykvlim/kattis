@@ -53,6 +53,7 @@ public class humancannonball {
             second = s;
         }
 
+        @Override
         public int compareTo(Pair p) {
             return Double.compare(second, p.second);
         }
