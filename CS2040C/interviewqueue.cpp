@@ -75,6 +75,4 @@ int main() {
     for (int i = 0; i < final; i++)
         cout << highest << " ";
     cout << endl;
-
-    return 0;
 }
