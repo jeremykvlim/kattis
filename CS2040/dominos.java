@@ -10,7 +10,7 @@ public class dominos {
         var br = new BufferedReader(new InputStreamReader(System.in));
         int t = Integer.parseInt(br.readLine());
         while (t-- > 0) {
-            String[] input = br.readLine().split(" ");
+            var input = br.readLine().split(" ");
             int n = Integer.parseInt(input[0]), m = Integer.parseInt(input[1]);
 
             adjList = new ArrayList[n + 1];
