@@ -49,12 +49,11 @@ public class abinitio {
 
         for (int i = 0; i < v; i++) {
             long d = 0, h = 0;
-            for (int j = v - 1; j >= 0; j--) {
+            for (int j = v - 1; j >= 0; j--) 
                 if (i != j && adjMatrix[status[0] == 1 ? j : i][status[0] == 1 ? i : j] == (status[1] == 1 ? 0 : 1)) {
                     d++;
                     h = (7*h + j) % MODULO;
                 }
-            }
             pw.println(d+" "+h);
         }
 
