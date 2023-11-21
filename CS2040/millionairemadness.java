@@ -33,8 +33,7 @@ public class millionairemadness {
     }
 
     static class Pair implements Comparable<Pair> {
-        int first;
-        int second;
+        int first, second;
 
         Pair(int f, int s) {
             first = f;
