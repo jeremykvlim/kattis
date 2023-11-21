@@ -2,7 +2,7 @@
 
     public class teque {
 
-        private static final int SIZE = 1e6;
+        private static final int SIZE = (int) 1e6;
         private static String[] frontHalf = new String[SIZE], backHalf = new String[SIZE];
         private static int backHead, backTail, backSize = 0, frontHead, frontTail, frontSize = 0;
         private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
