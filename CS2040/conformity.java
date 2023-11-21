@@ -7,7 +7,7 @@ public class conformity {
         var map = new HashMap<Combination, Integer>();
         int n = Integer.parseInt(br.readLine()), max = 0, ans = 0;
         while (n-- > 0) {
-            int[] courses = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
+            var courses = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
             Arrays.sort(courses);
             var combo = new Combination(courses);
             map.put(combo, map.getOrDefault(combo, 0) + 1);
