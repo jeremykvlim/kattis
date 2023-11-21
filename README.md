@@ -9,7 +9,7 @@ These problems are solved without comments because of potential plagiarism. If a
 
 Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizations and a separate self-practice category:
 
-* General Data Structures & Algorithms: CS2040 (Java), CS2040C (C++), CS2040S (Java), IT5003 (Python)
+* Data Structures & Algorithms: CS2040 (Java), CS2040C (C++), CS2040S (Java), IT5003 (Python)
 
 * Competitive Programming: CS3233 (C++)
 
