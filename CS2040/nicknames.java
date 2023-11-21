@@ -9,8 +9,7 @@ public class nicknames {
     static void insert(TrieNode root, String str) {
         var node = root;
         for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-            int index = c - 'a';
+            int index = str.charAt(i) - 'a';
             if (node.children[index] == null)
                 node.children[index] = new TrieNode();
             node = node.children[index];
@@ -21,8 +20,7 @@ public class nicknames {
     static int search(TrieNode root, String str) {
         var node = root;
         for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-            int index = c - 'a';
+            int index = str.charAt(i) - 'a';
             node = node.children[index];
             if (node == null) return 0;
         }
@@ -33,12 +31,12 @@ public class nicknames {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
         var root = new TrieNode();
-      
-        int A = Integer.parseInt(br.readLine());
-        for (int i = 0; i < A; i++) insert(root, br.readLine());
 
-        int B = Integer.parseInt(br.readLine());
-        for (int i = 0; i < B; i++) pw.println(search(root, br.readLine()));
+        int a = Integer.parseInt(br.readLine());
+        for (int i = 0; i < a; i++) insert(root, br.readLine());
+
+        int b = Integer.parseInt(br.readLine());
+        for (int i = 0; i < b; i++) pw.println(search(root, br.readLine()));
         pw.flush();
     }
 }
