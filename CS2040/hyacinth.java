@@ -33,7 +33,7 @@ public class hyacinth {
             visited[v] = true;
             freq[v][1] = f++;
             
-            for (Object u : adjList[v]) {
+            for (var u : adjList[v]) {
                 if (!visited[(int) u]) {
                     q.add((Integer) u);
                     freq[(int) u][0] = freq[v][1];
