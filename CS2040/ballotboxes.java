@@ -5,14 +5,9 @@ public class ballotboxes {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(System.out);
 
-        for (;;) {
-            var line = br.readLine().split(" ");
-            int n = Integer.parseInt(line[0]), b = Integer.parseInt(line[1]); 
-
-            if (n == -1 && b == -1) {
-                pw.flush();
-                break;
-            }
+        for (var line = br.readLine(); !line.equals("-1 -1"); line = br.readLine()) {
+            var input = line.split(" ");
+            int n = Integer.parseInt(input[0]), b = Integer.parseInt(input[1]);
 
             var cities = new int[n];
             int r = 0, l = 1, m;
@@ -31,5 +26,6 @@ public class ballotboxes {
             pw.println(l);
             br.readLine();
         }
+        pw.flush();
     }
 }
