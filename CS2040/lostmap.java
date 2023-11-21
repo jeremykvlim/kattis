@@ -12,7 +12,7 @@ public class lostmap {
         for (int i = 0; i < n; i++)
             dist[i] = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
 
-        int[][] adjMatrix = new int[n][2];
+        var adjMatrix = new int[n][2];
         for (int i = 1; i < n; i++)
             adjMatrix[i][0] = dist[0][i];
 
