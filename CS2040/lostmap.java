@@ -18,20 +18,19 @@ public class lostmap {
 
         for (int i = 1; i < n; i++) {
             int v = 1, min = Integer.MAX_VALUE;
-            for (int u = 1; u < n; u++) {
+            for (int u = 1; u < n; u++) 
                 if (adjMatrix[u][0] < min) {
                     min = adjMatrix[u][0];
                     v = u;
                 }
-            }
+            
             adjMatrix[v][0] = Integer.MAX_VALUE;
             pw.println((adjMatrix[v][1] + 1) + " " + (v + 1));
-            for (int u = 1; u < n; u++) {
+            for (int u = 1; u < n; u++) 
                 if (adjMatrix[u][0] != Integer.MAX_VALUE && u != v && adjMatrix[u][0] > dist[v][u]) {
                     adjMatrix[u][0] = dist[v][u];
                     adjMatrix[u][1] = v;
                 }
-            }
         }
         pw.flush();
     }
