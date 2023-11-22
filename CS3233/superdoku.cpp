@@ -18,6 +18,8 @@ bool dfs(int i, int j, vector<vector<int>>& grid, vector<int>& visited, vector<i
 }
 
 int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
     int n, k;
     cin >> n >> k;
 
@@ -50,6 +52,6 @@ int main() {
         cout << grid[i][1];
         for (int j = 2; j <= n; j++)
             cout << " " << grid[i][j];
-        cout << endl;
+        cout << "\n";
     }
 }
