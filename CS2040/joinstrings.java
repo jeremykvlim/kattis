@@ -22,14 +22,14 @@ public class joinstrings {
         }
 
         pw.print(arr[source]);
-        print(source, adjList, arr);
+        dfs(source, adjList, arr);
         pw.flush();
     }
 
-    static void print(int idx, ArrayList<Integer>[] aL, String[] arr) {
+    static void dfs(int idx, ArrayList<Integer>[] aL, String[] arr) {
         for (var i : aL[idx]) {
             pw.print(arr[i]);
-            print(i, aL, arr);
+            dfs(i, aL, arr);
         }
     }
 }
