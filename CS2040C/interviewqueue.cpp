@@ -40,13 +40,13 @@ int main() {
         for (int i = 0; i < q.size(); i++) {
             if (i > 0 && q[i - 1].first > q[i].first) {
                 q[i].second--;
-                leavers.push_back(q[i].first);
+                leavers.emplace_back(q[i].first);
                 remaining++;
             }
 
             if (i < q.size() - 1 && q[i + 1].first > q[i].first && q[i].second > 0) {
                 q[i].second--;
-                leavers.push_back(q[i].first);
+                leavers.emplace_back(q[i].first);
                 remaining++;
             }
 
@@ -58,12 +58,12 @@ int main() {
             }
 
             last = q[i].first;
-            q_new.push_back(q[i]);
+            q_new.emplace_back(q[i]);
         }
 
         if (remaining == 0) break;
 
-        result.push_back(leavers);
+        result.emplace_back(leavers);
         swap(q, q_new);
         q_new.clear();
     }
