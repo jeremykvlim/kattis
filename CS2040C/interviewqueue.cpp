@@ -2,6 +2,8 @@
 using namespace std;
 
 int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
     int n;
     cin >> n;
 
@@ -67,9 +69,8 @@ int main() {
 
     cout << result.size() << endl;
     for (auto& i : result) {
-        for (auto j : i)
-            cout << j << " ";
-        cout << endl;
+        for (auto j : i) cout << j << " ";
+        cout << "\n";
     }
 
     for (int i = 0; i < final; i++)
