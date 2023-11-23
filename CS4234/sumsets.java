@@ -14,7 +14,7 @@ public class sumsets {
             for (int b = a + 1; b < n; b++)
                 sums.put(s[a] + s[b], new Pair(a, b));
 
-        for (int d = n - 1; d >= 0; d--) {
+        for (int d = n - 1; d >= 0; d--) 
             for (int c = 0; c < n; c++) {
                 if (d == c) continue;
                 var p = sums.get(s[d] - s[c]);
@@ -23,7 +23,7 @@ public class sumsets {
                     return;
                 }
             }
-        }
+        
         System.out.println("no solution");
     }
 
