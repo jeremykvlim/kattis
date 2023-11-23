@@ -1,7 +1,7 @@
 import java.util.*;
 import java.io.*;
 
-class factorfree {
+public class factorfree {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(System.out);
