@@ -1,9 +1,9 @@
-use std::io::{self, BufRead, Write};
+use std::io::{self, stdin, stdout, BufWriter, Write};
 
 fn main() {
-    let stdin = io::stdin();
-    let stdout = io::stdout();
-    let mut writer = io::BufWriter::new(stdout.lock());
+    let stdin = stdin();
+    let stdout = stdout();
+    let mut writer = BufWriter::new(stdout.lock());
     for line in stdin.lock().lines() {
         let mut x: i64 = line.unwrap().trim().parse().unwrap();
         if x == 0 { break; }
