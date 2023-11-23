@@ -14,7 +14,6 @@ void radix_sort(vector<long long>& s) {
         for (int i = v.size() - 1; i >= 0; i--) v[--bucket[(s[i] >> (d * 16)) & (radix - 1)]] = s[i];
         copy(v.begin(), v.end(), s.begin());
     }
-
 }
 
 int main() {
