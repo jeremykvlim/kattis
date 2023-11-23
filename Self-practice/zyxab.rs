@@ -1,5 +1,5 @@
 use std::{
-    io::{self, BufRead, Write},
+    io::{self, stdin, stdout, BufRead, BufWriter, Write},
     collections::HashSet,
 };
 
@@ -14,10 +14,10 @@ fn unique(s: &str) -> bool {
 }
 
 fn main() {
-    let stdin = io::stdin();
-    let stdout = io::stdout();
+    let stdin = stdin();
+    let stdout = stdout();
     let mut reader = Reader::from(stdin.lock());
-    let mut writer = io::BufWriter::new(stdout.lock());
+    let mut writer = BufWriter::new(stdout.lock());
 
     let n: usize = reader.next();
     let mut result = "Neibb".to_string();
