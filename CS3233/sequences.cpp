@@ -8,6 +8,9 @@ inline int mod(long long x) {
 }
 
 int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
     string input;
     cin >> input;
     long long sum = 0, count = 0, total = 1;
