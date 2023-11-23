@@ -1,8 +1,8 @@
-use std::io::{self, Write};
+use std::io::{self, stdout, BufWriter, Write};
 
 fn main() {
-    let stdout = io::stdout();
-    let mut bw = io::BufWriter::new(stdout.lock());
+    let stdout = stdout();
+    let mut bw = BufWriter::new(stdout.lock());
 
     write!(bw, "Hello World!\n");
 }
