@@ -1,4 +1,4 @@
-use std::io::{self, stdin, stdout, BufRead, BufWriter, Write};
+use std::io::{stdin, stdout, BufRead, BufWriter, Write};
 
 fn main() {
     let stdin = stdin();
