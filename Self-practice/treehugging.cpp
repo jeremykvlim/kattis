@@ -20,7 +20,7 @@ int main() {
     for (int u = 2; u < 2 * n; ++u) {
         if (adj_list[u].empty()) {
             cout << "impossible";
-            return 0;
+            exit(0);
         }
         if (adj_list[u].size() == 1) leaves.push_back(u);
     }
@@ -32,8 +32,9 @@ int main() {
         leaves.pop_back();
         if (adj_list[u].empty()) {
             cout << "impossible";
-            return 0;
+            exit(0);
         }
+        
         auto [v, e] = *adj_list[u].begin();
         adj_list[u].erase(adj_list[u].begin());
         adj_list[v].erase({u, e});
@@ -43,6 +44,7 @@ int main() {
 
     for (int u = 2; u < 2 * n; ++u)
         while (!adj_list[u].empty()) {
+            
             auto [v, e] = *adj_list[u].begin();
             adj_list[u].erase(adj_list[u].begin());
             adj_list[v].erase({u, e});
