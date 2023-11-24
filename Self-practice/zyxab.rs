@@ -1,5 +1,5 @@
 use std::{
-    io::{self, stdin, stdout, BufRead, BufWriter, Write},
+    io::{stdin, stdout, BufRead, BufWriter, Write},
     collections::HashSet,
 };
 
