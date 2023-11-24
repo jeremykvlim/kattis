@@ -1,5 +1,5 @@
 use std::{
-    io::{self, stdin, stdout, BufRead, BufWriter, Write},
+    io::{stdin, stdout, BufRead, BufWriter, Write},
     collections::HashSet,
 };
 
@@ -23,7 +23,7 @@ fn main() {
             let num: i32 = reader.next();
             if set.contains(&num) { count += 1; }
         }
-        writeln!(writer, "{}", count).unwrap();
+        writeln!(writer, "{}", count);
     }
 }
 
