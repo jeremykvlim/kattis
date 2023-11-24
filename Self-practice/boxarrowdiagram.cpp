@@ -38,11 +38,8 @@ int main() {
     vector<bool> visited(n + 1), removed(m + 1);
     vector<int> counts(n + 1);
 
-    for (int i = 1; i <= m; i++) {
-        int u, v;
-        cin >> u >> v;
-        edges[i] = {u, v};
-    }
+    for (int i = 1; i <= m; i++)
+        cin >> edges[i].first >> edges[i].second;
 
     int q;
     cin >> q;
