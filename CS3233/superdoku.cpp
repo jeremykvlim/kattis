@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-bool dfs(int i, int j, vector<vector<int>>& grid, vector<int>& visited, vector<int>& matched, vector<vector<int>>& col) {
+bool dfs(int i, int j, vector<vector<int>> &grid, vector<int> &visited, vector<int> &matched, vector<vector<int>> &col) {
     for (int v = 1; v < grid.size(); v++) {
         if (!visited[v] && !col[j][v]) {
             visited[v] = 1;
@@ -19,6 +19,7 @@ bool dfs(int i, int j, vector<vector<int>>& grid, vector<int>& visited, vector<i
 int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(nullptr);
+    
     int n, k;
     cin >> n >> k;
 
