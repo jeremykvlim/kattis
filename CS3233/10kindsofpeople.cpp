@@ -6,6 +6,9 @@ int find(int p, vector<int> &sets) {
 }
 
 int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
     int r, c;
     cin >> r >> c;
     vector<string> world(r);
@@ -14,7 +17,7 @@ int main() {
     vector<int> sets(r * c), rank(r * c, 0);
     iota(sets.begin(), sets.end(), 0);
 
-    for (int i = 0; i < r; i++) {
+    for (int i = 0; i < r; i++) 
         for (int j = 0; j < c; j++) {
             if (world[i][j] != '0' && world[i][j] != '1') continue;
             if (i > 0 && world[i][j] == world[i - 1][j]) {
@@ -32,7 +35,7 @@ int main() {
                 }
             }
         }
-    }
+    
     int n;
     cin >> n;
     while (n--) {
