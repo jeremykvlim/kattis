@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void radix_sort(vector<long long>& s) {
+void radix_sort(vector<long long> &s) {
     long long radix = 1 << 16, biggest = *max_element(s.begin(), s.end());
     auto msd = (long long) ceil((log(biggest)) / (log(radix)));
 
