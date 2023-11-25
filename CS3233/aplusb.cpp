@@ -41,7 +41,7 @@ int main() {
     for (int i = 1; i < n; i++) reverse[i] = (i & 1) * n >> 1 | reverse[i >> 1] >> 1;
     for (int i = 0; i < freq.size(); i++) fourier[i] = complex<double>(freq[i], freq[i]);
     fft(fourier, n, 1, reverse);
-    for (auto & i : fourier) i *= i;
+    for (auto &i : fourier) i *= i;
     fft(fourier, n, -1, reverse);
     for (int i = 0; i < max_sum; i++) count[i] += fourier[i].imag() / 2 + .5;
     long long ways = 0;
