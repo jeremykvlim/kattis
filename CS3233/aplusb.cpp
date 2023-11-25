@@ -46,8 +46,8 @@ int main() {
     for (int i = 0; i < max_sum; i++) count[i] += fourier[i].imag() / 2 + .5;
     long long ways = 0;
     for (int i : a) {
-        ways += count[i + 50000];
-        if (i == 50000) ways -= 2 * a.size() - 2;
+        ways += count[i + OFFSET];
+        if (i == OFFSET) ways -= 2 * a.size() - 2;
     }
     cout << ways;
 }
