@@ -22,6 +22,7 @@ int main() {
                     if (sequence[tail[m]] >= sequence[i]) r = m;
                     else l = m;
                 }
+                
                 tail[r] = i;
                 prev[i] = r > 0 ? tail[r - 1] : -1;
             }
@@ -30,7 +31,7 @@ int main() {
         cout << longest << "\n";
         vector<int> lis(longest);
         for (int i = tail[longest - 1]; i >= 0; i = prev[i]) lis[--longest] = i;
-        for (auto& i : lis) cout << i << " ";
+        for (auto &i : lis) cout << i << " ";
         cout << "\n";
     }
 }
