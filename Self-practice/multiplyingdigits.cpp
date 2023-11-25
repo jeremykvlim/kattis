@@ -31,7 +31,7 @@ int main() {
     for (int i = 2; i < b; i++) if (!(n % i)) factors.emplace_back(i);
 
     unordered_set<int> prime_factors;
-    long long quotient = n;
+    auto quotient = n;
     for (int &factor: factors)
         while (!(quotient % factor)) {
             quotient /= factor;
