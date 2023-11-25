@@ -2,11 +2,11 @@
 
     public class teque {
 
-        private static final int SIZE = (int) 1e6;
-        private static String[] frontHalf = new String[SIZE], backHalf = new String[SIZE];
-        private static int backHead, backTail, backSize = 0, frontHead, frontTail, frontSize = 0;
-        private static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        private static PrintWriter pw = new PrintWriter(System.out);
+        static final int SIZE = (int) 1e6;
+        static String[] frontHalf = new String[SIZE], backHalf = new String[SIZE];
+        static int backHead, backTail, backSize = 0, frontHead, frontTail, frontSize = 0;
+        static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        static PrintWriter pw = new PrintWriter(System.out);
 
         public static void main(String[] args) throws IOException {
             int middleIndex = SIZE / 2;
@@ -37,7 +37,7 @@
                         break;
                     }
                     default: {
-                        pw.println(getString(Integer.parseInt(command[1])));
+                        pw.println(get(Integer.parseInt(command[1])));
                         break;
                     }
                 }
@@ -45,14 +45,13 @@
             pw.flush();
         }
 
-        private static void balance() {
+        static void balance() {
             if (frontSize > backSize + 1) {
                 backHalf[backHead--] = frontHalf[frontTail - 1];
                 frontHalf[frontTail-- - 1] = null;
                 backSize++;
                 frontSize--;
-            }
-            else if (frontSize + 1 < backSize) {
+            } else if (frontSize + 1 < backSize) {
                 frontHalf[frontTail++] = backHalf[backHead + 1];
                 backHalf[backHead++ + 1] = null;
                 backSize--;
@@ -60,17 +59,17 @@
             }
         }
 
-        private static void addFront(String s) {
+        static void addFront(String s) {
             frontHalf[frontHead--] = s;
             frontSize++;
         }
 
-        private static void addBack(String s) {
+        static void addBack(String s) {
             backHalf[backTail++] = s;
             backSize++;
         }
 
-        private static void addMiddle(String s) {
+        static void addMiddle(String s) {
             if (frontSize >= backSize) {
                 backHalf[backHead--] = s;
                 backSize++;
@@ -81,11 +80,10 @@
             }
         }
 
-        private static String getString(int i) {
+        static String get(int i) {
             if (i > frontSize - 1) {
                 i -= frontSize;
                 return backHalf[backHead + 1 + i];
             } else return frontHalf[frontHead + 1 + i];
         }
-
     }
