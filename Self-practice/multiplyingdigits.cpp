@@ -1,13 +1,13 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-long long f(long long n, long long b, int size, vector<int> &factors, unordered_set<int> &primes) {
+long long f(long long n, long long b, int size, vector<int> &factors, unordered_set<int> &prime_factors) {
     if (n < b) return n;
     auto x = LLONG_MAX;
     for (int i = size, depth = 0; i >= 0 && factors[i] * factors[i] >= b; i--) {
         if (n % factors[i] ||
-            any_of(primes.begin(), primes.end(), [&](int p){return factors[i] * p < b && !(n % (factors[i] * p));})) continue;
-        auto next = f(n / factors[i], b, i, factors, primes) * b + factors[i];
+            any_of(prime_factors.begin(), prime_factors.end(), [&](int p){return factors[i] * p < b && !(n % (factors[i] * p));})) continue;
+        auto next = f(n / factors[i], b, i, factors, prime_factors) * b + factors[i];
         if (next <= 0) continue;
         x = min(x, next);
         if (depth++ == 3) break;
