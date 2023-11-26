@@ -7,7 +7,7 @@ struct Node {
 };
 
 int main() {
-    ios_base::sync_with_stdio(false);
+    ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     int n, q;
