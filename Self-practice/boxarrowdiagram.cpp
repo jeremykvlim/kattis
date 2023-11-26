@@ -28,7 +28,7 @@ void add(int u, int v, vector<vector<int>> &adj_list, vector<bool> &visited, vec
 }
 
 int main() {
-    ios_base::sync_with_stdio(false);
+    ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     int n, m;
