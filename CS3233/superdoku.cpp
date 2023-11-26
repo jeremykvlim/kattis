@@ -17,7 +17,7 @@ bool dfs(int i, int j, vector<vector<int>> &grid, vector<int> &visited, vector<i
 }
 
 int main() {
-    ios_base::sync_with_stdio(false);
+    ios::sync_with_stdio(false);
     cin.tie(nullptr);
     
     int n, k;
