@@ -16,7 +16,7 @@ bool dfs(double l, int v, vector<double> &k, vector<vector<int>> &adj_list, vect
 }
 
 int main() {
-    ios_base::sync_with_stdio(false);
+    ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     int n;
