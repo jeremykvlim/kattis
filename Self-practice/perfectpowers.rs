@@ -1,10 +1,8 @@
 use std::io::{stdin, stdout, BufRead, BufWriter, Write};
 
 fn main() {
-    let stdin = stdin();
-    let stdout = stdout();
-    let mut writer = BufWriter::new(stdout.lock());
-    for line in stdin.lock().lines() {
+    let mut writer = BufWriter::new(stdout().lock());
+    for line in stdin().lock().lines() {
         let mut x: i64 = line.unwrap().trim().parse().unwrap();
         if x == 0 { break; }
         let mut p: i64 = 1;
