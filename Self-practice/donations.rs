@@ -17,8 +17,7 @@ fn m(n: usize, x: f64, y: f64, z: f64, c: f64, r: f64) -> f64 {
 }
 
 fn main() {
-    let stdin = stdin();
-    let mut reader = Reader::from(stdin.lock());
+    let mut reader = Reader::from(stdin().lock());
     let n: usize = reader.next();
     let x: f64 = reader.next();
     let y: f64 = reader.next();
