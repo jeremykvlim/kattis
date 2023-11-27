@@ -1,4 +1,4 @@
-use std::io::{stdin, stdout, BufRead};
+use std::io::{stdin, BufRead};
 
 fn m(n: usize, x: f64, y: f64, z: f64, c: f64, r: f64) -> f64 {
     let mut dp = vec![vec![0.0; n + 1]; 2];
@@ -18,7 +18,6 @@ fn m(n: usize, x: f64, y: f64, z: f64, c: f64, r: f64) -> f64 {
 
 fn main() {
     let stdin = stdin();
-    let stdout = stdout();
     let mut reader = Reader::from(stdin.lock());
     let n: usize = reader.next();
     let x: f64 = reader.next();
