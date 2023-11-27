@@ -4,8 +4,7 @@ use std::{
 };
 
 fn main() {
-    let stdin = stdin();
-    let mut reader = Reader::from(stdin.lock());
+    let mut reader = Reader::from(stdin().lock());
 
     let n: i32 = reader.next();
     let m: i32 = reader.next();
