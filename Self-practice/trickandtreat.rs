@@ -1,5 +1,5 @@
 use std::{
-    io::{stdin, stdout, BufRead, BufWriter, Write},
+    io::{stdin, stdout, BufRead},
     cmp,
 };
 
@@ -7,7 +7,6 @@ fn main() {
     let stdin = stdin();
     let stdout = stdout();
     let mut reader = Reader::from(stdin.lock());
-    let mut writer = BufWriter::new(stdout.lock());
 
     let n: i32 = reader.next();
     let m: i32 = reader.next();
@@ -30,7 +29,7 @@ fn main() {
         }
         fewest = cmp::min(fewest, thrown);
     }
-    writeln!(writer, "{}", fewest);
+    print!("{}", fewest);
 }
 
 pub struct Reader<B> {
