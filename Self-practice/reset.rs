@@ -19,8 +19,7 @@ fn complete(tasks: &Vec<(i64, i64)>, total: i64, resets: &mut i64, attempts: i64
 }
 
 fn main() {
-    let stdin = stdin();
-    let mut reader = Reader::from(stdin.lock());
+    let mut reader = Reader::from(stdin().lock());
 
     let n: usize = reader.next();
     let c: i64 = reader.next();
