@@ -1,11 +1,10 @@
 use std::{
-    io::{stdin, stdout, BufRead},
+    io::{stdin, BufRead},
     cmp,
 };
 
 fn main() {
     let stdin = stdin();
-    let stdout = stdout();
     let mut reader = Reader::from(stdin.lock());
 
     let n: i32 = reader.next();
