@@ -1,5 +1,5 @@
 use std::{
-    io::{stdin, stdout, BufRead, BufWriter, Write},
+    io::{stdin, BufRead},
     cmp::min,
 };
 
@@ -20,9 +20,7 @@ fn complete(tasks: &Vec<(i64, i64)>, total: i64, resets: &mut i64, attempts: i64
 
 fn main() {
     let stdin = stdin();
-    let stdout = stdout();
     let mut reader = Reader::from(stdin.lock());
-    let mut writer = BufWriter::new(stdout.lock());
 
     let n: usize = reader.next();
     let c: i64 = reader.next();
@@ -42,7 +40,7 @@ fn main() {
         if complete(&tasks, total, &mut resets, mid, c) { r = mid; }
         else { l = mid + 1; }
     }
-    writeln!(writer, "{}", resets - 1);
+    print!("{}", resets - 1);
 }
 
 pub struct Reader<B> {
