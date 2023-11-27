@@ -31,6 +31,9 @@ bool arrange(int doll1, int doll2, int counter, vector<Doll> &dolls, bool set, v
 
 
 int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
     int n;
     while (cin >> n && n) {
         n <<= 1;
