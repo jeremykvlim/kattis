@@ -6,8 +6,7 @@ fn main() {
 
     let t: i32 = lines.next().unwrap().unwrap().parse().unwrap();
     for _ in 0..t {
-        let s: String = lines.next().unwrap().unwrap();
-        let mut s: Vec<char> = s.chars().collect();
+        let mut s: Vec<char> = lines.next().unwrap().unwrap().chars().collect();
         s.push('0');
         let n = ((s.len() ^ (s.len() - 1)) + 1) >> 1;
         let mut lives = false;
