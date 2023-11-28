@@ -1,6 +1,14 @@
 use std::io::{stdin, BufRead};
 
-fn m(n: usize, x: f64, y: f64, z: f64, c: f64, r: f64) -> f64 {
+fn main() {
+    let mut reader = Reader::from(stdin().lock());
+    let n: usize = reader.next();
+    let x: f64 = reader.next();
+    let y: f64 = reader.next();
+    let z: f64 = reader.next();
+    let c: f64 = reader.next();
+    let r: f64 = reader.next();
+
     let mut dp = vec![vec![0.0; n + 1]; 2];
     dp[0][0] = x;
     for i in 0..n {
@@ -13,18 +21,7 @@ fn m(n: usize, x: f64, y: f64, z: f64, c: f64, r: f64) -> f64 {
             }
         }
     }
-    return dp[n % 2][n];
-}
-
-fn main() {
-    let mut reader = Reader::from(stdin().lock());
-    let n: usize = reader.next();
-    let x: f64 = reader.next();
-    let y: f64 = reader.next();
-    let z: f64 = reader.next();
-    let c: f64 = reader.next();
-    let r: f64 = reader.next();
-    print!("{:.10}", m(n, x, y, z, c, r));
+    print!("{:.10}", dp[n % 2][n]);
 }
 
 pub struct Reader<B> {
