@@ -3,7 +3,7 @@ using namespace std;
 
 constexpr int MODULO = 1e9 + 7;
 
-inline int mod(long long x) {
+int mod(long long x) {
     return x % MODULO;
 }
 
