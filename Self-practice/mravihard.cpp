@@ -1,16 +1,14 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-constexpr double OMEGA = 1e10;
-
-bool dfs(double l, int v, vector<double> &k, vector<vector<int>> &adj_list, vector<vector<double>> &flow,
+bool dfs(long double l, int v, vector<long double> &liquid, vector<vector<int>> &adj_list, vector<vector<long double>> &flow,
          vector<vector<bool>> &superpower, int parent = -1) {
-    if (adj_list[v].empty() && k[v] != -1 && l < k[v]) return false;
+    if (adj_list[v].empty() && liquid[v] != -1 && l < liquid[v]) return false;
     for (int i = 0; i < adj_list[v].size(); i++) {
         int u = adj_list[v][i];
         if (u == parent) continue;
-        double f = l + log(flow[v][i]);
-        if (!dfs(superpower[v][i] && f > 0 ? 2 * f : f, u, k, adj_list, flow, superpower, u)) return false;
+        long double f = l + log(flow[v][i]);
+        if (!dfs(superpower[v][i] && f > 0 ? 2 * f : f, u, liquid, adj_list, flow, superpower, u)) return false;
     }
     return true;
 }
@@ -23,7 +21,7 @@ int main() {
     cin >> n;
 
     vector<vector<int>> adj_list(n);
-    vector<vector<double>> flow(n);
+    vector<vector<long double>> flow(n);
     vector<vector<bool>> superpower(n);
 
     for (int i = 0; i < n - 1; ++i) {
@@ -34,18 +32,18 @@ int main() {
         superpower[a - 1].push_back(t);
     }
 
-    vector<double> k(n);
-    for (auto &ki : k) {
-        cin >> ki;
-        if (ki > 0) ki = log(ki);
+    vector<long double> liquid(n);
+    for (auto &k : liquid) {
+        cin >> k;
+        if (k > 0) k = log(k);
     }
 
-    double l = 0, r = OMEGA + log(LLONG_MAX) * OMEGA;
+    long double inf = INT_MAX * log(INT_MAX), l = 0, r = inf + log(LLONG_MAX) * inf;
     while (l + 1 < r) {
-        double m = l + (r - l) / 2;
-        if (dfs(m / OMEGA, 0, k, adj_list, flow, superpower)) r = m;
+        long double m = l + (r - l) / 2;
+        if (dfs(m / inf, 0, liquid, adj_list, flow, superpower)) r = m;
         else l = m;
     }
 
-    cout << fixed << setprecision(4) << exp(r / OMEGA) << "\n";
+    cout << fixed << setprecision(3) << exp(r / inf) << "\n";
 }
