@@ -38,8 +38,7 @@ int main() {
     vector<bool> visited(n + 1), removed(m + 1);
     vector<int> counts(n + 1);
 
-    for (int i = 1; i <= m; i++)
-        cin >> edges[i].first >> edges[i].second;
+    for (int i = 1; i <= m; i++) cin >> edges[i].first >> edges[i].second;
 
     int q;
     cin >> q;
@@ -58,6 +57,5 @@ int main() {
         else answers.emplace_back(counts[queries[i].second]);
     }
 
-    for (int i = answers.size() - 1; i >= 0; i--)
-        cout << answers[i] << "\n";
+    for (int i = answers.size() - 1; i >= 0; i--) cout << answers[i] << "\n";
 }
