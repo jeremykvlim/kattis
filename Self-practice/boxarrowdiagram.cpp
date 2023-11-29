@@ -1,7 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-
 void bfs(int v, vector<vector<int>> &adj_list, vector<bool> &visited, vector<int> &counts) {
     visited[v] = true;
     queue<int> q;
