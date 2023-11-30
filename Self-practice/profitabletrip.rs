@@ -17,14 +17,14 @@ fn main() {
         adj_list[road[0] as usize].push((road[1] as usize, road[2]));
     }
 
-    let mut dfs: VecDeque<usize> = VecDeque::new();
-    dfs.push_back(1);
+    let mut bfs: VecDeque<usize> = VecDeque::new();
+    bfs.push_back(1);
 
-    while let Some(v) = dfs.pop_front() {
+    while let Some(v) = bfs.pop_front() {
         for &u in &adj_list[v] {
             if profit[u.0] < w.min(u.1 + profit[v]) {
                 profit[u.0] = w.min(u.1 + profit[v]);
-                dfs.push_back(u.0);
+                bfs.push_back(u.0);
             }
         }
     }
