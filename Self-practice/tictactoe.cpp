@@ -1,11 +1,11 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-char symbol(int r, int c, vector<vector<char>> &board, int n) {
+char symbol(int r, int c, vector<vector<char>> board, int n) {
     return (r < 0 || r >= n || c < 0 || c >= n) ? '.' : board[r][c];
 }
 
-void check(int player, char s, vector<vector<int>> &winning, vector<int> &count, vector<vector<char>> &board,
+void check(int player, char s, vector<vector<int>> &winning, vector<int> &count, vector<vector<char>> board,
            vector<int> dr, vector<int> dc, int n, int m) {
     for (int k = 0; k < 4; k++)
         for (int r = 0; r < n; r++)
