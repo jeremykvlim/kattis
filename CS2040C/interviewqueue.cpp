@@ -4,77 +4,69 @@ using namespace std;
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    
+
     int n;
     cin >> n;
 
     vector<int> candidates(n);
-    int highest = 0, final = 0;
+    int highest = 0, final;
 
-    for (int i = 0; i < n; i++) {
-        cin >> candidates[i];
-        highest = max(highest, candidates[i]);
+    for (auto &v : candidates) {
+        cin >> v;
+        if (v > highest) {
+            highest = v;
+            final = 1;
+        } else if (v == highest) final++;
     }
 
-    for (int i = 0; i < n; i++)
-        if (candidates[i] == highest) final++;
-
     vector<pair<int, int>> q;
-    int count = 1;
+    int same = 1;
     for (int i = 1; i < n; i++) {
-        if (candidates[i] == candidates[i - 1]) count++;
+        if (candidates[i] == candidates[i - 1]) same++;
         else {
-            q.emplace_back(candidates[i - 1], count);
-            count = 1;
+            q.emplace_back(candidates[i - 1], same);
+            same = 1;
         }
     }
 
-    q.emplace_back(candidates[n - 1], count);
-    vector<vector<int>> result;
+    q.emplace_back(candidates[n - 1], same);
+    vector<vector<int>> m;
 
     for (;;) {
-        int remaining = 0, last = -1;
+        int remaining = 0;
         vector<int> leavers;
         vector<pair<int, int>> q_new;
 
         for (int i = 0; i < q.size(); i++) {
-            if (i > 0 && q[i - 1].first > q[i].first) {
-                q[i].second--;
+            auto process = [&] {
                 leavers.emplace_back(q[i].first);
-                remaining++;
-            }
-
-            if (i < q.size() - 1 && q[i + 1].first > q[i].first && q[i].second > 0) {
                 q[i].second--;
-                leavers.emplace_back(q[i].first);
                 remaining++;
-            }
+            };
 
-            if (q[i].second == 0) continue;
+            if (i && q[i - 1].first > q[i].first) process();
+            if (i < q.size() - 1 && q[i + 1].first > q[i].first && q[i].second) process();
 
-            if (q[i].first == last) {
-                q_new[q_new.size() - 1].second += q[i].second;
+            if (!q[i].second) continue;
+            if (!q_new.empty() && q[i].first == q_new.back().first) {
+                q_new.back().second += q[i].second;
                 continue;
             }
 
-            last = q[i].first;
             q_new.emplace_back(q[i]);
         }
 
-        if (remaining == 0) break;
+        if (!remaining) break;
 
-        result.emplace_back(leavers);
-        swap(q, q_new);
-        q_new.clear();
+        m.emplace_back(leavers);
+        q = q_new;
     }
 
-    cout << result.size() << endl;
-    for (auto& i : result) {
+    cout << m.size() << "\n";
+    for (auto &i : m) {
         for (auto j : i) cout << j << " ";
         cout << "\n";
     }
 
-    for (int i = 0; i < final; i++)
-        cout << highest << " ";
-    cout << endl;
+    while (final--) cout << highest << " ";
 }
