@@ -16,7 +16,7 @@ int main() {
     for (int i = n - 1; i >= 0; i--) {
         for (int j = i + 1; j < n; j++) {
             if (weight[j] > weight[i]) lis[i] = max(lis[i], lis[j] + 1);
-            if (weight[j] < weight[i]) lds[i] = max(lds[i], lds[j] + 1);
+            else if (weight[j] < weight[i]) lds[i] = max(lds[i], lds[j] + 1);
         }
         cars = max(cars, lis[i] + lds[i] - 1);
     }
