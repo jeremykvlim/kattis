@@ -16,9 +16,9 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n, k, m, mod;
+    int n, k, m;
     cin >> n >> k >> m;
-    mod = (1 << m);
+    int mod = 1 << m;
     vector<int> count(mod);
     long long a = 33, x = 1, words = 0;
     for (int exponent = (mod >> 1) - 1; exponent; exponent >>= 1) {
