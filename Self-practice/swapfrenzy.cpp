@@ -49,7 +49,7 @@ int main() {
         digits[position++] = numerator % 10;
         if (mask & (1 << (numerator % 10))) repeat = true;
         mask |= (1 << (numerator % 10));
-        dividend /= 10;
+        numerator /= 10;
     }
 
     cout << swap_digits(n, position - 1, k, repeat, digits, visited);
