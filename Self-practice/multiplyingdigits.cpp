@@ -23,7 +23,7 @@ int main() {
     cin >> b >> n;
 
     if (n == 1) {
-        cout << "1\n";
+        cout << "1";
         exit(0);
     }
 
@@ -31,10 +31,10 @@ int main() {
     for (int i = 2; i < b; i++) if (!(n % i)) factors.emplace_back(i);
 
     unordered_set<int> prime_factors;
-    auto quotient = n;
+    auto numerator = n;
     for (int &factor: factors)
-        while (!(quotient % factor)) {
-            quotient /= factor;
+        while (!(numerator % factor)) {
+            numerator /= factor;
             prime_factors.insert(factor);
         }
 
