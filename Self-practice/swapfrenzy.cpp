@@ -27,6 +27,7 @@ long long swap_digits(long long curr, int position, int remaining, bool repeat, 
         largest = max(largest, swap_digits(swapped, position - 1, remaining - 1, repeat, digits, visited));
         swap(digits[position], digits[i]);
     }
+    
     return largest;
 }
 
@@ -43,11 +44,11 @@ int main() {
 
     int position = 0, mask = 0;
     bool repeat = false;
-    auto dividend = n;
-    while (dividend) {
-        digits[position++] = dividend % 10;
-        if (mask & (1 << (dividend % 10))) repeat = true;
-        mask |= (1 << (dividend % 10));
+    auto numerator = n;
+    while (numerator) {
+        digits[position++] = numerator % 10;
+        if (mask & (1 << (numerator % 10))) repeat = true;
+        mask |= (1 << (numerator % 10));
         dividend /= 10;
     }
 
