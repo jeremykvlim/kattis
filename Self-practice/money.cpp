@@ -26,8 +26,8 @@ int main() {
     int m, n;
     cin >> m >> n;
     vector<pair<int, int>> producer(m), consumer(n);
-    for (auto &p: producer) cin >> p.first >> p.second;
-    for (auto &p: consumer) cin >> p.first >> p.second;
+    for (auto &p : producer) cin >> p.first >> p.second;
+    for (auto &p : consumer) cin >> p.first >> p.second;
     sort(producer.begin(), producer.end());
 
     vector<pair<int, int>> selection;
