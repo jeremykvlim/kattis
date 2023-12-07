@@ -20,18 +20,19 @@ int main() {
         for (int w = X - 2; w >= 0; w--)
             if (table[w][l]) table[w][l] = table[w + 1][l] + 1;
 
-    for (auto &c : table) {
-        vector<pair<int, int>> v{{0, 0}};
-        c.push_back(0);
-        for (int i = 0; i < c.size(); i++) {
-            auto sb = make_pair(i, c[i]);
-            while (c[i] < v.back().second) {
-                sb = v.back();
-                v.pop_back();
-                dp[sb.second][i - sb.first]++;
-                dp[max(c[i], v.back().second)][i - sb.first]--;
+    for (auto &r : table) {
+        stack<pair<int, int>> s;
+        s.emplace(0, 0);
+        r.emplace_back(0);
+        for (int i = 0; i < r.size(); i++) {
+            auto p = make_pair(i, r[i]);
+            while (r[i] < s.top().second) {
+                p = s.top();
+                s.pop();
+                dp[p.second][i - p.first]++;
+                dp[max(r[i], s.top().second)][i - p.first]--;
             }
-            v.emplace_back(sb.first, c[i]);
+            s.emplace(p.first, r[i]);
         }
     }
 
