@@ -8,7 +8,7 @@ int main() {
     int n, k;
     cin >> n >> k;
     vector<tuple<long long, long long, long long>> cards(n);
-    vector<long long> waste((1 << n));
+    vector<long long> waste(1 << n);
     vector<vector<long long>> dp(max(n, k), vector<long long>((1 << n), 1e16));
 
     for (auto &c : cards) cin >> get<0>(c) >> get<1>(c) >> get<2>(c);
