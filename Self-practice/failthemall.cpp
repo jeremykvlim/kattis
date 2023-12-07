@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-bool check(int i, char c, string& key, vector<string>& answers) {
+bool check(int i, char c, string &key, vector<string> &answers) {
     if (key[i] != '.') return key[i] == c;
     key[i] = c;
     for (auto &s : answers)
@@ -14,7 +14,7 @@ bool check(int i, char c, string& key, vector<string>& answers) {
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    
+
     int n, k;
     cin >> n >> k;
 
