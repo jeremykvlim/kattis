@@ -25,8 +25,7 @@ int main() {
         if (exponent & 1) x = (a * x) % mod;
         a = (a * a) % mod;
     }
-    mod--;
-    f(0, n / 2, count, mod, words);
-    f(k, n - n / 2, count, mod, words, x, true);
+    f(0, n / 2, count, mod - 1, words);
+    f(k, n - n / 2, count, mod - 1, words, x, true);
     cout << words;
 }
