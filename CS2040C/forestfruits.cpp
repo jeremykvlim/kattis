@@ -8,7 +8,7 @@ int main() {
     int V, E, C, K, M;
     cin >> V >> E >> C >> K >> M;
 
-    vector<pair<int, int>> adj_list[V + 1];
+    vector<vector<pair<int, int>>> adj_list(V + 1);
     vector<long long> dist(V + 1, LLONG_MAX);
 
     for (int i = 0; i < E; i++) {
@@ -34,13 +34,13 @@ int main() {
             }
     }
 
-    vector<long long> vec;
+    vector<long long> v;
     for (int i = 0; i < C; i++) {
         int f;
         cin >> f;
-        if (dist[f] != LLONG_MAX) vec.emplace_back(dist[f]);
+        if (dist[f] != LLONG_MAX) v.emplace_back(dist[f]);
     }
 
-    sort(vec.begin(), vec.end());
-    cout << ((min(M, K) - 1 < vec.size()) ? 2 * vec[min(M, K) - 1] : -1) << '\n';
+    sort(v.begin(), v.end());
+    cout << ((min(M, K) - 1 < v.size()) ? 2 * v[min(M, K) - 1] : -1) << '\n';
 }
