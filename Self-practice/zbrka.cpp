@@ -3,7 +3,7 @@ using namespace std;
 
 constexpr int MODULO = 1e9 + 7;
 
-int f(int n, int c, vector<vector<int>>& dp) {
+int f(int n, int c, vector<vector<int>> &dp) {
     if (!c) return 1;
     if (c < 0 || !n) return 0;
     if (dp[n][c] != -1) return dp[n][c];
