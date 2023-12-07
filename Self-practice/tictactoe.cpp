@@ -48,8 +48,7 @@ int main() {
 
     vector<int> count(2, 0), dr = {1, 1, 0, -1}, dc = {0, 1, 1, 1};
     vector<vector<int>> winning(n, vector<int>(n, 0));
-    for (int p = 0; p < 2; p++)
-        check(p, "XO"[p], winning, count, board, dr, dc, n, m);
+    for (int p = 0; p < 2; p++) check(p, "XO"[p], winning, count, board, dr, dc, n, m);
 
     if (count[1 - previous]) {
         cout << "ERROR";
