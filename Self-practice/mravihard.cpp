@@ -45,5 +45,5 @@ int main() {
         else l = m;
     }
 
-    cout << fixed << setprecision(3) << exp(r / inf) << "\n";
+    cout << fixed << setprecision(3) << exp(r / inf);
 }
