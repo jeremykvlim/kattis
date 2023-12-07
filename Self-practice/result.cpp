@@ -27,11 +27,11 @@ int main() {
                 for (int k = i; k < j; k++) {
                     long long a = dpMax[i][k], b = dpMax[k+1][j], c = dpMin[i][k], d = dpMin[k+1][j];
                     if (ops[k] == '+') {
-                        dpMax[i][j] = max({dpMax[i][j], a+b});
-                        dpMin[i][j] = min({dpMin[i][j], c+d});
+                        dpMax[i][j] = max({dpMax[i][j], a + b});
+                        dpMin[i][j] = min({dpMin[i][j], c + d});
                     } else {
-                        dpMax[i][j] = max({dpMax[i][j], a*b, c*d});
-                        dpMin[i][j] = min({dpMin[i][j], a*b, c*d});
+                        dpMax[i][j] = max({dpMax[i][j], a * b, c * d});
+                        dpMin[i][j] = min({dpMin[i][j], a * b, c * d});
                     }
                 }
             
