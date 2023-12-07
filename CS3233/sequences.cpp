@@ -11,10 +11,10 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
     
-    string input;
-    cin >> input;
+    string s;
+    cin >> s;
     long long sum = 0, count = 0, total = 1;
-    for (char c : input) {
+    for (char c : s) {
         if (c == '1') count = mod(count + total);
         else if (c == '?') {
             sum = mod(mod(sum * 2) + count);
@@ -23,5 +23,5 @@ int main() {
         }
         else sum = mod(sum + count);
     }
-    cout << sum << endl;
+    cout << sum;
 }
