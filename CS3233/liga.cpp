@@ -22,9 +22,8 @@ int main() {
             for (int drew = d == -1 ? 0 : d; drew <= (d == -1 ? 100 : d); drew++) {
                 int total = t == -1 ? won + drew + l : t, lost = l == -1 ? t - won - drew : l, points = p == -1 ? 3 * won + drew : p;
 
-                if (total == won + drew + lost && total >= 0 && total <= 100 && lost >= 0 && lost <= 100 && points == 3 * won + drew) {
+                if (total == won + drew + lost && total >= 0 && total <= 100 && lost >= 0 && lost <= 100 && points == 3 * won + drew) 
                     cout << total << " " << won << " " << drew << " " << lost << " " << points << "\n";
-                }
             }
     }
 }
