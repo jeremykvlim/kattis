@@ -11,7 +11,7 @@ int main() {
     vector<int> jump(k), freq(n, 0);
     vector<long long> pref_sum(n + 1, 0);
 
-    for (auto &j: jump) cin >> j;
+    for (auto &j : jump) cin >> j;
     sort(jump.begin(), jump.end());
 
     for (int i = 0; i < k;) {
