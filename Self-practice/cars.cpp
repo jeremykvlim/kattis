@@ -1,9 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-pair<double, double> interval(double pos, double velo, double dimens) {
-    if (!velo) return abs(pos) < dimens ? make_pair(INT_MIN, INT_MAX) : make_pair(0, 0);
-    double t1 = 1.0 * (-dimens - pos) / velo, t2 = 1.0 * (dimens - pos) / velo;
+pair<double, double> interval(double position, double speed, double dimension) {
+    if (!speed) return abs(position) < dimension ? make_pair(INT_MIN, INT_MAX) : make_pair(0, 0);
+    double t1 = 1.0 * (-dimension - position) / speed, t2 = 1.0 * (dimension - position) / speed;
 
     return {min(t1, t2), max(t1, t2)};
 }
@@ -16,24 +16,24 @@ bool crash(double t, vector<double> car1, vector<double> car2) {
     return max(times[0].first, max(times[1].first, times[2].first)) < min(times[0].second, min(times[1].second, times[2].second));
 }
 
-vector<double> get_car() {
-    map<char, pair<int, int>> dir = {{'N', {0, 1}}, {'S', {0, -1}}, {'W', {-1, 0}}, {'E', {1, 0}}};
+vector<double> car() {
+    map<char, pair<int, int>> directions = {{'N', {0, 1}}, {'S', {0, -1}}, {'W', {-1, 0}}, {'E', {1, 0}}};
     char d;
-    double x, y, s, w, l, vx, vy;
+    double x, y, s, w, l, dx, dy;
     cin >> d >> x >> y >> s >> w >> l;
-    pair<int, int> v = dir[d];
-    vx = v.first * s, vy = v.second * s, w /= 2.0, l /= 2.0;
-    if (vx) swap(w, l);
-    return vector<double>{x, y, vx, vy, w, l};
+    pair<int, int> dir = directions[d];
+    dx = dir.first * s, dy = dir.second * s, w /= 2.0, l /= 2.0;
+    if (dx) swap(w, l);
+    return vector<double>{x, y, dx, dy, w, l};
 }
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    
+
     int t;
     cin >> t;
 
-    vector<double> car1 = get_car(), car2 = get_car();
+    vector<double> car1 = car(), car2 = car();
     cout << (crash(t, car1, car2) ? "crash" : "safe");
 }
