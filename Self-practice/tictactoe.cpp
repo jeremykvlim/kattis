@@ -1,20 +1,20 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-char symbol(int r, int c, vector<vector<char>>& grid, int n) {
-    return (r < 0 || r >= n || c < 0 || c >= n) ? '.' : grid[r][c];
+char symbol(int r, int c, vector<vector<char>> &board, int n) {
+    return (r < 0 || r >= n || c < 0 || c >= n) ? '.' : board[r][c];
 }
 
-void check(int player, char s, vector<vector<int>>& winning, vector<int>& nlines, vector<vector<char>>& grid,
+void check(int player, char s, vector<vector<int>> &winning, vector<int> &count, vector<vector<char>> &board,
            vector<int> dr, vector<int> dc, int n, int m) {
     for (int k = 0; k < 4; k++)
         for (int r = 0; r < n; r++)
             for (int c = 0; c < n; c++)
-                if (symbol(r - dr[k], c - dc[k], grid, n) != s) {
+                if (symbol(r - dr[k], c - dc[k], board, n) != s) {
                     int sequence = 0;
-                    while (symbol(r + sequence * dr[k], c + sequence * dc[k], grid, n) == s) sequence++;
+                    while (symbol(r + sequence * dr[k], c + sequence * dc[k], board, n) == s) sequence++;
                     if (sequence >= m) {
-                        nlines[player]++;
+                        count[player]++;
                         for (int i = 0; i < sequence; i++)
                             if (i < m && m + i >= sequence) winning[r + i * dr[k]][c + i * dc[k]]++;
                     }
@@ -24,7 +24,7 @@ void check(int player, char s, vector<vector<int>>& winning, vector<int>& nlines
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    
+
     int n, m;
     cin >> n >> m;
     vector<vector<char>> board(n, vector<char>(n));
@@ -48,8 +48,7 @@ int main() {
 
     vector<int> count(2, 0), dr = {1, 1, 0, -1}, dc = {0, 1, 1, 1};
     vector<vector<int>> winning(n, vector<int>(n, 0));
-    for (int p = 0; p < 2; p++)
-        check(p, "XO"[p], winning, count, board, dr, dc, n, m);
+    for (int p = 0; p < 2; p++) check(p, "XO"[p], winning, count, board, dr, dc, n, m);
 
     if (count[1 - previous]) {
         cout << "ERROR";
