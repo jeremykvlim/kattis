@@ -34,6 +34,7 @@ int main() {
                 possible = true;
                 break;
             }
+        
         if (!possible) {
             cout << "impossible" << endl;
             exit(0);
@@ -51,6 +52,6 @@ int main() {
 
     for (auto &line : code) {
         for (bool b : line) cout << b;
-        cout << endl;
+        cout << "\n";
     }
 }
