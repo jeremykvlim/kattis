@@ -8,7 +8,7 @@ void fft(vector<complex<double>> &fourier, int n, int sign, vector<int> &reverse
         if (i < reverse[i]) swap(fourier[i], fourier[reverse[i]]);
     for (int i = 1; i < n; i <<= 1)
         for (int k = 0; k < i; k++) {
-            auto twiddle = exp(complex<double>(0, sign * acos(-1) / i * k));
+            auto twiddle = exp(complex<double>(0, sign * M_PI / i * k));
             for (int j = k; j < n; j += 2 * i) {
                 auto temp = twiddle * fourier[i + j];
                 fourier[i + j] = fourier[j] - temp;
