@@ -20,15 +20,15 @@ int main() {
     vector<Prediction> sequences(s);
     for (int i = 0; i < s; i++) {
         cin >> sequences[i].s;
-        vector<int> prefix(sequences[i].s.size());
+        vector<int> pref(sequences[i].s.size());
         for (int j = 1, k = 0; j < sequences[i].s.size(); j++) {
-            while (k && sequences[i].s[j] != sequences[i].s[k]) k = prefix[k - 1];
+            while (k && sequences[i].s[j] != sequences[i].s[k]) k = pref[k - 1];
             if (sequences[i].s[j] == sequences[i].s[k]) k++;
-            prefix[j] = k;
+            pref[j] = k;
         }
 
-        for (int pos = prefix.size() - 1; pos > 0; pos = prefix[pos] - 1)
-            if (2 * sequences[i].s.size() - prefix[pos] <= n) sequences[i].common.push_back(prefix[pos]);
+        for (int j = pref.size() - 1; j > 0; j = pref[j] - 1)
+            if (2 * sequences[i].s.size() - pref[j] <= n) sequences[i].common.push_back(pref[j]);
     }
 
     sort(sequences.begin(), sequences.end());
