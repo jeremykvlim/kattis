@@ -9,7 +9,7 @@ int main() {
     cin >> n >> k;
 
     vector<int> jump(k), freq(n, 0);
-    vector<long long> pref_sum(n + 1, 0);
+    vector<long long> pref(n + 1, 0);
 
     for (auto &j : jump) cin >> j;
     sort(jump.begin(), jump.end());
@@ -20,13 +20,13 @@ int main() {
         for (int j = 0; j < n; j += curr) freq[j] += count;
     }
 
-    for (int i = 0; i < n; i++) pref_sum[i + 1] = pref_sum[i] + freq[i];
+    for (int i = 0; i < n; i++) pref[i + 1] = pref[i] + freq[i];
 
     int q;
     cin >> q;
     while (q--) {
         int l, r;
         cin >> l >> r;
-        cout << pref_sum[r + 1] - pref_sum[l] << "\n";
+        cout << pref[r + 1] - pref[l] << "\n";
     }
 }
