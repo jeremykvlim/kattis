@@ -4,7 +4,7 @@ using namespace std;
 int factors(vector<int> exponents, vector<int> primes, int f) {
     int total = accumulate(exponents.begin(), exponents.end(), 0);
 
-    if (primes.empty()) primes.push_back(0);
+    if (primes.empty()) primes.emplace_back(0);
     else for (int i = 0; ++primes[i] >= exponents.size(); ++i) {
             if (i == primes.size() - 1) {
                 primes = vector<int>(primes.size() + 1, 0);
@@ -35,6 +35,7 @@ int main() {
     
     long long x;
     cin >> x;
+    
     vector<int> exponents, primes;
     int points = 0;
     for (long long b = 2; b * b <= x; b++) {
@@ -48,6 +49,7 @@ int main() {
             if (power > 1) exponents.emplace_back(power - 1);
         }
     }
+    
     if (x > 1) points++;
     primes.emplace_back(exponents.size());
     if (!exponents.empty()) points += factors(exponents, primes, 0);
