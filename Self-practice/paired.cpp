@@ -7,6 +7,7 @@ int main() {
     
     int n, len = 0, curr = 1;
     cin >> n;
+    
     vector<long long> arr(n + 1, 0), pref(n + 1, 0);
     unordered_map<int, long long> compress;
     unordered_map<long long, int> count, pos{{0, 0}};
@@ -16,11 +17,14 @@ int main() {
     for (int i = 1; i <= n; i++) {
         int x;
         cin >> x;
+        
         if (!compress[x]) compress[x] = dis(rng);
         arr[i] = compress[x];
         count[arr[i]]++;
+        
         while (count[arr[i]] > 2 && curr < i) count[arr[curr++]]--;
         pref[i] = pref[i - 1] ^ arr[i];
+        
         if (pos.count(pref[i]) && pos[pref[i]] + 1 >= curr) len = max(len, i - pos[pref[i]]);
         pos[pref[i]] = i;
     }
