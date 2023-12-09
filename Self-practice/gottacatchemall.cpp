@@ -28,7 +28,7 @@ int main() {
 
     long long total = 0;
     for (int u = 1; u <= n; u++) {
-        total += 1LL * adj_list[u].size() * (adj_list[u].size() - 1) / 2;
+        total += (long long) adj_list[u].size() * (adj_list[u].size() - 1) / 2;
         if (!optimal[u].empty()) {
             for (int &v : adj_list[u]) visited[v] = true;
             for (int v : optimal[u])
