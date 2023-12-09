@@ -1,4 +1,4 @@
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 using namespace std;
 
 int main() {
@@ -9,33 +9,33 @@ int main() {
     cin >> n;
 
     vector<pair<int, int>> junctions(n - 1);
-    vector<vector<int>> adj_list(n + 1), optimal(n + 1);
-    vector<bool> visited(n + 1, false);
     for (auto &j : junctions) {
         cin >> j.first >> j.second;
         if (j.first > j.second) swap(j.first, j.second);
     }
-
-    sort(junctions.begin(), junctions.end());
+    sort(junctions.begin(), junctions.begin() + n - 1);
     junctions.erase(unique(junctions.begin(), junctions.end()), junctions.end());
-
+    
+    vector<int> count(n + 1, 0), prev(n + 1);
     for (auto &j : junctions) {
-        adj_list[j.first].emplace_back(j.second);
-        adj_list[j.second].emplace_back(j.first);
-        int u = (adj_list[j.first].size() > adj_list[j.second].size()) ? j.first : j.second, v = j.first ^ j.second ^ u;
-        optimal[u].emplace_back(v);
+        count[j.first]++;
+        count[j.second]++;
     }
 
-    long long total = 0;
-    for (int u = 1; u <= n; u++) {
-        total += (long long) adj_list[u].size() * (adj_list[u].size() - 1) / 2;
-        if (!optimal[u].empty()) {
-            for (int &v : adj_list[u]) visited[v] = true;
-            for (int v : optimal[u])
-                for (int &w : adj_list[v]) if (visited[w]) total--;
-            for (int &v : adj_list[u]) visited[v] = false;
-        }
+    vector<vector<int>> connected(n + 1);
+    for (auto &j : junctions) {
+        if (count[j.first] != count[j.second] ? count[j.first] > count[j.second] : j.first < j.second) connected[j.first].emplace_back(j.second);
+        else connected[j.second].emplace_back(j.first);
     }
 
-    cout << (total << 1);
+    long long total = 0, optimal = 0;
+    for (int i = 1; i <= n; i++) {
+        if (count[i]) total += (long long) count[i] * (count[i] - 1);
+        for (int j : connected[i]) prev[j] = i;
+        for (int j : connected[i])
+            for (int k : connected[j])
+                if (prev[k] == i) optimal++;
+    }
+
+    cout << total - 6 * optimal;
 }
