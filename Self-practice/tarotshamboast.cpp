@@ -3,11 +3,10 @@ using namespace std;
 
 struct Prediction {
     string s;
-    int i;
     vector<int> common;
 
     bool operator<(const Prediction &p) const {
-        return tie(common, i) < tie(p.common, p.i);
+        return common < p.common;
     }
 };
 
@@ -21,7 +20,6 @@ int main() {
     vector<Prediction> sequences(s);
     for (int i = 0; i < s; i++) {
         cin >> sequences[i].s;
-        sequences[i].i = i;
         vector<int> prefix(sequences[i].s.size());
         for (int j = 1, k = 0; j < sequences[i].s.size(); j++) {
             while (k && sequences[i].s[j] != sequences[i].s[k]) k = prefix[k - 1];
@@ -32,7 +30,7 @@ int main() {
         for (int pos = prefix.size() - 1; pos > 0; pos = prefix[pos] - 1)
             if (2 * sequences[i].s.size() - prefix[pos] <= n) sequences[i].common.push_back(prefix[pos]);
     }
-    
+
     sort(sequences.begin(), sequences.end());
     for (auto &prediction : sequences) cout << prediction.s << '\n';
 }
