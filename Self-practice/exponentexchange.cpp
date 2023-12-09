@@ -7,6 +7,7 @@ int main() {
     
     int b, p;
     cin >> b >> p;
+    
     vector<int> digits(p);
     for (auto &x : digits) cin >> x;
 
