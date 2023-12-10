@@ -13,9 +13,9 @@ int main() {
         long long x;
         char op;
         while (ss >> x) {
-            line.push_back(x);
+            line.emplace_back(x);
             ss >> op;
-            ops.push_back(op);
+            ops.emplace_back(op);
         }
 
         int size = line.size();
@@ -23,9 +23,9 @@ int main() {
         for (int i = 0; i < size; i++) dpMin[i][i] = dpMax[i][i] = line[i];
 
         for (int h = 1; h < size; h++)
-            for (int i = 0, j = i + h; i + h < size; i++, j++) 
+            for (int i = 0, j = i + h; i + h < size; i++, j++)
                 for (int k = i; k < j; k++) {
-                    long long a = dpMax[i][k], b = dpMax[k+1][j], c = dpMin[i][k], d = dpMin[k+1][j];
+                    auto a = dpMax[i][k], b = dpMax[k + 1][j], c = dpMin[i][k], d = dpMin[k + 1][j];
                     if (ops[k] == '+') {
                         dpMax[i][j] = max({dpMax[i][j], a + b});
                         dpMin[i][j] = min({dpMin[i][j], c + d});
@@ -34,7 +34,7 @@ int main() {
                         dpMin[i][j] = min({dpMin[i][j], a * b, c * d});
                     }
                 }
-            
+
 
         cout << dpMin[0][size - 1] << ' ' << dpMax[0][size - 1] << '\n';
     }
