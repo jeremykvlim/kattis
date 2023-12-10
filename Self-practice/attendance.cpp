@@ -10,7 +10,7 @@ void update(int i, int val, int inspections, vector<int> &fenwick, vector<bool> 
     }
 }
 
-int prefix_sum(int i, int inspections, vector<int> &fenwick) {
+int pref(int i, int inspections, vector<int> &fenwick) {
     if (i >= inspections) i = inspections - 1;
     int sum = 0;
     while (i != -1) {
@@ -35,18 +35,18 @@ int main() {
     vector<int> inspections;
     int curr = 0;
     for (int a : students)
-        if (inspected[a - 1]) inspections.push_back(a - 1);
+        if (inspected[a - 1]) inspections.emplace_back(a - 1);
         else while (!inspected[a - 1]) {
                 inspected[order[curr] - 1] = true;
-                inspections.push_back(order[curr++] - 1);
+                inspections.emplace_back(order[curr++] - 1);
             }
 
     int k = inspections.size();
     cout << k << "\n";
 
     vector<vector<int>> index(n);
-    for (int i = 0; i < k; i++) index[inspections[i]].push_back(i);
-    for (int i = 0; i < n; i++) index[i].push_back(INT_MAX - i);
+    for (int i = 0; i < k; i++) index[inspections[i]].emplace_back(i);
+    for (int i = 0; i < n; i++) index[i].emplace_back(INT_MAX - i);
 
     vector<int> fenwick(k);
     vector<bool> attend(k, false);
@@ -58,7 +58,7 @@ int main() {
         while (!attend[curr]) curr++;
         int next = *upper_bound(index[inspections[curr]].begin(), index[inspections[curr]].end(), curr);
         update(curr, -1, k, fenwick, attend);
-        cout << prefix_sum(next, k, fenwick) + 1 << " ";
+        cout << pref(next, k, fenwick) + 1 << " ";
         update(next, 1, k, fenwick, attend);
     }
 }
