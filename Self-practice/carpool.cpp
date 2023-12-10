@@ -9,7 +9,6 @@ int main() {
     cin >> n >> m;
 
     vector<vector<long long>> dist(n + 2, vector<long long>(n + 2, INT_MAX));
-
     while (m--) {
         int u, v;
         long long w;
