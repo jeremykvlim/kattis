@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void add(int u, int v, vector<vector<int>> &adj_list, vector<bool> &visited, vector<int> &count) {
+void bfs(int u, int v, vector<vector<int>> &adj_list, vector<bool> &visited, vector<int> &count) {
     adj_list[u].emplace_back(v);
     if (visited[u]) {
         count[v]++;
@@ -47,9 +47,9 @@ int main() {
     visited[1] = true;
     stack<int> references;
     for (int i = 1; i <= m; i++)
-        if (!removed[i]) add(edges[i].first, edges[i].second, adj_list, visited, count);
+        if (!removed[i]) bfs(edges[i].first, edges[i].second, adj_list, visited, count);
     for (int i = q - 1; i >= 0; i--) {
-        if (queries[i].first == 1) add(edges[queries[i].second].first, edges[queries[i].second].second, adj_list, visited, count);
+        if (queries[i].first == 1) bfs(edges[queries[i].second].first, edges[queries[i].second].second, adj_list, visited, count);
         else references.emplace(count[queries[i].second]);
     }
 
