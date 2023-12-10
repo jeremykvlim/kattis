@@ -1,89 +1,72 @@
-    import java.io.*;
+import java.io.*;
 
-    public class teque {
+public class teque {
+    public static void main(String[] args) throws IOException {
+        var br = new BufferedReader(new InputStreamReader(System.in));
+        var pw = new PrintWriter(System.out);
+        int n = Integer.parseInt(br.readLine());
 
-        static final int SIZE = (int) 1e6;
-        static String[] frontHalf = new String[SIZE], backHalf = new String[SIZE];
-        static int backHead, backTail, backSize = 0, frontHead, frontTail, frontSize = 0;
-        static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        static PrintWriter pw = new PrintWriter(System.out);
-
-        public static void main(String[] args) throws IOException {
-            int middleIndex = SIZE / 2;
-            frontHead = middleIndex - 1;
-            backTail = middleIndex + 1;
-            backHead = middleIndex;
-            frontTail = middleIndex;
-
-            int numberOfLines = Integer.parseInt(br.readLine());
-
-            for (int i = 0; i < numberOfLines; i++) {
-                var command = br.readLine().split(" ");
-
-                switch (command[0]) {
-                    case "push_front": {
-                        addFront(command[1]);
-                        balance();
-                        break;
+        var front = new String[(int) 1e6];
+        var back = new String[(int) 1e6];
+        int m = front.length >> 1, frontSize = 0, backSize = 0, frontHead = m - 1, backTail = m + 1, backHead = m, frontTail = m;
+        while (n-- > 0) {
+            var command = br.readLine().split(" ");
+            switch (command[0]) {
+                case "push_front": {
+                    front[frontHead--] = command[1];
+                    frontSize++;
+                    if (frontSize > backSize + 1) {
+                        back[backHead--] = front[--frontTail];
+                        backSize++;
+                        frontSize--;
+                    } else if (frontSize + 1 < backSize) {
+                        front[frontTail++] = back[++backHead];
+                        backSize--;
+                        frontSize++;
                     }
-                    case "push_back": {
-                        addBack(command[1]);
-                        balance();
-                        break;
+                    break;
+                }
+                case "push_back": {
+                    back[backTail++] = command[1];
+                    backSize++;
+                    if (frontSize > backSize + 1) {
+                        back[backHead--] = front[--frontTail];
+                        backSize++;
+                        frontSize--;
+                    } else if (frontSize + 1 < backSize) {
+                        front[frontTail++] = back[++backHead];
+                        backSize--;
+                        frontSize++;
                     }
-                    case "push_middle": {
-                        addMiddle(command[1]);
-                        balance();
-                        break;
+                    break;
+                }
+                case "push_middle": {
+                    if (frontSize >= backSize) {
+                        back[backHead--] = command[1];
+                        backSize++;
+                    } else {
+                        front[frontTail++] = back[backHead + 1];
+                        back[backHead + 1] = command[1];
+                        frontSize++;
                     }
-                    default: {
-                        pw.println(get(Integer.parseInt(command[1])));
-                        break;
+                    if (frontSize > backSize + 1) {
+                        back[backHead--] = front[--frontTail];
+                        backSize++;
+                        frontSize--;
+                    } else if (frontSize + 1 < backSize) {
+                        front[frontTail++] = back[++backHead];
+                        backSize--;
+                        frontSize++;
                     }
+                    break;
+                }
+                default: {
+                    int i = Integer.parseInt(command[1]);
+                    pw.println(i > frontSize - 1 ? back[backHead + 1 + i - frontSize] : front[frontHead + 1 + i]);
+                    break;
                 }
             }
-            pw.flush();
         }
-
-        static void balance() {
-            if (frontSize > backSize + 1) {
-                backHalf[backHead--] = frontHalf[frontTail - 1];
-                frontHalf[frontTail-- - 1] = null;
-                backSize++;
-                frontSize--;
-            } else if (frontSize + 1 < backSize) {
-                frontHalf[frontTail++] = backHalf[backHead + 1];
-                backHalf[backHead++ + 1] = null;
-                backSize--;
-                frontSize++;
-            }
-        }
-
-        static void addFront(String s) {
-            frontHalf[frontHead--] = s;
-            frontSize++;
-        }
-
-        static void addBack(String s) {
-            backHalf[backTail++] = s;
-            backSize++;
-        }
-
-        static void addMiddle(String s) {
-            if (frontSize >= backSize) {
-                backHalf[backHead--] = s;
-                backSize++;
-            } else {
-                frontHalf[frontTail++] = backHalf[backHead + 1];
-                backHalf[backHead + 1] = s;
-                frontSize++;
-            }
-        }
-
-        static String get(int i) {
-            if (i > frontSize - 1) {
-                i -= frontSize;
-                return backHalf[backHead + 1 + i];
-            } else return frontHalf[frontHead + 1 + i];
-        }
+        pw.flush();
     }
+}
