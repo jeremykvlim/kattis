@@ -3,7 +3,7 @@ using namespace std;
 
 pair<double, double> interval(double position, double speed, double dimension) {
     if (!speed) return abs(position) < dimension ? make_pair(INT_MIN, INT_MAX) : make_pair(0, 0);
-    double t1 = 1.0 * (-dimension - position) / speed, t2 = 1.0 * (dimension - position) / speed;
+    double t1 = (-dimension - position) / speed, t2 = (dimension - position) / speed;
 
     return {min(t1, t2), max(t1, t2)};
 }
@@ -17,12 +17,14 @@ bool crash(double t, vector<double> car1, vector<double> car2) {
 }
 
 vector<double> car() {
-    map<char, pair<int, int>> directions = {{'N', {0, 1}}, {'S', {0, -1}}, {'W', {-1, 0}}, {'E', {1, 0}}};
     char d;
-    double x, y, s, w, l, dx, dy;
+    double x, y, s, w, l;
     cin >> d >> x >> y >> s >> w >> l;
-    pair<int, int> dir = directions[d];
-    dx = dir.first * s, dy = dir.second * s, w /= 2.0, l /= 2.0;
+    w /= 2.0, l /= 2.0;
+    
+    unordered_map<char, pair<int, int>> directions = {{'N', {0, 1}}, {'S', {0, -1}}, {'W', {-1, 0}}, {'E', {1, 0}}};
+    auto dir = directions[d];
+    auto dx = dir.first * s, dy = dir.second * s;
     if (dx) swap(w, l);
     return vector<double>{x, y, dx, dy, w, l};
 }
