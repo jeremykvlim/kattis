@@ -30,7 +30,7 @@ int main() {
         for (auto u : adj_list[v.first])
             if (dist[u.first] > dist[v.first] + u.second) {
                 dist[u.first] = dist[v.first] + u.second;
-                pq.push({u.first, -dist[u.first]});
+                pq.emplace(u.first, -dist[u.first]);
             }
     }
 
