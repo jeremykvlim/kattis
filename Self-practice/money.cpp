@@ -5,16 +5,16 @@ long long contract(int l, int r, int start, int end, vector<pair<int, int>> &pro
     if (l > r) return 0;
     int m = l + (r - l) / 2, best = start;
     auto profit = LLONG_MIN;
-    for (int i = start; i <= end; ++i) {
+    for (int i = start; i <= end; i++) {
         long long duration = consumer[i].second - producer[m].second, price = consumer[i].first - producer[m].first,
-                cost = (!duration || price <= 0) ? -abs(duration) * abs(price) : duration * price;
+                cost = !duration || price <= 0 ? -abs(duration) * abs(price) : duration * price;
         if (cost >= profit) {
             profit = cost;
             best = i;
         }
     }
     if (l < r) profit = max({profit, contract(l, m - 1, start, best, producer, consumer),
-                      contract(m + 1, r, best, end, producer, consumer)});
+                             contract(m + 1, r, best, end, producer, consumer)});
 
     return profit;
 }
@@ -25,6 +25,7 @@ int main() {
 
     int m, n;
     cin >> m >> n;
+
     vector<pair<int, int>> producer(m), consumer(n);
     for (auto &p : producer) cin >> p.first >> p.second;
     for (auto &p : consumer) cin >> p.first >> p.second;
