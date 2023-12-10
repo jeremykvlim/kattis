@@ -35,10 +35,9 @@ int main() {
 
     int n;
     while (cin >> n && n) {
-        n <<= 1;
-        vector<Doll> dolls(n + 1);
-        vector<vector<vector<bool>>> memo(n + 1, vector<vector<bool>>(n + 1, vector<bool>(n + 1, false)));
-        for (int i = 1; i <= n; i++) cin >> dolls[i].h >> dolls[i].d >> dolls[i].w;
+        vector<Doll> dolls(2 * n + 1);
+        vector<vector<vector<bool>>> memo(2 * n + 1, vector<vector<bool>>(2 * n + 1, vector<bool>(2 * n + 1, false)));
+        for (int i = 1; i <= 2 * n; i++) cin >> dolls[i].h >> dolls[i].d >> dolls[i].w;
         sort(dolls.begin(), dolls.end());
 
         arrange(0, 0, 0, dolls, false, memo);
