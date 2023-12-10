@@ -27,6 +27,7 @@ int main() {
 
     int n, m;
     cin >> n >> m;
+    
     vector<vector<char>> board(n, vector<char>(n));
     for (auto &row : board)
         for (char &cell : row) cin >> cell;
