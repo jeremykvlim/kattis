@@ -30,6 +30,7 @@ int main() {
 
     int n, m, q;
     cin >> n >> m;
+    
     vector<vector<int>> adj_list(n + 1);
     vector<pair<int, int>> edges(m + 1);
     vector<bool> visited(n + 1), removed(m + 1);
