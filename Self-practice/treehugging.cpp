@@ -7,14 +7,15 @@ int main() {
 
     int n;
     cin >> n;
+
     vector<set<pair<int, int>>> adj_list(2 * n);
     stack<int> leaves;
 
     for (int e = 0; e < 2 * (n - 1); e++) {
         int u, v;
         cin >> u >> v;
-        adj_list[v].insert({n + u, e});
-        adj_list[n + u].insert({v, e});
+        adj_list[v].emplace(n + u, e);
+        adj_list[n + u].emplace(v, e);
     }
 
     for (int u = 2; u < 2 * n; u++) {
