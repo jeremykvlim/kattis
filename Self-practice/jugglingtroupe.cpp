@@ -2,7 +2,7 @@
 using namespace std;
 
 void perform(vector<int> &jugglers, stack<int> &zeroes, int i) {
-    if (!jugglers[i]) zeroes.push(i);
+    if (!jugglers[i]) zeroes.emplace(i);
 
     while (jugglers[i] > 1) {
         int zero = zeroes.empty() ? -1 : zeroes.top();
@@ -14,12 +14,12 @@ void perform(vector<int> &jugglers, stack<int> &zeroes, int i) {
             jugglers[i] -= dist + 1;
             if (i < jugglers.size() - 1) jugglers[i + 1] += dist;
             if (zero >= 0) jugglers[zero] = 1;
-            if (!jugglers[i]) zeroes.push(i);
+            if (!jugglers[i]) zeroes.emplace(i);
         } else {
             int move = jugglers[i] - 1;
             jugglers[i] -= move;
             if (i < jugglers.size() - 1) jugglers[i + 1] += move;
-            zeroes.push(zero + move);
+            zeroes.emplace(zero + move);
             if (zero >= 0) jugglers[zero] = 1;
             jugglers[zero + move] = 0;
         }
