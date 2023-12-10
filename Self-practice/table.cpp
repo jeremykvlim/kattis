@@ -7,8 +7,8 @@ int main() {
 
     int X, Y, n, d;
     cin >> X >> Y >> n >> d;
+    
     vector<vector<int>> table(X, vector<int>(Y, 1)), dp(X + 1, vector<int>(Y + 1, 0));
-
     while (n--) {
         int x, xp, y, yp;
         cin >> x >> xp >> y >> yp;
