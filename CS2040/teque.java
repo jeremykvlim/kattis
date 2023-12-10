@@ -1,43 +1,29 @@
 import java.io.*;
 
 public class teque {
+    static final int SIZE = (int) 1e6, MID = SIZE >> 1;
+    static String[] front = new String[SIZE], back = new String[SIZE];
+    static int backHead = MID, backTail = MID + 1, backSize = 0, frontHead = MID - 1, frontTail = MID, frontSize = 0;
+
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(System.out);
-        int n = Integer.parseInt(br.readLine());
 
-        var front = new String[(int) 1e6];
-        var back = new String[(int) 1e6];
-        int m = front.length >> 1, frontSize = 0, backSize = 0, frontHead = m - 1, backTail = m + 1, backHead = m, frontTail = m;
+        int n = Integer.parseInt(br.readLine());
         while (n-- > 0) {
             var command = br.readLine().split(" ");
+
             switch (command[0]) {
                 case "push_front": {
                     front[frontHead--] = command[1];
                     frontSize++;
-                    if (frontSize > backSize + 1) {
-                        back[backHead--] = front[--frontTail];
-                        backSize++;
-                        frontSize--;
-                    } else if (frontSize + 1 < backSize) {
-                        front[frontTail++] = back[++backHead];
-                        backSize--;
-                        frontSize++;
-                    }
+                    balance();
                     break;
                 }
                 case "push_back": {
                     back[backTail++] = command[1];
                     backSize++;
-                    if (frontSize > backSize + 1) {
-                        back[backHead--] = front[--frontTail];
-                        backSize++;
-                        frontSize--;
-                    } else if (frontSize + 1 < backSize) {
-                        front[frontTail++] = back[++backHead];
-                        backSize--;
-                        frontSize++;
-                    }
+                    balance();
                     break;
                 }
                 case "push_middle": {
@@ -49,24 +35,28 @@ public class teque {
                         back[backHead + 1] = command[1];
                         frontSize++;
                     }
-                    if (frontSize > backSize + 1) {
-                        back[backHead--] = front[--frontTail];
-                        backSize++;
-                        frontSize--;
-                    } else if (frontSize + 1 < backSize) {
-                        front[frontTail++] = back[++backHead];
-                        backSize--;
-                        frontSize++;
-                    }
+                    balance();
                     break;
                 }
                 default: {
                     int i = Integer.parseInt(command[1]);
-                    pw.println(i > frontSize - 1 ? back[backHead + 1 + i - frontSize] : front[frontHead + 1 + i]);
+                    pw.println(i <= frontSize - 1 ? front[frontHead + 1 + i] : back[backHead + 1 + i - frontSize]);
                     break;
                 }
             }
         }
         pw.flush();
+    }
+
+    static void balance() {
+        if (frontSize > backSize + 1) {
+            back[backHead--] = front[--frontTail];
+            backSize++;
+            frontSize--;
+        } else if (frontSize + 1 < backSize) {
+            front[frontTail++] = back[++backHead];
+            backSize--;
+            frontSize++;
+        }
     }
 }
