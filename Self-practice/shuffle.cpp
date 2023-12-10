@@ -11,6 +11,7 @@ int main() {
     while (t--) {
         int s, n;
         cin >> s >> n;
+        
         vector<int> history(n + 2 * s, -1), count(s, 0);
         vector<bool> reshuffle(n + s + 1, false);
 
