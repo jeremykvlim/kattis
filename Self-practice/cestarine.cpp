@@ -14,7 +14,7 @@ int main() {
     sort(entrance.begin(), entrance.end());
     sort(exit.begin(), exit.end());
 
-    long long largest = (long long) max(entrance.back(), exit.back()) * n;
+    auto largest = (long long) max(entrance.back(), exit.back()) * n;
     vector<long long> dp(n + 1, largest);
     dp[n] = 0;
     for (int i = n - 1; i >= 0; i--)
