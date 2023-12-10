@@ -38,7 +38,7 @@ int main() {
             prime_factors.insert(factor);
         }
 
-    if (quotient > 1) {
+    if (numerator > 1) {
         cout << "impossible";
         exit(0);
     }
