@@ -10,7 +10,7 @@ int main() {
     cin >> n >> k;
 
     unordered_set<string> leave;
-    priority_queue<pair<long long, string>, vector<pair<long long, string>>, greater<pair<long long, string>>> pq;
+    priority_queue<pair<long long, string>, vector<pair<long long, string>>, greater<>> pq;
     for (int i = 0; i < n; i++) {
         int q, t;
         cin >> q >> t;
@@ -20,8 +20,8 @@ int main() {
                 string m;
                 int s;
                 cin >> m >> s;
-                long long v = -s + t * k;
-                pq.push({v, m});
+                
+                pq.emplace(-s + t * k, m);
                 break;
             }
 
@@ -42,7 +42,7 @@ int main() {
             case 3: {
                 string m;
                 cin >> m;
-                leave.insert(m);
+                leave.emplace(m);
                 break;
             }
         }
