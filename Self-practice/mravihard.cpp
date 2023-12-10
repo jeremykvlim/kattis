@@ -27,9 +27,9 @@ int main() {
     for (int i = 0; i < n - 1; ++i) {
         int a, b, x, t;
         cin >> a >> b >> x >> t;
-        adj_list[a - 1].push_back(b - 1);
-        flow[a - 1].push_back(x / 100.0);
-        superpower[a - 1].push_back(t);
+        adj_list[a - 1].emplace_back(b - 1);
+        flow[a - 1].emplace_back(x / 100.0);
+        superpower[a - 1].emplace_back(t);
     }
 
     vector<long double> liquid(n);
