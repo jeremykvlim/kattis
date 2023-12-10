@@ -2,13 +2,13 @@
 using namespace std;
 
 void add(int u, int v, vector<vector<int>> &adj_list, vector<bool> &visited, vector<int> &count) {
-    adj_list[u].push_back(v);
+    adj_list[u].emplace_back(v);
     if (visited[u]) {
         count[v]++;
         if (!visited[v]) {
             visited[v] = true;
             queue<int> q;
-            q.push(v);
+            q.emplace(v);
             while (!q.empty()) {
                 v = q.front();
                 q.pop();
@@ -16,7 +16,7 @@ void add(int u, int v, vector<vector<int>> &adj_list, vector<bool> &visited, vec
                     count[u]++;
                     if (!visited[u]) {
                         visited[u] = true;
-                        q.push(u);
+                        q.emplace(u);
                     }
                 }
             }
