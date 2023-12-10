@@ -13,7 +13,7 @@ int main() {
     cin.tie(nullptr);
 
     int n, m, a, k;
-    while (cin >> n >> m >> a >> k ) {
+    while (cin >> n >> m >> a >> k) {
         vector<vector<pair<int, int>>> adj_list(n);
         vector<int> dist(n, k);
         for (int i = 0; i < m; i++) {
