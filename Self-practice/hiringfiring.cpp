@@ -10,7 +10,7 @@ int main() {
 
     vector<vector<int>> fired(n);
     stack<pair<int, int>> employees;
-    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
     for (int i = 0; i < n; i++) {
         int f, h;
         cin >> f >> h;
@@ -20,6 +20,7 @@ int main() {
                 employees.pop();
                 continue;
             }
+            
             int layoffs = min(f, employees.top().first);
             employees.top().first -= layoffs;
             f -= layoffs;
@@ -38,13 +39,12 @@ int main() {
         if (hr[day]) continue;
         hr[day] = 1;
         while (awkward[day] & (1 << hr[day])) hr[day]++;
-        for (int d : fired[day]) {
+        for (int d : fired[day]) 
             if (!hr[d] && !(awkward[d] & (1 << hr[day]))) {
                 awkward[d] |= 1 << hr[day];
                 count[d]++;
                 pq.emplace(-count[d], d);
             }
-        }
     }
 
     cout << *max_element(hr.begin(), hr.end()) << "\n";
