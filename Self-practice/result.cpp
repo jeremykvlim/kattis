@@ -10,6 +10,7 @@ int main() {
         vector<long long> line;
         vector<char> ops;
         stringstream ss(s);
+        
         long long x;
         char op;
         while (ss >> x) {
