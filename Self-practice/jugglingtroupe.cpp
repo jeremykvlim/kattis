@@ -33,6 +33,7 @@ int main() {
 
     string s;
     cin >> s;
+    
     vector<int> jugglers(s.size());
     stack<int> zeroes;
     for (int i = 0; i < s.size(); i++) jugglers[i] = s[i] - '0';
