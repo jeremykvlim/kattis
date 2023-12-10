@@ -37,7 +37,7 @@ int main() {
             }
         
         if (!possible) {
-            cout << "impossible" << endl;
+            cout << "impossible\n";
             exit(0);
         }
     }
