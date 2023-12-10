@@ -12,6 +12,7 @@ int main() {
     while (n--) {
         int x, xp, y, yp;
         cin >> x >> xp >> y >> yp;
+        
         for (int i = x; i < xp; i++)
             for (int j = y; j < yp; j++) table[i][j] = 0;
     }
