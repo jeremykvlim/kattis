@@ -16,13 +16,13 @@ int main() {
     while (cin >> n >> m >> a >> k ) {
         vector<vector<pair<int, int>>> adj_list(n);
         vector<int> dist(n, k);
-        for (int i = 0; i < m; ++i) {
+        for (int i = 0; i < m; i++) {
             int t1, t2, d;
             cin >> t1 >> t2 >> d;
-            adj_list[t1 - 1].push_back({t2 - 1, d});
-            adj_list[t2 - 1].push_back({t1 - 1, d});
+            adj_list[t1 - 1].emplace_back(t2 - 1, d);
+            adj_list[t2 - 1].emplace_back(t1 - 1, d);
         }
-        
+
         for (int i = 0; i < a; ++i) {
             int b;
             cin >> b;
