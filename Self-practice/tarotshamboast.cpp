@@ -28,7 +28,7 @@ int main() {
         }
 
         for (int j = pref.size() - 1; j > 0; j = pref[j] - 1)
-            if (2 * sequences[i].s.size() - pref[j] <= n) sequences[i].common.push_back(pref[j]);
+            if (2 * sequences[i].s.size() - pref[j] <= n) sequences[i].common.emplace_back(pref[j]);
     }
 
     sort(sequences.begin(), sequences.end());
