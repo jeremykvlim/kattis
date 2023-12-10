@@ -1,7 +1,7 @@
 import java.io.*;
 
 public class teque {
-    static final int SIZE = (int) 1e6, MID = SIZE >> 1;
+    static final int SIZE = (int) 1e6, MID = (int) 5e5;
     static String[] front = new String[SIZE], back = new String[SIZE];
     static int backHead = MID, backTail = MID + 1, backSize = 0, frontHead = MID - 1, frontTail = MID, frontSize = 0;
 
