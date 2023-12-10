@@ -48,8 +48,8 @@ int main() {
         if (c == '-') types[i - 1].plus = types[j - 1].plus = false;
         else if (c == '+') types[i - 1].minus = types[j - 1].minus = false;
         else if (c == '=') {
-            types[i - 1].neutral.push_back(&types[j - 1]);
-            types[j - 1].neutral.push_back(&types[i - 1]);
+            types[i - 1].neutral.emplace_back(&types[j - 1]);
+            types[j - 1].neutral.emplace_back(&types[i - 1]);
         }
     }
 
