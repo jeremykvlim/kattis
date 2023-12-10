@@ -15,7 +15,8 @@ int main() {
     while (t--) {
         int k;
         cin >> k;
-        vector<char> steps(k * 2);
+        
+        vector<char> steps(2 * k);
         for (auto &s : steps) cin >> s;
         int s = 0;
         vector<int> points{0, 0}, remaining{k, k}, prev{-1, -1};
