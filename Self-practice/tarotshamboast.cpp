@@ -21,6 +21,7 @@ int main() {
     for (int i = 0; i < s; i++) {
         cin >> sequences[i].s;
         vector<int> pref(sequences[i].s.size());
+        
         for (int j = 1, k = 0; j < sequences[i].s.size(); j++) {
             while (k && sequences[i].s[j] != sequences[i].s[k]) k = pref[k - 1];
             if (sequences[i].s[j] == sequences[i].s[k]) k++;
