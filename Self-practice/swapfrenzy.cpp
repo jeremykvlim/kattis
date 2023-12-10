@@ -38,6 +38,7 @@ int main() {
     long long n;
     int k;
     cin >> n >> k;
+    
     int x = (int) log10((double) n) + 1;
     vector<int> digits(x);
     vector<vector<unordered_set<long long>>> visited(x, vector<unordered_set<long long>>(k));
