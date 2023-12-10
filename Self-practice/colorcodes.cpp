@@ -7,6 +7,7 @@ int main() {
 
     int n, p;
     cin >> n >> p;
+    
     vector<bool> palette(n + 1, false);
     while (p--) {
         int s;
