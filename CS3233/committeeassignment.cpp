@@ -1,10 +1,10 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int dfs(int person, int committees, int &best, vector<int> &hostile, vector<int> &members) {
-    if (best <= committees) return best;
+int dfs(int person, int committees, int &curr, vector<int> &hostile, vector<int> &members) {
+    if (curr <= committees) return curr;
     if (person == hostile.size()) {
-        best = min(best, committees);
+        curr = min(curr, committees);
         return committees;
     }
 
@@ -12,7 +12,7 @@ int dfs(int person, int committees, int &best, vector<int> &hostile, vector<int>
     for (int i = 0; i <= committees; i++)
         if (!(hostile[person] & members[i])) {
             members[i] |= 1 << person;
-            least = min(least, dfs(person + 1, committees + (i == committees), best, hostile, members));
+            least = min(least, dfs(person + 1, committees + (i == committees), curr, hostile, members));
             members[i] ^= 1 << person;
         }
 
@@ -35,7 +35,7 @@ int main() {
             hostile[p2] |= 1 << p1;
         }
 
-        int best = n;
-        cout << dfs(0, 0, best, hostile, members) << "\n";
+        int curr = n;
+        cout << dfs(0, 0, curr, hostile, members) << "\n";
     }
 }
