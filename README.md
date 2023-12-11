@@ -11,7 +11,7 @@ Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizat
 
 * Data Structures & Algorithms: CS2040 (Java), CS2040C (C++), CS2040S (Java), IT5003 (Python)
 
-* Competitive Programming: CS3233 (C++/Python)
+* Competitive Programming: CS3233 (any language of choice)
 
 * Optimization Algorithms: CS4234 (C++/Java/Python)
 
