@@ -13,7 +13,7 @@ public class cheatingluck {
     
     static long play(int d, int n, int r, long total, long[][][] bets, long[][][] coins) {
         if (d >= total) return total;
-        if (r == 0 || n == 0 || d == 0) return Math.min(total, d * (1L << n));
+        if (d == 0 || n == 0 || r == 0) return Math.min(total, d * (1L << n));
         if (coins[d][n][r] != 0) return coins[d][n][r];
 
         coins[d][n][r] = d;
