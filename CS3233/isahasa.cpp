@@ -19,16 +19,16 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    unordered_map<string, int> indices;
+    unordered_map<string, int> compress;
     vector<pair<int, int>> is, has;
     for (int i = 0; i < n; i++) {
         string c1, r, c2;
         cin >> c1 >> r >> c2;
-        int a = indices.emplace(c1, indices.size()).first->second, b = indices.emplace(c2, indices.size()).first->second;
+        int a = compress.emplace(c1, compress.size()).first->second, b = compress.emplace(c2, compress.size()).first->second;
         (r == "is-a" ? is : has).emplace_back(a, b);
     }
 
-    int size = indices.size();
+    int size = compress.size();
     vector<vector<int>> is_adj_list(size), both_adj_list(size);
     vector<unordered_set<int>> direct(size), transitive(size), superclasses(size), subclasses(size);
 
@@ -52,6 +52,6 @@ int main() {
     for (int i = 1; i <= m; i++) {
         string c1, r, c2;
         cin >> c1 >> r >> c2;
-        cout << "Query " << i << ": " << ((r == "has-a" ? transitive : superclasses)[indices[c1]].count(indices[c2]) ? "true" : "false") << "\n";
+        cout << "Query " << i << ": " << ((r == "has-a" ? transitive : superclasses)[compress[c1]].count(compress[c2]) ? "true" : "false") << "\n";
     }
 }
