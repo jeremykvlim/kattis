@@ -39,5 +39,6 @@ int main() {
                 for (int k = (1 << n) - 1; (k &= ~j) >= 0; k--) temp[j | k] = min(max(dp[k], time[j]), temp[j | k]);
         dp.swap(temp);
     }
+    
     cout << dp[(1 << n) - 1];
 }
