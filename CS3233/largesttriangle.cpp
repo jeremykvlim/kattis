@@ -1,8 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-double cross(pair<int, int> x, pair<int, int> y, pair<int, int> z) {
-    return static_cast<double>(z.first - x.first) * (y.second - x.second) - static_cast<double>(z.second - x.second) * (y.first - x.first);
+double cross(pair<int, int> i, pair<int, int> j, pair<int, int> k) {
+    return static_cast<double>(k.first - i.first) * (j.second - i.second) - static_cast<double>(k.second - i.second) * (j.first - i.first);
 }
 
 int monotone(int n, vector<pair<int, int>> &points, vector<pair<int, int>> &convex) {
