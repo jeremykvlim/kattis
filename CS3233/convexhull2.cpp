@@ -23,10 +23,12 @@ int main() {
 
     vector<pair<long long, long long>> top, bot;
     for (auto &p : points) {
-        while (top.size() > 1 && cross({top[top.size() - 1].first - top[top.size() - 2].first, top[top.size() - 1].second - top[top.size() - 2].second}, {p.first - top.back().first, p.second - top.back().second}) > 0) top.pop_back();
+        while (top.size() > 1 && cross({top[top.size() - 1].first - top[top.size() - 2].first, top[top.size() - 1].second - top[top.size() - 2].second}, 
+                                        {p.first - top.back().first, p.second - top.back().second}) > 0) top.pop_back();
         top.emplace_back(p);
 
-        while (bot.size() > 1 && cross({bot[bot.size() - 1].first - bot[bot.size() - 2].first, bot[bot.size() - 1].second - bot[bot.size() - 2].second}, {p.first - bot.back().first, p.second - bot.back().second}) < 0) bot.pop_back();
+        while (bot.size() > 1 && cross({bot[bot.size() - 1].first - bot[bot.size() - 2].first, bot[bot.size() - 1].second - bot[bot.size() - 2].second}, 
+                                        {p.first - bot.back().first, p.second - bot.back().second}) < 0) bot.pop_back();
         bot.emplace_back(p);
     }
 
