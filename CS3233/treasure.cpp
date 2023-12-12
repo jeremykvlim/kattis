@@ -47,5 +47,6 @@ int main() {
             pq.push(make_tuple(dist[p.first][p.second][k], p, k));
         }
     }
+                   
     cout << -1;
 }
