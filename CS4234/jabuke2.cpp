@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void update(vector<vector<char>> &matrix, vector<vector<int>> &above, vector<vector<int>> &below, int c, int R) {
+void update(vector<string> &matrix, vector<vector<int>> &above, vector<vector<int>> &below, int c, int R) {
     int last = -1;
     for (int r = 0; r < R; r++) {
         if (matrix[r][c] == 'x') last = r;
@@ -30,10 +30,9 @@ int main() {
     int R, S, G;
     cin >> R >> S;
 
-    vector<vector<char>> matrix(R, vector<char>(S));
+    vector<string> matrix(R);
     vector<vector<int>> above(R, vector<int>(S, -1)), below(R, vector<int>(S, -1));
-    for (int i = 0; i < R; i++)
-        for (char &field : matrix[i]) cin >> field;
+    for (int i = 0; i < R; i++) cin >> matrix[i];
 
     for (int s = 0; s < S; s++) update(matrix, above, below, s, R);
 
@@ -41,7 +40,7 @@ int main() {
     while (G--) {
         int r, s;
         cin >> r >> s;
-        
+
         cout << dist(above, below, --r, --s, S) << "\n";
         matrix[r][s] = 'x';
         update(matrix, above, below, s, R);
