@@ -41,6 +41,7 @@ int main() {
     while (G--) {
         int r, s;
         cin >> r >> s;
+        
         cout << dist(above, below, --r, --s, S) << "\n";
         matrix[r][s] = 'x';
         update(matrix, above, below, s, R);
