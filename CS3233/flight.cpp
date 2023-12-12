@@ -53,5 +53,6 @@ int main() {
                 }
             }
         }
+    
     cout << least << "\n" << p1.first << " " << p1.second << "\n" << p2.first << " " << p2.second << "\n";
 }
