@@ -18,15 +18,16 @@ int main() {
 
     vector<int> dr{0, 0, 1, -1}, dc{1, -1, 0, 0};
     unordered_map<char, int> cost = {{'.', 1}, {'F', 2}, {'M', 3}, {'G', 1}};
-                   
+
     priority_queue<tuple<int, pair<int, int>, int>, vector<tuple<int, pair<int, int>, int>>, greater<>> pq;
     vector<vector<vector<int>>> dist(n, vector<vector<int>>(m, vector<int>(k + 1, INT_MAX)));
     dist[s.first][s.second][k] = 1;
-    pq.push(make_tuple(1, s, k));
+    pq.emplace(1, s, k);
 
     while (!pq.empty()) {
         auto [d, p, stam] = pq.top();
         pq.pop();
+        
         if (d > dist[p.first][p.second][stam]) continue;
         if (grid[p.first][p.second] == 'G') {
             cout << d;
@@ -39,15 +40,15 @@ int main() {
 
             if (dist[r][c][stam - cost[grid[r][c]]] > dist[p.first][p.second][stam]) {
                 dist[r][c][stam - cost[grid[r][c]]] = dist[p.first][p.second][stam];
-                pq.push(make_tuple(dist[r][c][stam - cost[grid[r][c]]], make_pair(r, c), stam - cost[grid[r][c]]));
+                pq.emplace(dist[r][c][stam - cost[grid[r][c]]], make_pair(r, c), stam - cost[grid[r][c]]);
             }
         }
 
         if (dist[p.first][p.second][k] > dist[p.first][p.second][stam] + 1) {
             dist[p.first][p.second][k] = dist[p.first][p.second][stam] + 1;
-            pq.push(make_tuple(dist[p.first][p.second][k], p, k));
+            pq.emplace(dist[p.first][p.second][k], p, k);
         }
     }
-                   
+
     cout << -1;
 }
