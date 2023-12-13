@@ -9,7 +9,6 @@ int main() {
     cin >> V >> E >> C >> K >> M;
 
     vector<vector<pair<int, int>>> adj_list(V + 1);
-    vector<long long> dist(V + 1, LLONG_MAX);
 
     for (int i = 0; i < E; i++) {
         int u, v, w;
@@ -18,6 +17,7 @@ int main() {
         adj_list[v].emplace_back(u, w);
     }
 
+    vector<long long> dist(V + 1, LLONG_MAX);
     priority_queue<pair<int, long long>> pq;
     dist[1] = 0;
     pq.emplace(1, 0);
