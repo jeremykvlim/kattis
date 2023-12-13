@@ -39,6 +39,7 @@ int main() {
     for (int i = 0; i < C; i++) {
         int f;
         cin >> f;
+        
         if (dist[f] != LLONG_MAX) v.emplace_back(dist[f]);
     }
 
