@@ -31,12 +31,12 @@ int main() {
     cin.ignore();
 
     vector<string> page(h);
-    for (auto &l: page) getline(cin, l);
+    for (auto &l : page) getline(cin, l);
 
     vector<vector<bool>> visited(h, vector<bool>(w, false));
     for (int i = 0; i < h; i++)
         for (int j = 0; j < w; j++)
             if (!visited[i][j] && page[i][j] == '+') remove(i, j, page, visited);
 
-    for (auto &l: page) cout << l << "\n";
+    for (auto &l : page) cout << l << "\n";
 }
