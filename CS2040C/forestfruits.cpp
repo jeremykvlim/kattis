@@ -20,7 +20,8 @@ int main() {
 
     priority_queue<pair<int, long long>> pq;
     dist[1] = 0;
-    pq.push({1, 0});
+    pq.emplace(1, 0);
+    
     while (!pq.empty()) {
         auto v = pq.top();
         pq.pop();
