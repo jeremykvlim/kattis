@@ -1,9 +1,9 @@
 # Kattis-Solutions
 
 My solutions for Kattis problems. Solutions are named `"problemname".<languagefilename>`. To find the problem statement, please go to:
-`https://open.kattis.com/problems/"problemname"` or `https://nus.kattis.com/problems/"problemname"`
+`https://nus.kattis.com/problems/"problemname"` or `https://open.kattis.com/problems/"problemname"`
 
-Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizations and a separate self-practice category:
+Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizations and a separate self-practice category for non-NUS course problems:
 
 * Data Structures & Algorithms: CS2040 (Java), CS2040C (C++), CS2040S (Java), IT5003 (Python)
 
