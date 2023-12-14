@@ -10,7 +10,7 @@ public class almostunionfind {
             int n = Integer.parseInt(input[0]), m = Integer.parseInt(input[1]);
             
             int[] sets = new int[2*n + 1], size = new int[2*n + 1];
-            long[] sum = new long[2*n + 1];
+            var sum = new long[2*n + 1];
             for (int i = 1, j = n + 1; i <= n; i++, j++) {
                 sets[i] = sets[j] = j;
                 sum[j] = i;
