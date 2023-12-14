@@ -8,6 +8,7 @@ int main() {
     int n;
     while (cin >> n) {
         cin.ignore();
+        
         vector<string> patterns(n);
         for (auto &l : patterns) getline(cin, l);
         string t;
