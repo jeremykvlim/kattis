@@ -17,7 +17,7 @@ public class ballotboxes {
             }
 
             while (l < r) {
-                m = (r - l) / 2 + l;
+                m = l + (r - l) / 2;
                 int boxes = 0;
                 for (int i = 0; i < n; i++) boxes += (cities[i] + m) / m;
                 if (boxes > b) l = m + 1;
