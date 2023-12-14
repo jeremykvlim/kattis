@@ -18,7 +18,6 @@ bool contains(double m, vector<int> &gdp, vector<int> &population, vector<double
     return dp[0] >= 0;
 }
 
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
