@@ -11,6 +11,7 @@ int main() {
 
     int n;
     cin >> n;
+    
     while (n--) {
         string line;
         cin >> line;
