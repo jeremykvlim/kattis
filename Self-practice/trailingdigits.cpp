@@ -40,26 +40,16 @@ int main() {
         }
 
         long long x = congruence(base, (b - B) % b, b);
-        if (!x && !d) x = b / __gcd(base, b);
-
-        bool valid = x != -1;
-        if (!valid) {
+        if (x == -1) {
             r = m;
             continue;
         }
-
+        
+        if (!x && !d) x = b / __gcd(base, b);
         string s = to_string(x);
         if (!x) s.clear();
         s += string(m, '0' + d);
-        if (s.size() == a.size()) {
-            for (int i = 0; i < s.size(); i++)
-                if (s[i] != a[i]) {
-                    valid = s[i] < a[i];
-                    break;
-                }
-        } else valid = s.size() < a.size();
-
-        if (!valid) r = m;
+        if (!(s.size() == a.size() ? s <= a : s.size() < a.size())) r = m;
         else l = m;
     }
 
