@@ -7,6 +7,7 @@ int main() {
 
     int n, m;
     cin >> n;
+    
     vector<int> costs(n);
     for (auto &c : costs) cin >> c;
 
