@@ -16,10 +16,11 @@ int main() {
     while (t--) {
         long long R, S, Q;
         cin >> R >> S >> Q;
+        
         auto [A, B] = bezout(R, -S);
-        long long l = INT_MIN, r = INT_MAX;
+        long long l = INT_MIN, r = INT_MAX, m;
         while (l + 1 < r) {
-            long long m = l + (r - l) / 2;
+            m = l + (r - l) / 2;
             if (Q / __gcd(R, -S) * A + m * S / __gcd(R, -S) > 0 && Q / __gcd(R, -S) * -B - m * R / __gcd(R, -S) > 0) l = m;
             else r = m;
         }
