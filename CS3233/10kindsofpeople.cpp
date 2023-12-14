@@ -38,9 +38,11 @@ int main() {
     
     int n;
     cin >> n;
+    
     while (n--) {
         int r1, c1, r2, c2;
         cin >> r1 >> c1 >> r2 >> c2;
+        
         if (find((r1 - 1) * c + (c1 - 1), sets) == find((r2 - 1) * c + (c2 - 1), sets)) {
             cout << (world[r1 - 1][c1 - 1] == '0' ? "binary\n" : "decimal\n");
         } else cout << "neither\n";
