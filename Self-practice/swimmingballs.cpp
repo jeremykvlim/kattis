@@ -7,7 +7,7 @@ double height(double radius, double weight) {
     if (1.0 <= weight) return 2.0 * radius;
     double l = 0, r = 2.0 * radius, m;
     while (l + EPSILON < r) {
-        m = l + (r - l) / 2.0;
+        m = l + (r - l) / 2;
         if (M_PI * m * m * (radius - m / 3.0) >= weight * 4 * M_PI * pow(radius, 3) / 3.0) r = m;
         else l = m;
     }
@@ -39,7 +39,7 @@ int main() {
         for (auto &b : balls) cin >> b.first >> b.second;
         double l = 0, r = D, m;
         while (l + EPSILON < r) {
-            m = l + (r - l) / 2.0;
+            m = l + (r - l) / 2;
             if (W * L * m - volume(m, balls) > V) r = m;
             else l = m;
         }
