@@ -14,6 +14,14 @@ Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizat
 
 * Self-practice: C++/Java/Python/Rust
 
+---
+
 Kattis compiles using `g++ 11` for [C++](https://open.kattis.com/languages/cpp), `Java 11` for [Java](https://open.kattis.com/languages/java), `Python 3.8` for [Python](https://open.kattis.com/languages/python3) and `Rust 1.66` for [Rust](https://open.kattis.com/languages/rust).
 
 Problems have to be solved using base programming language libraries or self-coded structures. External libraries, such as `Boost` for C++, `Apache Commons` for Java, `NumPy` for Python 3 and others are not available. However, you are allowed to attach multiple files in one submission, although I never bothered.
+
+---
+
+My code isn't particularly optimized. I do try to come up with efficient solutions to the problems that don't just scrape by the time or memory limit, but I've been prioritising coding style as I want my code to be pleasant to read (at least by myself). As such, I will try to find a compromise between both efficiency and preference. I hope you can tolerate some habits of mine (i.e. using `std::vector` instead of arrays, using `unordered_map` or `gp_hash_table` instead of `map` for non-ordered purposes, using postfix `i++` instead of `++i` for iterator incrementing, avoiding global variables at all costs).
+
+Occasionally when I learn new techniques, I do revisit some old solutions of mine to see if I can improve them, so I do update my old code (provided I do remember that problem). If you have any questions about a particular solution, please drop me a message at j_lim@u.nus.edu.
