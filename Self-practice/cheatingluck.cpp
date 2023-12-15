@@ -29,7 +29,7 @@ int main() {
     int d, g, n, k;
     cin >> d >> g >> n >> k;
 
-    vector<vector<vector<int>>> coins(d + g, vector<vector<int>>(n + 1, vector<int>(n + 1, 0)));
-    vector<vector<vector<int>>> bets(d + g, vector<vector<int>>(n + 1, vector<int>(n + 1, 0)));
+    vector<vector<vector<int>>> coins(d + g, vector<vector<int>>(n + 1, vector<int>(n + 1, 0))), bets(d + g, vector<vector<int>>(n + 1, vector<int>(n + 1, 0)));
+    
     cout << play(d, n, n - k, d + g, bets, coins);
 }
