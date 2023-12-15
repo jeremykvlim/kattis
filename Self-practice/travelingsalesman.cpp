@@ -2,7 +2,7 @@
 using namespace std;
 
 struct Hash {
-    uint64_t encode(const tuple<int, int, int>& t) const {
+    uint64_t encode(const tuple<int, int, int> &t) const {
         uint64_t encoded = 0;
         encoded = (encoded << 8) | get<0>(t);
         encoded = (encoded << 8) | get<1>(t);
@@ -18,7 +18,7 @@ struct Hash {
         return hash;
     }
 
-    size_t operator()(const pair<tuple<int, int, int>, tuple<int, int, int>>& p) const {
+    size_t operator()(const pair<tuple<int, int, int>, tuple<int, int, int>> &p) const {
         static const uint64_t SEED = chrono::steady_clock::now().time_since_epoch().count();
         return h(encode(p.first) + encode(p.second) + SEED);
     }
