@@ -7,6 +7,7 @@ int main() {
 
     int n, t;
     cin >> n >> t;
+    
     vector<int> S(n + 1, 1), D(n + 1, 1), order(2 * t + 1);
     for (int i = 1; i <= n; i++) cin >> S[i] >> D[i];
 
