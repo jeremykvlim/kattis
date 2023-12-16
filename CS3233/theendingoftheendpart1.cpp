@@ -5,6 +5,7 @@ void read(vector<pair<int, long long>> &d, int size) {
     for (int i = 0; i < size; i++) {
         long long s;
         cin >> s;
+        
         while (d.size() > 1 &&
                (d.back().first - d[d.size() - 2].first) * (d.back().second - s) > (d.back().first - i) * (d.back().second - d[d.size() - 2].second)) d.pop_back();
         d.emplace_back(i, s);
