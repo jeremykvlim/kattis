@@ -9,7 +9,6 @@ int main() {
     cin >> n;
 
     vector<int> weight(n), lis(n, 1), lds(n, 1);
-
     for (auto &w : weight) cin >> w;
 
     int cars = 0;
@@ -20,5 +19,6 @@ int main() {
         }
         cars = max(cars, lis[i] + lds[i] - 1);
     }
+    
     cout << cars;
 }
