@@ -11,6 +11,7 @@ int main() {
     
     int r, c;
     cin >> r >> c;
+    
     vector<string> world(r);
     for (auto &row : world) cin >> row;
 
