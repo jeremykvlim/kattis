@@ -2,6 +2,7 @@
 using namespace std;
 
 int swaps(vector<int> &ally, int t) {
+    if (ally.empty()) return INT_MAX;
     auto pos = upper_bound(ally.begin(), ally.end(), t) - ally.begin();
     return min((pos < ally.size() ? ally[pos] - t : INT_MAX), (pos ? t - ally[pos - 1] : INT_MAX));
 }
