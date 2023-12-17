@@ -21,14 +21,14 @@ int main() {
     for (int i = 0; i < r; i++) 
         for (int j = 0; j < c; j++) {
             if (world[i][j] != '0' && world[i][j] != '1') continue;
-            if (i > 0 && world[i][j] == world[i - 1][j]) {
+            if (i && world[i][j] == world[i - 1][j]) {
                 int curr = find(i * c + j, sets), prev = find((i - 1) * c + j, sets);
                 if (curr != prev) {
                     sets[rank[curr] < rank[prev] ? curr : prev] = rank[curr] < rank[prev] ? prev : curr;
                     rank[curr] = rank[curr] == rank[prev] ? rank[curr]++ : rank[curr];
                 }
             }
-            if (j > 0 && world[i][j] == world[i][j - 1]) {
+            if (j && world[i][j] == world[i][j - 1]) {
                 int i_set = find(i * c + j, sets), j_set = find(i * c + j - 1, sets);
                 if (i_set != j_set) {
                     sets[rank[i_set] < rank[j_set] ? i_set : j_set] = rank[i_set] < rank[j_set] ? j_set : i_set;
