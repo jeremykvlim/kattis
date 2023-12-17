@@ -5,6 +5,7 @@ public class almostunionfind {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(System.out);
+        
         for (var line = br.readLine(); line != null; line = br.readLine()) {
             var input = line.split(" ");
             int n = Integer.parseInt(input[0]), m = Integer.parseInt(input[1]);
