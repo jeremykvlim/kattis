@@ -14,11 +14,10 @@ int main() {
     unordered_set<int> g;
     for (int i = 0; i < l; i++) {
         cin >> G[i];
-        if (i)
-            if (G[i - 1] >= G[i]) {
-                cout << 0;
-                exit(0);
-            }
+        if (i && G[i - 1] >= G[i]) {
+            cout << 0;
+            exit(0);
+        }
         g.insert(G[i]);
     }
 
