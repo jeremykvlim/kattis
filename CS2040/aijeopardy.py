@@ -1,7 +1,7 @@
 x = int(input())
 (n, k) = (x, 1) if x > 1 else (0, 0)
 
-for i in range(2, min(x + 1, 169)):
+for i in range(2, min(x + 1, 200)):
     l, r = i, x
     while l + 1 < r:
         m = l + (r - l) // 2
