@@ -7,7 +7,8 @@ vector<int> sieve(int n) {
     for (int p = 3; p <= n; p += 2)
         if (factors[p] == p) {
             primes.emplace_back(p);
-            for (auto i = (long long) p * p; i <= n; i += 2 * p)
+            if (p > sqrt(n)) continue;
+            for (int i = p * p; i <= n; i += 2 * p)
                 if (factors[i] == i) factors[i] = p;
         }
 
