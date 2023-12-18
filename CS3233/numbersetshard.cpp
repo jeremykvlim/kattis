@@ -37,7 +37,7 @@ int main() {
         for (int i = primes.size() - 1; i >= 0 && primes[i] >= p; i--) {
             auto l = a + (primes[i] - a % primes[i]) % primes[i];
             for (auto r = l + primes[i]; r <= b; r += primes[i]) {
-                auto l_set = find(l - a, sets), r_set = find(r - a, sets);
+                int l_set = find(l - a, sets), r_set = find(r - a, sets);
                 if (l_set != r_set) {
                     size--;
                     sets[r_set] = sets[l_set];
