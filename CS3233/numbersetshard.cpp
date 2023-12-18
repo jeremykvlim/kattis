@@ -31,7 +31,7 @@ int main() {
         long long a, b, p;
         cin >> a >> b >> p;
 
-        long long size = b - a + 1;
+        int size = b - a + 1;
         vector<int> sets(size);
         iota(sets.begin(), sets.end(), 0);
 
