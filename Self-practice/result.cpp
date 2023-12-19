@@ -20,23 +20,23 @@ int main() {
         }
 
         int size = line.size();
-        vector<vector<long long>> dpMax(size, vector<long long>(size, 0)), dpMin(size, vector<long long>(size, LLONG_MAX));
-        for (int i = 0; i < size; i++) dpMin[i][i] = dpMax[i][i] = line[i];
+        vector<vector<long long>> dp_max(size, vector<long long>(size, 0)), dp_min(size, vector<long long>(size, LLONG_MAX));
+        for (int i = 0; i < size; i++) dp_min[i][i] = dp_max[i][i] = line[i];
 
         for (int h = 1; h < size; h++)
             for (int i = 0, j = i + h; i + h < size; i++, j++)
                 for (int k = i; k < j; k++) {
-                    auto a = dpMax[i][k], b = dpMax[k + 1][j], c = dpMin[i][k], d = dpMin[k + 1][j];
+                    auto a = dp_max[i][k], b = dp_max[k + 1][j], c = dp_min[i][k], d = dp_min[k + 1][j];
                     if (ops[k] == '+') {
-                        dpMax[i][j] = max({dpMax[i][j], a + b});
-                        dpMin[i][j] = min({dpMin[i][j], c + d});
+                        dp_max[i][j] = max({dp_max[i][j], a + b});
+                        dp_min[i][j] = min({dp_min[i][j], c + d});
                     } else {
-                        dpMax[i][j] = max({dpMax[i][j], a * b, c * d});
-                        dpMin[i][j] = min({dpMin[i][j], a * b, c * d});
+                        dp_max[i][j] = max({dp_max[i][j], a * b, c * d});
+                        dp_min[i][j] = min({dp_min[i][j], a * b, c * d});
                     }
                 }
 
 
-        cout << dpMin[0][size - 1] << ' ' << dpMax[0][size - 1] << '\n';
+        cout << dp_min[0][size - 1] << ' ' << dp_max[0][size - 1] << '\n';
     }
 }
