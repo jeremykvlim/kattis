@@ -23,8 +23,7 @@ int main() {
             for (int i = 0; i < n; i++)
                 for (int X = 0; X < 2; X++)
                     for (int Y = 0; Y < 2; Y++)
-                        for (int Z = 0; Z < 2; Z++)
-                            ships[X][Y][Z] = min(ships[X][Y][Z], m * p[i] + (X ? x[i] : -x[i]) + (Y ? y[i] : -y[i]) + (Z ? z[i] : -z[i]));
+                        for (int Z = 0; Z < 2; Z++) ships[X][Y][Z] = min(ships[X][Y][Z], m * p[i] + (X ? x[i] : -x[i]) + (Y ? y[i] : -y[i]) + (Z ? z[i] : -z[i]));
 
             double even = 0, odd = 0;
             for (int X = 0; X < 2; X++)
@@ -32,6 +31,7 @@ int main() {
                     for (int Z = 0; Z < 2; Z++)
                         if (!((X + Y + Z) & 1)) {
                             if (ships[X][Y][Z] + ships[!X][!Y][!Z] < 0) goto next;
+                            
                             even += ships[X][Y][Z];
                             odd += ships[!X][!Y][!Z];
                         }
