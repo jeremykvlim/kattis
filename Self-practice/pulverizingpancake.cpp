@@ -12,7 +12,7 @@ int main() {
     cin >> s;
 
     vector<bool> wild(n);
-    for (int i = 0; i < s.size(); i++) wild[i] = s[i] == '1';
+    for (int i = 0; i < n; i++) wild[i] = s[i] == '1';
 
     int count = 0;
     for (int i = 0; i < n; i++) {
