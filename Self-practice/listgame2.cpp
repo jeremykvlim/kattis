@@ -5,7 +5,8 @@ int factors(vector<int> exponents, vector<int> primes, int f) {
     int total = accumulate(exponents.begin(), exponents.end(), 0);
 
     if (primes.empty()) primes.emplace_back(0);
-    else for (int i = 0; ++primes[i] >= exponents.size(); ++i) {
+    else 
+        for (int i = 0; ++primes[i] >= exponents.size(); i++) 
             if (i == primes.size() - 1) {
                 primes = vector<int>(primes.size() + 1, 0);
                 break;
@@ -13,20 +14,18 @@ int factors(vector<int> exponents, vector<int> primes, int f) {
                 primes[i] = primes[i + 1] + 1;
                 fill(primes.begin(), primes.begin() + i, primes[i]);
             }
-        }
 
     if (f >= total / primes.size()) return f;
 
     vector<int> reduced = exponents;
-    for (int i : primes)
-        if (!reduced[i]--) {
+    for (int p : primes)
+        if (!reduced[p]--) {
             reduced.clear();
             break;
         }
 
     if (!reduced.empty()) f = factors(reduced, primes, max(f - 1, 0)) + 1;
-    f = factors(exponents, primes, f);
-    return f;
+    return factors(exponents, primes, f);
 }
 
 int main() {
