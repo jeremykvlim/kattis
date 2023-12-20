@@ -25,8 +25,7 @@ int main() {
             for (int j = 0; j < k; j++) coefficients[j] = (coefficients[j] - coefficients[j + 1] * curr) % m;
         }
 
-        long long p = 0;
-        for (int i = 0; i < k; i++) p = (p + (spot[i] * coefficients[i]) % m) % m;
+        auto p = inner_product(spot.begin(), spot.end(), coefficients.begin(), 0LL, plus<>(), [&](auto a, auto b){return (a * b) % m;}) % m;
         cout << (m - p) % m << "\n";
     }
 }
