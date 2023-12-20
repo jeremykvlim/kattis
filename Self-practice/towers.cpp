@@ -2,13 +2,13 @@
 using namespace std;
 
 double scale(const vector<int> &t1, int t1_end, const vector<int> &t2, int t2_end) {
-    double exp = 1, scale = 1;
+    double exponent = 1, scale = 1;
     for (int i = t2_end - 1; i >= 0; i--) {
         double a = i < t2_end ? t2[i] : 1, b = i < t1_end ? t1[i] : 1, ratio = scale * log(b) / log(a) - 1;
-        scale = abs(ratio) < 1e-9 ? 1 : pow(a, exp * ratio);
+        scale = abs(ratio) < 1e-9 ? 1 : pow(a, exponent * ratio);
         if (scale > 50) return 2;
         else if (scale < 0.05) return 0;
-        exp = pow(a, exp);
+        exponent = pow(a, exponent);
     }
 
     return scale;
