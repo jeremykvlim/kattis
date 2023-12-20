@@ -30,13 +30,16 @@ int main() {
         for (int i = 0; i <= n - p; i++)
             if (dp[i] != -1) dp[i + p] = (min(dp[i] * p, dp[i + p] != -1 ? dp[i + p] : LLONG_MAX)) % MODULO;
 
-    auto smallest = dp[n] % MODULO, biggest = 1LL, power = 1LL;
+    auto smallest = dp[n] % MODULO, biggest = 1LL, base = 3LL;
     while (n % 3) {
         biggest = (biggest << 1) % MODULO;
         n -= 2;
     }
-    for (int i = 0; i < n / 3; i++) power = (power * 3) % MODULO;
-    biggest = (biggest * power) % MODULO;
+
+    for (int exponent = n / 3; exponent; exponent >>= 1) {
+        if (exponent & 1) biggest = (base * biggest) % MODULO;
+        base = (base * base) % MODULO;
+    }
 
     cout << smallest << " " << biggest;
 }
