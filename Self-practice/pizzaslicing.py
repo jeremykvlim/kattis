@@ -1,4 +1,4 @@
-from math import gcd, isqrt
+from math import *
 
 n, a, b = map(int, input().split())
 a, b = a // gcd(a, b), b // gcd(a, b)
