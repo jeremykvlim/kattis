@@ -5,13 +5,14 @@ long long f(long long n, long long b, int size, vector<int> &factors, unordered_
     if (n < b) return n;
     auto x = LLONG_MAX;
     for (int i = size, depth = 0; i >= 0 && factors[i] * factors[i] >= b; i--) {
-        if (n % factors[i] ||
-            any_of(prime_factors.begin(), prime_factors.end(), [&](int p){return factors[i] * p < b && !(n % (factors[i] * p));})) continue;
+        if (n % factors[i] || any_of(prime_factors.begin(), prime_factors.end(), [&](int p) {return factors[i] * p < b && !(n % (factors[i] * p));})) continue;
         auto next = f(n / factors[i], b, i, factors, prime_factors) * b + factors[i];
         if (next <= 0) continue;
+        
         x = min(x, next);
         if (depth++ == 3) break;
     }
+    
     return x;
 }
 
@@ -32,10 +33,10 @@ int main() {
 
     unordered_set<int> prime_factors;
     auto numerator = n;
-    for (int &factor: factors)
-        while (!(numerator % factor)) {
-            numerator /= factor;
-            prime_factors.insert(factor);
+    for (int &f : factors)
+        while (!(numerator % f)) {
+            numerator /= f;
+            prime_factors.insert(f);
         }
 
     if (numerator > 1) {
