@@ -15,6 +15,6 @@ int main() {
             cds.insert(number);
         }
 
-        cout << n + m - cds.size() << endl;
+        cout << n + m - cds.size() << "\n";
     }
 }
