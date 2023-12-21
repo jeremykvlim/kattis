@@ -20,11 +20,11 @@ int main() {
                 employees.pop();
                 continue;
             }
-            
+
             int layoffs = min(f, employees.top().first);
             employees.top().first -= layoffs;
             f -= layoffs;
-            fired[i].push_back(employees.top().second);
+            fired[i].emplace_back(employees.top().second);
             fired[employees.top().second].emplace_back(i);
         }
 
@@ -37,9 +37,10 @@ int main() {
         int day = pq.top().second;
         pq.pop();
         if (hr[day]) continue;
+        
         hr[day] = 1;
         while (awkward[day] & (1 << hr[day])) hr[day]++;
-        for (int d : fired[day]) 
+        for (int d : fired[day])
             if (!hr[d] && !(awkward[d] & (1 << hr[day]))) {
                 awkward[d] |= 1 << hr[day];
                 count[d]++;
