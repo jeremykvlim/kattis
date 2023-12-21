@@ -20,5 +20,5 @@ int main() {
             }
     }
 
-    cout << fixed << setprecision(6) << dp[n % 2][n] << endl;
+    cout << fixed << setprecision(6) << dp[n % 2][n];
 }
