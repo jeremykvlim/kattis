@@ -22,7 +22,7 @@ Kattis compiles using `g++ 11` for [C++](https://open.kattis.com/languages/cpp),
 
 Problems have to be solved using base programming language libraries or self-coded structures. External libraries, such as `Boost` for C++, `Guava` for Java, `NumPy` for Python 3 and others are not available. However, you are allowed to attach multiple files in one submission, although I never bothered.
 
-I generally use `C++` unless the NUS course requires otherwise. I switch to `Python` if I require precision or big integer operations or if the solution is much shorter and simpler implementation-wise.
+I generally use `C++` unless the NUS course requires otherwise. I switch to `Python` if I require big integer operations or if the solution is much shorter and simpler implementation-wise.
 
 ---
 
