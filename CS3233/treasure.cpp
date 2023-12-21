@@ -19,8 +19,8 @@ int main() {
     vector<int> dr{0, 0, 1, -1}, dc{1, -1, 0, 0};
     unordered_map<char, int> cost = {{'.', 1}, {'F', 2}, {'M', 3}, {'G', 1}};
 
-    priority_queue<tuple<int, pair<int, int>, int>, vector<tuple<int, pair<int, int>, int>>, greater<>> pq;
     vector<vector<vector<int>>> dist(n, vector<vector<int>>(m, vector<int>(k + 1, INT_MAX)));
+    priority_queue<tuple<int, pair<int, int>, int>, vector<tuple<int, pair<int, int>, int>>, greater<>> pq;
     dist[s.first][s.second][k] = 1;
     pq.emplace(1, s, k);
 
