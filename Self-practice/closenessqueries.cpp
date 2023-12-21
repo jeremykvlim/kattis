@@ -18,8 +18,9 @@ int main() {
     while (m--) {
         int u, v;
         cin >> u >> v;
-        adj_list[u].push_back(v);
-        adj_list[v].push_back(u);
+        
+        adj_list[u].emplace_back(v);
+        adj_list[v].emplace_back(u);
         sets[find(v, sets)] = find(u, sets);
     }
 
@@ -51,7 +52,7 @@ int main() {
 
                     if (!visited1.count(j)) {
                         visited1.insert(j);
-                        q3.push_back(j);
+                        q3.emplace_back(j);
                     }
                 }
 
