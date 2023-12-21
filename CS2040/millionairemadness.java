@@ -6,22 +6,24 @@ public class millionairemadness {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var input = br.readLine().split(" ");
         int m = Integer.parseInt(input[0]), n = Integer.parseInt(input[1]);
+        
         var matrix = new int[m][n];
         var dir = {0, 1, 0, -1, 1, 0, -1, 0};
         var visited = new boolean[m][n];
-        for (int i = 0; i < m; i++) 
-            matrix[i] = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
+        for (int i = 0; i < m; i++) matrix[i] = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
         
         var pq = new PriorityQueue<Pair>();
         pq.add(new Pair(0, 0));
-        int ans = 0;
+        int len = 0;
         while (!pq.isEmpty()) {
             var pair = pq.poll();
             int cost = -pair.first, x = pair.second / n, y = pair.second % n;
             if (visited[x][y]) continue;
+            
             visited[x][y] = true;
-            ans = Math.max(ans, cost);
+            len = Math.max(len, cost);
             if (x == m - 1 && y == n - 1) break;
+            
             int k = 0;
             while (k < 8) {
                 int dx = x + dir[k++], dy = y + dir[k++];
@@ -29,7 +31,8 @@ public class millionairemadness {
                 pq.add(new Pair(-Math.max(0, matrix[dx][dy] - matrix[x][y]), dx * n + dy));
             }
         }
-        System.out.println(ans);
+        
+        System.out.println(len);
     }
 
     static class Pair implements Comparable<Pair> {
