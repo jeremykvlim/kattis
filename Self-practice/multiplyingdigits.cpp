@@ -8,11 +8,11 @@ long long f(long long n, long long b, int size, vector<int> &factors, unordered_
         if (n % factors[i] || any_of(prime_factors.begin(), prime_factors.end(), [&](int p) {return factors[i] * p < b && !(n % (factors[i] * p));})) continue;
         auto next = f(n / factors[i], b, i, factors, prime_factors) * b + factors[i];
         if (next <= 0) continue;
-        
+
         x = min(x, next);
         if (depth++ == 3) break;
     }
-    
+
     return x;
 }
 
@@ -32,14 +32,14 @@ int main() {
     for (int i = 2; i < b; i++) if (!(n % i)) factors.emplace_back(i);
 
     unordered_set<int> prime_factors;
-    auto numerator = n;
+    auto num = n;
     for (int &f : factors)
-        while (!(numerator % f)) {
-            numerator /= f;
+        while (!(num % f)) {
+            num /= f;
             prime_factors.insert(f);
         }
 
-    if (numerator > 1) {
+    if (num > 1) {
         cout << "impossible";
         exit(0);
     }
