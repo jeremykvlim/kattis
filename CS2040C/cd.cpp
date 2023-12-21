@@ -12,6 +12,7 @@ int main() {
         for (int i = 0; i < n + m; i++) {
             int number;
             cin >> number;
+            
             cds.insert(number);
         }
 
