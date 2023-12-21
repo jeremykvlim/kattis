@@ -14,11 +14,11 @@ Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizat
 
 * Optimization Algorithms: CS4234 (`C++`/`Java`/`Python`)
 
-* Self-practice: `C++`/`Java`/`Python`/`Rust`
+* Self-practice: `C++`/`Java`/`Python`
 
 ---
 
-Kattis compiles using `g++ 11` for [C++](https://open.kattis.com/languages/cpp), `Java 11` for [Java](https://open.kattis.com/languages/java), `Python 3.8` for [Python](https://open.kattis.com/languages/python3) and `Rust 1.66` for [Rust](https://open.kattis.com/languages/rust).
+Kattis compiles using `g++ 11` for [C++](https://open.kattis.com/languages/cpp), `Java 11` for [Java](https://open.kattis.com/languages/java) and `Python 3.8` for [Python](https://open.kattis.com/languages/python3).
 
 Problems have to be solved using base programming language libraries or self-coded structures. External libraries, such as `Boost` for C++, `Apache Commons` for Java, `NumPy` for Python 3 and others are not available. However, you are allowed to attach multiple files in one submission, although I never bothered.
 
