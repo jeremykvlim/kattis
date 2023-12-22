@@ -1,18 +1,18 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-bool dfs(int i, int j, vector<vector<int>> &grid, vector<int> &visited, vector<int> &matched, vector<vector<int>> &col) {
-    for (int v = 1; v < grid.size(); v++) 
+bool dfs(int i, int j, vector<vector<int>> &grid, vector<bool> &visited, vector<int> &matched, vector<vector<bool>> &col) {
+    for (int v = 1; v < grid.size(); v++)
         if (!visited[v] && !col[j][v]) {
-            visited[v] = 1;
+            visited[v] = true;
             if (!matched[v] || dfs(i, matched[v], grid, visited, matched, col)) {
-                col[matched[v]][v] = 0;
+                col[matched[v]][v] = false;
                 col[j][v] = 1;
                 grid[i][v] = matched[v] = j;
                 return true;
             }
         }
-    
+
     return false;
 }
 
@@ -23,7 +23,8 @@ int main() {
     int n, k;
     cin >> n >> k;
 
-    vector<vector<int>> grid(n + 1, vector<int>(n + 1)), row(n + 1, vector<int>(n + 1)), col(n + 1, vector<int>(n + 1));
+    vector<vector<int>> grid(n + 1, vector<int>(n + 1));
+    vector<vector<bool>> row(n + 1, vector<bool>(n + 1)), col(n + 1, vector<bool>(n + 1));
 
     for (int i = 1; i <= k; i++)
         for (int j = 1; j <= n; j++) {
@@ -32,14 +33,14 @@ int main() {
                 cout << "no\n";
                 exit(0);
             }
-            row[grid[i][j]][i] = col[grid[i][j]][j] = 1;
+            row[grid[i][j]][i] = col[grid[i][j]][j] = true;
         }
 
 
     for (int i = k + 1; i <= n; i++) {
         vector<int> matched(n + 1);
         for (int j = 1; j <= n; j++) {
-            vector<int> visited(n + 1);
+            vector<bool> visited(n + 1, false);
             if (!dfs(i, j, grid, visited, matched, col)) {
                 cout << "no\n";
                 exit(0);
