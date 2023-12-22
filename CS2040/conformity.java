@@ -35,7 +35,7 @@ public class conformity {
         public boolean equals(Object o) {
             if (o == null) return false;
             if (o == this) return true;
-            if (o instanceof Combination) { //Java 11 has no pattern matching for instanceof
+            if (o instanceof Combination) {
                 Combination object = (Combination) o;
                 return Arrays.equals(courses, object.courses);
             }
