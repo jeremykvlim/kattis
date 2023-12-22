@@ -14,22 +14,22 @@ public class joinstrings {
         var adjList = new ArrayList[n];
         for (int i = 0; i < n; i++) adjList[i] = new ArrayList<Integer>();
 
-        int source = 0;
+        int start = 0;
         for (int i = 0; i < n - 1; i++) {
             int[] operation = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
-            source = operation[0] - 1;
-            adjList[source].add(operation[1] - 1);
+            start = operation[0] - 1;
+            adjList[start].add(operation[1] - 1);
         }
 
-        pw.print(arr[source]);
-        dfs(source, adjList, arr);
+        pw.print(arr[start]);
+        dfs(start, adjList, arr);
         pw.flush();
     }
 
-    static void dfs(int idx, ArrayList<Integer>[] aL, String[] arr) {
-        for (var i : aL[idx]) {
-            pw.print(arr[i]);
-            dfs(i, aL, arr);
+    static void dfs(int v, ArrayList<Integer>[] adjList, String[] arr) {
+        for (var u : adjList[v]) {
+            pw.print(arr[u]);
+            dfs(u, adjList, arr);
         }
     }
 }
