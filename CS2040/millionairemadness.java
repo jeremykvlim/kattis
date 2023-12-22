@@ -6,12 +6,12 @@ public class millionairemadness {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var input = br.readLine().split(" ");
         int m = Integer.parseInt(input[0]), n = Integer.parseInt(input[1]);
-        
+
         var matrix = new int[m][n];
-        var dir = {0, 1, 0, -1, 1, 0, -1, 0};
+        int[] dx = {0, 0, 1, -1}, dy = {1, -1, 0, 0};
         var visited = new boolean[m][n];
         for (int i = 0; i < m; i++) matrix[i] = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
-        
+
         var pq = new PriorityQueue<Pair>();
         pq.add(new Pair(0, 0));
         int len = 0;
@@ -19,19 +19,19 @@ public class millionairemadness {
             var pair = pq.poll();
             int cost = -pair.first, x = pair.second / n, y = pair.second % n;
             if (visited[x][y]) continue;
-            
+
             visited[x][y] = true;
             len = Math.max(len, cost);
             if (x == m - 1 && y == n - 1) break;
-            
-            int k = 0;
-            while (k < 8) {
-                int dx = x + dir[k++], dy = y + dir[k++];
-                if (dx < 0 || dx >= m || dy < 0 || dy >= n || visited[dx][dy]) continue;
-                pq.add(new Pair(-Math.max(0, matrix[dx][dy] - matrix[x][y]), dx * n + dy));
+
+
+            for (int i = 0; i < 4; i++) {
+                int xi = x + dx[i], yi = y + dy[i];
+                if (xi < 0 || xi >= m || yi < 0 || yi >= n || visited[xi][yi]) continue;
+                pq.add(new Pair(-Math.max(0, matrix[xi][yi] - matrix[x][y]), xi * n + yi));
             }
         }
-        
+
         System.out.println(len);
     }
 
