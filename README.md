@@ -26,7 +26,7 @@ I generally use `C++` unless the NUS course requires otherwise. I switch to `Pyt
 
 ---
 
-My code isn't particularly optimized. I do try to come up with efficient solutions to the problems that don't just scrape by the time or memory limit, but I've been prioritising coding style as I want my code to be pleasant to read (with some _fun_ exceptions; if the solution is very simple, I try to get the shortest solution with Python). 
+My code isn't particularly optimized. I do try to come up with efficient solutions to the problems that don't just scrape by the time or memory limit, but I've been prioritising coding style as I want my code to be pleasant to read (with some exceptions because I did get lazy sometimes).
 
 As such, I will try to find a compromise between both efficiency and preference. I hope you can tolerate some habits of mine:
 
