@@ -24,9 +24,10 @@ int main() {
     vector<vector<long double>> flow(n);
     vector<vector<bool>> superpower(n);
 
-    for (int i = 0; i < n - 1; ++i) {
+    for (int i = 0; i < n - 1; i++) {
         int a, b, x, t;
         cin >> a >> b >> x >> t;
+             
         adj_list[a - 1].emplace_back(b - 1);
         flow[a - 1].emplace_back(x / 100.0);
         superpower[a - 1].emplace_back(t);
@@ -38,9 +39,9 @@ int main() {
         if (k > 0) k = log(k);
     }
 
-    long double inf = INT_MAX * log(INT_MAX), l = 0, r = inf + log(LLONG_MAX) * inf;
+    long double inf = INT_MAX * log(INT_MAX), l = 0, r = inf + log(LLONG_MAX) * inf, m;
     while (l + 1 < r) {
-        long double m = l + (r - l) / 2;
+        m = l + (r - l) / 2;
         if (dfs(m / inf, 0, liquid, adj_list, flow, superpower)) r = m;
         else l = m;
     }
