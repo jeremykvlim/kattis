@@ -52,9 +52,9 @@ public class abinitio {
             for (int j = v - 1; j >= 0; j--) 
                 if (i != j && adjMatrix[status[0] == 1 ? j : i][status[0] == 1 ? i : j] == (status[1] == 1 ? 0 : 1)) {
                     d++;
-                    h = (7*h + j) % MODULO;
+                    h = (7 * h + j) % MODULO;
                 }
-            pw.println(d+" "+h);
+            pw.println(d + " " + h);
         }
 
         pw.flush();
@@ -68,6 +68,7 @@ public class abinitio {
         IO(InputStream is) {
             dis = is;
         }
+        
         int nextInt() throws Exception {
             int ret = 0;
             byte b;
