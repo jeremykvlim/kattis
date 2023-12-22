@@ -19,16 +19,19 @@ int main() {
         for (int i = 0; i < m; i++) {
             int t1, t2, d;
             cin >> t1 >> t2 >> d;
+            
             adj_list[t1 - 1].emplace_back(t2 - 1, d);
             adj_list[t2 - 1].emplace_back(t1 - 1, d);
         }
 
-        for (int i = 0; i < a; ++i) {
+        for (int i = 0; i < a; i++) {
             int b;
             cin >> b;
+            
             if (n) dfs(b - 1, 0, k, n, dist, adj_list);
             cout << n << '\n';
         }
+        
         cout << '\n';
     }
 }
