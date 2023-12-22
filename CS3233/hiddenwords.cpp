@@ -32,7 +32,7 @@ int main() {
     for (auto &row : grid) cin >> row;
     cin >> n;
 
-    auto* root = new TrieNode();
+    auto *root = new TrieNode();
     for (int i = 0; i < n; i++) {
         string s;
         cin >> s;
