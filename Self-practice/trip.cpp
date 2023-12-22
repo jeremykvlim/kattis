@@ -9,7 +9,7 @@ int main() {
     while (cin >> n && n) {
         vector<int> costs(n);
         int total = 0;
-        for (int i = 0; i < n; ++i) {
+        for (int i = 0; i < n; i++) {
             double spent;
             cin >> spent;
 
