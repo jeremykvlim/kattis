@@ -7,21 +7,21 @@ int main() {
 
     string s;
     while (cin >> s && s != "END") {
-        vector<long long> line;
+        vector<long long> nums;
         vector<char> ops;
         stringstream ss(s);
         
         long long x;
         char op;
         while (ss >> x) {
-            line.emplace_back(x);
+            nums.emplace_back(x);
             ss >> op;
             ops.emplace_back(op);
         }
 
-        int size = line.size();
+        int size = nums.size();
         vector<vector<long long>> dp_max(size, vector<long long>(size, 0)), dp_min(size, vector<long long>(size, LLONG_MAX));
-        for (int i = 0; i < size; i++) dp_min[i][i] = dp_max[i][i] = line[i];
+        for (int i = 0; i < size; i++) dp_min[i][i] = dp_max[i][i] = nums[i];
 
         for (int h = 1; h < size; h++)
             for (int i = 0, j = i + h; i + h < size; i++, j++)
