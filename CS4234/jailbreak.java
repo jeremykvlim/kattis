@@ -51,7 +51,7 @@ public class jailbreak {
         dq.add(start);
         while (!dq.isEmpty()) {
             var p = dq.removeFirst();
-            for (int i = 0; i < 4; ++i) {
+            for (int i = 0; i < 4; i++) {
                 int x = p.first + dx[i], y = p.second + dy[i];
                 if (x < 0 || y < 0 || x >= h || y >= w || map[x][y] == '*' || dist[x][y] != Integer.MAX_VALUE) continue;
                 if (map[x][y] == '#') {
