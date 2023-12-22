@@ -1,6 +1,6 @@
 # Kattis-Solutions
 
-My solutions for Kattis problems, not all of them have been archived here yet because I haven't bothered scraping through all my submissions. Solutions are named `"problemname".<languagefilename>`. To find the problem statement, please go to:
+My solutions for Kattis problems, not all of them have been archived here yet because I haven't bothered scraping through all my submissions from 2022 till now. Solutions are named `"problemname".<languagefilename>`. To find the problem statement, please go to:
 
 `https://nus.kattis.com/problems/"problemname"` or `https://open.kattis.com/problems/"problemname"`
 
