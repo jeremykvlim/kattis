@@ -1,11 +1,7 @@
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
 public class dominos {
-    static ArrayList<Integer>[] adjList;
-    static boolean[] visited;
-    static Stack<Integer> s;
-
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         int t = Integer.parseInt(br.readLine());
@@ -13,7 +9,7 @@ public class dominos {
             var input = br.readLine().split(" ");
             int n = Integer.parseInt(input[0]), m = Integer.parseInt(input[1]);
 
-            adjList = new ArrayList[n + 1];
+            var adjList = new ArrayList[n + 1];
             for (int i = 1; i <= n; i++) adjList[i] = new ArrayList<>();
 
             for (int i = 0; i < m; i++) {
@@ -22,17 +18,17 @@ public class dominos {
                 adjList[x].add(y);
             }
 
-            visited = new boolean[n + 1];
-            s = new Stack<>();
+            var visited = new boolean[n + 1];
+            var s = new Stack<Integer>();
             for (int i = 1; i <= n; i++)
-                if (!visited[i]) dfs(i);
+                if (!visited[i]) dfs(i, visited, adjList, s);
 
             visited = new boolean[n + 1];
             int count = 0;
             while (!s.isEmpty()) {
-                int node = s.pop();
-                if (!visited[node]) {
-                    dfs(node);
+                int v = s.pop();
+                if (!visited[v]) {
+                    dfs(v, visited, adjList, s);
                     count++;
                 }
             }
@@ -41,10 +37,10 @@ public class dominos {
         }
     }
 
-    static void dfs(int node) {
-        visited[node] = true;
-        for (var c : adjList[node])
-            if (!visited[c]) dfs(c);
-        s.push(node);
+    static void dfs(int v, boolean[] visited, ArrayList<Integer>[] adjList, Stack<Integer> s) {
+        visited[v] = true;
+        for (var u : adjList[v])
+            if (!visited[u]) dfs(u, visited, adjList, s);
+        s.push(v);
     }
 }
