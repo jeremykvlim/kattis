@@ -6,18 +6,18 @@ public class bst {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(System.out);
         int n = Integer.parseInt(br.readLine());
-        var map = new TreeMap<Integer, Integer>();
+        
+        var tree = new Treetree<Integer, Integer>();
         long total = 0;
-
         while (n-- > 0) {
-            int i = Integer.parseInt(br.readLine());
-            Integer floor = map.floorKey(i), ceiling = map.ceilingKey(i);
-            int c = 0;
-            if (floor == null && ceiling != null) c = map.get(ceiling) + 1;
-            else if (ceiling == null && floor != null) c = map.get(floor) + 1;
-            else if (ceiling != null) c = Math.max(map.get(ceiling), map.get(floor)) + 1;
+            int i = Integer.parseInt(br.readLine()), c = 0;
+            Integer floor = tree.floorKey(i), ceiling = tree.ceilingKey(i);
+            
+            if (floor == null && ceiling != null) c = tree.get(ceiling) + 1;
+            else if (ceiling == null && floor != null) c = tree.get(floor) + 1;
+            else if (ceiling != null) c = Math.max(tree.get(ceiling), tree.get(floor)) + 1;
 
-            map.put(i, c);
+            tree.put(i, c);
             total += c;
             pw.println(total);
         }
