@@ -5,6 +5,7 @@ public class ferryloading4 {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         int c = Integer.parseInt(br.readLine());
+        
         while (c-- > 0) {
             var input = br.readLine().split(" ");
             int l = Integer.parseInt(input[0]) * 100, m = Integer.parseInt(input[1]), count = 0;
