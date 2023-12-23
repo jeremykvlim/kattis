@@ -42,5 +42,6 @@ int main() {
 
     vector<vector<int>> bug(1 << b, vector<int>(t + 1, -1));
     vector<vector<vector<double>>> dp(1 << b, vector<vector<double>>(t + 1, vector<double>(t + 1, 0)));
+    
     cout << fixed << setprecision(6) << fix(t, f, p, s, fails, bug, dp, (1 << b) - 1, 0);
 }
