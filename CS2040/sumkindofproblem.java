@@ -6,7 +6,7 @@ public class sumkindofproblem {
         int p = sc.nextInt();
         while (p-- > 0) {
             int k = sc.nextInt(), n = sc.nextInt();
-            System.out.println(k + " " + n*(n+1)/2 + " " + n*n + " " + n*(n+1));
+            System.out.println(k + " " + n * (n + 1) / 2 + " " + n * n + " " + n * (n + 1));
         }
     }
 }
