@@ -2,10 +2,9 @@ import java.io.*;
 import java.util.*;
 
 public class joinstrings {
-    static PrintWriter pw = new PrintWriter(System.out);
-
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
+        var pw = new PrintWriter(System.out);
         int n = Integer.parseInt(br.readLine());
 
         var arr = new String[n];
@@ -22,14 +21,14 @@ public class joinstrings {
         }
 
         pw.print(arr[start]);
-        dfs(start, adjList, arr);
+        dfs(start, adjList, arr, pw);
         pw.flush();
     }
 
-    static void dfs(int v, ArrayList<Integer>[] adjList, String[] arr) {
+    static void dfs(int v, ArrayList<Integer>[] adjList, String[] arr, PrintWriter pw) {
         for (var u : adjList[v]) {
             pw.print(arr[u]);
-            dfs(u, adjList, arr);
+            dfs(u, adjList, arr, pw);
         }
     }
 }
