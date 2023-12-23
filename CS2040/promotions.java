@@ -1,5 +1,5 @@
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
 public class promotions {
     public static void main(String[] args) throws IOException {
