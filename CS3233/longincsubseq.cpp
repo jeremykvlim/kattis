@@ -16,9 +16,9 @@ int main() {
                 prev[i] = tail[longest - 1];
                 tail[longest++] = i;
             } else {
-                int l = -1, r = longest - 1;
+                int l = -1, r = longest - 1, m;
                 while (l + 1 < r) {
-                    int m = l + (r - l) / 2;
+                    m = l + (r - l) / 2;
                     if (sequence[tail[m]] >= sequence[i]) r = m;
                     else l = m;
                 }
