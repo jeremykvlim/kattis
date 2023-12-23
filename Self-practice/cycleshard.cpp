@@ -24,7 +24,7 @@ int main() {
         vector<pair<int, int>> edges(k);
         for (auto &e : edges) cin >> e.first >> e.second;
 
-        int y = 4951 * fact[n - 1] % MODULO;
+        int y = (fact[n - 1] * (MODULO / 2 + 1)) % MODULO;
 
         for (int i = 1; i < 1 << k; i++) {
             vector<int> degree(n + 1, 0), degree_count(4, 0), sets(n + 1);
