@@ -21,8 +21,8 @@ public class islands3 {
     }
 
     static void dfs(char[][] matrix, int i, int j, int r, int c) {
-        if (i < 0 || j < 0 || i == r || j == c || matrix[i][j] == 'W')
-            return;
+        if (i < 0 || j < 0 || i == r || j == c || matrix[i][j] == 'W') return;
+        
         if (matrix[i][j] == 'L' || matrix[i][j] == 'C') {
             matrix[i][j] = 'W';
             dfs(matrix, i, j + 1, r, c);
