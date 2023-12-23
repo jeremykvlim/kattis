@@ -7,19 +7,13 @@ public class wheresmyinternet {
         var input = br.readLine().split(" ");
         int n = Integer.parseInt(input[0]), m = Integer.parseInt(input[1]);
 
-        int[] sets = new int[n + 1], rank = new int[n + 1];
+        int[] sets = new int[n + 1];
         for (int i = 0; i < n; i++) sets[i] = i;
 
         while (m-- > 0) {
             var line = br.readLine().split(" ");
             int a = Integer.parseInt(line[0]), b = Integer.parseInt(line[1]), aSet = find(a, sets), bSet = find(b, sets);
-            if (aSet != bSet) {
-                if (rank[aSet] > rank[bSet]) sets[bSet] = aSet;
-                else {
-                    sets[aSet] = bSet;
-                    if (rank[aSet] == rank[bSet]) rank[bSet]++;
-                }
-            }
+            sets[bSet] = aSet;
         }
 
         var connected = true;
