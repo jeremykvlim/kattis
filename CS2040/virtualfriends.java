@@ -1,5 +1,5 @@
-import java.util.*;
 import java.io.*;
+import java.util.*;
 
 public class virtualfriends {
     public static void main(String[] args) throws IOException {
@@ -10,24 +10,24 @@ public class virtualfriends {
         while (t-- > 0){
             int f = Integer.parseInt(br.readLine()), count = 0;
             int[] sets = new int[2*f + 1], size = new int[2*f + 1];
-            var map = new HashMap<String, Integer>();
+            var compress = new Hashcompress<String, Integer>();
           
             for (int i = 0; i < f; i++) {
                 var friends = br.readLine().split(" ");
-                for (var friend : friends) {
-                    if (!map.containsKey(friend)) {
-                        map.put(friend, count);
+                
+                for (var friend : friends) 
+                    if (!compress.containsKey(friend)) {
+                        compress.put(friend, count);
                         sets[count] = count;
                         size[count++] = 1;
                     }
-                }
-              
-                int a = find(map.get(friends[0]), sets), b = find(map.get(friends[1]), sets);
+                
+                int a = find(compress.get(friends[0]), sets), b = find(compress.get(friends[1]), sets);
                 if (a != b) {
                     sets[b] = a;
                     size[a] += size[b];
-                    size[b] = size[a];
                 }
+                
                 pw.println(size[a]);
             }
         }
