@@ -31,10 +31,10 @@ int main() {
         total += t.first;
     }
 
-    long long l = 1, r = 1, resets = 0;
+    long long l = 1, r = 1, m, resets = 0;
     while (!complete(tasks, total, resets, r, c)) r <<= 1;
     while (l + 1 < r) {
-        auto m = l + (r - l) / 2;
+        m = l + (r - l) / 2;
         if (complete(tasks, total, resets, m, c)) r = m;
         else l = m;
     }
