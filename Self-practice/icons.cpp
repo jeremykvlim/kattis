@@ -11,6 +11,7 @@ int main() {
     vector<long long> sizes(2 * n), pref((2 * n) + 1, 0), pref2((2 * n) + 2, 0);
     for (int i = 0; i < 2 * n; i++) {
         cin >> sizes[i];
+        
         pref[i + 1] = pref[i] + sizes[i];
         if (!(i & 1)) pref2[i + 2] = pref2[i] + sizes[i];
     }
