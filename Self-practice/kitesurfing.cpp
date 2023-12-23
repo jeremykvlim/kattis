@@ -24,7 +24,6 @@ int main() {
     unordered_map<int, bool> visited;
     priority_queue<int, vector<int>, greater<>> pq;
     pq.emplace(0);
-
     while (!pq.empty()) {
         int v = pq.top();
         pq.pop();
