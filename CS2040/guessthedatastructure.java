@@ -16,14 +16,14 @@ public class guessthedatastructure {
                 x[i] = Integer.parseInt(input[1]);
             }
 
-            var ans = "impossible";
+            var guess = "impossible";
 
             var s = new Stack<Integer>();
             for (int i = 0; i < command.length; i++) {
                 if (command[i] == 1) s.push(x[i]);
                 else if (s.isEmpty() || s.pop() != x[i]) break;
                 if (i == command.length - 1) {
-                    ans = "stack";
+                    guess = "stack";
                     count++;
                 }
             }
@@ -33,7 +33,7 @@ public class guessthedatastructure {
                 if (command[i] == 1) q.addLast(x[i]);
                 else if (q.isEmpty() || q.removeFirst() != x[i]) break;
                 if (i == command.length - 1) {
-                    ans = "queue";
+                    guess = "queue";
                     count++;
                 }
             }
@@ -43,12 +43,12 @@ public class guessthedatastructure {
                 if (command[i] == 1) pq.add(x[i]);
                 else if (pq.isEmpty() || pq.poll() != x[i]) break;
                 if (i == command.length - 1) {
-                    ans = "priority queue";
+                    guess = "priority queue";
                     count++;
                 }
             }
 
-            pw.println(count > 1 ? "not sure" : ans);
+            pw.println(count > 1 ? "not sure" : guess);
         }
 
         pw.close();
