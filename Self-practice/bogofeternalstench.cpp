@@ -27,7 +27,7 @@ int main() {
 
         bellman_ford(n, edges, dist, cycle, false);
         bellman_ford(n, edges, dist, cycle, true);
-        transform(dist.begin() + 1, dist.end(), cycle.begin() + 1, dist.begin() + 1, [&](long long d, bool c) {return c ? LLONG_MAX : d;});
+        transform(dist.begin() + 1, dist.end(), cycle.begin() + 1, dist.begin() + 1, [&](auto d, bool c) {return c ? LLONG_MAX : d;});
         bellman_ford(n, edges, dist, cycle, false);
 
         if (dist[1] >= 0) r = m;
