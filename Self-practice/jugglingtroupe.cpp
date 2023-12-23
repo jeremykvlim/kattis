@@ -5,10 +5,8 @@ void perform(vector<int> &jugglers, stack<int> &zeroes, int i) {
     if (!jugglers[i]) zeroes.emplace(i);
 
     while (jugglers[i] > 1) {
-        int zero = zeroes.empty() ? -1 : zeroes.top();
+        int zero = zeroes.empty() ? -1 : zeroes.top(), dist = i - zero;
         if (!zeroes.empty()) zeroes.pop();
-
-        int dist = i - zero;
 
         if (dist < jugglers[i]) {
             jugglers[i] -= dist + 1;
