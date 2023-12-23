@@ -15,14 +15,15 @@ public class ferryloading4 {
                 sides[car[1].equals("right") ? 1 : 0].add(Integer.parseInt(car[0]));
             }
 
-            var flag = false;
+            var right = false;
             while (!sides[0].isEmpty() || !sides[1].isEmpty()) {
                 int length = 0;
-                while (!sides[flag ? 1 : 0].isEmpty() && (length + (Integer) sides[flag ? 1 : 0].peekFirst()) <= l)
-                    length += (Integer) sides[flag ? 1 : 0].removeFirst();
+                while (!sides[right ? 1 : 0].isEmpty() && (length + (Integer) sides[right ? 1 : 0].peekFirst()) <= l)
+                    length += (Integer) sides[right ? 1 : 0].removeFirst();
                 count++;
-                flag = !flag;
+                right = !right;
             }
+            
             System.out.println(count);
         }
     }
