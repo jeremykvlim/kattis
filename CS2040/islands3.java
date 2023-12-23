@@ -9,15 +9,15 @@ public class islands3 {
         for (int i = 0; i < r; i++)
             matrix[i] = br.readLine().toCharArray();
 
-        int ans = 0;
+        int islands = 0;
         for (int i = 0; i < r; i++)
             for (int j = 0; j < c; j++) 
                 if (matrix[i][j] == 'L') {
-                    ans++;
+                    islands++;
                     dfs(matrix, i, j, r, c);
                 }
             
-        System.out.println(ans);
+        System.out.println(islands);
     }
 
     static void dfs(char[][] matrix, int i, int j, int r, int c) {
@@ -25,10 +25,10 @@ public class islands3 {
             return;
         if (matrix[i][j] == 'L' || matrix[i][j] == 'C') {
             matrix[i][j] = 'W';
-            dfs(matrix, i, j+1, r, c);
-            dfs(matrix, i, j-1, r, c);
-            dfs(matrix, i+1, j, r, c);
-            dfs(matrix, i-1, j, r, c);
+            dfs(matrix, i, j + 1, r, c);
+            dfs(matrix, i, j - 1, r, c);
+            dfs(matrix, i + 1, j, r, c);
+            dfs(matrix, i - 1, j, r, c);
         }
     }
 }
