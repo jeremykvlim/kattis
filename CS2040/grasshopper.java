@@ -9,8 +9,8 @@ public class grasshopper {
         for (var line = br.readLine(); line != null; line = br.readLine()) {
             var input = Arrays.stream(line.split(" ")).mapToInt(Integer::parseInt).toArray();
             int r = input[0], c = input[1], gr = input[2], gc = input[3], lr = input[4], lc = input[5];
-            var ans = "impossible";
-
+            
+            var hops = "impossible";
             int[] dr = {-2, -1, 1, 2, 2, 1, -1, -2}, dc = {1, 2, 2, 1, -1, -2, -2, -1};
             var visited = new boolean[r + 1][c + 1];
             var queue = new ArrayDeque<int[]>();
@@ -21,7 +21,7 @@ public class grasshopper {
                 int curr_r = square[0], curr_c = square[1], count = square[2];
 
                 if (curr_r == lr && curr_c == lc) {
-                    ans = String.valueOf(count);
+                    hops = String.valueOf(count);
                     break;
                 }
 
@@ -34,7 +34,8 @@ public class grasshopper {
                     }
                 }
             }
-            pw.println(ans);
+            
+            pw.println(hops);
         }
         pw.flush();
     }
