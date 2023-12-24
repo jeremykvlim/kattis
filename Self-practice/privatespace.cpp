@@ -52,7 +52,7 @@ int main() {
 
     vector<int> pref(14);
     iota(pref.begin(), pref.end(), 0);
-    partial_sum(pref.begin(), pref.end(), pref.begin(), [](int x, int y){return x + y + 1;});
+    partial_sum(pref.begin(), pref.end(), pref.begin(), [](int x, int y) {return x + y + 1;});
 
     if (people > pref[13]) cout << "impossible";
     else {
