@@ -11,6 +11,9 @@ void bellman_ford(int n, vector<tuple<int, int, int>> &edges, vector<long long> 
 }
 
 int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+    
     int n, M;
     cin >> n >> M;
 
