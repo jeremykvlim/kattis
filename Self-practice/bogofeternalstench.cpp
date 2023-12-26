@@ -1,19 +1,15 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void bellman_ford(int n, vector<tuple<int, int, int>> &edges, vector<long long> &dist, vector<bool> &cycle, bool detect) {
-    while (n--)
-        for (auto &[u, v, s] : edges)
-            if (s <= dist[v] && dist[u] < dist[v] - s) {
-                if (!detect) dist[u] = dist[v] - s;
-                else cycle[u] = true;
-            }
+void relax(vector<tuple<int, int, int>> &edges, vector<long long> &dist, bool detect) {
+    for (auto &[u, v, s] : edges)
+        if (s <= dist[v] && dist[u] < dist[v] - s) dist[u] = !detect ? dist[v] - s : LLONG_MAX;
 }
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    
+
     int n, M;
     cin >> n >> M;
 
@@ -24,14 +20,12 @@ int main() {
     while (l + 1 < r) {
         m = l + (r - l) / 2;
 
-        vector<bool> cycle(n + 1);
         vector<long long> dist(n + 1, LLONG_MIN);
         dist[n] = m;
 
-        bellman_ford(n, edges, dist, cycle, false);
-        bellman_ford(n, edges, dist, cycle, true);
-        transform(dist.begin() + 1, dist.end(), cycle.begin() + 1, dist.begin() + 1, [&](auto d, bool c) {return c ? LLONG_MAX : d;});
-        bellman_ford(n, edges, dist, cycle, false);
+        for (int i = 0; i < n; i++) relax(edges, dist, false);
+        relax(edges, dist, true);
+        for (int i = 0; i < n; i++) relax(edges, dist, false);
 
         if (dist[1] >= 0) r = m;
         else l = m;
