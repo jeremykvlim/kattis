@@ -22,9 +22,9 @@ int main() {
         vector<int> points{0, 0}, remaining{k, k}, prev{-1, -1};
 
         for (int i = 0; i < k * 2 && points[0] + remaining[0] >= points[1] && points[1] + remaining[1] >= points[0]; i++, s++) {
-            if (steps[i] == 'E') points[i % 2]++;
-            remaining[i % 2]--;
-            if (points[0] + remaining[0] < points[1] || points[1] + remaining[1] < points[0]) prev[i % 2] = i;
+            if (steps[i] == 'E') points[i & 1]++;
+            remaining[i & 1]--;
+            if (points[0] + remaining[0] < points[1] || points[1] + remaining[1] < points[0]) prev[i & 1] = i;
         }
 
         for (int c = 0; c < s; c++) {
