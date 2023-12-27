@@ -8,7 +8,7 @@ int shortest(int k, int d, vector<int> &days, vector<vector<int>> &dp) {
     
     int prev = -1;
     for (int i = 0; i < days.size(); i++) {
-        if (!((1 << i) & k) || days[i] == prev) continue;
+        if (!(k & (1 << i)) || days[i] == prev) continue;
         prev = days[i];
         dp[k][d] = min(dp[k][d], d + 1 + shortest(k - (1 << i), max(0, d + 1 - days[i]) + days[i] - (d + 1), days, dp));
     }
