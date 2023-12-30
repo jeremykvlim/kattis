@@ -13,7 +13,7 @@ struct Hash {
     }
 
     size_t operator()(const int &i) const {
-        uint64_t key = 0 ^ (i + 0x9e3779b9 + (key << 6) + (key >> 2));
+        uint64_t key = 0 ^ (i + 0x9e3779b9 + (i << 6) + (i >> 2));
         return h(key);
     }
 };
