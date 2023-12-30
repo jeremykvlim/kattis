@@ -9,7 +9,6 @@ int main() {
     cin >> V >> E >> C >> K >> M;
 
     vector<vector<pair<int, int>>> adj_list(V + 1);
-
     for (int i = 0; i < E; i++) {
         int u, v, w;
         cin >> u >> v >> w;
