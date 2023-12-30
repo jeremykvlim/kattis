@@ -14,7 +14,7 @@ void dijkstra(int s, vector<vector<pair<int, int>>> &adj_list, vector<int> &dist
 
         if (dist[v] != d) continue;
 
-        for (auto [u, l]: adj_list[v]) {
+        for (auto [u, l] : adj_list[v]) {
             if (dist[u] > d + l) {
                 dist[u] = d + l;
                 count[u] = count[v];
