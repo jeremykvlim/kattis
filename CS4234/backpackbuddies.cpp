@@ -6,19 +6,21 @@ int dijkstra(int n, vector<vector<pair<int, int>>> adj_list, bool knight) {
     vector<bool> visited(n, false);
     pq.emplace(0, 0);
     while (!pq.empty()) {
-        int v = pq.top().second, d = pq.top().first;
+        auto [v, d] = pq.top();
         pq.pop();
+
         if (v == n - 1) return d;
+
         if (visited[v]) continue;
 
         visited[v] = true;
-        for (auto &neighbour: adj_list[v])
+        for (auto &[u, w] : adj_list[v])
             if (!knight) {
-                if (neighbour.second <= 12) {
-                    if (d % 12 + neighbour.second <= 12) pq.emplace(d + neighbour.second, neighbour.first);
-                    else pq.emplace(d + 12 - d % 12 + neighbour.second, neighbour.first);
+                if (w <= 12) {
+                    if (d % 12 + w <= 12) pq.emplace(d + w, u);
+                    else pq.emplace(d + 12 - d % 12 + w, u);
                 }
-            } else if (!visited[neighbour.first]) pq.emplace(d + neighbour.second, neighbour.first);
+            } else if (!visited[u]) pq.emplace(d + w, u);
     }
 }
 
@@ -38,6 +40,5 @@ int main() {
     }
 
     int knight = dijkstra(n, adj_list, true), day = dijkstra(n, adj_list, false);
-
     cout << day + max(0, (day - 1) / 12) * 12 - (knight + max(0, (knight - 1) / 12) * 12);
 }
