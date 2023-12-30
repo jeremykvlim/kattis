@@ -23,12 +23,12 @@ int main() {
     priority_queue<tuple<int, pair<int, int>, int>, vector<tuple<int, pair<int, int>, int>>, greater<>> pq;
     dist[s.first][s.second][k] = 1;
     pq.emplace(1, s, k);
-
     while (!pq.empty()) {
         auto [d, p, stam] = pq.top();
         pq.pop();
         
         if (d > dist[p.first][p.second][stam]) continue;
+        
         if (grid[p.first][p.second] == 'G') {
             cout << d;
             exit(0);
