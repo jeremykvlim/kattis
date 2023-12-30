@@ -8,39 +8,40 @@ int main() {
     int V, E, C, K, M;
     cin >> V >> E >> C >> K >> M;
 
-    vector<vector<pair<int, int>>> adj_list(V + 1);
-    for (int i = 0; i < E; i++) {
+    vector<vector<pair<int, int>>> adj_list(V);
+    while (E--) {
         int u, v, w;
         cin >> u >> v >> w;
-        adj_list[u].emplace_back(v, w);
-        adj_list[v].emplace_back(u, w);
+
+        adj_list[u - 1].emplace_back(v - 1, w);
+        adj_list[v - 1].emplace_back(u - 1, w);
     }
 
-    vector<long long> dist(V + 1, LLONG_MAX);
-    priority_queue<pair<int, long long>> pq;
-    dist[1] = 0;
-    pq.emplace(1, 0);
+    vector<long long> dist(V, LLONG_MAX);
+    priority_queue<pair<int, long long>, vector<pair<int, long long>>, greater<>> pq;
+    dist[0] = 0;
+    pq.emplace(0, 0);
     while (!pq.empty()) {
-        auto v = pq.top();
+        auto [v, d] = pq.top();
         pq.pop();
 
-        if (-v.second != dist[v.first]) continue;
+        if (dist[v] != d) continue;
 
-        for (auto u : adj_list[v.first])
-            if (dist[u.first] > dist[v.first] + u.second) {
-                dist[u.first] = dist[v.first] + u.second;
-                pq.emplace(u.first, -dist[u.first]);
+        for (auto [u, w] : adj_list[v])
+            if (dist[u] > d + w) {
+                dist[u] = d + w;
+                pq.emplace(u, d + w);
             }
     }
 
-    vector<long long> v;
-    for (int i = 0; i < C; i++) {
+    vector<long long> walks;
+    while (C--) {
         int f;
         cin >> f;
-        
-        if (dist[f] != LLONG_MAX) v.emplace_back(dist[f]);
+
+        if (dist[f - 1] != LLONG_MAX) walks.emplace_back(dist[f - 1]);
     }
 
-    sort(v.begin(), v.end());
-    cout << ((min(M, K) - 1 < v.size()) ? 2 * v[min(M, K) - 1] : -1) << '\n';
+    sort(walks.begin(), walks.end());
+    cout << ((min(M, K) - 1 < walks.size()) ? 2 * walks[min(M, K) - 1] : -1);
 }
