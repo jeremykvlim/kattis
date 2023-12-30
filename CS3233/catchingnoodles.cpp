@@ -12,14 +12,15 @@ void dijkstra(int s, vector<vector<pair<int, int>>> &adj_list, vector<int> &dist
         auto [d, v] = pq.top();
         pq.pop();
 
-        if (dist[v] == d)
-            for (auto [u, l] : adj_list[v]) {
-                if (dist[u] > dist[v] + l) {
-                    dist[u] = dist[v] + l;
-                    count[u] = count[v];
-                    pq.emplace(dist[u], u);
-                } else if (dist[u] == dist[v] + l) count[u] = (count[u] + count[v]) % MODULO;
-            }
+        if (dist[v] != d) continue;
+
+        for (auto [u, l]: adj_list[v]) {
+            if (dist[u] > d + l) {
+                dist[u] = d + l;
+                count[u] = count[v];
+                pq.emplace(d + l, u);
+            } else if (dist[u] == d + l) count[u] = (count[u] + count[v]) % MODULO;
+        }
     }
 }
 
@@ -47,5 +48,6 @@ int main() {
     if (dist2[0] == INT_MAX)
         while (j--) cout << "-1 ";
     else
-        for (int i = 0; i < j; i++) cout << ((dist1[i] + dist2[i] == dist2[0]) ? (count1[i] * count2[i]) % MODULO : -1) << " ";
+        for (int i = 0; i < j; i++)
+            cout << ((dist1[i] + dist2[i] == dist2[0]) ? (count1[i] * count2[i]) % MODULO : -1) << " ";
 }
