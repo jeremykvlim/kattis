@@ -15,8 +15,8 @@ void dfs(vector<vector<bool>> &visited, vector<string> &grid, int i, int j, Trie
     for (int k = 0; k < 4; k++) {
         int r = i + dr[k], c = j + dc[k];
         if (r < 0 || r >= grid.size() || c < 0 || c >= grid[0].size() || visited[r][c]) continue;
-        int position = grid[r][c] - 'A';
-        if (node->children[position]) dfs(visited, grid, r, c, node->children[position], words);
+        int pos = grid[r][c] - 'A';
+        if (node->children[pos]) dfs(visited, grid, r, c, node->children[pos], words);
     }
     visited[i][j] = false;
 }
@@ -39,9 +39,9 @@ int main() {
 
         auto *node = root;
         for (char c : s) {
-            int position = c - 'A';
-            if (!node->children[position]) node->children[position] = new TrieNode();
-            node = node->children[position];
+            int pos = c - 'A';
+            if (!node->children[pos]) node->children[pos] = new TrieNode();
+            node = node->children[pos];
         }
         node->count++;
     }
@@ -50,8 +50,8 @@ int main() {
     vector<vector<bool>> visited(h, vector<bool>(w, false));
     for (int i = 0; i < h; i++)
         for (int j = 0; j < w; j++) {
-            int position = grid[i][j] - 'A';
-            if (root->children[position]) dfs(visited, grid, i, j, root->children[position], words);
+            int pos = grid[i][j] - 'A';
+            if (root->children[pos]) dfs(visited, grid, i, j, root->children[pos], words);
         }
 
     cout << words;
