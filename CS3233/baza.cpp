@@ -22,9 +22,9 @@ int main() {
         int steps = i;
         auto *node = root;
         for (char c : s) {
-            int position = c - 'a';
-            if (!node->children[position]) node->children[position] = new TrieNode();
-            node = node->children[position];
+            int pos = c - 'a';
+            if (!node->children[pos]) node->children[pos] = new TrieNode();
+            node = node->children[pos];
             steps += ++node->count;
         }
 
@@ -43,9 +43,9 @@ int main() {
             int steps = n;
             auto *node = root;
             for (char c : s) {
-                int position = c - 'a';
-                if (!node->children[position]) break;
-                node = node->children[position];
+                int pos = c - 'a';
+                if (!node->children[pos]) break;
+                node = node->children[pos];
                 steps += node->count;
             }
 
