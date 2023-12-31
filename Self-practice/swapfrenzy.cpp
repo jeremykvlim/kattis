@@ -42,15 +42,15 @@ int main() {
     vector<int> digits(x);
     vector<vector<unordered_set<long long>>> visited(x, vector<unordered_set<long long>>(k));
 
-    int position = 0, mask = 0;
+    int pos = 0, mask = 0;
     bool repeat = false;
     auto num = n;
     while (num) {
-        digits[position++] = num % 10;
+        digits[pos++] = num % 10;
         if (mask & (1 << (num % 10))) repeat = true;
         mask |= (1 << (num % 10));
         num /= 10;
     }
 
-    cout << swap_digits(n, position - 1, k, repeat, digits, visited);
+    cout << swap_digits(n, pos - 1, k, repeat, digits, visited);
 }
