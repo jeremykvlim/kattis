@@ -10,13 +10,13 @@ int main() {
         vector<int> sequence(n), tail(n, 0), prev(n, -1);
         for (int i = 0; i < n; i++) cin >> sequence[i];
 
-        int longest = 1;
+        int len = 1;
         for (int i = 1; i < n; i++) {
-            if (sequence[i] > sequence[tail[longest - 1]]) {
-                prev[i] = tail[longest - 1];
-                tail[longest++] = i;
+            if (sequence[i] > sequence[tail[len - 1]]) {
+                prev[i] = tail[len - 1];
+                tail[len++] = i;
             } else {
-                int l = -1, r = longest - 1, m;
+                int l = -1, r = len - 1, m;
                 while (l + 1 < r) {
                     m = l + (r - l) / 2;
                     if (sequence[tail[m]] >= sequence[i]) r = m;
@@ -28,9 +28,9 @@ int main() {
             }
         }
 
-        cout << longest << "\n";
-        vector<int> lis(longest);
-        for (int i = tail[longest - 1]; i >= 0; i = prev[i]) lis[--longest] = i;
+        cout << len << "\n";
+        vector<int> lis(len);
+        for (int i = tail[len - 1]; i >= 0; i = prev[i]) lis[--len] = i;
         for (auto &i : lis) cout << i << " ";
         cout << "\n";
     }
