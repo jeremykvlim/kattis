@@ -8,8 +8,8 @@ struct TrieNode {
 void dfs(int start, TrieNode* curr, TrieNode* self, unordered_map<TrieNode*, bool> &visited, string &s) {
     if (curr != self) visited[curr] = true;
     for (int i = start; i < s.size(); i++) {
-        int position = s[i] - 'a';
-        if (curr->children[position]) dfs(i + 1, curr->children[position], self, visited, s);
+        int pos = s[i] - 'a';
+        if (curr->children[pos]) dfs(i + 1, curr->children[pos], self, visited, s);
     }
 }
 
@@ -21,7 +21,6 @@ int main() {
     vector<string> sorted, S;
     vector<TrieNode*> end;
     unordered_map<TrieNode*, bool> visited;
-
     string s;
     while (cin >> s) {
         S.emplace_back(s);
@@ -30,9 +29,9 @@ int main() {
 
         auto *node = root;
         for (char c : s) {
-            int position = c - 'a';
-            if (!node->children[position]) node->children[position] = new TrieNode();
-            node = node->children[position];
+            int pos = c - 'a';
+            if (!node->children[pos]) node->children[pos] = new TrieNode();
+            node = node->children[pos];
         }
         end.emplace_back(node);
     }
