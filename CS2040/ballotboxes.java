@@ -16,14 +16,14 @@ public class ballotboxes {
                 r = Math.max(cities[i] + 1, r);
             }
 
-            while (l < r) {
+            while (l + 1 < r) {
                 m = l + (r - l) / 2;
                 int boxes = 0;
                 for (int c : cities) boxes += (c + m) / m;
                 if (boxes <= b) r = m;
-                else l = m + 1;
+                else l = m;
             }
-            pw.println(l);
+            pw.println(l + 1);
             br.readLine();
         }
         pw.flush();
