@@ -5,8 +5,8 @@ public class nesteddolls {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(System.out);
+        
         int t = Integer.parseInt(br.readLine());
-
         while (t-- > 0) {
             int m = Integer.parseInt(br.readLine());
 
