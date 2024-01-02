@@ -9,8 +9,7 @@ for _ in range(m):
     adjList[v - 1].append(u - 1)
 
 size = [int(input()) for _ in range(n)]
-total = size[0]
-visited[0] = True
+total, visited[0] = size[0], True
 pq = [(size[v], v) for v in adjList[0]]
 heapq.heapify(pq)
 while pq and pq[0][0] < total:
