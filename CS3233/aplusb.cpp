@@ -25,6 +25,7 @@ int main() {
     
     int n, max_sum = 2*(abs(-OFFSET) + OFFSET);
     cin >> n;
+    
     vector<int> a(n), freq(abs(-OFFSET) + OFFSET + 1);
     vector<long long> count(max_sum + 1);
     for (int i = 0; i < n; i++) {
@@ -36,18 +37,22 @@ int main() {
 
     n = 1;
     while (n < max_sum) n <<= 1;
+    
     vector<complex<double>> fourier(n);
     vector<int> reverse(n);
     for (int i = 1; i < n; i++) reverse[i] = (i & 1) * n >> 1 | reverse[i >> 1] >> 1;
     for (int i = 0; i < freq.size(); i++) fourier[i] = complex<double>(freq[i], freq[i]);
+    
     fft(fourier, n, 1, reverse);
     for (auto &i : fourier) i *= i;
     fft(fourier, n, -1, reverse);
+    
     for (int i = 0; i < max_sum; i++) count[i] += fourier[i].imag() / 2 + .5;
     long long ways = 0;
     for (int i : a) {
         ways += count[i + OFFSET];
         if (i == OFFSET) ways -= 2 * a.size() - 2;
     }
+    
     cout << ways;
 }
