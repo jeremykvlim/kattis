@@ -22,4 +22,4 @@ while parent[curr] != -1:
     path.append(curr)
     curr = parent[curr]
 
-print("-" if len(path) == 0 else "\n".join(map(str, path[::-1])))
+print("-" if not path else "\n".join(map(str, reversed(path))))
