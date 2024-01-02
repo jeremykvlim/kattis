@@ -31,20 +31,17 @@ int main() {
 
     vector<int> elements(n);
     for (int &a : elements) cin >> a;
-    
+
     int biggest = *max_element(elements.begin(), elements.end());
     vector<int> factors = sieve(biggest), prev(biggest + 1, -1), left(n, -1), right(n, n), parent(n, 0);
-    for (int i = 0; i < n; i++) {
-        int num = elements[i];
-        while (num > 1) {
+    for (int i = 0; i < n; i++)
+        for (int num = elements[i]; num > 1; num /= factors[num]) {
             if (prev[factors[num]] < i) {
                 left[i] = max(left[i], prev[factors[num]]);
                 if (prev[factors[num]] != -1) right[prev[factors[num]]] = min(right[prev[factors[num]]], i);
             }
             prev[factors[num]] = i;
-            num /= factors[num];
         }
-    }
 
     if (dfs(0, n, parent, left, right))
         for (int p : parent) cout << p + 1 << " ";
