@@ -18,10 +18,10 @@ long long swap_digits(long long curr, int pos, int remaining, bool repeat, vecto
             swap_indices = {p};
         } else if (digits[p] == digits[i]) swap_indices.emplace_back(i);
 
-    long long largest, swapped;
+    long long largest = -1;
     if (p == pos) largest = swap_digits(curr, pos - 1, remaining, repeat, digits, visited);
     for (int i : swap_indices) {
-        swapped = curr - llround(pow(10, pos)) * digits[pos] - llround(pow(10, i)) * digits[i] + llround(pow(10, pos)) * digits[i] + llround(pow(10, i)) * digits[pos];
+        auto swapped = curr - llround(pow(10, pos)) * digits[pos] - llround(pow(10, i)) * digits[i] + llround(pow(10, pos)) * digits[i] + llround(pow(10, i)) * digits[pos];
         swap(digits[pos], digits[i]);
         largest = max(largest, swap_digits(swapped, pos - 1, remaining - 1, repeat, digits, visited));
         swap(digits[pos], digits[i]);
@@ -42,14 +42,13 @@ int main() {
     vector<int> digits(x);
     vector<vector<unordered_set<long long>>> visited(x, vector<unordered_set<long long>>(k));
 
-    int pos = 0, mask = 0;
+    int pos = 0;
+    unordered_set<int> remainders;
     bool repeat = false;
-    auto num = n;
-    while (num) {
+    for (auto num = n; num; num /= 10) {
         digits[pos++] = num % 10;
-        if (mask & (1 << (num % 10))) repeat = true;
-        mask |= (1 << (num % 10));
-        num /= 10;
+        if (remainders.count(num % 10)) repeat = true;
+        remainders.emplace(num % 10);
     }
 
     cout << swap_digits(n, pos - 1, k, repeat, digits, visited);
