@@ -10,7 +10,6 @@ int dijkstra(int n, vector<vector<pair<int, int>>> adj_list, bool knight) {
         pq.pop();
 
         if (v == n - 1) return d;
-
         if (visited[v]) continue;
 
         visited[v] = true;
