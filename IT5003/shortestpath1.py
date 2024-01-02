@@ -4,11 +4,11 @@ while True:
     n, m, q, s = map(int, input().split())
     if m == n == q == s == 0: break
 
-    graph = [[] for i in range(n)]
+    adjList = [[] for i in range(n)]
 
     for _ in range(m):
         u, src, w = map(int, input().split())
-        graph[u].append((src, w))
+        adjList[u].append((src, w))
 
     d = [math.inf for i in range(n)]
     pq = [(math.inf, i) for i in range(n)]
@@ -24,7 +24,7 @@ while True:
             if not visited[src]: break
 
         visited[src] = True
-        for dest, weight in graph[src]:
+        for dest, weight in adjList[src]:
             if d[src] + weight < d[dest]:
                 d[dest] = d[src] + weight
                 heapq.heappush(pq, (d[dest], dest))
