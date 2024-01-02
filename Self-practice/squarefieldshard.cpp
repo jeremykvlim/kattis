@@ -6,13 +6,13 @@ void backtrack(int i, int squares, int curr, int &len, vector<pair<int, int>> &p
         if (i == points.size()) len = min(len, curr);
         else
             for (int j = 0; j <= squares; j++) {
-                auto p1 = minmax[j].first, p2 = minmax[j].second;
-                minmax[j].first = {min(p1.first, points[i].first), min(p1.second, points[i].second)};
-                minmax[j].second = {max(p2.first, points[i].first), max(p2.second, points[i].second)};
+                auto original = minmax[j];
+                auto &[p1, p2] = minmax[j];
+                p1 = {min(p1.first, points[i].first), min(p1.second, points[i].second)};
+                p2 = {max(p2.first, points[i].first), max(p2.second, points[i].second)};
 
-                backtrack(i + 1, max(squares, j + 1), max(curr, max(minmax[j].second.first - minmax[j].first.first, minmax[j].second.second - minmax[j].first.second)), 
-                          len, points, minmax);
-                minmax[j].first = p1, minmax[j].second = p2;
+                backtrack(i + 1, max(squares, j + 1), max(curr, max(p2.first - p1.first, p2.second - p1.second)), len, points, minmax);
+                minmax[j] = original;
             }
     }
 }
