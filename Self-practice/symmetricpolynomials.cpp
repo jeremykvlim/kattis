@@ -2,8 +2,7 @@
 using namespace std;
 
 double C(int n, int k) {
-    if (!k) return 1;
-    return C(n - 1, k - 1) * n / k;
+    return !k ? 1 : C(n - 1, k - 1) * n / k;
 }
 
 int main() {
