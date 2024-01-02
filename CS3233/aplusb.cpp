@@ -30,6 +30,7 @@ int main() {
     vector<long long> count(max_sum + 1);
     for (int i = 0; i < n; i++) {
         cin >> a[i];
+        
         a[i] += OFFSET;
         freq[a[i]]++;
         count[a[i] * 2]--;
