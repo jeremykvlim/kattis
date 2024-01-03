@@ -38,14 +38,14 @@ int main() {
     vector<int> exponents, primes;
     int points = 0;
     for (long long b = 2; b * b <= x; b++) {
-        int power = 0;
+        int pow = 0;
         while (!(x % b)) {
             x /= b;
-            power++;
+            pow++;
         }
-        if (power) {
+        if (pow) {
             points++;
-            if (power > 1) exponents.emplace_back(power - 1);
+            if (pow > 1) exponents.emplace_back(pow - 1);
         }
     }
     
