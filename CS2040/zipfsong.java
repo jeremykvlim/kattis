@@ -6,13 +6,16 @@ public class zipfsong {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var input = br.readLine().split(" ");
         int n = Integer.parseInt(input[0]), m = Integer.parseInt(input[1]);
+        
         var array = new Pair[n];
         for (int i = 1; i <= n; i++) {
             var song = br.readLine().split(" ");
-            long freq = Long.parseLong(song[0]);
+            var freq = Long.parseLong(song[0]);            
             var name = song[1];
+            
             array[i - 1] = new Pair(freq * i, name);
         }
+        
         Arrays.sort(array);
         for (int i = 0; i < m; i++)
             System.out.println(array[i].name);
