@@ -70,7 +70,7 @@ public class abinitio {
         }
         
         int nextInt() throws Exception {
-            int ret = 0;
+            int n = 0;
             byte b;
             do {
                 b = nextByte();
@@ -81,11 +81,12 @@ public class abinitio {
                 b = nextByte();
             }
             while (b >= '0' && b <= '9') {
-                ret = 10 * ret + b - '0';
+                n = 10 * n + b - '0';
                 b = nextByte();
             }
-            return (negative) ? -ret : ret;
+            return (negative) ? -n : n;
         }
+        
         byte nextByte() throws Exception {
             if (pointer == buffer.length) {
                 dis.read(buffer, 0, buffer.length);
