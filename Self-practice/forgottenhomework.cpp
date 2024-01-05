@@ -25,21 +25,21 @@ vector<long long> berlekamp_massey(vector<long long> sequence) {
             continue;
         }
 
-        auto temp1 = prev;
-        for (auto &c : temp1) c = (MODULO - c) % MODULO;
-        temp1.insert(temp1.begin(), 1);
+        int s = prev.size();
+        for (auto &c : prev) c = (MODULO - c) % MODULO;
+        prev.insert(prev.begin(), 1);
 
         auto base = 0LL;
-        for (int j = 1; j <= temp1.size(); j++) base = (base + temp1[j - 1] * sequence[len + 1 - j]) % MODULO;
+        for (int j = 1; j <= prev.size(); j++) base = (base + prev[j - 1] * sequence[len + 1 - j]) % MODULO;
         long long coeff = (discrepancy * pow(base, (long long) MODULO - 2)) % MODULO;
-        for (auto &c : temp1) c = (c * coeff) % MODULO;
+        for (auto &c : prev) c = (c * coeff) % MODULO;
 
-        temp1.insert(temp1.begin(), i - len - 1, 0);
-        auto temp2 = curr;
-        curr.resize(max(curr.size(), temp1.size()));
-        for (int j = 0; j < temp1.size(); j++) curr[j] = (curr[j] + temp1[j]) % MODULO;
-        if (i - temp2.size() > len - prev.size()) {
-            prev = temp2;
+        prev.insert(prev.begin(), i - len - 1, 0);
+        auto temp = curr;
+        curr.resize(max(curr.size(), prev.size()));
+        for (int j = 0; j < prev.size(); j++) curr[j] = (curr[j] + prev[j]) % MODULO;
+        if (i - temp.size() > len - s) {
+            prev = temp;
             len = i;
         }
     }
