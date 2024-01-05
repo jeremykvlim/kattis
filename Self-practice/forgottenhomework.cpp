@@ -25,7 +25,7 @@ vector<long long> berlekamp_massey(vector<long long> sequence) {
             continue;
         }
 
-        int s = prev.size();
+        auto temp1 = prev;
         for (auto &c : prev) c = (MODULO - c) % MODULO;
         prev.insert(prev.begin(), 1);
 
@@ -35,13 +35,13 @@ vector<long long> berlekamp_massey(vector<long long> sequence) {
         for (auto &c : prev) c = (c * coeff) % MODULO;
 
         prev.insert(prev.begin(), i - len - 1, 0);
-        auto temp = curr;
+        auto temp2 = curr;
         curr.resize(max(curr.size(), prev.size()));
         for (int j = 0; j < prev.size(); j++) curr[j] = (curr[j] + prev[j]) % MODULO;
-        if (i - temp.size() > len - s) {
-            prev = temp;
+        if (i - temp2.size() > len - temp1.size()) {
+            prev = temp2;
             len = i;
-        }
+        } else prev = temp1;
     }
 
     return curr;
