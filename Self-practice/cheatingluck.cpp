@@ -1,25 +1,24 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int play(int d, int n, int r, long total, vector<vector<vector<int>>> &bets, vector<vector<vector<int>>> &dp) {
-    if (d >= total) return total;
-    if (!d || !n || !r) return min(total, d * (1L << n));
-    if (dp[d][n][r]) return dp[d][n][r];
+int play(int d, int n, int r, long long total, vector<vector<vector<int>>> &bets, vector<vector<vector<int>>> &coins) {
+    if (d >= total) return (int) total;
+    if (!d || !n || !r) return (int) min(total, d * (1LL << n));
+    if (coins[d][n][r]) return coins[d][n][r];
 
-    dp[d][n][r] = d;
-    play(d - 1, n, r, total, bets, dp);
+    coins[d][n][r] = d;
+    play(d - 1, n, r, total, bets, coins);
 
-    int least = bets[d - 1][n][r], most = min(d, (int) (total - d));
-    least = min(least, most);
+    int bet = min(d, (int) (total - d)), least = min(bets[d - 1][n][r], bet);
     bets[d][n][r] = least;
-    for (int i = least; i <= most; i++) {
-        int max = min(play(d - i, n - 1, r - 1, total, bets, dp), play(d + i, n - 1, r, total, bets, dp));
-        if (max < dp[d][n][r]) break;
-        bets[d][n][r] = i;
-        dp[d][n][r] = max;
+    for (int b = least; b <= bet; b++) {
+        auto most = min(play(d - b, n - 1, r - 1, total, bets, coins), play(d + b, n - 1, r, total, bets, coins));
+        if (coins[d][n][r] > most) break;
+        bets[d][n][r] = b;
+        coins[d][n][r] = most;
     }
 
-    return dp[d][n][r];
+    return coins[d][n][r];
 }
 
 int main() {
@@ -29,7 +28,7 @@ int main() {
     int d, g, n, k;
     cin >> d >> g >> n >> k;
 
-    vector<vector<vector<int>>> dp(d + g, vector<vector<int>>(n + 1, vector<int>(n + 1, 0))), bets(d + g, vector<vector<int>>(n + 1, vector<int>(n + 1, 0)));
-    
-    cout << play(d, n, n - k, d + g, bets, dp);
+    vector<vector<vector<int>>> coins(d + g, vector<vector<int>>(n + 1, vector<int>(n + 1, 0))), bets(d + g, vector<vector<int>>(n + 1, vector<int>(n + 1, 0)));
+
+    cout << play(d, n, n - k, d + g, bets, coins);
 }
