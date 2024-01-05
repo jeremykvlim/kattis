@@ -3,57 +3,55 @@ using namespace std;
 
 constexpr int OFFSET = 5e4;
 
-void fft(vector<complex<double>> &fourier, int n, int sign, vector<int> &reverse) {
-    for (int i = 0; i < n; i++)
+void fft(vector<complex<double>> &fourier, int sign, vector<int> &reverse) {
+    for (int i = 0; i < reverse.size(); i++)
         if (i < reverse[i]) swap(fourier[i], fourier[reverse[i]]);
-    for (int i = 1; i < n; i <<= 1)
-        for (int k = 0; k < i; k++) {
-            auto twiddle = exp(complex<double>(0, sign * M_PI / i * k));
-            for (int j = k; j < n; j += 2 * i) {
-                auto temp = twiddle * fourier[i + j];
+
+    for (int i = 1; i < fourier.size(); i *= 2)
+        for (int k = 0; k < i; k++)
+            for (int j = k; j < fourier.size(); j += 2 * i) {
+                auto temp = exp(complex<double>(0, sign * M_PI / i * k)) * fourier[i + j];
                 fourier[i + j] = fourier[j] - temp;
                 fourier[j] += temp;
             }
-        }
+
     if (sign == -1)
-        for (int i = 0; i < n; i++) fourier[i] /= n;
+        for (auto &f : fourier) f /= fourier.size();
 }
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    
-    int n, max_sum = 2*(abs(-OFFSET) + OFFSET);
+
+    int n;
     cin >> n;
-    
-    vector<int> a(n), freq(abs(-OFFSET) + OFFSET + 1);
-    vector<long long> count(max_sum + 1);
-    for (int i = 0; i < n; i++) {
-        cin >> a[i];
-        
-        a[i] += OFFSET;
-        freq[a[i]]++;
-        count[a[i] * 2]--;
+
+    vector<int> nums(n), freq(2 * OFFSET + 1);
+    vector<long long> count(4 * OFFSET + 1);
+    for (int &a : nums) {
+        cin >> a;
+
+        a += OFFSET;
+        freq[a]++;
+        count[a * 2]--;
     }
 
-    n = 1;
-    while (n < max_sum) n <<= 1;
-    
-    vector<complex<double>> fourier(n);
-    vector<int> reverse(n);
-    for (int i = 1; i < n; i++) reverse[i] = (i & 1) * n >> 1 | reverse[i >> 1] >> 1;
+    int size = pow(2, ceil(log2(count.size())));
+    vector<int> reverse(size);
+    for (int i = 1; i < size; i++) reverse[i] = (i & 1) * size >> 1 | reverse[i >> 1] >> 1;
+    vector<complex<double>> fourier(size);
     for (int i = 0; i < freq.size(); i++) fourier[i] = complex<double>(freq[i], freq[i]);
-    
-    fft(fourier, n, 1, reverse);
-    for (auto &i : fourier) i *= i;
-    fft(fourier, n, -1, reverse);
-    
-    for (int i = 0; i < max_sum; i++) count[i] += fourier[i].imag() / 2 + .5;
-    long long ways = 0;
-    for (int i : a) {
-        ways += count[i + OFFSET];
-        if (i == OFFSET) ways -= 2 * a.size() - 2;
+
+    fft(fourier, 1, reverse);
+    for (auto &f : fourier) f *= f;
+    fft(fourier, -1, reverse);
+
+    for (int i = 0; i < count.size(); i++) count[i] += round(fourier[i].imag() / 2);
+    auto ways = 0LL;
+    for (int a : nums) {
+        ways += count[a + OFFSET];
+        if (a == OFFSET) ways -= 2 * nums.size() - 1;
     }
-    
+
     cout << ways;
 }
