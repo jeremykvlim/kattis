@@ -13,30 +13,37 @@ long long pow(long long base, long long exponent, long long mod = MODULO) {
 }
 
 vector<long long> berlekamp_massey(vector<long long> sequence) {
-    vector<long long> curr(sequence.size()), prev(sequence.size());
-    curr[0] = prev[0] = 1;
-    int len = 0;
-
-    auto base = 1LL;
-    for (int i = 0, count = 0; i < sequence.size(); i++) {
-        count++;
-        auto discrepancy = 0LL;
-        for (int j = 0; j <= len; j++) discrepancy = (discrepancy + curr[j] * sequence[i - j]) % MODULO;
+    vector<long long> curr, prev;
+    for (int i = 0, len = -1; i < sequence.size(); i++) {
+        auto discrepancy = sequence[i];
+        for (int j = 1; j <= curr.size(); j++) discrepancy = (discrepancy - curr[j - 1] * sequence[i - j]) % MODULO;
         if (!discrepancy) continue;
 
+        if (len == -1) {
+            curr.resize(i + 1);
+            len = i;
+            continue;
+        }
+
+        auto temp1 = prev;
+        for (auto &c : temp1) c = (MODULO - c) % MODULO;
+        temp1.insert(temp1.begin(), 1);
+
+        auto base = 0LL;
+        for (int j = 1; j <= temp1.size(); j++) base = (base + temp1[j - 1] * sequence[len + 1 - j]) % MODULO;
         long long coeff = (discrepancy * pow(base, (long long) MODULO - 2)) % MODULO;
-        auto temp = curr;
-        for (int j = count; j < sequence.size(); j++) curr[j] = (curr[j] - coeff * prev[j - count]) % MODULO;
-        if (2 * len <= i) {
-            len = i + 1 - len;
-            prev = temp;
-            base = discrepancy;
-            count = 0;
+        for (auto &c : temp1) c = (c * coeff) % MODULO;
+
+        temp1.insert(temp1.begin(), i - len - 1, 0);
+        auto temp2 = curr;
+        curr.resize(max(curr.size(), temp1.size()));
+        for (int j = 0; j < temp1.size(); j++) curr[j] = (curr[j] + temp1[j]) % MODULO;
+        if (i - temp2.size() > len - prev.size()) {
+            prev = temp2;
+            len = i;
         }
     }
 
-    curr.assign(curr.begin() + 1, curr.begin() + len + 1);
-    for (auto &c : curr) c = (MODULO - c) % MODULO;
     return curr;
 }
 
@@ -53,6 +60,6 @@ int main() {
 
     auto lfsr = berlekamp_massey(sequence);
     auto value = 0LL;
-    for (int k = 0; k < lfsr.size(); k++) value += sequence[2 * n - 1 - k] * lfsr[k] % MODULO;
+    for (int k = 0; k < lfsr.size(); k++) value = (value + sequence[2 * n - 1 - k] * lfsr[k]) % MODULO;
     cout << (value + MODULO) % MODULO;
 }
