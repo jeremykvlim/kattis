@@ -3,7 +3,7 @@ using namespace std;
 
 constexpr int MODULO = 1e9 + 7;
 
-long long pow(long long base, long long exponent, long long mod = MODULO) {
+long long pow(long long base, long long exponent, long long mod = 1) {
     auto value = 1LL;
     for (; exponent; exponent >>= 1) {
         if (exponent & 1) value = (base * value) % mod;
@@ -31,7 +31,7 @@ vector<long long> berlekamp_massey(vector<long long> sequence) {
 
         auto base = 0LL;
         for (int j = 1; j <= prev.size(); j++) base = (base + prev[j - 1] * sequence[len + 1 - j]) % MODULO;
-        long long coeff = (discrepancy * pow(base, (long long) MODULO - 2)) % MODULO;
+        long long coeff = (discrepancy * pow(base, (long long) MODULO - 2), MODULO) % MODULO;
         for (auto &c : prev) c = (c * coeff) % MODULO;
 
         prev.insert(prev.begin(), i - len - 1, 0);
