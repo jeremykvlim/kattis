@@ -24,7 +24,7 @@ int main() {
                 curr[1].emplace_back(alice, bob + (b - digits[i] - j));
             }
         }
-        prev.swap(curr);
+        prev = curr;
     }
 
     int transfers = INT_MAX;
