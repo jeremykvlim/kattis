@@ -18,7 +18,7 @@ int main() {
     while (m--) {
         int u, v;
         cin >> u >> v;
-        
+
         adj_list[u].emplace_back(v);
         adj_list[v].emplace_back(u);
         sets[find(v, sets)] = find(u, sets);
@@ -36,35 +36,41 @@ int main() {
             continue;
         }
 
-        unordered_set<int> visited1{u}, visited2{v};
-        vector<int> q1{u}, q2{v};
-
+        vector<bool> visited_u(n, false), visited_v(n, false);
+        visited_u[u] = true;
+        visited_v[v] = true;
+        queue<int> q_u, q_v;
+        q_u.emplace(u);
+        q_v.emplace(v);
         int dist = 0;
         for (;;) {
             dist++;
-            vector<int> q3;
-            for (auto &i : q1)
-                for (auto &j : adj_list[i]) {
-                    if (visited2.count(j)) {
+            queue<int> temp;
+            while (!q_u.empty()) {
+                int u = q_u.front();
+                q_u.pop();
+                for (auto v : adj_list[u]) {
+                    if (visited_v[v]) {
                         cout << dist << '\n';
                         goto next;
                     }
 
-                    if (!visited1.count(j)) {
-                        visited1.insert(j);
-                        q3.emplace_back(j);
+                    if (!visited_u[v]) {
+                        visited_u[v] = true;
+                        temp.emplace(v);
                     }
                 }
-
-            if (q3.empty()) {
-                cout << -1 << '\n';
-                goto next;
             }
 
-            visited1.swap(visited2);
-            q1.swap(q2);
-            q2.swap(q3);
+            if (temp.empty()) {
+                cout << -1 << '\n';
+                next:;
+                break;
+            }
+
+            visited_u.swap(visited_v);
+            q_u.swap(q_v);
+            q_v.swap(temp);
         }
-        next:;
     }
 }
