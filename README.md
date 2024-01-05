@@ -40,6 +40,6 @@ As such, I will try to find a compromise between both efficiency and preference.
 
 * avoiding global variables at all costs
 
-* avoiding any macros or typedefs
+* avoiding any macros (even pre-defined constraints) or typedefs
 
 Occasionally when I learn new techniques, I do revisit some old solutions of mine to see if I can improve them, so I do update my old code (provided I do remember that problem). If you have any questions about a particular solution, please contact me at j_lim@u.nus.edu.
