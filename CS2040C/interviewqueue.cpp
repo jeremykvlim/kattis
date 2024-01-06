@@ -10,7 +10,6 @@ int main() {
 
     vector<int> candidates(n);
     int highest = 0, count;
-
     for (auto &v : candidates) {
         cin >> v;
         if (v > highest) {
@@ -35,7 +34,7 @@ int main() {
     for (;;) {
         int remaining = 0;
         vector<int> leavers;
-        vector<pair<int, int>> q_new;
+        vector<pair<int, int>> temp;
 
         for (int i = 0; i < q.size(); i++) {
             auto process = [&] {
@@ -48,18 +47,18 @@ int main() {
             if (i < q.size() - 1 && q[i + 1].first > q[i].first && q[i].second) process();
 
             if (!q[i].second) continue;
-            if (!q_new.empty() && q[i].first == q_new.back().first) {
-                q_new.back().second += q[i].second;
+            if (!temp.empty() && q[i].first == temp.back().first) {
+                temp.back().second += q[i].second;
                 continue;
             }
 
-            q_new.emplace_back(q[i]);
+            temp.emplace_back(q[i]);
         }
 
         if (!remaining) break;
 
         m.emplace_back(leavers);
-        q = q_new;
+        q = temp;
     }
 
     cout << m.size() << "\n";
