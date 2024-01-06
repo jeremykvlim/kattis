@@ -9,14 +9,14 @@ int main() {
     cin >> n;
 
     vector<int> candidates(n);
-    int highest = 0, final;
+    int highest = 0, count;
 
     for (auto &v : candidates) {
         cin >> v;
         if (v > highest) {
             highest = v;
-            final = 1;
-        } else if (v == highest) final++;
+            count = 1;
+        } else if (v == highest) count++;
     }
 
     vector<pair<int, int>> q;
@@ -68,5 +68,5 @@ int main() {
         cout << "\n";
     }
 
-    while (final--) cout << highest << " ";
+    while (count--) cout << highest << " ";
 }
