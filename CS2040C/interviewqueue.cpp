@@ -12,6 +12,7 @@ int main() {
     int highest = 0, count;
     for (auto &v : candidates) {
         cin >> v;
+        
         if (v > highest) {
             highest = v;
             count = 1;
@@ -63,7 +64,7 @@ int main() {
 
     cout << m.size() << "\n";
     for (auto &i : m) {
-        for (auto j : i) cout << j << " ";
+        for (auto v : i) cout << v << " ";
         cout << "\n";
     }
 
