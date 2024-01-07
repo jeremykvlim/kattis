@@ -3,9 +3,11 @@ using namespace std;
 
 bool dfs(int l, int r, vector<int> &parent, vector<int> &left, vector<int> &right, int p = -1) {
     if (l + 1 > r) return true;
+    
     for (int i = l, j = r - 1; i <= j; i++, j--) {
         parent[i] = p;
         if (left[i] < l && right[i] >= r) return dfs(l, i, parent, left, right, i) && dfs(i + 1, r, parent, left, right, i);
+        
         parent[j] = p;
         if (left[j] < l && right[j] >= r) return dfs(l, j, parent, left, right, j) && dfs(j + 1, r, parent, left, right, j);
     }
