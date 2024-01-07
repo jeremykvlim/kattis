@@ -12,6 +12,7 @@ int main() {
     while (n--) {
         int h;
         cin >> h;
+        
         if (heights.empty() || h != heights.back()) heights.emplace_back(h);
     }
 
