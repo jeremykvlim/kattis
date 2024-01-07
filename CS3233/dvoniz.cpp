@@ -12,6 +12,7 @@ int main() {
     pref[0] = 0;
     for (int i = 1; i <= n; i++) {
         cin >> a[i];
+        
         pref[i] = pref[i - 1] + a[i];
     }
 
