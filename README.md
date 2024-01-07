@@ -32,7 +32,7 @@ As such, I will try to find a compromise between both efficiency and preference.
 
 * using `std::vector` instead of arrays
 
-* using `unordered_map` or `gp_hash_table` instead of `map` for non-ordered purposes
+* using `std::unordered_map` or `__gnu_pbds::gp_hash_table` instead of `std::map` if ordering is unnecessary
 
 * using postfix `i++` instead of `++i` for iterator incrementing
 
