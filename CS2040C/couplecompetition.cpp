@@ -30,7 +30,6 @@ int main() {
 
     stack<int> s;
     construct(s, true);
-    s = stack<int>();
     construct(s, false);
 
     queue<int> q;
