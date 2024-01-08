@@ -5,7 +5,7 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n{};
+    int n;
     while (cin >> n && n) {
         vector<int> money(n);
         for (int &m : money) cin >> m;
