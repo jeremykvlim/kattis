@@ -44,13 +44,13 @@ int main() {
     }
 
     vector<int> order(n, 0), low(n, 0);
-    vector<bool> in(n, false);
+    vector<bool> stacked(n, false);
     stack<int> s;
     int count = 0, sccs = 0;
     bool simple = true;
 
     for (int i = 0; i < n; i++)
-        if (!order[i]) tarjan(i, order, low, in, count, sccs, simple, adj_list, s);
+        if (!order[i]) tarjan(i, order, low, stacked, count, sccs, simple, adj_list, s);
 
     cout << (sccs == 1 && simple ? "YES" : "NO");
 }
