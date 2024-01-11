@@ -19,7 +19,7 @@ void tarjan(int v, vector<int> &order, vector<int> &low, vector<bool> &stacked, 
 
     if (back + cross > 1) simple = false;
     if (order[v] == low[v]) {
-        for (int u = s.top(); v != u; u = s.top()) {
+        for (int u = s.top(); u != v; u = s.top()) {
             s.pop();
             stacked[u] = false;
         }
