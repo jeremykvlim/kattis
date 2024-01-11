@@ -19,13 +19,13 @@ void tarjan(int v, vector<int> &order, vector<int> &low, vector<bool> &stacked, 
 
     if (back + cross > 1) simple = false;
     if (order[v] == low[v]) {
+        sccs++;
         for (int u = s.top(); u != v; u = s.top()) {
             s.pop();
             stacked[u] = false;
         }
         s.pop();
         stacked[v] = false;
-        sccs++;
     }
 }
 
@@ -40,6 +40,7 @@ int main() {
     while (m--) {
         int u, v;
         cin >> u >> v;
+        
         adj_list[u].emplace_back(v);
     }
 
