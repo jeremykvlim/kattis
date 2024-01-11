@@ -17,13 +17,14 @@ public class nicknames {
         }
     }
 
-    static int search(TrieNode root, String str) {
+    static int substrings(TrieNode root, String str) {
         var node = root;
         for (int i = 0; i < str.length(); i++) {
             int index = str.charAt(i) - 'a';
             node = node.children[index];
             if (node == null) return 0;
         }
+        
         return node.count;
     }
 
@@ -36,7 +37,7 @@ public class nicknames {
         for (int i = 0; i < a; i++) insert(root, br.readLine());
 
         int b = Integer.parseInt(br.readLine());
-        for (int i = 0; i < b; i++) pw.println(search(root, br.readLine()));
+        for (int i = 0; i < b; i++) pw.println(substrings(root, br.readLine()));
         pw.flush();
     }
 }
