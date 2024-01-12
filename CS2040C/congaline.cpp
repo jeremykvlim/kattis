@@ -14,8 +14,7 @@ int main() {
     cin >> n >> q;
 
     Person *head = nullptr, *tail = nullptr;
-
-    for (int i = 0; i < n; i++) {
+    while (n--) {
         auto *p1 = new Person(), *p2 = new Person();
         cin >> p1->name >> p2->name;
 
