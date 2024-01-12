@@ -1,9 +1,9 @@
 #include<bits/stdc++.h>
 using namespace std;
 
-struct Node {
+struct Person {
     string name;
-    Node *next, *prev, *partner;
+    Person *next, *prev, *partner;
 };
 
 int main() {
@@ -13,10 +13,10 @@ int main() {
     int n, q;
     cin >> n >> q;
 
-    Node *head = nullptr, *tail = nullptr;
+    Person *head = nullptr, *tail = nullptr;
 
     for (int i = 0; i < n; i++) {
-        auto *p1 = new Node(), *p2 = new Node();
+        auto *p1 = new Person(), *p2 = new Person();
         cin >> p1->name >> p2->name;
 
         p1->partner = p2;
