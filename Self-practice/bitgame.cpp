@@ -11,7 +11,7 @@ bool dfs(string &paper) {
     }
 
     vector<char> bits = {'0', '1'};
-    if (rand() % 2) swap(bits[0], bits[1]);
+    if (rand() & 1) swap(bits[0], bits[1]);
 
     for (auto &b : bits) {
         paper += b;
