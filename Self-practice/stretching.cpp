@@ -1,4 +1,4 @@
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 using namespace std;
 
 bool valid(string &s, string &sub, int i, int l, int r, int count, vector<vector<vector<bool>>> &dp, vector<vector<vector<int>>> &visited) {
