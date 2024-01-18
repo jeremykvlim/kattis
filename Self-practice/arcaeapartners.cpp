@@ -1,4 +1,4 @@
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 using namespace std;
 
 void update(vector<vector<int>> &fenwick, int i, int j, int value) {
