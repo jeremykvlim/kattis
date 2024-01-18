@@ -2,11 +2,11 @@
 using namespace std;
 
 struct TrieNode {
-    TrieNode* children[26] = {nullptr};
+    TrieNode *children[26] = {nullptr};
     int count = 0;
 };
 
-void dfs(vector<vector<bool>> &visited, vector<string> &grid, int i, int j, TrieNode* node, int &words) {
+void dfs(vector<vector<bool>> &visited, vector<string> &grid, int i, int j, TrieNode *node, int &words) {
     visited[i][j] = true;
     words += node->count;
     node->count = 0;
