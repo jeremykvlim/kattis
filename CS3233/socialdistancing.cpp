@@ -12,7 +12,7 @@ int main() {
     for (int &a : array) cin >> a;
 
     priority_queue<long long> pq;
-    long long dist = 0;
+    auto dist = 0LL;
     for (int i = 1; i < n; i++) {
         pq.emplace(array[i]);
         dist += array[i];
