@@ -2,7 +2,7 @@
 using namespace std;
 
 struct TrieNode {
-    TrieNode* children[26] = {nullptr};
+    TrieNode *children[26] = {nullptr};
     int count = 0;
 };
 
