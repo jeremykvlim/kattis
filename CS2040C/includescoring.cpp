@@ -30,5 +30,5 @@ int main() {
                 for (int i : contestants) scores[i] += total;
             }
 
-    for (int s : scores) cout << s << '\n';
+    for (int s : scores) cout << s << "\n";
 }
