@@ -32,13 +32,12 @@ int main() {
         cin >> u >> v;
 
         if (find(u, sets) != find(v, sets)) {
-            cout << -1 << '\n';
+            cout << -1 << "\n";
             continue;
         }
 
         vector<bool> visited_u(n, false), visited_v(n, false);
-        visited_u[u] = true;
-        visited_v[v] = true;
+        visited_u[u] = visited_v[v] = true;
         queue<int> q_u, q_v;
         q_u.emplace(u);
         q_v.emplace(v);
@@ -51,7 +50,7 @@ int main() {
                 q_u.pop();
                 for (auto v : adj_list[u]) {
                     if (visited_v[v]) {
-                        cout << dist << '\n';
+                        cout << dist << "\n";
                         goto next;
                     }
 
@@ -63,7 +62,7 @@ int main() {
             }
 
             if (temp.empty()) {
-                cout << -1 << '\n';
+                cout << "-1\n";
                 next:;
                 break;
             }
