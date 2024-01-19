@@ -2,7 +2,7 @@
 using namespace std;
 
 struct Prediction {
-    string s;
+    string pred;
     vector<int> common;
 
     bool operator<(const Prediction &p) const {
@@ -18,20 +18,20 @@ int main() {
     cin >> n >> s;
 
     vector<Prediction> sequences(s);
-    for (int i = 0; i < s; i++) {
-        cin >> sequences[i].s;
-        vector<int> pref(sequences[i].s.size());
-        
-        for (int j = 1, k = 0; j < sequences[i].s.size(); j++) {
-            while (k && sequences[i].s[j] != sequences[i].s[k]) k = pref[k - 1];
-            if (sequences[i].s[j] == sequences[i].s[k]) k++;
+    for (auto &seq : sequences) {
+        cin >> seq.pred;
+        vector<int> pref(seq.pred.size());
+
+        for (int j = 1, k = 0; j < seq.pred.size(); j++) {
+            while (k && seq.pred[j] != seq.pred[k]) k = pref[k - 1];
+            if (seq.pred[j] == seq.pred[k]) k++;
             pref[j] = k;
         }
 
         for (int j = pref.size() - 1; j; j = pref[j] - 1)
-            if (2 * sequences[i].s.size() - pref[j] <= n) sequences[i].common.emplace_back(pref[j]);
+            if (2 * seq.pred.size() - pref[j] <= n) seq.common.emplace_back(pref[j]);
     }
 
     sort(sequences.begin(), sequences.end());
-    for (auto &prediction : sequences) cout << prediction.s << "\n";
+    for (auto &seq : sequences) cout << seq.pred << "\n";
 }
