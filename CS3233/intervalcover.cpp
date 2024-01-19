@@ -41,8 +41,8 @@ int main() {
 
         if (end < B) cout << "impossible\n";
         else {
-            cout << cover.size() << '\n';
-            for (auto &i : cover) cout << i << '\n';
+            cout << cover.size() << "\n";
+            for (auto &i : cover) cout << i << "\n";
         }
     }
 }
