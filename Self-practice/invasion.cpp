@@ -29,9 +29,9 @@ int main() {
             cin >> b;
             
             if (n) dfs(b - 1, 0, k, n, dist, adj_list);
-            cout << n << '\n';
+            cout << n << "\n";
         }
         
-        cout << '\n';
+        cout << "\n";
     }
 }
