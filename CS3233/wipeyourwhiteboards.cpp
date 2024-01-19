@@ -24,6 +24,6 @@ int main() {
             if (Q / __gcd(R, -S) * A + m * S / __gcd(R, -S) > 0 && Q / __gcd(R, -S) * -B - m * R / __gcd(R, -S) > 0) l = m;
             else r = m;
         }
-        cout << Q / __gcd(R, -S) * A + l * S / __gcd(R, -S) << ' ' << Q / __gcd(R, -S) * -B - l * R / __gcd(R, -S) << '\n';
+        cout << Q / __gcd(R, -S) * A + l * S / __gcd(R, -S) << ' ' << Q / __gcd(R, -S) * -B - l * R / __gcd(R, -S) << "\n";
     }
 }
