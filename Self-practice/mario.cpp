@@ -32,6 +32,7 @@ int main() {
                     cout << time << "\n";
                     goto next;
                 }
+                
                 if (visited[i]) mario[position[i]] = prev[i];
             }
 
