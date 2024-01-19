@@ -15,12 +15,11 @@ int main() {
     }
 
     sort(apps.begin(), apps.end(), [&](auto i, auto j) {
-            return i.first.second - i.first.first == j.first.second - j.first.first ? i.second < j.second : i.first.second - i.first.first < j.first.second - j.first.first;
+        return i.first.second - i.first.first == j.first.second - j.first.first ? i.second < j.second : i.first.second - i.first.first < j.first.second - j.first.first;
     });
 
-    vector<vector<long long>> dp(n + 1, vector<long long>(n + 1, INT_MAX));
     vector<vector<int>> prev(n + 1, vector<int>(n + 1, -1));
-
+    vector<vector<long long>> dp(n + 1, vector<long long>(n + 1, INT_MAX));
     dp[0][0] = 0;
     for (int i = 0; i < n; i++) {
         dp[i + 1] = dp[i];
@@ -31,13 +30,19 @@ int main() {
             }
     }
 
-    for (int i = n; i >= 0; i--)
+    for (int i = n; ~i; i--)
         if (dp[n][i] != INT_MAX) {
-            cout << i << '\n';
-            vector<int> install;
+            cout << i << "\n";
+
+            stack<int> install;
             for (int j = n, k = i; j; j--)
-                if (prev[j][k] != -1) install.emplace_back(apps[prev[j][k--]].second + 1);
-            for (int j = install.size() - 1; j >= 0; j--) cout << install[j] << " ";
-            exit(0);
+                if (prev[j][k] != -1) install.emplace(apps[prev[j][k--]].second + 1);
+
+            while (!install.empty()) {
+                cout << install.top() << " ";
+                install.pop();
+            }
+            
+            break;
         }
 }
