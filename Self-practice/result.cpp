@@ -37,6 +37,6 @@ int main() {
                 }
 
 
-        cout << dp_min[0][size - 1] << ' ' << dp_max[0][size - 1] << '\n';
+        cout << dp_min[0][size - 1] << ' ' << dp_max[0][size - 1] << "\n";
     }
 }
