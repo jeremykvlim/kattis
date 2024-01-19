@@ -29,7 +29,7 @@ int main() {
                 r[i] = position[i] != boats[i].second && ((position[i] == boats[i].first) || r[i]);
 
                 if (position[i] == w && visited[i]) {
-                    cout << time << '\n';
+                    cout << time << "\n";
                     goto next;
                 }
                 if (visited[i]) mario[position[i]] = prev[i];
