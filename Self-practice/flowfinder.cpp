@@ -4,6 +4,7 @@ using namespace std;
 bool update(int curr, long long diff, vector<bool> &pending, vector<vector<int>> &children, vector<long long> &min_flow) {
     pending[curr] = false;
     min_flow[curr] += diff;
+    
     if (children[curr].size() >= 2 && pending[children[curr][1]]) return false;
     else if (!children[curr].empty()) return update(children[curr].front(), diff, pending, children, min_flow);
     else return true;
@@ -25,6 +26,7 @@ bool dfs(int curr, vector<bool> &pending, vector<vector<int>> &children, vector<
     if (flow[curr]) {
         pending[curr] = false;
         if (min_flow[curr] > flow[curr]) return false;
+        
         auto diff = flow[curr] - min_flow[curr];
         min_flow[curr] += diff;
         if (diff)
@@ -46,6 +48,7 @@ int main() {
     for (int i = 2; i <= n; i++) {
         int p;
         cin >> p;
+        
         children[p].emplace_back(i);
     }
 
@@ -54,6 +57,6 @@ int main() {
 
     vector<bool> pending(n + 1, true);
     if (dfs(1, pending, children, min_flow, flow) && !pending[1])
-        for (int i = 1; i <= n; i++) cout << min_flow[i] << '\n';
+        for (int i = 1; i <= n; i++) cout << min_flow[i] << "\n";
     else cout << "impossible\n";
 }
