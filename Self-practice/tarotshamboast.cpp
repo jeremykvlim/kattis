@@ -28,10 +28,10 @@ int main() {
             pref[j] = k;
         }
 
-        for (int j = pref.size() - 1; j > 0; j = pref[j] - 1)
+        for (int j = pref.size() - 1; j; j = pref[j] - 1)
             if (2 * sequences[i].s.size() - pref[j] <= n) sequences[i].common.emplace_back(pref[j]);
     }
 
     sort(sequences.begin(), sequences.end());
-    for (auto &prediction : sequences) cout << prediction.s << '\n';
+    for (auto &prediction : sequences) cout << prediction.s << "\n";
 }
