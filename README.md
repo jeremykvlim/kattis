@@ -18,6 +18,8 @@ Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizat
 
 * Self-practice: `C++`/`Java`/`Python`
 
+Some courses share several problems, you might be able to find them under any one of the categories.
+
 ---
 
 Kattis compiles using `g++ 11` for [C++](https://open.kattis.com/languages/cpp), `Java 11` for [Java](https://open.kattis.com/languages/java) and `Python 3.8` for [Python](https://open.kattis.com/languages/python3).
