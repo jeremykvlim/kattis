@@ -1,18 +1,19 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+constexpr int MODULO = 1e3;
+
 vector<vector<int>> matmul(vector<vector<int>> &a, vector<vector<int>> &b) {
-    vector<vector<int>> c(2, vector<int>(2));
+    vector<vector<int>> c(2, vector<int>(2, 0));
     for (int i = 0; i < 2; i++)
         for (int j = 0; j < 2; j++)
-            for (int k = 0; k < 2; k++) c[i][j] = (a[k][j] * b[i][k] + c[i][j]) % 1000;
+            c[i][j] = (a[0][j] * b[i][0] + a[1][j] * b[i][1]) % MODULO;
 
     return c;
 }
 
 vector<vector<int>> matpow(vector<vector<int>> a, int n) {
-    vector<vector<int>> b(2, vector<int>(2, 0));
-    for (int i = 0; i < 2; i++) b[i][i] = 1;
+    vector<vector<int>> b{{1, 0}, {0, 1}};
     while (n) {
         if (n & 1) b = matmul(a, b);
         a = matmul(a, a);
@@ -34,6 +35,6 @@ int main() {
         cin >> n;
 
         vector<vector<int>> a = {{3, 5}, {1, 3}};
-        cout << "Case #" << x << ": " << setfill('0') << setw(3) << (2 * matpow(a, n)[0][0] - 1 + 1000) % 1000 << "\n";
+        cout << "Case #" << x << ": " << setfill('0') << setw(3) << (2 * matpow(a, n)[0][0] - 1 + MODULO) % MODULO << "\n";
     }
 }
