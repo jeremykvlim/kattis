@@ -4,17 +4,16 @@ using namespace std;
 constexpr int MODULO = 1e9;
 
 vector<vector<long long>> matmul(vector<vector<long long>> &a, vector<vector<long long>> &b) {
-    vector<vector<long long>> c(2, vector<long long>(2));
+    vector<vector<long long>> c(2, vector<long long>(2, 0));
     for (int i = 0; i < 2; i++)
         for (int j = 0; j < 2; j++)
-            for (int k = 0; k < 2; k++) c[i][j] = (a[k][j] * b[i][k] + c[i][j]) % MODULO;
+            c[i][j] = (a[0][j] * b[i][0] + a[1][j] * b[i][1]) % MODULO;
 
     return c;
 }
 
 vector<vector<long long>> matpow(vector<vector<long long>> a, long long n) {
-    vector<vector<long long>> b(2, vector<long long>(2, 0));
-    for (int i = 0; i < 2; i++) b[i][i] = 1;
+    vector<vector<long long>> b{{1, 0}, {0, 1}};
     while (n) {
         if (n & 1) b = matmul(a, b);
         a = matmul(a, a);
