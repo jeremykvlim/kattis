@@ -2,20 +2,16 @@
 using namespace std;
 
 void update(vector<vector<int>> &fenwick, int i, int j, int value) {
-    while (i < fenwick[j].size()) {
-        fenwick[j][i] = max(fenwick[j][i], value);
-        i += i & -i;
-    }
+    for (; i < fenwick[j].size(); i += i & -i) fenwick[j][i] = max(fenwick[j][i], value);
 }
+
 
 int query(vector<vector<int>> &fenwick, int i, int j) {
     int value = 0;
-    while (i) {
-        value = max(value, fenwick[j][i]);
-        i ^= i & -i;
-    }
+    for (; i; i ^= i & -i) value = max(value, fenwick[j][i]);
     return value;
 }
+
 
 int main() {
     ios::sync_with_stdio(false);
@@ -48,7 +44,7 @@ int main() {
         if (!v[2])
             for (int i = 0; i <= k; i++) update(fenwick, v[1], i, query(fenwick, v[1], i) + 1);
         else
-            for (int i = k; i >= 1; i--) update(fenwick, v[1], i, query(fenwick, v[1], i - 1) + 1);
+            for (int i = k; i; i--) update(fenwick, v[1], i, query(fenwick, v[1], i - 1) + 1);
 
     int diversity = 0;
     for (int i = 1; i <= n; i++) diversity = max(diversity, query(fenwick, count, i));
