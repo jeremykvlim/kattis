@@ -1,22 +1,18 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void update(int i, int val, int inspections, vector<int> &fenwick, vector<bool> &continuous) {
+void update(int i, int val, int inspections, vector<int> &fenwick, vector<bool> &attend) {
     if (i >= inspections) return;
-    continuous[i] = val != -1;
-    while (i < fenwick.size()) {
-        fenwick[i] += val;
-        i = i | (i + 1);
-    }
+    
+    attend[i] = val != -1;
+    for (; i < fenwick.size(); i = i | (i + 1)) fenwick[i] += val;
 }
 
 int pref(int i, int inspections, vector<int> &fenwick) {
     if (i >= inspections) i = inspections - 1;
+
     int sum = 0;
-    while (i != -1) {
-        sum += fenwick[i];
-        i = (i & (i + 1)) - 1;
-    }
+    for (; ~i; i = (i & (i + 1)) - 1) sum += fenwick[i];
     return sum;
 }
 
@@ -56,6 +52,7 @@ int main() {
     curr = 0;
     for (int i = 0; i != k; i++) {
         while (!attend[curr]) curr++;
+        
         int next = *upper_bound(index[inspections[curr]].begin(), index[inspections[curr]].end(), curr);
         update(curr, -1, k, fenwick, attend);
         cout << pref(next, k, fenwick) + 1 << " ";
