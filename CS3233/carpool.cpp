@@ -39,7 +39,7 @@ int main() {
         auto temp = dp;
         for (int j = 0; j < 1 << n; j++)
             if (time[j] < INT_MAX)
-                for (int k = (1 << n) - 1; (k &= ~j) >= 0; k--) temp[j | k] = min(max(dp[k], time[j]), temp[j | k]);
+                for (int k = ((1 << n) - 1) & ~j; k >= 0; --k &= ~j) temp[j | k] = min(max(dp[k], time[j]), temp[j | k]);
         dp = temp;
     }
 
