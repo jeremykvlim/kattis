@@ -14,8 +14,7 @@ int main() {
 
     unordered_map<int, pair<int, int>> sums;
     for (int a = 0; a < n; a++)
-        for (int b = a + 1; b < n; b++)
-            sums[set[a] + set[b]] = {a, b};
+        for (int b = a + 1; b < n; b++) sums[set[a] + set[b]] = {a, b};
 
     for (int d = n - 1; ~d; d--)
         for (int c = 0; c < n; c++) {
