@@ -31,7 +31,7 @@ public class blockcrusher {
 
                 for (int i = 0; i < 8; i++) {
                     int x = v.x + dx[i], y = v.y + dy[i];
-                    if (x >= 0 && y >= 0 && x < h && y < w && v.strength + block[x][y] - '0' < strength[x][y]) {
+                    if (0 <= x && x < h && 0 <= y && y < w && v.strength + block[x][y] - '0' < strength[x][y]) {
                         strength[x][y] = v.strength + block[x][y] - '0';
                         pq.offer(new Digit(x, y, strength[x][y], v));
                     }
@@ -66,4 +66,3 @@ public class blockcrusher {
         }
     }
 }
-
