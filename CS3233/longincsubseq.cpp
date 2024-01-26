@@ -8,10 +8,10 @@ int main() {
     int n;
     while (cin >> n) {
         vector<int> sequence(n), tail(n, 0), prev(n, -1);
-        for (int i = 0; i < n; i++) cin >> sequence[i];
-
+        for (int &e : sequence) cin >> e;
+        
         int len = 1;
-        for (int i = 1; i < n; i++) {
+        for (int i = 1; i < n; i++) 
             if (sequence[i] > sequence[tail[len - 1]]) {
                 prev[i] = tail[len - 1];
                 tail[len++] = i;
@@ -22,16 +22,15 @@ int main() {
                     if (sequence[tail[m]] >= sequence[i]) r = m;
                     else l = m;
                 }
-                
-                tail[r] = i;
-                prev[i] = r > 0 ? tail[r - 1] : -1;
-            }
-        }
 
+                tail[r] = i;
+                prev[i] = r ? tail[r - 1] : -1;
+            }
         cout << len << "\n";
+        
         vector<int> lis(len);
-        for (int i = tail[len - 1]; i >= 0; i = prev[i]) lis[--len] = i;
-        for (auto &i : lis) cout << i << " ";
+        for (int i = tail[len - 1]; ~i; i = prev[i]) lis[--len] = i;
+        for (auto &e : lis) cout << e << " ";
         cout << "\n";
     }
 }
