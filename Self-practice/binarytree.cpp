@@ -15,22 +15,22 @@ int main() {
         cin >> s >> t;
 
         stack<char> st;
-        for (char &c : s) {
+        for (char c : s) {
             if (c == 'U' && !st.empty()) st.pop();
             else st.emplace(c);
         }
 
         vector<int> left(t.size()), right(t.size()), dp(t.size() + 2);
-        int l = t.size(), r = t.size();
-        for (int i = t.size() - 1; i >= 0; i--) {
+        for (int i = t.size() - 1, l = t.size(), r = t.size(); ~i; i--) {
             left[i] = l;
             right[i] = r;
+
             if (t[i] == 'L') l = i;
             else if (t[i] == 'R') r = i;
         }
 
         dp[t.size()] = 1;
-        for (int i = t.size() - 1; i >= 0; i--)
+        for (int i = t.size() - 1; ~i; i--)
             dp[i] = (t[i] == 'U' ? dp[i + 1] : 2 * dp[i + 1] - dp[(t[i] == 'L' ? left[i] : right[i]) + 1]) % MODULO;
 
         int nodes = dp[0];
