@@ -21,8 +21,8 @@ int main() {
     }
 
     int total = t / *min_element(slowness.begin(), slowness.end()), threshold = INT_MAX;
-    while (!solvable[total]) total--;
-    if (total > 0) threshold = t / total + 1;
+    while (~total && !solvable[total]) total--;
+    if (total) threshold = t / total + 1;
 
     cout << max(k, (int) count_if(slowness.begin(), slowness.end(), [&](int s) {return s < threshold;}));
 }
