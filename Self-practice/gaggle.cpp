@@ -12,26 +12,28 @@ int main() {
     for (int &a : mentors) cin >> a;
 
     vector<bool> assigned(n, false);
-    vector<int> end(n);
+    vector<int> end(n), free(n);
     iota(end.begin(), end.end(), 0);
-    stack<int> free;
-    for (int i = n - 1; i >= 0; --i) free.emplace(i);
+    iota(free.rbegin(), free.rend(), 0);
 
     for (int i = 0; i < n; i++) {
-        if (end[i] != mentors[i] - 1) free.emplace(mentors[i] - 1);
+        if (end[i] != mentors[i] - 1) free.emplace_back(mentors[i] - 1);
         int curr = -1;
-        while (assigned[free.top()] || (i < n - 1 && end[i] == free.top())) {
-            if (!assigned[free.top()]) curr = free.top();
-            free.pop();
+        while (assigned[free.back()] || (i < n - 1 && end[i] == free.back())) {
+            if (!assigned[free.back()]) curr = free.back();
+            free.pop_back();
         }
-        int j = free.top();
-        free.pop();
-
-        if (curr != -1) free.emplace(curr);
-        swap(end[end[i]], end[end[j]]);
+        int j = free.back();
+        free.pop_back();
         mentors[i] = j + 1;
         assigned[j] = true;
+
+        int temp1 = end[i], temp2 = end[j];
+        end[temp1] = temp2;
+        end[temp2] = temp1;
+
+        if (curr != -1) free.emplace_back(curr);
     }
 
-    for (int &a : mentors) cout << a << " ";
+    for (int &b : mentors) cout << b << " ";
 }
