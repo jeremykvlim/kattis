@@ -10,8 +10,8 @@ int main() {
     string n;
     cin >> n;
 
-    long long curr = 0, prev = 1;
-    for (int i = n.size() - 1, csz = 0; i >= 0; i--)
+    auto curr = 0LL, prev = 1LL;
+    for (int i = n.size() - 1, csz = 0; ~i; i--)
         if (n[i] == '0') csz++;
         else {
             auto total = (curr + prev) % MODULO;
