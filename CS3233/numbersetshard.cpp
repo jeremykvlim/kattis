@@ -30,11 +30,11 @@ int main() {
         long long a, b, p;
         cin >> a >> b >> p;
 
-        long long size = b - a + 1;
+        auto size = b - a + 1;
         vector<int> sets(size);
         iota(sets.begin(), sets.end(), 0);
 
-        for (int i = primes.size() - 1; i >= 0 && primes[i] >= p; i--) {
+        for (int i = primes.size() - 1; ~i && primes[i] >= p; i--) {
             auto l = (primes[i] - a % primes[i]) % primes[i];
             for (auto r = l + primes[i]; r <= b - a; r += primes[i]) {
                 int l_set = find(l, sets), r_set = find(r, sets);
