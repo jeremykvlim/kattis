@@ -35,7 +35,7 @@ int main() {
     dp[0] = 0;
     for (auto [o, c, d, l] : pieces)
         for (int i = (d <= 0 ? c : total - 1); (d <= 0 ? i < total : i >= c); (d <= 0 ? i++ : i--))
-            if (dp[i] >= 0 && i + d >= 0 && i + d < total && dp[i] + l > dp[i + d]) dp[i + d] = dp[i] + l;
+            if (dp[i] >= 0 && i + d >= 0 && i + d < total && dp[i + d] < dp[i] + l) dp[i + d] = dp[i] + l;
 
     cout << dp[0];
 }
