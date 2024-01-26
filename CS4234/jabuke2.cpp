@@ -7,8 +7,9 @@ void update(vector<string> &matrix, vector<vector<int>> &above, vector<vector<in
         if (matrix[r][c] == 'x') last = r;
         above[r][c] = last;
     }
+    
     last = -1;
-    for (int r = R - 1; r >= 0; r--) {
+    for (int r = R - 1; ~r; r--) {
         if (matrix[r][c] == 'x') last = r;
         below[r][c] = last;
     }
@@ -31,17 +32,17 @@ int main() {
     cin >> R >> S;
 
     vector<string> matrix(R);
+    for (auto &r : matrix) cin >> r;
+    
     vector<vector<int>> above(R, vector<int>(S, -1)), below(R, vector<int>(S, -1));
-    for (int i = 0; i < R; i++) cin >> matrix[i];
-
     for (int s = 0; s < S; s++) update(matrix, above, below, s, R);
 
     cin >> G;
     while (G--) {
         int r, s;
         cin >> r >> s;
-
         cout << dist(above, below, --r, --s, S) << "\n";
+        
         matrix[r][s] = 'x';
         update(matrix, above, below, s, R);
     }
