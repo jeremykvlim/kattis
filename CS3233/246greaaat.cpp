@@ -20,14 +20,14 @@ int main() {
     dp[0] = 0;
     for (auto [s, i] : pos)
         for (int j = 0; j + s <= 2 * t; j++)
-            if (dp[j] != LLONG_MAX && dp[j] + D[i] < dp[j + s]) {
+            if (dp[j + s] > dp[j] + D[i] && dp[j] != LLONG_MAX) {
                 dp[j + s] = dp[j] + D[i];
                 order[j + s] = i;
             }
 
     for (auto [s, i] : neg)
         for (int j = 2 * t; j + s >= 0; j--)
-            if (dp[j] != LLONG_MAX && dp[j] + D[i] < dp[j + s]) {
+            if (dp[j + s] > dp[j] + D[i] && dp[j] != LLONG_MAX) {
                 dp[j + s] = dp[j] + D[i];
                 order[j + s] = i;
             }
