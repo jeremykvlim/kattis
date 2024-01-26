@@ -5,6 +5,7 @@ void bfs(int u, int v, vector<vector<int>> &adj_list, vector<bool> &visited, vec
     adj_list[u].emplace_back(v);
     if (visited[u]) {
         count[v]++;
+
         if (!visited[v]) {
             visited[v] = true;
             queue<int> q;
@@ -12,11 +13,13 @@ void bfs(int u, int v, vector<vector<int>> &adj_list, vector<bool> &visited, vec
             while (!q.empty()) {
                 v = q.front();
                 q.pop();
-                for (int u : adj_list[v]) {
-                    count[u]++;
-                    if (!visited[u]) {
-                        visited[u] = true;
-                        q.emplace(u);
+
+                for (int w : adj_list[v]) {
+                    count[w]++;
+
+                    if (!visited[w]) {
+                        visited[w] = true;
+                        q.emplace(w);
                     }
                 }
             }
@@ -28,30 +31,35 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n, m, q;
+    int n, m;
     cin >> n >> m;
-    
-    vector<vector<int>> adj_list(n + 1);
-    vector<pair<int, int>> edges(m + 1);
-    vector<bool> visited(n + 1), removed(m + 1);
-    vector<int> count(n + 1);
 
-    for (int i = 1; i <= m; i++) cin >> edges[i].first >> edges[i].second;
+    vector<pair<int, int>> edges(m);
+    for (auto &[u, v] : edges) cin >> u >> v;
 
+    int q;
     cin >> q;
+
     vector<pair<int, int>> queries(q);
-    for (int i = 0; i < q; i++) {
-        cin >> queries[i].first >> queries[i].second;
-        if (queries[i].first == 1) removed[queries[i].second] = true;
+    vector<bool> removed(m);
+    for (auto &[c, x] : queries) {
+        cin >> c >> x;
+
+        if (c == 1) removed[x - 1] = true;
     }
 
-    visited[1] = true;
+    vector<vector<int>> adj_list(n);
+    vector<bool> visited(n);
+    vector<int> count(n);
+    visited[0] = true;
+    for (int i = 0; i < m; i++)
+        if (!removed[i]) bfs(edges[i].first - 1, edges[i].second - 1, adj_list, visited, count);
+
+    reverse(queries.begin(), queries.end());
     stack<int> references;
-    for (int i = 1; i <= m; i++)
-        if (!removed[i]) bfs(edges[i].first, edges[i].second, adj_list, visited, count);
-    for (int i = q - 1; i >= 0; i--) {
-        if (queries[i].first == 1) bfs(edges[queries[i].second].first, edges[queries[i].second].second, adj_list, visited, count);
-        else references.emplace(count[queries[i].second]);
+    for (auto &[c, x] : queries) {
+        if (c == 1) bfs(edges[x - 1].first - 1, edges[x - 1].second - 1, adj_list, visited, count);
+        else references.emplace(count[x - 1]);
     }
 
     while (!references.empty()) {
