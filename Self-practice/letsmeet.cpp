@@ -3,9 +3,11 @@ using namespace std;
 
 void rref(int n, vector<vector<double>> &matrix) {
     for (int i = 0; i < n; i++) {
-        swap(matrix[i], matrix[max_element(matrix.begin() + i, matrix.end(), [&](auto r1, auto r2) {return fabs(r1[i]) < fabs(r2[i]);}) - matrix.begin()]);
+        int d = max_element(matrix.begin() + i, matrix.end(), [&](auto r1, auto r2) {return fabs(r1[i]) < fabs(r2[i]);}) - matrix.begin();
+        swap(matrix[i], matrix[d]);
+        
         for (int j = i + 1; j < n; j++) {
-            for (int k = i + 1; k <= n; k++) matrix[j][k] -=  matrix[i][k] * matrix[j][i] / matrix[i][i];
+            for (int k = i + 1; k <= n; k++) matrix[j][k] -= matrix[i][k] * matrix[j][i] / matrix[i][i];
             matrix[j][i] = 0;
         }
     }
