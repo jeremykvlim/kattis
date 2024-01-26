@@ -13,16 +13,15 @@ int main() {
         long long a;
         cin >> a;
 
-        for (int i = 59; i >= 0; i--) {
+        for (int i = 59; ~i; i--) 
             if (a >> i & 1) {
                 if (!basis[i]) basis[i] = a;
                 a ^= basis[i];
             }
-        }
     }
 
-    long long sum = 0;
-    for (int i = 59; i >= 0; i--)
+    auto sum = 0LL;
+    for (int i = 59; ~i; i--)
         if (basis[i] && !(sum >> i & 1)) sum ^= basis[i];
 
     cout << sum;
