@@ -17,7 +17,7 @@ int main() {
         long long x, y;
         char c;
         cin >> x >> y >> c;
-        
+
         if (c == 'Y') points.emplace_back(x, y);
     }
     sort(points.begin(), points.end(), [&](auto p1, auto p2) {return p1.first != p2.first ? p1.first < p2.first : p1.second < p2.second;});
@@ -34,6 +34,9 @@ int main() {
     }
 
     cout << points.size() << "\n";
-    for (int i = 0; i < bot.size() - 1; i++) cout << bot[i].first << " " << bot[i].second << "\n";
-    for (int i = top.size() - 1; i; i--) cout << top[i].first << " " << top[i].second << "\n";
+    bot.pop_back();
+    reverse(top.begin(), top.end());
+    top.pop_back();
+    for (auto [x, y] : bot) cout << x << " " << y << "\n";
+    for (auto [x, y] : top) cout << x << " " << y << "\n";
 }
