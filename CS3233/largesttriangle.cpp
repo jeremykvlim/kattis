@@ -16,7 +16,7 @@ int monotone(int n, vector<pair<int, int>> &points, vector<pair<int, int>> &conv
     }
 
     int k = size;
-    for (int i = n - 2; i >= 0; i--) {
+    for (int i = n - 2; ~i; i--) {
         while (size > k && cross(convex[size - 2], convex[size - 1], points[i]) <= 0) size--;
         convex[size++] = points[i];
     }
@@ -43,5 +43,5 @@ int main() {
                 area = max(area, cross(convex[i], convex[j], convex[k % size]));
             }
 
-    cout << fixed << setprecision(5) << area / 2.0;
+    cout << fixed << setprecision(5) << area / 2;
 }
