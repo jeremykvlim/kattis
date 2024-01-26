@@ -16,7 +16,7 @@ int main() {
     dp[0] = true;
     int total = accumulate(weights.begin(), weights.end(), 0);
     for (int i = c, j = n - 1; i; i--) {
-        for (; j >= 0 && weights[j] == i + 1; j--) {
+        for (; ~j && weights[j] == i + 1; j--) {
             total -= i + 1;
             for (int k = c; k >= i + 1; k--)
                 if (dp[k - i - 1]) dp[k] = true;
