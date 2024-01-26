@@ -18,8 +18,8 @@ int main() {
         cin >> e >> p;
 
         int prob = int(round(p * 10000));
-        for (int i = j; i >= 0; i--)
-            if (dp[i + prob] - e > dp[i]) {
+        for (int i = j; ~i; i--)
+            if (dp[i + prob] > dp[i] + e) {
                 dp[i + prob] = dp[i] + e;
                 j = max(j, i + prob);
             }
