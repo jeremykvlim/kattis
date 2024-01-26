@@ -1,58 +1,64 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+bool ref(int n, vector<vector<bool>> &valid) {
+    auto matrix = valid;
+    for (int i = 0; i < n; i++) {
+        int d = find_if(matrix.begin() + i, matrix.end(), [i](auto r) {return r[i];}) - matrix.begin();
+
+        if (d == matrix.size()) return false;
+
+        swap(matrix[d], matrix[i]);
+        swap(valid[d], valid[i]);
+
+        for (int j = i + 1; j < matrix.size(); j++) {
+            for (int k = i + 1; k <= n; k++) matrix[j][k] = matrix[j][k] - matrix[i][k] * matrix[j][i] / matrix[i][i];
+            matrix[j][i] = false;
+        }
+    }
+
+    return true;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     int n, p;
     cin >> n >> p;
-    
-    vector<bool> palette(n + 1, false);
+
+    vector<bool> P(n + 1, false);
     while (p--) {
         int s;
         cin >> s;
-        palette[s] = true;
+
+        P[s] = true;
     }
 
-    vector<vector<bool>> moves = {vector<bool>(n)};
+    vector<vector<bool>> valid = {vector<bool>(n, false)};
     for (int i = 0; i < 1 << n; i++) {
         vector<bool> bits(n, false);
         for (int j = 0; j < n; j++) bits[j] = (i >> j) & 1;
-        if (palette[count(bits.begin(), bits.end(), true)]) moves.emplace_back(bits);
+
+        if (P[count(bits.begin(), bits.end(), true)]) valid.emplace_back(bits);
     }
 
-    vector<vector<bool>> matrix = moves;
-    for (int r = 0; r < n; r++) {
-        bool possible = false;
-        for (int i = r; i < matrix.size(); i++)
-            if (matrix[i][r]) {
-                swap(matrix[i], matrix[r]);
-                swap(moves[i], moves[r]);
-                for (int j = i + 1; j < matrix.size(); j++)
-                    if (matrix[j][r])
-                        for (int k = 0; k < n; k++) matrix[j][k] = matrix[j][k] != matrix[r][k];
-                possible = true;
-                break;
-            }
-        
-        if (!possible) {
-            cout << "impossible\n";
-            exit(0);
-        }
+    if (!ref(n, valid)) {
+        cout << "impossible";
+        exit(0);
     }
 
-    vector<vector<bool>> code = {vector<bool>(n)};
-    moves.resize(n);
-    for (auto m : moves)
-        for (int i = code.size() - 1; i >= 0; i--) {
-            vector<bool> line(n);
-            for (int j = 0; j < n; j++) line[j] = code[i][j] != m[j];
-            code.emplace_back(line);
+    vector<vector<bool>> code = {vector<bool>(n, false)};
+    valid.resize(n);
+    for (auto m : valid)
+        for (int i = code.size() - 1; ~i; i--) {
+            vector<bool> x(n);
+            for (int j = 0; j < n; j++) x[j] = code[i][j] ^ m[j];
+            code.emplace_back(x);
         }
 
-    for (auto &line : code) {
-        for (bool b : line) cout << b;
+    for (auto &x : code) {
+        for (bool b : x) cout << b;
         cout << "\n";
     }
 }
