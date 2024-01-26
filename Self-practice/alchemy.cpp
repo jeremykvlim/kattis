@@ -37,7 +37,7 @@ int main() {
 
         most += best[i];
         int curr = energy[i];
-        for (int j = ancestors[i]; j >= 0; j--) {
+        for (int j = ancestors[i]; ~j; j--) {
             if (curr == best[i]) required[i] = j;
             curr -= (j & 1 ? circles[i].a : circles[i].b);
         }
@@ -45,22 +45,21 @@ int main() {
 
     cout << most << "\n";
 
-    vector<bool> activated(n);
-    for (int i = 0; i < n; i++) {
-        if (i) cout << " ";
-        vector<bool> skip(n, false);
+    vector<bool> activated(n), skip(n, false);
+    while (n--) {
+        fill(skip.begin(), skip.end(), false);
         int draw = -1;
-        for (int j = 0; j < n; j++) {
-            if (skip[j]) skip[parent[j]] = true;
-            if (activated[j] || skip[j]) continue;
-            if (energy[j] == best[j] && (draw == -1 || circles[j].i < circles[draw].i)) draw = j;
-            if (ancestors[j] == required[j]) skip[parent[j]] = true;
+        for (int i = 0; i < activated.size(); i++) {
+            if (skip[i]) skip[parent[i]] = true;
+            if (activated[i] || skip[i]) continue;
+            if (energy[i] == best[i] && (draw == -1 || circles[i].i < circles[draw].i)) draw = i;
+            if (ancestors[i] == required[i]) skip[parent[i]] = true;
         }
 
         activated[draw] = true;
-        for (int j = 0; j < draw; j++)
-            if (pow(circles[j].x - circles[draw].x, 2) + pow(circles[j].y - circles[draw].y, 2) < pow(circles[draw].r, 2)) energy[j] -= (ancestors[j]-- & 1 ? circles[j].a : circles[j].b);
+        for (int i = 0; i < draw; i++)
+            if (pow(circles[i].x - circles[draw].x, 2) + pow(circles[i].y - circles[draw].y, 2) < pow(circles[draw].r, 2)) energy[i] -= (ancestors[i]-- & 1 ? circles[i].a : circles[i].b);
 
-        cout << circles[draw].i;
+        cout << circles[draw].i << (n ? " " : "");
     }
 }
