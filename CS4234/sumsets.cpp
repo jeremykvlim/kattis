@@ -17,7 +17,7 @@ int main() {
         for (int b = a + 1; b < n; b++)
             sums[set[a] + set[b]] = {a, b};
 
-    for (int d = n - 1; d >= 0; d--)
+    for (int d = n - 1; ~d; d--)
         for (int c = 0; c < n; c++) {
             if (c == d) continue;
 
