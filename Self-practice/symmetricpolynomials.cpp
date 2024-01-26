@@ -13,12 +13,12 @@ int main() {
     cin >> n;
 
     vector<int> x(n + 1);
-    for (int i = n; i >= 0; i--) cin >> x[i];
+    for (int i = n; ~i; i--) cin >> x[i];
 
     cin >> n;
 
     vector<int> y(n + 1);
-    for (int i = n; i >= 0; i--) cin >> y[i];
+    for (int i = n; ~i; i--) cin >> y[i];
 
     int degree = max(x.size(), y.size()) - 1, a = degree & 1 ? x[degree] : y[degree], b = degree & 1 ? y[degree] : -x[degree];
     if (!a && !b) {
