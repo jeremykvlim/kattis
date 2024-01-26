@@ -26,7 +26,7 @@ public class millionairemadness {
 
             for (int i = 0; i < 4; i++) {
                 int xi = x + dx[i], yi = y + dy[i];
-                if (xi >= 0 && xi < m && yi >= 0 && yi < n && !visited[xi][yi])
+                if (0 <= xi && xi < m && 0 <= yi && yi < n && !visited[xi][yi])
                     pq.add(new Pair(-Math.max(0, matrix[xi][yi] - matrix[x][y]), xi * n + yi));
             }
         }
