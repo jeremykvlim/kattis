@@ -9,27 +9,27 @@ int main() {
     cin >> l1 >> l2 >> n;
 
     vector<int> tubes(n);
-    for (int &l : tubes) cin >> l;
+    for (int &t : tubes) cin >> t;
     sort(tubes.begin(),tubes.end());
 
-    int air = -1, x = n - 1;
-    for (int i = 0; i < n; i++) {
-        while (x >= 0 && tubes[i] + tubes[x] > l1) x--;
-        if (x < 0) break;
+    int air = -1;
+    for (int i = n - 1, j = 0; j < n; j++) {
+        while (~i && tubes[j] + tubes[i] > l1) i--;
+        if (i < 0) break;
 
-        for (int j = x, y = n - 1; j > x - 4 && j >= 0; j--) {
-            if (i == j) continue;
+        for (int k = i; ~k && k > i - 4; k--) {
+            if (j == k) continue;
 
-            for (int k = 0; k < n; k++) {
-                if (k == i || k == j) continue;
-                while (y >= 0 && (tubes[k] + tubes[y] > l2 || y == i || y == j || y == k)) y--;
-                if (y < 0) break;
+            for (int l = 0, m = n - 1; l < n; l++) {
+                if (l == j || l == k) continue;
 
-                air = max(air, tubes[i] + tubes[j] + tubes[k] + tubes[y]);
+                while (~m && (tubes[l] + tubes[m] > l2 || m == j || m == k || m == l)) m--;
+                if (m < 0) break;
+
+                air = max(air, tubes[j] + tubes[k] + tubes[l] + tubes[m]);
             }
         }
     }
 
-    if (air >= 0) cout << air;
-    else cout << "Impossible";
+    cout << (air == -1 ? "Impossible" : to_string(air));
 }
