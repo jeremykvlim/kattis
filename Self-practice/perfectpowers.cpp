@@ -8,7 +8,7 @@ int main() {
     long long x;
     while (cin >> x && x) {
         int p = 1;
-        for (long long b = 2; b * b <= abs(x); b++) {
+        for (auto b = 2LL; b * b <= abs(x); b++) {
             auto a = b * b;
             p = 2;
             while (a < abs(x)) {
