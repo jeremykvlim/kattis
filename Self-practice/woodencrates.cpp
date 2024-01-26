@@ -19,7 +19,7 @@ long long rearrange(long long d, long long total, vector<int> crates) {
 
     auto last = d - 1;
     if (d == crates.size()) {
-        while (last >= 0 && crates[last] == average) last--;
+        while (~last && crates[last] == average) last--;
         if (last == -1) return 0;
     }
 
