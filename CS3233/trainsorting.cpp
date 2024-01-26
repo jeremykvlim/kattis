@@ -12,7 +12,7 @@ int main() {
     for (auto &w : weight) cin >> w;
 
     int cars = 0;
-    for (int i = n - 1; i >= 0; i--) {
+    for (int i = n - 1; ~i; i--) {
         for (int j = i + 1; j < n; j++) {
             if (weight[j] > weight[i]) lis[i] = max(lis[i], lis[j] + 1);
             else if (weight[j] < weight[i]) lds[i] = max(lds[i], lds[j] + 1);
