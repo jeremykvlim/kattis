@@ -22,9 +22,10 @@ int main() {
         else if (front_time - 2 < -40) cout << "Max crosses safely after bicycle 10\n";
         else {
             auto front_segment = (int) (front_time - 1e-9) / -2, back_segment = (int) (back_time - 1e-9) / -2;
-            if (front_segment == back_segment && front_segment & 1) cout << "Max crosses safely after bicycle " << front_segment / 2 + 1 << "\n";
+            
+            if (front_segment == back_segment && front_segment % 2) cout << "Max crosses safely after bicycle " << front_segment / 2 + 1 << "\n";
             else if (front_segment < 0) cout << "Collision with bicycle 1\n";
-            else cout << "Collision with bicycle " << front_segment / 2 + 1 + front_segment % 2 << "\n";
+            else cout << "Collision with bicycle " << (front_segment / 2 + 1 + front_segment % 2) << "\n";
         }
     }
 }
