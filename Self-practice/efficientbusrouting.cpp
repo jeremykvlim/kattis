@@ -5,6 +5,7 @@ vector<int> dfs(int v, int parent, vector<vector<int>> &adj_list) {
     vector<int> leaves;
     for (int u : adj_list[v]) {
         if (u == parent) continue;
+        
         auto children = dfs(u, v, adj_list);
         leaves.insert(leaves.end(), children.begin(), children.end());
     }
@@ -24,11 +25,12 @@ int main() {
     for (int i = 0; i < n - 1; i++) {
         int u, v;
         cin >> u >> v;
+        
         adj_list[u - 1].emplace_back(v - 1);
         adj_list[v - 1].emplace_back(u - 1);
     }
 
-    int root = distance(adj_list.begin(), find_if(adj_list.begin(), adj_list.end(), [&](auto neighbors) {return neighbors.size() > 1;}));
+    int root = find_if(adj_list.begin(), adj_list.end(), [&](auto neighbors) {return neighbors.size() > 1;}) - adj_list.begin();
     auto leaves = dfs(root, root, adj_list);
 
     int size = leaves.size();
