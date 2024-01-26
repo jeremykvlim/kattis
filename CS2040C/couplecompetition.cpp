@@ -18,7 +18,7 @@ int main() {
 
     vector<vector<int>> adj_list(n);
     auto construct = [&](stack<int> s, bool reverse) {
-        for (int i = (reverse ? n - 1 : 0); (reverse ? i >= 0 : i < n); (reverse ? i-- : i++)) {
+        for (int i = (reverse ? n - 1 : 0); (reverse ? ~i : i < n); (reverse ? i-- : i++)) {
             while (!s.empty() && blocks[s.top()] < blocks[i]) {
                 adj_list[i].emplace_back(s.top());
                 s.pop();
@@ -51,5 +51,5 @@ int main() {
             }
     }
 
-    for (int i = 0; i < n; i++) cout << dist[i] << " ";
+    for (auto d : dist) cout << d << " ";
 }
