@@ -14,10 +14,9 @@ vector<vector<int>> matmul(vector<vector<int>> &a, vector<vector<int>> &b) {
 
 vector<vector<int>> matpow(vector<vector<int>> a, int n) {
     vector<vector<int>> b{{1, 0}, {0, 1}};
-    while (n) {
+    for (; n; n >>= 1) {
         if (n & 1) b = matmul(a, b);
         a = matmul(a, a);
-        n >>= 1;
     }
 
     return b;
