@@ -42,7 +42,7 @@ int main() {
         }
 
         auto arg = 1.0;
-        for (int j = i - 1; j >= 0; j--)  {
+        for (int j = i - 1; ~j; j--)  {
             arg *= -t;
             curr[j] -= C(i , j) * arg * curr[i];
         }
