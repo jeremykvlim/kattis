@@ -9,8 +9,8 @@ int main() {
     cin >> n;
 
     vector<int> a(n);
-    int biggest = -1, count = 0;
-    for (int i = 0; i < n; i++) {
+    int count = 0;
+    for (int i = 0, biggest = -1; i < n; i++) {
         cin >> a[i];
 
         if (a[i] > biggest) {
