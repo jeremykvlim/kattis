@@ -10,7 +10,7 @@ void rref(int n, vector<vector<double>> &matrix) {
         }
     }
     
-    for (int i = n - 1; i >= 0; i--) {
+    for (int i = n - 1; ~i; i--) {
         for (int j = n - 1; j > i; j--) matrix[i][n] -= matrix[i][j] * matrix[j][n];
         matrix[i][n] /= matrix[i][i];
     }
@@ -47,6 +47,7 @@ int main() {
     while (!q.empty()) {
         auto [u, v] = q.front();
         q.pop();
+        
         for (int i = 0; i < n; i++)
             for (int j = 0; j < n; j++)
                 if (adj_matrix[u][i] && adj_matrix[v][j] && !meet[i][j]) {
