@@ -49,7 +49,7 @@ int main() {
     }
 
     vector<vector<int>> adj_list(n);
-    vector<bool> visited(n);
+    vector<bool> visited(n, false);
     vector<int> count(n);
     visited[0] = true;
     for (int i = 0; i < m; i++)
