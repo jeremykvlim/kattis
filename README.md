@@ -12,7 +12,7 @@ Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizat
 
 * Design and Analysis of Algortithms: CS3230 (`C++`/`Java`/`Python`)
 
-* Competitive Programming: CS3233 (any language of choice)
+* Competitive Programming: CS3233 (`C++`/`Java`/`Python`)
 
 * Optimization Algorithms: CS4234 (`C++`/`Java`/`Python`)
 
