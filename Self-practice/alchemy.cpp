@@ -31,13 +31,13 @@ int main() {
         for (int j = i + 1; j < n; j++)
             if (pow(circles[i].x - circles[j].x, 2) + pow(circles[i].y - circles[j].y, 2) < pow(circles[j].r, 2)) {
                 if (!parent[i]) parent[i] = j;
+
                 energy[i] += (++ancestors[i] & 1 ? circles[i].a : circles[i].b);
                 best[i] = max(best[i], energy[i]);
             }
 
         most += best[i];
-        int curr = energy[i];
-        for (int j = ancestors[i]; ~j; j--) {
+        for (int j = ancestors[i], curr = energy[i]; ~j; j--) {
             if (curr == best[i]) required[i] = j;
             curr -= (j & 1 ? circles[i].a : circles[i].b);
         }
