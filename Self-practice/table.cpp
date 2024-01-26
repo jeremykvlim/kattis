@@ -18,18 +18,20 @@ int main() {
     }
 
     for (int l = 0; l < Y; l++)
-        for (int w = X - 2; w >= 0; w--)
+        for (int w = X - 2; ~w; w--)
             if (table[w][l]) table[w][l] = table[w + 1][l] + 1;
 
     for (auto &r : table) {
         stack<pair<int, int>> s;
         s.emplace(0, 0);
+        
         r.emplace_back(0);
         for (int i = 0; i < r.size(); i++) {
             auto p = make_pair(i, r[i]);
             while (r[i] < s.top().second) {
                 p = s.top();
                 s.pop();
+                
                 dp[p.second][i - p.first]++;
                 dp[max(r[i], s.top().second)][i - p.first]--;
             }
@@ -38,16 +40,17 @@ int main() {
     }
 
     for (int w = 0; w <= X; w++) {
-        for (int l = Y; l > 0; l--) dp[w][l - 1] += dp[w][l];
-        for (int l = Y; l > 0; l--) dp[w][l - 1] += dp[w][l];
+        for (int l = Y; l; l--) dp[w][l - 1] += dp[w][l];
+        for (int l = Y; l; l--) dp[w][l - 1] += dp[w][l];
     }
 
     for (int l = 0; l <= Y; l++)
-        for (int w = X; w > 0; w--) dp[w - 1][l] += dp[w][l];
+        for (int w = X; w; w--) dp[w - 1][l] += dp[w][l];
 
     while (d--) {
         int x, y;
         cin >> x >> y;
+        
         cout << dp[x][y] << "\n";
     }
 }
