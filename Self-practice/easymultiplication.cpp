@@ -55,7 +55,7 @@ int main() {
 
         stack<int> indices;
         indices.emplace(dist[0].second);
-        for (int i = dist[0].second - 1, v = 1; i >= 0; i--)
+        for (int i = dist[0].second - 1, v = 1; ~i; i--)
             if (find(transpose[v].begin(), transpose[v].end(), (2 * v) % m) != transpose[v].end() && visited[(2 * v) % m]) v = (2 * v) % m;
             else {
                 v = (2 * v + 1) % m;
