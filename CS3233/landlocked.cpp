@@ -31,7 +31,7 @@ int main() {
         char u = countries[i][j];
         for (int k = -1; k <= 1; k++)
             for (int l = -1; l <= 1; l++)
-                if (i + k >= 0 && i + k < n && j + l >= 0 && j + l < m) {
+                if (0 <= i + k && i + k < n && 0 <= j + l && j + l < m) {
                     char v = countries[i + k][j + l];
                     if (u == v) {
                         dist[i + k][j + l] = min(dist[i + k][j + l], dist[i][j]);
@@ -48,5 +48,5 @@ int main() {
         for (int j = 0; j < m; j++) letters[countries[i][j] - 'A'] = min(letters[countries[i][j] - 'A'], dist[i][j]);
 
     for (int i = 0; i < 26; i++)
-        if (letters[i] >= 0 && letters[i] < INT_MAX) cout << char('A' + i) << " " << letters[i] << "\n";
+        if (0 <= letters[i] && letters[i] < INT_MAX) cout << char('A' + i) << " " << letters[i] << "\n";
 }
