@@ -41,7 +41,7 @@ int main() {
 
         if (1 <= v && v <= n) {
             reverse(hops.begin(), hops.end());
-            int len = distance(hops.begin(), find(hops.begin(), hops.end(), v));
+            int len = find(hops.begin(), hops.end(), v) - hops.begin();
             if (len < hops.size())
                 for (int j = 0; j <= len; j++) {
                     root[hops[j]] = hops.front();
