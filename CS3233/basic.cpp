@@ -11,40 +11,61 @@ int main() {
 
     int n;
     cin >> n;
-    
+
     while (n--) {
-        string line;
-        cin >> line;
-        
-        double radix = 0, number = 0;
+        string s;
+        cin >> s;
+
+        double radix = 0, num = 0;
         int state = 1;
         bool valid = true;
-        
-        for (char c : line) {
+        for (char c : s) {
             if (!valid) break;
+
             int digit = ascii[c];
             switch (state) {
                 case 1:
-                    valid = digit >= 0 && digit <= 9;
-                    if (valid) number = digit, state = 2;
+                    valid = 0 <= digit && digit <= 9;
+                    if (valid) {
+                        num = digit;
+                        state = 2;
+                    }
                     break;
                 case 2:
-                    if (c == '#') valid = number >= 2 && number <= 16, radix = number, number = 0, state = 3;
-                    else valid = digit >= 0 && digit <= 9, number = number * 10 + digit;
+                    if (c == '#') {
+                        valid = 2 <= num && num <= 16;
+                        radix = num;
+                        num = 0;
+                        state = 3;
+                    }
+                    else {
+                        valid = 0 <= digit && digit <= 9;
+                        num = num * 10 + digit;
+                    }
                     break;
                 case 3:
-                    valid = digit >= 0 && digit < radix;
-                    if (valid) number = digit, state = 4;
+                    valid = 0 <= digit && digit < radix;
+                    if (valid) {
+                        num = digit;
+                        state = 4;
+                    }
                     break;
                 case 4:
                     if (c == '#') state = 5;
-                    else valid = digit >= 0 && digit < radix, number = number * radix + digit;
+                    else {
+                        valid = 0 <= digit && digit < radix;
+                        num = num * radix + digit;
+                    }
                     break;
                 case 5:
-                    valid = c == '#' && number >= 2 && number <= 16, radix = number, number = 0, state = 3;
+                    valid = c == '#' && 2 <= num && num <= 16;
+                    radix = num;
+                    num = 0;
+                    state = 3;
                     break;
             }
         }
-        cout << (valid && (state == 2 || state == 5) ? "yes" : "no") << "\n";
+
+        cout << (valid && (state == 2 || state == 5) ? "yes\n" : "no\n");
     }
 }
