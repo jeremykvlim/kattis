@@ -2,8 +2,11 @@
 using namespace std;
 
 bool cmp(tuple<int, int, int, int> t1, tuple<int, int, int, int> t2) {
-    if ((get<2>(t1) > 0) ^ (get<2>(t2) > 0)) return get<2>(t2) < get<2>(t1);
-    return get<2>(t1) > 0 ? (get<1>(t1) == get<1>(t2) ? get<2>(t2) < get<2>(t1) : get<1>(t1) < get<1>(t2)) : (get<0>(t1) == get<0>(t2) ? get<2>(t2) < get<2>(t1) : get<0>(t2) < get<0>(t1));
+    auto [o1, c1, d1, l1] = t1;
+    auto [o2, c2, d2, l2] = t2;
+    if ((d1 > 0) ^ (d2 > 0)) return d2 < d1;
+    else if (d1 > 0) return c1 == c2 ? d2 < d1 : c1 < c2;
+    else return o1 == o2 ? d2 < d1 : o2 < o1;
 }
 
 int main() {
@@ -28,7 +31,6 @@ int main() {
 
         pieces[i] = make_tuple(open, close, open - close, s.length());
     }
-
     sort(pieces.begin(), pieces.end(), cmp);
 
     vector<int> dp(total, -1);
