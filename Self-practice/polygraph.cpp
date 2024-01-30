@@ -30,20 +30,17 @@ int main() {
         }
 
         for (int i = 1; i <= n; i++) {
-            bitset<501> curr(1);
-            for (auto b : bitmasks)
-                if (b[i]) {
+            for (auto mask : bitmasks)
+                if (mask[i]) {
                     bitset<501> temp;
                     for (int j = 1; j < i; j++) temp.set(j);
-                    if ((b & temp).none()) {
-                        curr = b;
+
+                    if ((mask & temp).none()) {
+                        for (auto &bm : bitmasks)
+                            if (bm[i] && bm != mask) bm ^= mask;
                         break;
                     }
                 }
-
-            if (curr != 1)
-                for (auto &b : bitmasks)
-                    if (b[i] && b != curr) b ^= curr;
         }
 
         sort(bitmasks.begin(), bitmasks.end(), [](auto b1, auto b2) {return b1.to_string() < b2.to_string();});
@@ -52,7 +49,7 @@ int main() {
             int msb = b._Find_first();
             while (b._Find_next(msb) != 501) msb = b._Find_next(msb);
 
-            if (msb >= 1 && (bitset<501>(1) << (msb - 1)) == b >> 1) cities[msb - 1] = b[0] ? 'T' : 'L';
+            if (msb && (bitset<501>(1) << (msb - 1)) == b >> 1) cities[msb - 1] = b[0] ? 'T' : 'L';
         }
 
         cout << "Case #" << x + 1 << ": ";
