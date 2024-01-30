@@ -30,8 +30,7 @@ int main() {
         }
 
         for (int i = 1; i <= n; i++) {
-            bitset<501> curr;
-            curr.set(0);
+            bitset<501> curr(1);
             for (auto b : bitmasks)
                 if (b[i]) {
                     bitset<501> temp;
