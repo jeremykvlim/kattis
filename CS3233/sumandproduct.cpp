@@ -11,6 +11,7 @@ int main() {
     vector<int> v{0}, numbers(n + 1, 0);
     for (int i = 1; i <= n; i++) {
         cin >> numbers[i];
+        
         if (numbers[i] > 1) v.emplace_back(i);
     }
     v.emplace_back(n + 1);
@@ -28,7 +29,7 @@ int main() {
 
             int l = v[i] - v[i - 1] - 1, r = v[j + 1] - v[j] - 1;
             if (sum == product) ways++;
-            else if (product > sum && product <= sum + l + r) ++ways += sum + l + r - product - max(0LL, sum + l - product) - max(0LL, sum + r - product);
+            else if (sum < product && product <= sum + l + r) ways += sum + l + r + 1 - product - max(0LL, sum + l - product) - max(0LL, sum + r - product);
             sum -= v[j] - v[i] + i - j;
         }
     }
