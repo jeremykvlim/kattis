@@ -27,7 +27,7 @@ int main() {
     vector<vector<vector<double>>> dp(n - 1, vector<vector<double>>(k + 1, vector<double>(2, DBL_MAX)));
     dp[0][0][0] = 0;
     dp[0][0][1] = len[0] / 180;
-    for (int i = 1; i < n - 1 && angle[i] >= 180 - EPSILON; i++) {
+    for (int i = 1; i < n - 1 && angle[i] >= 180 - 1e-9; i++) {
         dp[i][0][0] = dp[i - 1][0][1];
         dp[i][0][1] = dp[i][0][0] + len[i] / 180;
     }
