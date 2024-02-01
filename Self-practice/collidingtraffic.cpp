@@ -20,6 +20,7 @@ int main() {
         for (int i = 0; i < n; i++) {
             long double d, s;
             cin >> position[i].first >> position[i].second >> d >> s;
+            
             velocity[i] = {s * cos((90 - d) / 180 * acos(-1)), s * sin((90 - d) / 180 * acos(-1))};
         }
 
