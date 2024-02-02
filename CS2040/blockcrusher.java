@@ -21,9 +21,7 @@ public class blockcrusher {
             for (int i = 0; i < w; i++)
                 pq.offer(new Digit(0, i, block[0][i] - '0', null));
 
-
             int[] dx = {1, 1, 1, -1, -1, -1, 0, 0}, dy = {-1, 0, 1, -1, 0, 1, -1, 1};
-
             Digit min = null;
             while (!pq.isEmpty()) {
                 var v = pq.poll();
