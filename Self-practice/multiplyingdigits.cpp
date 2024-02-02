@@ -14,11 +14,11 @@ int main() {
         exit(0);
     }
 
-    vector<int> factors;
+    vector<int> pf;
     auto num = N;
     for (int i = 2; i < b; i++)
         if (!(N % i)) {
-            factors.emplace_back(i);
+            pf.emplace_back(i);
             while (!(num % i)) num /= i;
         }
 
@@ -29,8 +29,8 @@ int main() {
 
     map<long long, long long> f_inv{{1, 0}};
     for (auto [n, x] : f_inv)
-        for (int i = lower_bound(factors.begin(), factors.end(), x % b) - factors.begin(); i < factors.size(); i++) {
-            int f = factors[i];
+        for (int i = lower_bound(pf.begin(), pf.end(), x % b) - pf.begin(); i < pf.size(); i++) {
+            int f = pf[i];
             if ((__int128) x * b + f > LLONG_MAX || N < n * f) break;
             if (!(N % (n * f))) f_inv[n * f] = min(f_inv[n * f] ? f_inv[n * f] : LLONG_MAX, x * b + f);
         }
