@@ -5,21 +5,21 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n, m;
+    int n;
     cin >> n;
 
     vector<int> costs(n);
-    for (auto &c : costs) cin >> c;
+    for (int &c : costs) cin >> c;
 
+    int m;
     cin >> m;
     vector<int> orders(m);
-    for (auto &s : orders) cin >> s;
-    int biggest = *max_element(orders.begin(), orders.end());
+    for (int &s : orders) cin >> s;
 
-    vector<long long> dp(biggest + 1, 0);
+    vector<long long> dp(*max_element(orders.begin(), orders.end()) + 1, 0);
     dp[0] = 1;
-    for (auto c : costs)
-        for (int i = c; i <= biggest; i++) dp[i] += dp[i - c];
+    for (int c : costs)
+        for (int i = c; i < dp.size(); i++) dp[i] += dp[i - c];
 
     for (int s : orders) {
         if (!dp[s]) cout << "Impossible\n";
