@@ -15,14 +15,14 @@ int main() {
     }
 
     vector<int> pf;
-    auto num = N;
+    auto temp = N;
     for (int i = 2; i < b; i++)
         if (!(N % i)) {
             pf.emplace_back(i);
-            while (!(num % i)) num /= i;
+            while (!(temp % i)) temp /= i;
         }
 
-    if (num > 1) {
+    if (temp > 1) {
         cout << "impossible";
         exit(0);
     }
