@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class Solution {
+public class lastfactorialdigit {
     public static void main(String[] args) {
         var sc = new Scanner(System.in);
         int t = sc.nextInt();
