@@ -5,47 +5,42 @@ public class t9spelling {
         var br = new BufferedReader(new InputStreamReader(System.in));
         int n = Integer.parseInt(br.readLine());
 
-        int[] prev = {-1};
-        int number, repetitions, count = 1;
+        int count = 1;
         while (n-- > 0) {
-            System.out.print("Case #"+(count++)+": ");
-            var line = br.readLine();
-            for (int i = 0; i < line.length(); i++) {
-                char letter = line.charAt(i);
-
-                if (letter == ' ') {
+            int[] prev = {-1};
+            int num, repetitions;
+            System.out.print("Case #" + (count++) + ": ");
+            var line = br.readLine().toCharArray();
+            for (char c : line) {
+                if (c == ' ') {
                     repetitions = 1;
-                    number = 0;
-                    pressNumber(repetitions, number, prev);
-                }
-                else if (letter == 's') {
+                    num = 0;
+                    press(repetitions, num, prev);
+                } else if (c == 's') {
                     repetitions = 4;
-                    number = 7;
-                    pressNumber(repetitions, number, prev);
-                }
-                else if (letter == 'z') {
+                    num = 7;
+                    press(repetitions, num, prev);
+                } else if (c == 'z') {
                     repetitions = 4;
-                    number = 9;
-                    pressNumber(repetitions, number, prev);
-                }
-                else if (letter < 116) {
-                    repetitions = (letter - 'a') % 3 + 1;
-                    number = (letter - 'a') / 3 + 2;
-                    pressNumber(repetitions, number, prev);
-                }
-                else if (letter < 123) {
-                    repetitions = (letter - 'a' - 1) % 3 + 1;
-                    number = (letter - 'a' - 1) / 3 + 2;
-                    pressNumber(repetitions, number, prev);
+                    num = 9;
+                    press(repetitions, num, prev);
+                } else if (c < 's') {
+                    repetitions = (c - 'a') % 3 + 1;
+                    num = (c - 'a') / 3 + 2;
+                    press(repetitions, num, prev);
+                } else if (c < 'z') {
+                    repetitions = (c - 'a' - 1) % 3 + 1;
+                    num = (c - 'a' - 1) / 3 + 2;
+                    press(repetitions, num, prev);
                 }
             }
             System.out.println();
         }
     }
 
-    static void pressNumber(int repetitions, int number, int[] prev) {
-        if (prev[0] == number) System.out.print(" ");
-        while (repetitions-- > 0) System.out.print(number);
-        prev[0] = number;
+    static void press(int repetitions, int num, int[] prev) {
+        if (prev[0] == num) System.out.print(" ");
+        while (repetitions-- > 0) System.out.print(num);
+        prev[0] = num;
     }
 }
