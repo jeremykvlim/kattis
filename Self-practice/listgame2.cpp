@@ -1,56 +1,52 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int factors(vector<int> exponents, vector<int> primes, int f) {
-    int total = accumulate(exponents.begin(), exponents.end(), 0);
-
-    if (primes.empty()) primes.emplace_back(0);
-    else 
-        for (int i = 0; ++primes[i] >= exponents.size(); i++) 
-            if (i == primes.size() - 1) {
-                primes = vector<int>(primes.size() + 1, 0);
-                break;
-            } else {
-                primes[i] = primes[i + 1] + 1;
-                fill(primes.begin(), primes.begin() + i, primes[i]);
-            }
-
-    if (f >= total / primes.size()) return f;
-
-    vector<int> reduced = exponents;
-    for (int p : primes)
-        if (!reduced[p]--) {
-            reduced.clear();
-            break;
+vector<long long> divisors(long long n) {
+    vector<long long> d;
+    for (auto i = 1LL; i <= sqrt(n); i++)
+        if (!(n % i)) {
+            d.emplace_back(i);
+            if (n / i != i) d.emplace_back(n / i);
         }
 
-    if (!reduced.empty()) f = factors(reduced, primes, max(f - 1, 0)) + 1;
-    return factors(exponents, primes, f);
+    return d;
 }
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    
-    long long x;
-    cin >> x;
-    
-    vector<int> exponents, primes;
-    int points = 0;
-    for (long long b = 2; b * b <= x; b++) {
-        int pow = 0;
-        while (!(x % b)) {
-            x /= b;
-            pow++;
+
+    long long n;
+    cin >> n;
+
+    vector<long long> pf;
+    auto temp = n;
+    for (auto i = 2LL; i <= sqrt(n); i++)
+        if (!(n % i)) {
+            pf.emplace_back(i);
+            while (!(n % i)) n /= i;
+            temp /= i;
         }
-        if (pow) {
-            points++;
-            if (pow > 1) exponents.emplace_back(pow - 1);
+
+    if (n > 1) {
+        pf.emplace_back(n);
+        n = temp / n;
+    } else n = temp;
+
+    auto div = divisors(n);
+    sort(div.begin(), div.end());
+    unordered_set<long long> s(div.begin() + 1, div.end());
+    for (auto &f : pf) s.erase(f);
+
+    vector<int> dp(div.size(), INT_MIN);
+    dp[0] = 0;
+    for (auto d : s)
+        for (int i = div.size() - 1, j = div.size(); ~i; i--) {
+            while (j && d * div[j - 1] > div[i]) j--;
+            if (!j) break;
+
+            if (d * div[j - 1] == div[i]) dp[i] = max(dp[i], dp[j - 1] + 1);
         }
-    }
-    
-    if (x > 1) points++;
-    primes.emplace_back(exponents.size());
-    if (!exponents.empty()) points += factors(exponents, primes, 0);
-    cout << points;
+
+    cout << pf.size() + *max_element(dp.begin(), dp.end());
 }
