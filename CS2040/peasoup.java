@@ -13,12 +13,14 @@ public class peasoup {
                 var item = br.readLine();
                 if (item.equals("pea soup")) hasPeaSoup = true;
                 else if (item.equals("pancakes")) hasPancakes = true;
-            }
-            if (hasPancakes && hasPeaSoup) {
-                System.out.println(name);
-                return;
+
+                if (hasPancakes && hasPeaSoup) {
+                    System.out.println(name);
+                    return;
+                }
             }
         }
+        
         System.out.println("Anywhere is fine I guess");
     }
 }
