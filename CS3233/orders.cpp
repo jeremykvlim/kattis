@@ -26,7 +26,7 @@ int main() {
         else if (dp[s] > 1) cout << "Ambiguous\n";
         else {
             stack<int> st;
-            for (int i = n - 1; ~i && s > 0; i--)
+            for (int i = n - 1; ~i; i--)
                 while (s >= costs[i] && dp[s - costs[i]]) {
                     st.emplace(i + 1);
                     s -= costs[i];
