@@ -16,7 +16,7 @@ int main() {
 
     vector<int> pf;
     auto temp = N;
-    for (int i = 2; i < b; i++)
+    for (auto i = 2LL; i < b; i++)
         if (!(N % i)) {
             pf.emplace_back(i);
             while (!(temp % i)) temp /= i;
