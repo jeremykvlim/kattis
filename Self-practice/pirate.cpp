@@ -10,8 +10,8 @@ int main() {
 
     if (a > b) swap(a, b);
     vector<vector<int>> d(m, vector<int>(n, 0));
-    for (auto &row: d)
-        for (int &dij: row) cin >> dij;
+    for (auto &row : d)
+        for (int &dij : row) cin >> dij;
 
     auto volume = 0LL;
     for (int r = 0; r < m; r++) {
