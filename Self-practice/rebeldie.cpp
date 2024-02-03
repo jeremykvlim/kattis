@@ -89,8 +89,8 @@ int main() {
     cin >> m >> n;
 
     vector<vector<int>> board(m, vector<int>(n));
-    for (auto &row: board)
-        for (int &square: row) cin >> square;
+    for (auto &row : board)
+        for (int &square : row) cin >> square;
 
     vector<pair<pair<int, int>, char>> directions = {{{-1, 0}, 'N'},
                                                      {{1,  0}, 'S'},
