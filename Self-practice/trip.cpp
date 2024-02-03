@@ -9,12 +9,12 @@ int main() {
     while (cin >> n && n) {
         vector<int> costs(n);
         int total = 0;
-        for (int i = 0; i < n; i++) {
+        for (int &c : costs) {
             double spent;
             cin >> spent;
 
-            costs[i] = round(100 * spent);
-            total += costs[i];
+            c = round(100 * spent);
+            total += c;
         }
 
         sort(costs.rbegin(), costs.rend());
