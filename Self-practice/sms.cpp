@@ -35,59 +35,61 @@ int main() {
         words[node->count - 1].emplace_back(s);
     }
 
-    for (auto w : words) {
-        for (int i = 0; i <= w.size() / 2; i++) {
+    for (int i = 0; i < count; i++) {
+        for (int j = 0; j <= words[i].size() / 2; j++) {
             auto *node = root;
-            for (char c : w[i]) {
+            for (char c : words[i][j]) {
                 int pos = c - 'a';
                 if (!node->children[pos]) node->children[pos] = new TrieNode();
                 node = node->children[pos];
             }
-
-            node->count = i + 1;
+            node->count = j + 1;
         }
 
-        for (int i = w.size() - 1; i > w.size() / 2; i--) {
+        for (int j = words[i].size() - 1; j > words[i].size() / 2; j--) {
             auto *node = root;
-            for (char c : w[i]) {
+            for (char c : words[i][j]) {
                 int pos = c - 'a';
                 if (!node->children[pos]) node->children[pos] = new TrieNode();
                 node = node->children[pos];
             }
-
-            node->count = i - w.size();
+            node->count = j - words[i].size();
         }
     }
 
     int q;
     cin >> q;
 
-    vector<tuple<long long, int, int>> dp(5e5 + 1);
-    while (q--) {
-        string s;
-        cin >> s;
+    vector<string> type(q);
+    int longest = 0;
+    for (auto &w : type) {
+        cin >> w;
 
-        dp[s.size()] = {0, 0, 0};
-        for (int i = s.size() - 1; ~i; i--) {
+        longest = max(longest, (int) w.size());
+    }
+
+    vector<tuple<long long, int, int>> dp(longest + 1, {0, 0, 0});
+    for (auto w : type) {
+        for (int i = w.size() - 1; ~i; i--) {
             dp[i] = {1e18, 0, 0};
             
             auto *node = root;
-            for (int j = i; j < s.size(); j++) {
-                int pos = s[j] - 'a';
+            for (int j = i; j < w.size(); j++) {
+                int pos = w[j] - 'a';
                 if (!node->children[pos]) break;
 
                 node = node->children[pos];
                 if (node->count) {
-                    int x = node->count < 0 ? -node->count : node->count - 1;
-                    dp[i] = min(dp[i], {x + 1 + j + 1 - i + get<0>(dp[j + 1]), j + 1, node->count});
+                    int c = node->count < 0 ? -node->count : node->count - 1;
+                    dp[i] = min(dp[i], {c + 1 + j + 1 - i + get<0>(dp[j + 1]), j + 1, node->count});
                 }
             }
         }
 
-        for (int i = 0; i < s.size();) {
+        for (int i = 0; i < w.size();) {
             if (i) cout << "R";
-            auto [_, j, presses] = dp[i];
-            for (; i < j; i++) cout << mapping[s[i] - 'a'] + 2;
+            auto [_, len, presses] = dp[i];
+            for (; i < len; i++) cout << mapping[w[i] - 'a'] + 2;
             int x = presses < 0 ? -presses : presses - 1;
             if (x) cout << (presses < 0 ? "D" : "U") << "(" << x << ")";
         }
