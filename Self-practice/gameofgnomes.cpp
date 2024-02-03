@@ -8,7 +8,7 @@ int main() {
     long long n, m, k;
     cin >> n >> m >> k;
 
-    long long damage = 0;
+    auto damage = 0LL;
     for (int i = n % k; i < min(n + 1, m * k); i += k) damage = max(damage, (((n - i) / k + 1) * (n + i) - 2 * i + (i / m) * (m*m + m) + (i % m) * (i % m + 1)) / 2);
     
     cout << damage;
