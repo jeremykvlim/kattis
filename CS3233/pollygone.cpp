@@ -17,7 +17,7 @@ int main() {
         double p;
         cin >> e >> p;
 
-        int prob = int(round(p * 10000));
+        int prob = (int) round(p * 10000);
         for (int i = j; ~i; i--)
             if (dp[i + prob] > dp[i] + e) {
                 dp[i + prob] = dp[i] + e;
@@ -25,5 +25,5 @@ int main() {
             }
     }
 
-    cout << *min_element(dp.begin() + int(round(P * 10000)), dp.end());
+    cout << *min_element(dp.begin() + (int) round(P * 10000), dp.end());
 }
