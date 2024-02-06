@@ -19,7 +19,7 @@ int main() {
     }
 
     vector<long long> dp(n + 1, 1);
-    long long total = 1;
+    auto total = 1LL;
     for (int i = 1, j = 0; i <= n; total += dp[i++]) {
         while (j < choice[i]) total -= dp[j++];
         total %= MODULO;
