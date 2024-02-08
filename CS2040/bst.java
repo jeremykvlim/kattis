@@ -7,7 +7,7 @@ public class bst {
         var pw = new PrintWriter(System.out);
         int n = Integer.parseInt(br.readLine());
         
-        var tree = new Treetree<Integer, Integer>();
+        var tree = new TreeSet<Integer, Integer>();
         long total = 0;
         while (n-- > 0) {
             int i = Integer.parseInt(br.readLine()), c = 0;
