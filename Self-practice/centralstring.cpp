@@ -7,7 +7,8 @@ void compare(vector<string> &strs, vector<unordered_set<int>> &diff, string &s, 
 }
 
 void backtrack(vector<string> &strs, vector<unordered_set<int>> &diff, string &s, int d, int depth) {
-    int j = find_if_not(diff.begin(), diff.end(), [&](auto i) {return i.size() <= d;}) - diff.begin();
+    int j = 0;
+    while (j < diff.size() && diff[j].size() <= d) j++;
 
     if (j == diff.size()) {
         cout << s;
