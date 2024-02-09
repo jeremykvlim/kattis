@@ -16,6 +16,15 @@ vector<int> sieve(int n) {
     return primes;
 }
 
+long long pow(long long base, long long exponent, long long mod = 1) {
+    auto value = 1LL;
+    for (; exponent; exponent >>= 1) {
+        if (exponent & 1) value = (base * value) % mod;
+        base = (base * base) % mod;
+    }
+    return value;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -30,16 +39,12 @@ int main() {
         for (int i = 0; i <= n - p; i++)
             if (dp[i] != -1) dp[i + p] = (min(dp[i] * p, dp[i + p] != -1 ? dp[i + p] : LLONG_MAX)) % MODULO;
 
-    auto smallest = dp[n] % MODULO, biggest = 1LL, base = 3LL;
+    auto smallest = dp[n] % MODULO, biggest = 1LL;
     while (n % 3) {
         biggest = (biggest << 1) % MODULO;
         n -= 2;
     }
-
-    for (int exponent = n / 3; exponent; exponent >>= 1) {
-        if (exponent & 1) biggest = (base * biggest) % MODULO;
-        base = (base * base) % MODULO;
-    }
+    biggest *= pow(3, n / 3, MODULO);
 
     cout << smallest << " " << biggest;
 }
