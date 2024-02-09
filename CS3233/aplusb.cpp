@@ -3,7 +3,7 @@ using namespace std;
 
 constexpr int OFFSET = 5e4;
 
-void fft(vector<complex<double>> &fourier, int sign, vector<int> &reverse) {
+void fft(vector<complex<double>> &fourier, vector<int> &reverse, int sign = 1) {
     for (int i = 0; i < reverse.size(); i++)
         if (i < reverse[i]) swap(fourier[i], fourier[reverse[i]]);
 
@@ -42,15 +42,15 @@ int main() {
     vector<complex<double>> fourier(size);
     for (int i = 0; i < freq.size(); i++) fourier[i] = complex<double>(freq[i], freq[i]);
 
-    fft(fourier, 1, reverse);
+    fft(fourier, reverse);
     for (auto &f : fourier) f *= f;
-    fft(fourier, -1, reverse);
+    fft(fourier, reverse, -1);
 
     for (int i = 0; i < count.size(); i++) count[i] += round(fourier[i].imag() / 2);
     auto ways = 0LL;
     for (int a : nums) {
         ways += count[a + OFFSET];
-        if (a == OFFSET) ways -= 2 * nums.size() - 1;
+        if (a == OFFSET) ways -= 2 * nums.size() - 2;
     }
 
     cout << ways;
