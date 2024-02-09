@@ -12,21 +12,26 @@ void f(int state, int size, vector<int> &count, int mod, long long &words, long 
     }
 }
 
+long long pow(long long base, long long exponent, long long mod = 1) {
+    auto value = 1LL;
+    for (; exponent; exponent >>= 1) {
+        if (exponent & 1) value = (base * value) % mod;
+        base = (base * base) % mod;
+    }
+    return value;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     int n, k, m;
     cin >> n >> k >> m;
-    
+
     int mod = 1 << m;
     vector<int> count(mod);
-    long long a = 33, x = 1, words = 0;
-    for (int exponent = (mod >> 1) - 1; exponent; exponent >>= 1) {
-        if (exponent & 1) x = (a * x) % mod;
-        a = (a * a) % mod;
-    }
-    
+    auto x = pow(33, (mod >> 1) - 1, mod), words = 0LL;
+
     f(0, n / 2, count, mod - 1, words);
     f(k, n - n / 2, count, mod - 1, words, x, true);
     cout << words;
