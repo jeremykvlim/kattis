@@ -42,7 +42,6 @@ int main() {
         for (int i = 1; i <= 2 * n; i++) cin >> dolls[i].h >> dolls[i].d >> dolls[i].w;
         sort(dolls.begin(), dolls.end());
 
-
         vector<vector<vector<bool>>> dp(2 * n + 1, vector<vector<bool>>(2 * n + 1, vector<bool>(2 * n + 1, false)));
         arrange(0, 0, 0, dolls, dp, false);
         cout << "-\n";
