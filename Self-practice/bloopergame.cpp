@@ -18,13 +18,12 @@ int main() {
     }
 
     double d = 1;
-    while (l) {
+    while (l > 0) {
         double prob = pq.top();
         pq.pop();
 
         int c = (l + round(n) - 1) / round(n);
         pq.emplace(pow(prob, pow(p, c)));
-
         l -= c;
     }
 
