@@ -21,11 +21,11 @@ int main() {
 
     vector<long long> pf;
     auto temp = n;
-    for (auto i = 2LL; i <= sqrt(n); i == 2 ? i++ : i += 2)
-        if (!(n % i)) {
-            pf.emplace_back(i);
-            while (!(n % i)) n /= i;
-            temp /= i;
+    for (int p = 2; p <= sqrt(n); p == 2 ? p++ : p += 2)
+        if (!(n % p)) {
+            pf.emplace_back(p);
+            while (!(n % p)) n /= p;
+            temp /= p;
         }
 
     if (n > 1) {
