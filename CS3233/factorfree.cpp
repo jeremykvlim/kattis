@@ -16,12 +16,12 @@ bool dfs(int l, int r, vector<int> &parent, vector<int> &left, vector<int> &righ
 }
 
 vector<int> sieve(int n) {
-    vector<int> spf(n + 1, 0);
+    vector<int> lpf(n + 1, 0);
     for (int i = 2; i <= n; i++)
-        if (!spf[i])
-            for (int j = i; j <= n; j += i) spf[j] = i;
+        if (!lpf[i])
+            for (int j = i; j <= n; j += i) lpf[j] = i;
 
-    return spf;
+    return lpf;
 }
 
 int main() {
@@ -35,14 +35,14 @@ int main() {
     for (int &a : elements) cin >> a;
 
     int biggest = *max_element(elements.begin(), elements.end());
-    vector<int> spf = sieve(biggest), prev(biggest + 1, -1), left(n, -1), right(n, n), parent(n, 0);
+    vector<int> lpf = sieve(biggest), prev(biggest + 1, -1), left(n, -1), right(n, n), parent(n, 0);
     for (int i = 0; i < n; i++)
-        for (int num = elements[i]; num > 1; num /= spf[num]) {
-            if (prev[spf[num]] < i) {
-                left[i] = max(left[i], prev[spf[num]]);
-                if (prev[spf[num]] != -1) right[prev[spf[num]]] = min(right[prev[spf[num]]], i);
+        for (int num = elements[i]; num > 1; num /= lpf[num]) {
+            if (prev[lpf[num]] < i) {
+                left[i] = max(left[i], prev[lpf[num]]);
+                if (prev[lpf[num]] != -1) right[prev[lpf[num]]] = min(right[prev[lpf[num]]], i);
             }
-            prev[spf[num]] = i;
+            prev[lpf[num]] = i;
         }
 
     if (dfs(0, n, parent, left, right))
