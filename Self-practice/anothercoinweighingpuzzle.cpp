@@ -13,11 +13,11 @@ long long pow(long long base, long long exponent, long long mod = 1) {
 }
 
 vector<int> sieve(int n) {
-    vector<int> mobius(n + 1, 1), spf(n + 1, 0);
+    vector<int> mobius(n + 1, 1), lpf(n + 1, 0);
     for (int i = 2; i <= n; i++)
-        if (!spf[i]) {
+        if (!lpf[i]) {
             for (int j = i; j <= n; j += i) {
-                spf[j] = i;
+                lpf[j] = i;
                 mobius[j] *= -1;
             }
 
@@ -34,8 +34,7 @@ int main() {
     int m, k;
     cin >> m >> k;
 
-    vector<int> mobius = sieve(k);
-
+    auto mobius = sieve(k);
     auto bags = 1LL;
     for (int i = 1; i <= k; i++) bags = (bags + MODULO + mobius[i] * (pow(k / i * 2 + 1, m, MODULO) - 1)) % MODULO;
     cout << bags;
