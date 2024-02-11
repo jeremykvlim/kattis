@@ -19,24 +19,24 @@ int main() {
     long long n;
     cin >> n;
 
-    vector<long long> pf;
+    vector<long long> pfs;
     auto temp = n;
     for (int p = 2; p <= sqrt(n); p == 2 ? p++ : p += 2)
         if (!(n % p)) {
-            pf.emplace_back(p);
+            pfs.emplace_back(p);
             while (!(n % p)) n /= p;
             temp /= p;
         }
 
     if (n > 1) {
-        pf.emplace_back(n);
+        pfs.emplace_back(n);
         n = temp / n;
     } else n = temp;
 
     auto div = divisors(n);
     sort(div.begin(), div.end());
     unordered_set<long long> s(div.begin() + 1, div.end());
-    for (auto &f : pf) s.erase(f);
+    for (auto &pf : pfs) s.erase(pf);
 
     vector<int> dp(div.size(), INT_MIN);
     dp[0] = 0;
@@ -48,5 +48,5 @@ int main() {
             if (d * div[j - 1] == div[i]) dp[i] = max(dp[i], dp[j - 1] + 1);
         }
 
-    cout << *max_element(dp.begin(), dp.end()) + pf.size();
+    cout << *max_element(dp.begin(), dp.end()) + pfs.size();
 }
