@@ -21,7 +21,7 @@ int main() {
 
     vector<long long> pf;
     auto temp = n;
-    for (auto i = 2LL; i <= sqrt(n); i++)
+    for (auto i = 2LL; i <= sqrt(n); i == 2 ? i++ : i += 2)
         if (!(n % i)) {
             pf.emplace_back(i);
             while (!(n % i)) n /= i;
@@ -48,5 +48,5 @@ int main() {
             if (d * div[j - 1] == div[i]) dp[i] = max(dp[i], dp[j - 1] + 1);
         }
 
-    cout << pf.size() + *max_element(dp.begin(), dp.end());
+    cout << *max_element(dp.begin(), dp.end()) + pf.size();
 }
