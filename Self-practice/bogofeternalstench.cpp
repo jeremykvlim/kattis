@@ -6,7 +6,7 @@ void relax(vector<tuple<int, int, int>> &edges, vector<long long> &dist, bool de
         if (s <= dist[v] && dist[u] < dist[v] - s) dist[u] = !detect ? dist[v] - s : LLONG_MAX;
 }
 
-int midain() {
+int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
