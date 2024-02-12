@@ -28,6 +28,7 @@ int main() {
     int longest = 0;
     for (auto &w : words) {
         cin >> w;
+        
         longest = max(longest, (int) w.size());
     }
 
