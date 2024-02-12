@@ -9,8 +9,7 @@ int main() {
     cin >> n;
 
     unordered_map<long long, int> pfs;
-    int p = 2;
-    for (; p <= sqrt(n); p == 2 ? p++ : p += 2)
+    for (int p = 2; p <= sqrt(n); p == 2 ? p++ : p += 2)
         while (!(n % p)) {
             n /= p;
             pfs[p]++;
