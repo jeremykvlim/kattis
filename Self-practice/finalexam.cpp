@@ -38,12 +38,14 @@ int main() {
     for (int i = 1; i < g.size(); i++)
         for (int j = 1; j < i; j++) g[i][j] = i % j ? g[j][i % j] : j;
 
-    long long triplets = 0;
+    auto triplets = 0LL;
     for (int m = 1; m * m <= biggest; m++)
         for (int n = 1; n < m && m * m + n * n <= biggest; n++) {
             if (g[m][n] > 1 || (m & 1) == (n & 1)) continue;
+            
             int a = m * m - n * n, b = 2 * m * n, c = m * m + n * n;
-            for (int ka = a, kb = b, kc = c; kc <= biggest; ka += a, kb += b, kc += c) triplets += (long long) (A[ka] * B[kb] + B[ka] * A[kb]) * C[kc];
+            for (int ka = a, kb = b, kc = c; kc <= biggest; ka += a, kb += b, kc += c)
+                if (C[kc]) triplets += (long long) (A[ka] * B[kb] + B[ka] * A[kb]) * C[kc];
         }
 
     cout << triplets;
