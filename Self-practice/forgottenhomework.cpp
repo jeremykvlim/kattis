@@ -12,11 +12,11 @@ long long pow(long long base, long long exponent, long long mod = 1) {
     return value;
 }
 
-vector<long long> berlekamp_massey(vector<long long> sequence) {
+vector<long long> berlekamp_massey(vector<long long> seq) {
     vector<long long> curr, prev;
-    for (int i = 0, len = -1; i < sequence.size(); i++) {
-        auto discrepancy = sequence[i];
-        for (int j = 1; j <= curr.size(); j++) discrepancy = (discrepancy - curr[j - 1] * sequence[i - j]) % MODULO;
+    for (int i = 0, len = -1; i < seq.size(); i++) {
+        auto discrepancy = seq[i];
+        for (int j = 1; j <= curr.size(); j++) discrepancy = (discrepancy - curr[j - 1] * seq[i - j]) % MODULO;
         if (!discrepancy) continue;
 
         if (len == -1) {
@@ -30,8 +30,8 @@ vector<long long> berlekamp_massey(vector<long long> sequence) {
         prev.insert(prev.begin(), 1);
 
         auto base = 0LL;
-        for (int j = 1; j <= prev.size(); j++) base = (base + prev[j - 1] * sequence[len + 1 - j]) % MODULO;
-        long long coeff = (discrepancy * pow(base, (long long) MODULO - 2), MODULO) % MODULO;
+        for (int j = 1; j <= prev.size(); j++) base = (base + prev[j - 1] * seq[len + 1 - j]) % MODULO;
+        long long coeff = (discrepancy * pow(base, MODULO - 2, MODULO)) % MODULO;
         for (auto &c : prev) c = (c * coeff) % MODULO;
 
         prev.insert(prev.begin(), i - len - 1, 0);
@@ -54,12 +54,12 @@ int main() {
     int n, i, j;
     cin >> n >> i >> j;
 
-    vector<long long> sequence(2 * n - 1);
-    for (auto &a : sequence) cin >> a;
-    sequence.insert(sequence.begin(), i != j ? 0 : 1);
+    vector<long long> seq(2 * n - 1);
+    for (auto &a : seq) cin >> a;
+    seq.emplace(seq.begin(), i == j);
 
-    auto lfsr = berlekamp_massey(sequence);
+    auto lfsr = berlekamp_massey(seq);
     auto value = 0LL;
-    for (int k = 0; k < lfsr.size(); k++) value = (value + sequence[2 * n - 1 - k] * lfsr[k]) % MODULO;
+    for (int k = 0; k < lfsr.size(); k++) value = (value + seq[2 * n - 1 - k] * lfsr[k]) % MODULO;
     cout << (value + MODULO) % MODULO;
 }
