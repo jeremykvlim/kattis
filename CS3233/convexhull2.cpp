@@ -1,8 +1,26 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-long long cross(pair<long long, long long> p1, pair<long long, long long> p2) {
-    return p1.first * p2.second - p1.second * p2.first;
+double cross(pair<long long, long long> i, pair<long long, long long> j, pair<long long, long long> k) {
+    return (double) (k.first - i.first) * (double) (j.second - i.second) - (double) (k.second - i.second) * (double) (j.first - i.first);
+}
+
+void monotone(vector<pair<long long, long long>> &points, vector<pair<long long, long long>> &convex) {
+    sort(points.begin(), points.end());
+    points.erase(unique(points.begin(), points.end()), points.end());
+
+    for (auto p : points) {
+        while (convex.size() > 1 && cross(convex[convex.size() - 2], convex.back(), p) > 0) convex.pop_back();
+        convex.emplace_back(p);
+    }
+
+    int s = convex.size();
+    points.pop_back();
+    reverse(points.begin(), points.end());
+    for (auto p : points) {
+        while (convex.size() > s && cross(convex[convex.size() - 2], convex.back(), p) > 0) convex.pop_back();
+        convex.emplace_back(p);
+    }
 }
 
 int main() {
@@ -12,7 +30,7 @@ int main() {
     int n;
     cin >> n;
 
-    vector<pair<long long, long long>> points;
+    vector<pair<long long, long long>> points, convex;
     while (n--) {
         long long x, y;
         char c;
@@ -20,23 +38,12 @@ int main() {
 
         if (c == 'Y') points.emplace_back(x, y);
     }
-    sort(points.begin(), points.end(), [&](auto p1, auto p2) {return p1.first != p2.first ? p1.first < p2.first : p1.second < p2.second;});
 
-    vector<pair<long long, long long>> top, bot;
-    for (auto &p : points) {
-        while (top.size() > 1 && cross({top[top.size() - 1].first - top[top.size() - 2].first, top[top.size() - 1].second - top[top.size() - 2].second},
-                                       {p.first - top.back().first, p.second - top.back().second}) > 0) top.pop_back();
-        top.emplace_back(p);
-
-        while (bot.size() > 1 && cross({bot[bot.size() - 1].first - bot[bot.size() - 2].first, bot[bot.size() - 1].second - bot[bot.size() - 2].second},
-                                       {p.first - bot.back().first, p.second - bot.back().second}) < 0) bot.pop_back();
-        bot.emplace_back(p);
-    }
-
-    cout << points.size() << "\n";
-    bot.pop_back();
-    reverse(top.begin(), top.end());
-    top.pop_back();
-    for (auto [x, y] : bot) cout << x << " " << y << "\n";
-    for (auto [x, y] : top) cout << x << " " << y << "\n";
+    monotone(points, convex);
+    reverse(convex.begin(), convex.end());
+    convex.pop_back();
+    cout << convex.size() << "\n" << convex.front().first << " " << convex.front().second << "\n";
+    reverse(convex.begin(), convex.end());
+    convex.pop_back();
+    for (auto [x, y] : convex) cout << x << " " << y << "\n";
 }
