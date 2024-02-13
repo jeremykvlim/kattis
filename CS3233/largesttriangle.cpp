@@ -10,7 +10,7 @@ int monotone(vector<pair<int, int>> &points, vector<pair<int, int>> &convex) {
     points.erase(unique(points.begin(), points.end()), points.end());
 
     for (auto p : points) {
-        while (convex.size() > 1 && cross(convex[convex.size() - 2], convex[convex.size() - 1], p) <= 0) convex.pop_back();
+        while (convex.size() > 1 && cross(convex[convex.size() - 2], convex.back(), p) <= 0) convex.pop_back();
         convex.emplace_back(p);
     }
 
@@ -18,7 +18,7 @@ int monotone(vector<pair<int, int>> &points, vector<pair<int, int>> &convex) {
     points.pop_back();
     reverse(points.begin(), points.end());
     for (auto p : points) {
-        while (convex.size() > s && cross(convex[convex.size() - 2], convex[convex.size() - 1], p) <= 0) convex.pop_back();
+        while (convex.size() > s && cross(convex[convex.size() - 2], convex.back(), p) <= 0) convex.pop_back();
         convex.emplace_back(p);
     }
 
