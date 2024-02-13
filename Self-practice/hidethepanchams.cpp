@@ -48,7 +48,7 @@ int main() {
     }
 
     for (int i = 1; i < 1 << n; i++)
-        for (int j = i; j; j = (j - 1) & i)
+        for (int j = i; j; --j &= i)
             if (__builtin_popcount(j) >= 3) dp[i] = min(dp[i], dp[i ^ j] + dist[j]);
 
     cout << fixed << setprecision(6) << dp.back();
