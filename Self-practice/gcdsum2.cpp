@@ -3,17 +3,17 @@ using namespace std;
 
 vector<long long> phi(int n) {
     vector<long long> phi(n + 1, 0);
-    vector<bool> isprime(n + 1, true);
+    vector<bool> prime(n + 1, true);
     vector<int> primes;
     for (int i = 2; i <= n; i++) {
-        if (isprime[i]) {
+        if (prime[i]) {
             primes.emplace_back(i);
             phi[i] = i - 1;
         }
 
         for (int j = 0; primes[j] <= n / i; j++) {
             int k = i * primes[j];
-            isprime[k] = false;
+            prime[k] = false;
             phi[k] = phi[i] * phi[primes[j]];
 
             if (!(i % primes[j])) {
