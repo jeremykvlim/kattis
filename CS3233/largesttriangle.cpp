@@ -2,7 +2,7 @@
 using namespace std;
 
 double cross(pair<int, int> i, pair<int, int> j, pair<int, int> k) {
-    return static_cast<double>(k.first - i.first) * (j.second - i.second) - static_cast<double>(k.second - i.second) * (j.first - i.first);
+    return (double) (k.first - i.first) * (double) (j.second - i.second) - (double) (k.second - i.second) * (double) (j.first - i.first);
 }
 
 void monotone(vector<pair<int, int>> &points, vector<pair<int, int>> &convex) {
