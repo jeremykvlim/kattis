@@ -18,7 +18,7 @@ int main() {
 
     deque<int> dq{0};
     for (int i = 1; i <= n + 1; i++) {
-        while (dq.size() >= 2 && (houses[i] - houses[dq[1]]) * (dq[0] - dq[1]) >= (houses[dq[0]] - houses[dq[1]]) * (i - dq[1])) 
+        while (dq.size() > 1 && (houses[i] - houses[dq[1]]) * (dq[0] - dq[1]) >= (houses[dq[0]] - houses[dq[1]]) * (i - dq[1])) 
             dq.pop_front();
         
         dq.emplace_front(i);
