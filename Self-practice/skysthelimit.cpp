@@ -12,6 +12,7 @@ int main() {
     vector<double> houses(n + 2, 0);
     for (int i = 1; i <= n; i++) {
         cin >> houses[i];
+        
         houses[i] -= k * i * (n + 1 - i);
     }
 
