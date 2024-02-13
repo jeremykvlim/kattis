@@ -1,15 +1,18 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void read(vector<pair<int, long long>> &d, int size) {
+void read(deque<pair<int, long long>> &convex, int size) {
     for (int i = 0; i < size; i++) {
         long long s;
         cin >> s;
-        
-        while (d.size() > 1 &&
-               (d.back().first - d[d.size() - 2].first) * (d.back().second - s) > (d.back().first - i) * (d.back().second - d[d.size() - 2].second)) d.pop_back();
-        d.emplace_back(i, s);
+
+        while (convex.size() > 1 && (convex[0].first - convex[1].first) * (convex[0].second - s) > (convex[0].first - i) * (convex[0].second - convex[1].second))
+            convex.pop_front();
+
+        convex.emplace_front(i, s);
     }
+
+    reverse(convex.begin(), convex.end());
 }
 
 int main() {
@@ -19,7 +22,7 @@ int main() {
     int r, c;
     cin >> r >> c;
 
-    vector<pair<int, long long>> east, north;
+    deque<pair<int, long long>> east, north;
     read(east, r);
     read(north, c);
 
