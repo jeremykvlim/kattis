@@ -14,8 +14,7 @@ public class bestrelayteam {
         Arrays.sort(array);
 
         var fastest = Double.POSITIVE_INFINITY;
-        var bestTeam = new ArrayList<Runner>();
-
+        var best = new ArrayList<Runner>();
         for (var r : array) {
             var time = 0;
             var team = new ArrayList<Runner>();
@@ -32,12 +31,12 @@ public class bestrelayteam {
 
             if (time < fastest) {
                 fastest = time;
-                bestTeam = team;
+                best = team;
             }
         }
 
         System.out.println(fastest);
-        for (var r : bestTeam) System.out.println(r.name);
+        for (var r : best) System.out.println(r.name);
     }
 
     static class Runner implements Comparable<Runner> {
