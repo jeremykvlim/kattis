@@ -14,6 +14,7 @@ int main() {
     for (int e = 0; e < 2 * (n - 1); e++) {
         int u, v;
         cin >> u >> v;
+        
         adj_list[v].emplace(n + u, e);
         adj_list[n + u].emplace(v, e);
     }
@@ -31,6 +32,7 @@ int main() {
     while (!leaves.empty()) {
         int u = leaves.top();
         leaves.pop();
+        
         if (adj_list[u].empty()) {
             cout << "impossible";
             exit(0);
