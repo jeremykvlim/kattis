@@ -13,10 +13,10 @@ __int128 pow(__int128 base, long long exponent, long long mod = 1) {
 bool isprime(long long n) {
     if (n < 2) return false;
 
-    for (long long i = 2; i * i * i <= n; ++i)
+    for (auto i = 2LL; i * i * i <= n; i++)
         if (!(n % i)) return false;
 
-    for (int i = 0; i < 1e5; ++i) {
+    for (int i = 0; i < 1e5; i++) {
         auto b = rand() % (n - 1) + 1;
         if (__gcd(b, n) > 1 || pow(b, n - 1, n) > 1) return false;
     }
