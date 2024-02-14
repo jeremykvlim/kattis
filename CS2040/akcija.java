@@ -11,14 +11,14 @@ public class akcija {
             max = Math.max(max, prices[i]);
         }
         var count = new int[max + 1];
-        for (int price : prices) count[price]++;
+        for (int p : prices) count[p]++;
 
-        for (int price = max; price >= 0; price--) {
-            while (count[price]-- > 0) {
-                if (free++ < 2) total += price;
+        for (int p = max; p >= 0; p--) 
+            while (count[p]-- > 0) {
+                if (free++ < 2) total += p;
                 else free = 0;
             }
-        }
+        
         System.out.println(total);
     }
 }
