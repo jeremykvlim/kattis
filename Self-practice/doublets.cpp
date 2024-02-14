@@ -1,9 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void print(int i, vector<int> &prev, vector<string> &dict) {
+void dfs(int i, vector<int> &prev, vector<string> &dict) {
     if (i != -1) {
-        print(prev[i], prev, dict);
+        dfs(prev[i], prev, dict);
         cout << dict[i] << "\n";
     }
 }
@@ -12,21 +12,22 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    vector<string> dict;
     string word;
+    vector<string> dict;
     while (getline(cin, word), !word.empty()) dict.emplace_back(word);
     sort(dict.begin(), dict.end());
-    dict.resize(unique(dict.begin(), dict.end()) - dict.begin());
+    dict.erase(unique(dict.begin(), dict.end()), dict.end());
 
     int size = dict.size();
-    auto longest = max_element(dict.begin(), dict.end(), [&](string s1, string s2) {return s1.size() < s2.size();})->size();
+    auto longest = max_element(dict.begin(), dict.end(), [&](auto s1, auto s2) {return s1.size() < s2.size();})->size();
     vector<vector<int>> adj_list(size);
     vector<map<string, vector<int>>> sub(longest);
     for (int i = 0; i < size; i++)
         for (int j = 0; j < dict[i].size(); j++) {
-            string s = dict[i];
+            auto s = dict[i];
             s.erase(s.begin() + j);
-            if (sub[j].find(s) != sub[j].end())
+
+            if (sub[j].count(s))
                 for (int k : sub[j][s]) {
                     adj_list[i].emplace_back(k);
                     adj_list[k].emplace_back(i);
@@ -63,6 +64,6 @@ int main() {
             continue;
         }
 
-        print(end, prev, dict);
+        dfs(end, prev, dict);
     }
 }
