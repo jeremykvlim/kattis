@@ -47,6 +47,7 @@ int main() {
     int people = 0;
     for (int i = 0; i < n; i++) {
         cin >> groups[i];
+        
         people += groups[i] * (i + 1);
     }
 
