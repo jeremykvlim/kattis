@@ -7,14 +7,14 @@ public class peasoup {
         int n = Integer.parseInt(br.readLine());
         while (n-- > 0) {
             int k = Integer.parseInt(br.readLine());
-            boolean hasPancakes = false, hasPeaSoup = false;
+            boolean pancakes = false, peasoup = false;
             var name = br.readLine();
             while (k-- > 0) {
                 var item = br.readLine();
-                if (item.equals("pea soup")) hasPeaSoup = true;
-                else if (item.equals("pancakes")) hasPancakes = true;
+                if (item.equals("pea soup")) peasoup = true;
+                else if (item.equals("pancakes")) pancakes = true;
 
-                if (hasPancakes && hasPeaSoup) {
+                if (pancakes && peasoup) {
                     System.out.println(name);
                     return;
                 }
