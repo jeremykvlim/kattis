@@ -9,26 +9,27 @@ int main() {
     cin >> n;
 
     vector<pair<int, int>> junctions(n - 1);
-    for (auto &j : junctions) {
-        cin >> j.first >> j.second;
-        if (j.first > j.second) swap(j.first, j.second);
+    for (auto &[u, v] : junctions) {
+        cin >> u >> v;
+        
+        if (u > v) swap(u, v);
     }
-    sort(junctions.begin(), junctions.begin() + n - 1);
+    sort(junctions.begin(), junctions.end());
     junctions.erase(unique(junctions.begin(), junctions.end()), junctions.end());
     
     vector<int> count(n + 1, 0), prev(n + 1);
-    for (auto &j : junctions) {
-        count[j.first]++;
-        count[j.second]++;
+    for (auto [u, v] : junctions) {
+        count[u]++;
+        count[v]++;
     }
 
     vector<vector<int>> connected(n + 1);
-    for (auto &j : junctions) {
-        if (count[j.first] != count[j.second] ? count[j.first] > count[j.second] : j.first < j.second) connected[j.first].emplace_back(j.second);
-        else connected[j.second].emplace_back(j.first);
+    for (auto [u, v] : junctions) {
+        if (count[u] != count[v] ? count[u] > count[v] : u < v) connected[u].emplace_back(v);
+        else connected[v].emplace_back(u);
     }
 
-    long long total = 0, optimal = 0;
+    auto total = 0LL, optimal = 0LL;
     for (int i = 1; i <= n; i++) {
         if (count[i]) total += (long long) count[i] * (count[i] - 1);
         for (int j : connected[i]) prev[j] = i;
