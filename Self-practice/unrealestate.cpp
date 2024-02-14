@@ -16,9 +16,9 @@ int main() {
         y.emplace_back(y1);
         y.emplace_back(y2);
     }
-    sort(y.begin(), y.end());
-    y.resize(unique(y.begin(), y.end()) - y.begin());
     sort(plots.begin(), plots.end());
+    sort(y.begin(), y.end());
+    y.erase(unique(y.begin(), y.end()), y.end());
 
     vector<double> x(y.size(), INT_MIN);
     double area = 0;
