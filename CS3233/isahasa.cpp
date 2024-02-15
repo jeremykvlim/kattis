@@ -6,6 +6,7 @@ unordered_set<int> bfs(deque<int> q, vector<vector<int>> &adj_list) {
     while (!q.empty()) {
         int v = q.front();
         q.pop_front();
+        
         for (int u : adj_list[v]) 
             if (visited.emplace(u).second) q.emplace_back(u);
     }
@@ -24,6 +25,7 @@ int main() {
     for (int i = 0; i < n; i++) {
         string c1, r, c2;
         cin >> c1 >> r >> c2;
+        
         int a = compress.emplace(c1, compress.size()).first->second, b = compress.emplace(c2, compress.size()).first->second;
         (r == "is-a" ? is : has).emplace_back(a, b);
     }
@@ -52,6 +54,7 @@ int main() {
     for (int i = 1; i <= m; i++) {
         string c1, r, c2;
         cin >> c1 >> r >> c2;
+        
         cout << "Query " << i << ": " << ((r == "has-a" ? transitive : superclasses)[compress[c1]].count(compress[c2]) ? "true" : "false") << "\n";
     }
 }
