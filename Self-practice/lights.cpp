@@ -27,14 +27,14 @@ int main() {
         auto p2 = 1LL;
         while (n--) p2 = (p2 << 1) % MODULO;
 
-        vector<long long> c(m + 1, 1), ways(m + 1, 1);
+        vector<long long> C(m + 1, 1), ways(m + 1, 1);
         for (int i = 1; i <= m; i++)
-            c[i] = ((c[i - 1] * (p2 - i + 1)) % MODULO * pow(i, MODULO - 2, MODULO)) % MODULO;
+            C[i] = ((C[i - 1] * (p2 - i + 1)) % MODULO * pow(i, MODULO - 2, MODULO)) % MODULO;
 
         if (v) ways[0] = 0;
         for (int i = 2; i <= m; i++) {
             auto temp = ((__int128) ways[i - 2] * (p2 - i + 2 + MODULO)) % MODULO;
-            temp = (c[i - 1] - temp + MODULO) % MODULO;
+            temp = (C[i - 1] - temp + MODULO) % MODULO;
 
             auto [x, y] = bezout(i, MODULO);
             if (x < 0) x += MODULO;
