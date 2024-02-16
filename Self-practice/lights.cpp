@@ -28,17 +28,17 @@ int main() {
         while (n--) p2 = (p2 << 1) % MODULO;
 
         vector<long long> C(m + 1, 1), ways(m + 1, 1);
-        for (int i = 1; i <= m; i++)
-            C[i] = ((C[i - 1] * (p2 - i + 1)) % MODULO * pow(i, MODULO - 2, MODULO)) % MODULO;
+        for (int k = 1; k <= m; k++)
+            C[k] = ((C[k - 1] * (p2 - k + 1)) % MODULO * pow(k, MODULO - 2, MODULO)) % MODULO;
 
         if (v) ways[0] = 0;
-        for (int i = 2; i <= m; i++) {
-            auto temp = ((__int128) ways[i - 2] * (p2 - i + 2 + MODULO)) % MODULO;
-            temp = (C[i - 1] - temp + MODULO) % MODULO;
+        for (int k = 2; k <= m; k++) {
+            auto temp = ((__int128) ways[k - 2] * (p2 - k + 2 + MODULO)) % MODULO;
+            temp = (C[k - 1] - temp + MODULO) % MODULO;
 
-            auto [x, y] = bezout(i, MODULO);
+            auto [x, y] = bezout(k, MODULO);
             if (x < 0) x += MODULO;
-            ways[i] = (temp * x) % MODULO;
+            ways[k] = (temp * x) % MODULO;
         }
 
         cout << ways[m] << "\n";
