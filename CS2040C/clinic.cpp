@@ -11,7 +11,7 @@ int main() {
 
     unordered_set<string> leave;
     priority_queue<pair<long long, string>, vector<pair<long long, string>>, greater<>> pq;
-    for (int i = 0; i < n; i++) {
+    while (n--) {
         int q, t;
         cin >> q >> t;
 
@@ -21,20 +21,23 @@ int main() {
                 int s;
                 cin >> m >> s;
                 
-                pq.emplace(-s + t * k, m);
+                pq.emplace(-s + k * t, m);
                 break;
             }
 
             case 2: {
                 if (pq.empty()) cout << "doctor takes a break\n";
+                
                 while (!pq.empty()) {
-                    auto p = pq.top();
+                    auto [v, m] = pq.top();
                     pq.pop();
-                    if (leave.find(p.second) == leave.end()) {
-                        cout << p.second << "\n";
+                    
+                    if (!leave.count(m)) {
+                        cout << m << "\n";
                         break;
                     }
-                    leave.erase(p.second);
+                    
+                    leave.erase(m);
                 }
                 break;
             }
@@ -42,6 +45,7 @@ int main() {
             case 3: {
                 string m;
                 cin >> m;
+                
                 leave.emplace(m);
                 break;
             }
