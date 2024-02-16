@@ -31,7 +31,7 @@ vector<long long> berlekamp_massey(vector<long long> seq) {
 
         auto base = 0LL;
         for (int j = 1; j <= prev.size(); j++) base = (base + prev[j - 1] * seq[len + 1 - j]) % MODULO;
-        long long coeff = (discrepancy * pow(base, MODULO - 2, MODULO)) % MODULO;
+        auto coeff = (discrepancy * pow(base, MODULO - 2, MODULO)) % MODULO;
         for (auto &c : prev) c = (c * coeff) % MODULO;
 
         prev.insert(prev.begin(), i - len - 1, 0);
