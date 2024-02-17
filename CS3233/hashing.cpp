@@ -19,7 +19,7 @@ int main() {
     __int128 base = 1, b = 1e16 + 61, mod = (1ULL << 63) + 27;
     for (int i = 0; i < s.size(); i++) {
         pref[i + 1] = (pref[i] + base * s[i]) % mod;
-        base = base * b % mod;
+        base = (base * b) % mod;
 
         auto [x, y] = bezout(base, mod);
         if (x < 0) x += mod;
