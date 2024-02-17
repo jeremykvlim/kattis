@@ -16,9 +16,9 @@ int main() {
     cin >> s >> q;
 
     vector<__int128> pref(s.size() + 1, 0), inv(s.size() + 1, 1);
-    __int128 base = 1, b = 1e16 + 61, mod = (1ULL << 63) + 27;
+    __int128 base = 1, b = (long long) 1e16 + 61, mod = (1ULL << 63) + 27;
     for (int i = 0; i < s.size(); i++) {
-        pref[i + 1] = (pref[i] + base * s[i]) % mod;
+        pref[i + 1] = (pref[i] + base * (s[i] - 'a' + 1)) % mod;
         base = (base * b) % mod;
 
         auto [x, y] = bezout(base, mod);
