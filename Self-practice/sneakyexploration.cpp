@@ -21,8 +21,8 @@ int main() {
     }
 
     vector<int> path;
-    queue<int> q;
     vector<bool> visited(n, false);
+    queue<int> q;
     priority_queue<pair<int, int>> pq;
     for (int i = 0; i < n; i++) pq.emplace(degree[i], i);
     while (path.size() < n) {
