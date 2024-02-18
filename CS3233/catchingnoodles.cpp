@@ -4,9 +4,9 @@ using namespace std;
 constexpr int MODULO = 1e9 + 7;
 
 void dijkstra(int s, vector<vector<pair<int, int>>> &adj_list, vector<int> &dist, vector<long long> &count) {
-    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
     count[s] = 1;
     dist[s] = 0;
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
     pq.emplace(0, s);
     while (!pq.empty()) {
         auto [d, v] = pq.top();
@@ -14,13 +14,12 @@ void dijkstra(int s, vector<vector<pair<int, int>>> &adj_list, vector<int> &dist
 
         if (dist[v] != d) continue;
 
-        for (auto [u, l] : adj_list[v]) {
+        for (auto [u, l] : adj_list[v]) 
             if (dist[u] > d + l) {
                 dist[u] = d + l;
                 count[u] = count[v];
                 pq.emplace(d + l, u);
             } else if (dist[u] == d + l) count[u] = (count[u] + count[v]) % MODULO;
-        }
     }
 }
 
