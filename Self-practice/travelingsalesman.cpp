@@ -58,11 +58,10 @@ int main() {
             int a, b;
             cin >> a >> b;
 
-            queue<int> q;
             vector<int> dist(c + 1, INT_MAX);
             dist[a] = 0;
+            queue<int> q;
             q.emplace(a);
-
             while (!q.empty()) {
                 int v = q.front();
                 q.pop();
