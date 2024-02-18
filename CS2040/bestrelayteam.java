@@ -8,8 +8,8 @@ public class bestrelayteam {
         
         var array = new Runner[runners];
         for (int i = 0; i < runners; i++) {
-            var runnerDetails = br.readLine().split(" ");
-            array[i] = new Runner(runnerDetails[0], Double.parseDouble(runnerDetails[1]), Double.parseDouble(runnerDetails[2]));
+            var line = br.readLine().split(" ");
+            array[i] = new Runner(line[0], Double.parseDouble(line[1]), Double.parseDouble(line[2]));
         }
         Arrays.sort(array);
 
