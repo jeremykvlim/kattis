@@ -32,8 +32,8 @@ int main() {
     construct(s, true);
     construct(s, false);
 
-    queue<int> q;
     vector<int> dist(n, -1);
+    queue<int> q;
     for (int i = 0; i < n; i++)
         if (blocks[i] == highest) {
             q.emplace(i);
