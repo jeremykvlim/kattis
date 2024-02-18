@@ -47,8 +47,8 @@ int main() {
         vector<int> dist(w * h, INT_MAX), count(w * h, 0);
         vector<bool> queued(w * h, false);
         q.emplace(0);
-        queued[0] = true;
         dist[0] = 0;
+        queued[0] = true;
         while (!q.empty()) {
             int v = q.front();
             q.pop();
