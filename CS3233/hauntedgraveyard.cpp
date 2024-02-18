@@ -7,6 +7,7 @@ int main() {
 
     int w, h;
     while (cin >> w >> h && w && h) {
+        vector<vector<pair<int, int>>> adj_list(w * h);
         vector<vector<int>> state(w, vector<int>(h, 1));
         state[0][0] = 0;
         state[w - 1][h - 1] = -1;
@@ -24,7 +25,6 @@ int main() {
         int e;
         cin >> e;
 
-        vector<vector<pair<int, int>>> adj_list(w * h);
         while (e--) {
             int x1, y1, x2, y2, t;
             cin >> x1 >> y1 >> x2 >> y2 >> t;
@@ -43,11 +43,11 @@ int main() {
                             adj_list[i * h + j].emplace_back(x * h + y, 1);
                     }
 
-        queue<int> q;
         vector<int> dist(w * h, INT_MAX), count(w * h, 0);
-        vector<bool> queued(w * h, false);
-        q.emplace(0);
         dist[0] = 0;
+        queue<int> q;
+        q.emplace(0);
+        vector<bool> queued(w * h, false);
         queued[0] = true;
         while (!q.empty()) {
             int v = q.front();
