@@ -39,9 +39,8 @@ int main() {
             };
 
             int pos = -1;
-            for (int i = 0, j = i + len - 1; i < s.size() && j < s.size(); i++, j++) {
+            for (int i = 0, j = i + len - 1; i < s.size() && j < s.size(); i++, j++) 
                 if (appearances(((pref[j + 1] - pref[i] + mod) % mod) * inv[i] % mod) >= m) pos = i;
-            }
 
             return pos;
         };
