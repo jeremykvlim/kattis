@@ -37,10 +37,10 @@ int main() {
                 continue;
             }
 
-            vector<vector<int>> dist(k + 1, vector<int>(v, INT_MAX));
             priority_queue<tuple<int, int, int>, vector<tuple<int, int, int>>, greater<>> pq;
-            dist[1][s] = 0;
             pq.emplace(0, s, 1);
+            vector<vector<int>> dist(k + 1, vector<int>(v, INT_MAX));
+            dist[1][s] = 0;
             while (!pq.empty()) {
                 auto [d, v, junctions] = pq.top();
                 pq.pop();
