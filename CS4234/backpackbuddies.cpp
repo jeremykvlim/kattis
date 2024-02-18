@@ -2,8 +2,8 @@
 using namespace std;
 
 int dijkstra(int n, vector<vector<pair<int, int>>> adj_list, bool knight) {
-    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
     vector<bool> visited(n, false);
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
     pq.emplace(0, 0);
     while (!pq.empty()) {
         auto [v, d] = pq.top();
@@ -34,6 +34,7 @@ int main() {
     while (m--) {
         int u, v, d;
         cin >> u >> v >> d;
+        
         adj_list[u].emplace_back(v, d);
         adj_list[v].emplace_back(u, d);
     }
