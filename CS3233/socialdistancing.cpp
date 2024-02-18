@@ -11,11 +11,12 @@ int main() {
     vector<int> array(n);
     for (int &a : array) cin >> a;
 
-    priority_queue<long long> pq;
     auto dist = 0LL;
+    priority_queue<long long> pq;
     for (int i = 1; i < n; i++) {
         pq.emplace(array[i]);
         dist += array[i];
+        
         if (!pq.empty() && pq.top() > array[i]) {
             dist -= pq.top() - array[i];
             pq.pop();
