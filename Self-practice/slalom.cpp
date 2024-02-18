@@ -63,10 +63,10 @@ int main() {
         for (int v = 0; v < points.size(); v++)
             for (auto [u, w] : adj_list[v]) degree[u]++;
 
-        queue<int> q;
-        q.emplace(0);
         vector<double> dist(points.size(), INT_MAX);
         dist[0] = 0;
+        queue<int> q;
+        q.emplace(0);
         while (!q.empty()) {
             int v = q.front();
             q.pop();
