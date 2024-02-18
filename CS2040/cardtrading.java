@@ -21,11 +21,7 @@ public class cardtrading {
         for (int i = 0; i < cardCount.length; i++) profit += cardCount[i] * cardPrices[i].sell;
 
         var opportunity = new int[t];
-        for (int i = 0; i < t; i++) {
-            if (cardCount[i] == 0) opportunity[i] = cardPrices[i].buy * 2;
-            else if (cardCount[i] == 1) opportunity[i] = cardPrices[i].buy + cardPrices[i].sell;
-            else opportunity[i] = cardPrices[i].sell * 2;
-        }
+        for (int i = 0; i < t; i++) opportunity[i] = cardPrices[i].buy * (2 - cardCount[i]) + cardPrices[i].sell * (cardCount[i]);
 
         Arrays.sort(opportunity);
         for (int i = 0; i < k; i++) profit -= opportunity[i];
