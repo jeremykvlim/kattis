@@ -33,7 +33,6 @@ public class wifi {
                 else l = mid;
             }
 
-
             pw.printf("%.1f\n", l);
         }
         pw.flush();
