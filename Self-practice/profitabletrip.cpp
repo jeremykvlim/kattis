@@ -16,9 +16,9 @@ int main() {
         adj_list[u].emplace_back(v, t);
     }
 
-    queue<int> q;
     vector<int> profit(n + 1, INT_MIN);
     profit[1] = 0;
+    queue<int> q;
     q.emplace(1);
     while (!q.empty()) {
         int v = q.front();
