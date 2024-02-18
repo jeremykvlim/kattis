@@ -3,6 +3,7 @@ using namespace std;
 
 void relax(int u, int v, long long t, unordered_map<int, long long> &time, priority_queue<int, vector<int>, greater<>> &pq) {
     if (!time.count(u)) time[u] = LLONG_MAX;
+    
     if (time[u] > time[v] + t) {
         time[u] = time[v] + t;
         pq.emplace(u);
