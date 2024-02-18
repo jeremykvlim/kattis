@@ -43,9 +43,9 @@ int main() {
 
         int begin = lower_bound(dict.begin(), dict.end(), p.first) - dict.begin(), end = lower_bound(dict.begin(), dict.end(), p.second) - dict.begin();
 
-        queue<int> q;
         vector<int> dist(size, -1), prev(size, -1);
         dist[begin] = 0;
+        queue<int> q;
         q.emplace(begin);
         while (!q.empty() && dist[end] == -1) {
             int v = q.front();
