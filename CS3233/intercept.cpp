@@ -2,10 +2,10 @@
 using namespace std;
 
 void dijkstra(int s, bool t, vector<vector<pair<int, long long>>> &adj_list, vector<vector<pair<int, long long>>> &prev, vector<int> &stations) {
-    vector<long long> dist(prev.size(), LLONG_MAX);
     priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<>> pq;
-    if (!t) dist[s] = 0;
     pq.emplace(0, s);
+    vector<long long> dist(prev.size(), LLONG_MAX);
+    if (!t) dist[s] = 0;
     while (!pq.empty()) {
         auto [d, v] = pq.top();
         pq.pop();
