@@ -38,11 +38,13 @@ As such, I will try to find a compromise between both efficiency and preference.
 
 * using `std::unordered_map` or `__gnu_pbds::gp_hash_table` instead of `std::map` if ordering is unnecessary
 
-* using postfix `i++` instead of `++i` for iterator incrementing
+* using postfix `i++` instead of prefix `++i` for iterator incrementing
 
 * using `constexpr` instead of `const` for compile-time initialization
 
-* avoiding global variables at all costs
+* avoiding global variables at as much as possible
+
+* avoiding containers being declared outside of loops (unless necessary)
 
 * avoiding any macros (even pre-defined constraints) or typedefs
 
