@@ -22,13 +22,12 @@ public class promotions {
             incoming[y].add(x);
         }
 
-        var visiting = new boolean[e];
-        var visited_by = new boolean[e];
         int promo_a = 0, promo_b = 0, promo_no = 0;
         for (int i = 0; i < e; i++) {
-            Arrays.fill(visiting, false);
-            Arrays.fill(visited_by, false);
-            int out = dfs(i, outgoing, visiting) - 1, in = dfs(i, incoming, visited_by) - 1;
+            var visiting = new boolean[e];
+            var visitor = new boolean[e];
+            int out = dfs(i, outgoing, visiting) - 1, in = dfs(i, incoming, visitor) - 1;
+            
             if (out >= e - a) promo_a++;
             if (out >= e - b) promo_b++;
             if (in >= b) promo_no++;
