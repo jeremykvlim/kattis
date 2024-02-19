@@ -15,7 +15,7 @@ public class nesteddolls {
             for (int i = 0; i < m; i++) dolls[i] = new Doll(Integer.parseInt(input[2 * i]), Integer.parseInt(input[2 * i + 1]));
             Arrays.sort(dolls, Comparator.reverseOrder());
 
-            var dp = new int[20010];
+            var dp = new int[2 * m];
             int d = 0;
             for (int i = 0; i < m; i++) {
                 int j = d;
