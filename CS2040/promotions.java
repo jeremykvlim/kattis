@@ -4,8 +4,8 @@ import java.util.*;
 public class promotions {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
-        var input = br.readLine().split(" ");
-        int a = Integer.parseInt(input[0]), b = Integer.parseInt(input[1]), e = Integer.parseInt(input[2]), p = Integer.parseInt(input[3]);
+        var input = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
+        int a = input[0], b = input[1], e = input[2], p = input[3];
 
         var outgoing = new ArrayList[e];
         var incoming = new ArrayList[e];
