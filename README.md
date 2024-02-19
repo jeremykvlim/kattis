@@ -42,7 +42,7 @@ As such, I will try to find a compromise between both efficiency and preference.
 
 * using `constexpr` instead of `const` for compile-time initialization
 
-* avoiding global variables at as much as possible
+* avoiding global variables as much as possible
 
 * avoiding containers being declared outside of loops (unless necessary)
 
