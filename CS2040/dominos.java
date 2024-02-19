@@ -14,8 +14,7 @@ public class dominos {
 
             for (int i = 0; i < m; i++) {
                 input = br.readLine().split(" ");
-                int x = Integer.parseInt(input[0]), y = Integer.parseInt(input[1]);
-                adjList[x].add(y);
+                adjList[Integer.parseInt(input[0])].add(Integer.parseInt(input[1]));
             }
 
             var visited = new boolean[n + 1];
