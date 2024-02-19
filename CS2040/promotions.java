@@ -10,10 +10,7 @@ public class promotions {
 
         var outgoing = new ArrayList[e];
         var incoming = new ArrayList[e];
-        var visiting = new boolean[e];
-        var visited_by = new boolean[e];
-
-
+        
         for (int i = 0; i < e; i++) {
             outgoing[i] = new ArrayList<>();
             incoming[i] = new ArrayList<>();
@@ -26,6 +23,8 @@ public class promotions {
             incoming[y].add(x);
         }
 
+        var visiting = new boolean[e];
+        var visited_by = new boolean[e];
         for (int i = 0; i < e; i++) {
             Arrays.fill(visiting, false);
             Arrays.fill(visited_by, false);
@@ -40,8 +39,8 @@ public class promotions {
     static int dfs(int v, ArrayList<Integer>[] adjList, boolean[] visited) {
         int count = 1;
         visited[v] = true;
-        for (int i : adjList[v])
-            if (!visited[i]) count += dfs(i, adjList, visited);
+        for (int u : adjList[v])
+            if (!visited[u]) count += dfs(u, adjList, visited);
 
         return count;
     }
