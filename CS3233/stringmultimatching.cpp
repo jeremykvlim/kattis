@@ -12,7 +12,7 @@ int main() {
         string t;
         getline(cin, t);
 
-        for (auto &l : p) {
+        for (auto l : p) {
             int i = 0;
             while ((i = t.find(l, i)) != string::npos) cout << i++ << " ";
             cout << "\n";
