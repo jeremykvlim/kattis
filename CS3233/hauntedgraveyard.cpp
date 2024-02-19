@@ -45,13 +45,12 @@ int main() {
 
         vector<int> dist(w * h, INT_MAX), count(w * h, 0);
         dist[0] = 0;
-        queue<int> q;
-        q.emplace(0);
+        deque<int> dq{0};
         vector<bool> queued(w * h, false);
         queued[0] = true;
-        while (!q.empty()) {
-            int v = q.front();
-            q.pop();
+        while (!dq.empty()) {
+            int v = dq.front();
+            dq.pop_front();
             queued[v] = false;
 
             for (auto [u, d] : adj_list[v])
@@ -65,7 +64,7 @@ int main() {
                     }
 
                     if (!queued[u]) {
-                        q.emplace(u);
+                        dist[u] < dist[dq.front()] ? dq.emplace_front(u) : dq.emplace_back(u);
                         queued[u] = true;
                     }
                 }
