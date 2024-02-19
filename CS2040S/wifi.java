@@ -2,8 +2,6 @@ import java.io.*;
 import java.util.*;
 
 public class wifi {
-    static final double EPSILON = 1e-2;
-
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(System.out);
@@ -18,10 +16,10 @@ public class wifi {
 
             Arrays.sort(houses);
             double l = 0, r = houses[m - 1], mid;
-            while (l + EPSILON < r) {
+            while (l + 1e-2 < r) {
                 mid = l + (r - l) / 2;
 
-                double dist = houses[0] + mid;
+                var dist = houses[0] + mid;
                 int count = 1;
                 for (int i = 1; i < m; i++)
                     if (Math.abs(dist - houses[i]) > mid) {
