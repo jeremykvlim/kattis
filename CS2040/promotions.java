@@ -5,8 +5,7 @@ public class promotions {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var input = br.readLine().split(" ");
-        int a = Integer.parseInt(input[0]), b = Integer.parseInt(input[1]), e = Integer.parseInt(input[2]), p = Integer.parseInt(input[3]),
-                promo_a = 0, promo_b = 0, promo_no = 0;
+        int a = Integer.parseInt(input[0]), b = Integer.parseInt(input[1]), e = Integer.parseInt(input[2]), p = Integer.parseInt(input[3]);
 
         var outgoing = new ArrayList[e];
         var incoming = new ArrayList[e];
@@ -25,6 +24,7 @@ public class promotions {
 
         var visiting = new boolean[e];
         var visited_by = new boolean[e];
+        int promo_a = 0, promo_b = 0, promo_no = 0;
         for (int i = 0; i < e; i++) {
             Arrays.fill(visiting, false);
             Arrays.fill(visited_by, false);
