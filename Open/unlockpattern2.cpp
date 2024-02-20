@@ -6,13 +6,13 @@ bool valid(int p1, int p2, vector<bool> visited, vector<vector<int>> between) {
     return !between[p1][p2] || visited[between[p1][p2]];
 }
 
-void stroke(int curr, int prev, vector<bool> visited, vector<vector<int>> &between, vector<pair<int, int>> &pos, vector<string> &patterns, string p = "") {
+void unlock(int curr, int prev, vector<bool> visited, vector<vector<int>> &between, vector<pair<int, int>> &pos, vector<string> &patterns, string p = "") {
     if (all_of(visited.begin(), visited.end(), [&](auto b) {return b;})) {
         patterns.emplace_back(p);
         return;
     }
 
-    pair<int, int> prev_dir = {pos[curr].first - pos[prev].first, pos[curr].second - pos[prev].second}, next_dir;
+    pair<int, int> prev_dir{pos[curr].first - pos[prev].first, pos[curr].second - pos[prev].second}, next_dir;
     for (int next = 1; next <= 9; next++)
         if (!visited[next] && valid(curr, next, visited, between)) {
             next_dir = {pos[next].first - pos[curr].first, pos[next].second - pos[curr].second};
@@ -20,7 +20,7 @@ void stroke(int curr, int prev, vector<bool> visited, vector<vector<int>> &betwe
             p += (cross < 0) ? 'R' : (cross > 0) ? 'L' : (prev_dir == next_dir) ? 'S' : 'A';
 
             visited[next] = true;
-            stroke(next, curr, visited, between, pos, patterns, p);
+            unlock(next, curr, visited, between, pos, patterns, p);
             visited[next] = false;
             p.pop_back();
         }
@@ -50,7 +50,7 @@ int main() {
             visited[0] = true;
             if (i != j && valid(i, j, visited, between)) {
                 visited[i] = visited[j] = true;
-                stroke(i, j, visited, between, pos, patterns);
+                unlock(i, j, visited, between, pos, patterns);
             }
         }
 
