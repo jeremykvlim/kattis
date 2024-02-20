@@ -9,11 +9,11 @@ int main() {
     cin >> s;
 
     int n = s.size();
-    vector<int> dp = {0, n + 1};
+    pair<int, int> dp{0, n + 1};
     for (int i = 0; i < n / 2; i++) {
-        if (s[i] != s[n - i - 1]) dp = {dp[1], min(dp[0], dp[1]) + 1};
-        else dp = {min(dp[0], dp[1] + 1), dp[1] + 1};
+        if (s[i] != s[n - i - 1]) dp = {dp.second, min(dp.first, dp.second) + 1};
+        else dp = {min(dp.first, dp.second + 1), dp.second + 1};
     }
-    
-    cout << min(dp[0], dp[1]);
+
+    cout << min(dp.first, dp.second);
 }
