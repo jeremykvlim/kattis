@@ -28,7 +28,7 @@ int main() {
             pref[j] = k;
         }
 
-        for (int j = pref.size() - 1; j; j = pref[j] - 1)
+        for (int j = pref.size() - 1; j > 0; j = pref[j] - 1)
             if (2 * p.size() - pref[j] <= n) len.emplace_back(pref[j]);
     }
 
