@@ -33,7 +33,7 @@ int main() {
         long long k, y;
         cin >> k >> y;
 
-        vector<vector<long long>> a = {{1, 1}, {1, 0}};
+        vector<vector<long long>> a{{1, 1}, {1, 0}};
         cout << k << " " << matpow(a, y)[0][1] << "\n";
     }
 }
