@@ -25,7 +25,7 @@ vector<vector<int>> matpow(vector<vector<int>> a, int n) {
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    
+
     int t;
     cin >> t;
 
@@ -33,7 +33,7 @@ int main() {
         int n;
         cin >> n;
 
-        vector<vector<int>> a = {{3, 5}, {1, 3}};
+        vector<vector<int>> a{{3, 5}, {1, 3}};
         cout << "Case #" << x << ": " << setfill('0') << setw(3) << (2 * matpow(a, n)[0][0] - 1 + MODULO) % MODULO << "\n";
     }
 }
