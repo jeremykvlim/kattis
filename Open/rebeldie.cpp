@@ -25,7 +25,7 @@ struct Die {
 };
 
 struct Hash {
-     static uint64_t h(uint64_t key) {
+    static uint64_t h(uint64_t key) {
         uint64_t hash = key + 0x9e3779b97f4a7c15;
         hash = (hash ^ (hash >> 30)) * 0xbf58476d1ce4e5b9;
         hash = (hash ^ (hash >> 27)) * 0x94d049bb133111eb;
@@ -68,12 +68,11 @@ void dfs(Die curr, vector<vector<int>> &board, gp_hash_table<Die, null_type, Has
         Die next = curr;
         next.height += d.first.first;
         next.width += d.first.second;
-        if (next.height < 0 || next.width < 0 || next.height >= board.size() || next.width >= board[0].size()) continue;
+        if (next.height < 0 || next.height >= board.size() || next.width < 0 || next.width >= board[0].size()) continue;
         rotate(next, d.second);
 
         if (next.down == -1) next.down = board[next.height][next.width];
         if (next.down != board[next.height][next.width]) continue;
-
         if (visited.find(next) == visited.end()) {
             visited.insert(next);
             dfs(next, board, visited, directions);
@@ -92,13 +91,13 @@ int main() {
     for (auto &row : board)
         for (int &square : row) cin >> square;
 
-    vector<pair<pair<int, int>, char>> directions = {{{-1, 0}, 'N'},
-                                                     {{1,  0}, 'S'},
-                                                     {{0,  -1}, 'W'},
-                                                     {{0,  1}, 'E'}};
+    vector<pair<pair<int, int>, char>> directions{{{-1, 0}, 'N'},
+                                                  {{1,  0}, 'S'},
+                                                  {{0,  -1}, 'W'},
+                                                  {{0,  1}, 'E'}};
 
     gp_hash_table<Die, null_type, Hash> visited;
-    Die start = {-1, board[0][0], -1, -1, -1, -1, 0, 0};
+    Die start{-1, board[0][0], -1, -1, -1, -1, 0, 0};
     visited.insert(start);
     dfs(start, board, visited, directions);
 
