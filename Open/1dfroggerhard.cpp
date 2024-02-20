@@ -1,12 +1,15 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void dfs(vector<vector<int>> &adj_list, vector<unordered_set<int>> &magic, vector<int> &board, int v, int root, long long &wins) {
+long long dfs(vector<vector<int>> &adj_list, vector<unordered_set<int>> &magic, vector<int> &board, int root, int v) {
     bool inserted = magic[root].emplace(board[v]).second;
-    for (int u : adj_list[v]) dfs(adj_list, magic, board, u, root, wins);
 
-    wins += magic[root].size();
+    long long wins = magic[root].size();
+    for (int u : adj_list[v])
+        wins += dfs(adj_list, magic, board, root, u);
+
     if (inserted) magic[root].erase(board[v]);
+    return wins;
 }
 
 int main() {
@@ -56,7 +59,7 @@ int main() {
 
     auto wins = 0LL;
     for (int v = 1; v <= n; v++)
-        if (root[v]) dfs(adj_list, magic, board, v, root[v], wins);
+        if (root[v]) wins += dfs(adj_list, magic, board, root[v], v);
 
     cout << wins;
 }
