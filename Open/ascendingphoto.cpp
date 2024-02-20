@@ -12,23 +12,24 @@ int main() {
     while (n--) {
         int h;
         cin >> h;
-        
+
         if (heights.empty() || h != heights.back()) heights.emplace_back(h);
     }
 
-    map<int, int> ids;
-    for (auto h : heights) ids[h] = 0;
+    vector<int> temp = heights;
+    sort(temp.begin(), temp.end());
+    unordered_map<int, int> indices;
     int id = 0;
-    for (auto i : ids) ids[i.first] = id++;
-    for (auto &h : heights) h = ids[h];
+    for (int &h : temp)
+        if (!indices.count(h)) indices[h] = id++;
+    for (int &h : heights) h = indices[h];
 
-    vector<vector<int> > groups(id);
+    vector<vector<int>> groups(id);
     for (int i = 0; i < heights.size(); i++) groups[heights[i]].emplace_back(i);
 
-    pair<int, int> best1 = {0, id}, second1 = best1;
-
+    pair<int, int> best1{0, id}, second1{0, id};
     for (int i = 0; i < id; i++) {
-        pair<int, int> best2 = best1, second2 = second1;
+        auto best2 = best1, second2 = second1;
 
         for (auto index : groups[i]) {
             if (index == heights.size() - 1 || heights[index + 1] != i + 1) continue;
