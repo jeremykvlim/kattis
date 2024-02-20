@@ -2,7 +2,7 @@
 using namespace std;
 
 struct TrieNode {
-    TrieNode *children[26] = {nullptr};
+    TrieNode *children[26]{nullptr};
     int count = 0;
 };
 
@@ -72,7 +72,7 @@ int main() {
     for (auto w : type) {
         for (int i = w.size() - 1; ~i; i--) {
             dp[i] = {1e18, 0, 0};
-            
+
             auto *node = root;
             for (int j = i; j < w.size(); j++) {
                 int pos = w[j] - 'a';
