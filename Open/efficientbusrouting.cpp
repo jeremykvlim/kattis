@@ -1,12 +1,12 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-vector<int> dfs(int v, int parent, vector<vector<int>> &adj_list) {
+vector<int> dfs(vector<vector<int>> &adj_list, int v, int prev = -1) {
     vector<int> leaves;
     for (int u : adj_list[v]) {
-        if (u == parent) continue;
+        if (u == prev) continue;
         
-        auto children = dfs(u, v, adj_list);
+        auto children = dfs(adj_list, u, v);
         leaves.insert(leaves.end(), children.begin(), children.end());
     }
 
@@ -31,7 +31,7 @@ int main() {
     }
 
     int root = find_if(adj_list.begin(), adj_list.end(), [&](auto neighbors) {return neighbors.size() > 1;}) - adj_list.begin();
-    auto leaves = dfs(root, root, adj_list);
+    auto leaves = dfs(adj_list, root);
 
     int size = leaves.size();
     cout << (size + 1) / 2 << "\n";
