@@ -8,11 +8,11 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<int> points = {100, 75, 60, 50, 45, 40, 36, 32, 29, 26, 24, 22, 20, 18, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+    vector<int> points{100, 75, 60, 50, 45, 40, 36, 32, 29, 26, 24, 22, 20, 18, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
     vector<vector<int>> contests(m, vector<int>(n - 1));
     for (int i = 0; i < m; i++) {
         for (int j = 0; j < n - 1; j++) cin >> contests[i][j];
-        
+
         sort(contests[i].rbegin(), contests[i].rend());
         contests[i].resize(4);
     }
