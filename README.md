@@ -16,7 +16,7 @@ Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizat
 
 * Optimization Algorithms: CS4234 (`C++`/`Java`/`Python`)
 
-* Self-practice: `C++`/`Java`/`Python`
+* Open: `C++`/`Java`/`Python`
 
 Some courses share several problems, you might be able to find them under any one of the categories.
 
