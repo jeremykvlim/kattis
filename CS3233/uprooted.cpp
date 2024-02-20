@@ -44,7 +44,7 @@ int main() {
     vector<int> sets(n + 1), branches;
     iota(sets.begin(), sets.end(), 0);
     for (int u = 1; u <= n; u++) {
-        tuple<int, int, int> best = {-1, -1, -1};
+        tuple<int, int, int> best{-1, -1, -1};
 
         for (auto [v, w, x] : adj_list[u])
             if (get<1>(best) < w) best = {v, w, x};
