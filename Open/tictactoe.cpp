@@ -19,11 +19,10 @@ int main() {
     vector<int> XO(2, 0);
     bool filled = true;
     for (auto &row : board)
-        for (char cell : row) {
+        for (char cell : row)
             if (cell == 'X') XO[0]++;
             else if (cell == 'O') XO[1]++;
             else filled = false;
-        }
 
     int prev = XO[0] == XO[1] ? 1 : XO[0] == XO[1] + 1 ? 0 : -1;
     if (prev == -1) {
@@ -31,23 +30,23 @@ int main() {
         exit(0);
     }
 
-    vector<int> count(2, 0), dr = {1, 1, 0, -1}, dc = {0, 1, 1, 1};
+    vector<int> count(2, 0), dr{1, 1, 0, -1}, dc{0, 1, 1, 1};
     vector<vector<int>> win(n, vector<int>(n, 0));
 
     for (int p = 0; p < 2; p++)
         for (int k = 0; k < 4; k++)
-            for (int row = 0; row < n; row++)
-                for (int col = 0; col < n; col++) {
-                    if (symbol(row - dr[k], col - dc[k], board, n) != "XO"[p]) {
-                        int sequence = 0;
-                        while (symbol(row + sequence * dr[k], col + sequence * dc[k], board, n) == "XO"[p]) sequence++;
-                        if (sequence >= m) {
+            for (int r = 0; r < n; r++)
+                for (int c = 0; c < n; c++)
+                    if (symbol(r - dr[k], c - dc[k], board, n) != "XO"[p]) {
+                        int seq = 0;
+                        while (symbol(r + seq * dr[k], c + seq * dc[k], board, n) == "XO"[p]) seq++;
+                        if (seq >= m) {
                             count[p]++;
-                            for (int i = 0; i < sequence; i++)
-                                if (i < m && m + i >= sequence) win[row + i * dr[k]][col + i * dc[k]]++;
+                            for (int i = 0; i < seq; i++)
+                                if (i < m && m + i >= seq) win[r + i * dr[k]][c + i * dc[k]]++;
                         }
                     }
-                }
+
 
     if (count[1 - prev]) {
         cout << "ERROR";
