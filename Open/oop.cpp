@@ -2,7 +2,7 @@
 using namespace std;
 
 struct TrieNode {
-    TrieNode *children[26] = {nullptr};
+    TrieNode *children[26]{nullptr};
 };
 
 void dfs(unordered_set<long long> &hashes, map<long long, vector<int>> &shared, unordered_map<TrieNode*, vector<long long>> &word_hash, unordered_map<TrieNode*, int> &start, unordered_map<TrieNode*, int> &end, TrieNode *curr, int &count) {
