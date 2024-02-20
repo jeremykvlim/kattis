@@ -8,7 +8,7 @@ int main() {
     string s;
     cin >> s;
 
-    vector<string> patterns = {"meow", "moew|meo|eow|me.?o?w|m.?ow", "me|eo|ow|m.?o|m.?.?w|e.?w", "m|e|o|w"};
+    vector<string> patterns{"meow", "moew|meo|eow|me.?o?w|m.?ow", "me|eo|ow|m.?o|m.?.?w|e.?w", "m|e|o|w"};
     int factor = 4;
 
     for (int i = 0; i < patterns.size(); i++)
