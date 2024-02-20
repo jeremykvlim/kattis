@@ -4,6 +4,7 @@ using namespace std;
 void dfs(vector<vector<int>> &adj_list, vector<int> &order, vector<int> &prev, int v) {
     for (int u : adj_list[v]) {
         if (u == prev[v]) continue;
+        
         prev[u] = v;
         order.emplace_back(u);
         dfs(adj_list, order, prev, u);
