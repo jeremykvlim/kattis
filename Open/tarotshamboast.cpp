@@ -5,8 +5,8 @@ struct Prediction {
     string p;
     vector<int> len;
 
-    bool operator<(const Prediction &p) const {
-        return len < p.len;
+    bool operator<(const Prediction &pred) const {
+        return len < pred.len;
     }
 };
 
