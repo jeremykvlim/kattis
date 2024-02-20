@@ -1,15 +1,15 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-bool dfs(int l, int r, vector<int> &parent, vector<int> &left, vector<int> &right, int p = -1) {
+bool dfs(int l, int r, vector<int> &prev, vector<int> &left, vector<int> &right, int p = -1) {
     if (l + 1 > r) return true;
     
     for (int i = l, j = r - 1; i <= j; i++, j--) {
-        parent[i] = p;
-        if (left[i] < l && right[i] >= r) return dfs(l, i, parent, left, right, i) && dfs(i + 1, r, parent, left, right, i);
+        prev[i] = p;
+        if (left[i] < l && right[i] >= r) return dfs(l, i, prev, left, right, i) && dfs(i + 1, r, prev, left, right, i);
         
-        parent[j] = p;
-        if (left[j] < l && right[j] >= r) return dfs(l, j, parent, left, right, j) && dfs(j + 1, r, parent, left, right, j);
+        prev[j] = p;
+        if (left[j] < l && right[j] >= r) return dfs(l, j, prev, left, right, j) && dfs(j + 1, r, prev, left, right, j);
     }
 
     return false;
@@ -35,7 +35,7 @@ int main() {
     for (int &a : elements) cin >> a;
 
     int biggest = *max_element(elements.begin(), elements.end());
-    vector<int> lpf = sieve(biggest), prev(biggest + 1, -1), left(n, -1), right(n, n), parent(n, 0);
+    vector<int> lpf = sieve(biggest), prev(biggest + 1, -1), left(n, -1), right(n, n), prev(n, 0);
     for (int i = 0; i < n; i++)
         for (int num = elements[i]; num > 1; num /= lpf[num]) {
             if (prev[lpf[num]] < i) {
@@ -45,7 +45,7 @@ int main() {
             prev[lpf[num]] = i;
         }
 
-    if (dfs(0, n, parent, left, right))
-        for (int p : parent) cout << p + 1 << " ";
+    if (dfs(0, n, prev, left, right))
+        for (int p : prev) cout << p + 1 << " ";
     else cout << "impossible";
 }
