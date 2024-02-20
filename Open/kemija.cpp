@@ -46,5 +46,5 @@ int main() {
         update(2, second[1] - first[0] - first[1]);
     }
 
-    for (auto &num : first) cout << num << "\n";
+    for (auto num : first) cout << num << "\n";
 }
