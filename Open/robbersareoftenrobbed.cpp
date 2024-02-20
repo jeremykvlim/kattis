@@ -12,7 +12,7 @@ int main() {
     for (int &s : stars) cin >> s;
     sort(stars.rbegin(), stars.rend());
     
-    pair<int, int> optimal = {0, 0};
+    pair<int, int> optimal{0, 0};
     for (int i = 1; i <= stars[0]; i++) {
         int sacks = 0;
         vector<int> remaining, unvisited(stars.begin() + min(n, k), stars.end());
