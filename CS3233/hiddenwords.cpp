@@ -6,19 +6,20 @@ struct TrieNode {
     int count = 0;
 };
 
-void dfs(vector<vector<bool>> &visited, vector<string> &grid, int i, int j, TrieNode *node, int &words) {
+int dfs(vector<vector<bool>> &visited, vector<string> &grid, int i, int j, TrieNode *node) {
     visited[i][j] = true;
-    words += node->count;
+    int words = node->count;
     node->count = 0;
 
-    vector<int> dr = {1, -1, 0, 0}, dc = {0, 0, 1, -1};
+    vector<int> dr{1, -1, 0, 0}, dc{0, 0, 1, -1};
     for (int k = 0; k < 4; k++) {
         int r = i + dr[k], c = j + dc[k];
         if (r < 0 || r >= grid.size() || c < 0 || c >= grid[0].size() || visited[r][c]) continue;
         int pos = grid[r][c] - 'A';
-        if (node->children[pos]) dfs(visited, grid, r, c, node->children[pos], words);
+        if (node->children[pos]) words += dfs(visited, grid, r, c, node->children[pos]);
     }
     visited[i][j] = false;
+    return words;
 }
 
 int main() {
@@ -51,7 +52,7 @@ int main() {
     for (int i = 0; i < h; i++)
         for (int j = 0; j < w; j++) {
             int pos = grid[i][j] - 'A';
-            if (root->children[pos]) dfs(visited, grid, i, j, root->children[pos], words);
+            if (root->children[pos]) words += dfs(visited, grid, i, j, root->children[pos]);
         }
 
     cout << words;
