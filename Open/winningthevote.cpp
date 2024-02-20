@@ -16,7 +16,7 @@ int main() {
     cin >> n >> s;
 
     int favor = 0;
-    vector<int> tellers, signums = {0};
+    vector<int> tellers, signums{0};
     for (char c : s)
         if (c == '0') tellers.emplace_back(signums.size() - 1);
         else {
@@ -35,7 +35,7 @@ int main() {
     vector<long long> dp(required + 2, INT_MAX);
     dp[0] = dp[required + 1] = 0;
     for (int t : tellers) {
-        pair<long long, long long> costs = {swaps(allies[signums[t] + 1], t), swaps(allies[signums[t] + 2], t)};
+        auto costs = make_pair(swaps(allies[signums[t] + 1], t), swaps(allies[signums[t] + 2], t));
         for (int i = required; i; i--) dp[i] = min({dp[i], dp[i - 1] + costs.first, (i > 1 ? dp[i - 2] + costs.second : INT_MAX)});
     }
 
