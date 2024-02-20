@@ -9,7 +9,7 @@ void divisors(vector<pair<int, int>> &pfs, vector<pair<double, long long>> &divs
     divisors(pfs, divs, d, i + 1);
 
     auto [pf, pow] = pfs[i];
-    pair<double, long long> p = {log(pf), pf};
+    pair<double, long long> p{log(pf), pf};
     while (pow--) {
         d = {d.first + p.first, d.second * p.second % MODULO};
         divs.emplace_back(d);
@@ -50,7 +50,7 @@ int main() {
     string s;
     cin >> s;
 
-    pair<double, long long> K = {0, 1};
+    pair<double, long long> K{0, 1};
     auto &[logk, kmod] = K;
     for (int i = 0; i < s.size() / 2; i++) {
         int pf = stoi(s.substr(2 * i, 2));
