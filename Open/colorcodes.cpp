@@ -35,7 +35,7 @@ int main() {
         P[s] = true;
     }
 
-    vector<vector<bool>> valid = {vector<bool>(n, false)};
+    vector<vector<bool>> valid{vector<bool>(n, false)};
     for (int i = 0; i < 1 << n; i++) {
         vector<bool> bits(n, false);
         for (int j = 0; j < n; j++) bits[j] = (i >> j) & 1;
@@ -48,7 +48,7 @@ int main() {
         exit(0);
     }
 
-    vector<vector<bool>> code = {vector<bool>(n, false)};
+    vector<vector<bool>> code{vector<bool>(n, false)};
     valid.resize(n);
     for (auto m : valid)
         for (int i = code.size() - 1; ~i; i--) {
