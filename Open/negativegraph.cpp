@@ -9,7 +9,7 @@ int main() {
     cin >> n >> m >> k >> A >> B;
 
     vector<unordered_map<int, long long>> adj_list_pos(n), adj_list_neg(n);
-    unordered_set<int> stations_neg = {A, B};
+    unordered_set<int> stations_neg{A, B};
     while (m--) {
         int a, b;
         long long c;
@@ -29,6 +29,7 @@ int main() {
         while (!pq.empty()) {
             auto [d, u] = pq.top();
             pq.pop();
+            
             if (visited[u]) continue;
 
             visited[u] = true;
@@ -38,8 +39,8 @@ int main() {
         }
     }
 
-    unordered_map<int, long long> dist = {{A, 0}};
-    for (int i = 0; i <= 4 * stations_neg.size(); i++) {
+    unordered_map<int, long long> dist{{A, 0}};
+    for (int i = 0; i <= stations_neg.size() * 4; i++) {
         bool neg_cycle = false;
         for (int v : stations_neg) {
             if (!dist.count(v)) continue;
@@ -56,7 +57,7 @@ int main() {
                 }
         }
 
-        if (i == 4 * stations_neg.size() && neg_cycle) {
+        if (i == stations_neg.size() * 4 && neg_cycle) {
             cout << "NEGATIVE INFINITY";
             exit(0);
         }
