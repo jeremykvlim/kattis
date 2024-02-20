@@ -117,7 +117,7 @@ int main() {
                 if (curr == dest) break;
 
                 for (int j = 0; j < 4; j++) {
-                    pair<int, int> next = {curr.first + dr1[j], curr.second + dc1[j]};
+                    pair<int, int> next{curr.first + dr1[j], curr.second + dc1[j]};
 
                     if (next == dest) {
                         dist[next] = dist[curr] + 1;
@@ -142,7 +142,7 @@ int main() {
             }
 
             for (int j = 0; j < 8; j++) {
-                pair<int, int> next = {dest.first + dr2[j], dest.second + dc2[j]};
+                pair<int, int> next{dest.first + dr2[j], dest.second + dc2[j]};
                 if (!out(next)) border[next.first][next.second] = true;
             }
 
@@ -151,7 +151,7 @@ int main() {
                 visited[dest.first][dest.second] = true;
 
                 for (int j = 0; j < 8; j++) {
-                    pair<int, int> next = {dest.first + dr2[j], dest.second + dc2[j]};
+                    pair<int, int> next{dest.first + dr2[j], dest.second + dc2[j]};
                     if (!out(next)) border[next.first][next.second] = true;
                 }
             }
