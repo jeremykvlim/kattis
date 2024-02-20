@@ -11,6 +11,7 @@ int dfs(int v, int prev, vector<vector<int>> &adj_list, vector<int> &next, pair<
                 next[v] = u;
             }
         }
+    
     return depth;
 }
 
@@ -29,18 +30,19 @@ int main() {
     for (int i = 0; i < n - 1; i++) {
         int a, b;
         cin >> a >> b;
+        
         adj_list[a].emplace_back(b);
         adj_list[b].emplace_back(a);
     }
 
     vector<int> next(n + 1);
     iota(next.begin(), next.end(), 0);
-    pair<int, int> flight = {-1, -1}, p1, p2;
+    pair<int, int> flight{-1, -1}, p1, p2;
     dfs(1, -1, adj_list, next, flight);
 
     int least = INT_MAX;
     for (int a = 1; a <= n; a++)
-        for (int b : adj_list[a]) {
+        for (int b : adj_list[a]) 
             if (b > a) {
                 flight = {a, b};
                 int furthest1 = find(a, dfs(a, -1, adj_list, next, flight), next), furthest2 = find(b, dfs(b, -1, adj_list, next, flight), next),
@@ -52,7 +54,6 @@ int main() {
                     p2 = {find(furthest1, dist1 / 2, next), find(furthest2, dist2 / 2, next)};
                 }
             }
-        }
     
     cout << least << "\n" << p1.first << " " << p1.second << "\n" << p2.first << " " << p2.second << "\n";
 }
