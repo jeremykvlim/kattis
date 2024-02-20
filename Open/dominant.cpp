@@ -2,7 +2,7 @@
 using namespace std;
 
 struct TrieNode {
-    TrieNode *children[26] = {nullptr};
+    TrieNode *children[26]{nullptr};
 };
 
 void dfs(int start, TrieNode *curr, TrieNode *self, unordered_map<TrieNode*, bool> &visited, string &s) {
