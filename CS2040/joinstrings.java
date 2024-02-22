@@ -15,9 +15,9 @@ public class joinstrings {
 
         int start = 0;
         for (int i = 0; i < n - 1; i++) {
-            int[] operation = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
-            start = operation[0] - 1;
-            adjList[start].add(operation[1] - 1);
+            var join = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
+            start = join[0] - 1;
+            adjList[start].add(join[1] - 1);
         }
 
         pw.print(arr[start]);
