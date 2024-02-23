@@ -3,10 +3,10 @@ import java.util.*;
 public class coconut {
     public static void main(String[] args) {
         var sc = new Scanner(System.in);
-        var players = new ArrayList<Player>();
         int s = sc.nextInt(), n = sc.nextInt();
 
         int i = 1, j = 0;
+        var players = new ArrayList<Player>();
         while (n-- > 0) players.add(new Player("folded", i++));
 
         while (players.size() > 1) {
