@@ -5,18 +5,18 @@ public class coconut {
         var sc = new Scanner(System.in);
         int s = sc.nextInt(), n = sc.nextInt();
 
-        int i = 1, j = 0;
         var players = new ArrayList<Player>();
-        while (n-- > 0) players.add(new Player("folded", i++));
+        for (int i = 0; i < n; i++) players.add(new Player("folded", i + 1));
 
+        int i = 0;
         while (players.size() > 1) {
-            j = (j + s - 1) % players.size();
-            if (players.get(j).hands.equals("folded")) {
-                players.get(j).hands = "fist";
-                players.add(j, new Player("fist", players.get(j).number));
-            } else if (players.get(j).hands.equals("fist"))
-                players.get(j++).hands = "palm";
-            else players.remove(j);
+            i = (i + s - 1) % players.size();
+            if (players.get(i).hands.equals("folded")) {
+                players.get(i).hands = "fist";
+                players.add(i, new Player("fist", players.get(i).number));
+            } else if (players.get(i).hands.equals("fist"))
+                players.get(i++).hands = "palm";
+            else players.remove(i);
         }
 
         System.out.println(players.get(0).number);
