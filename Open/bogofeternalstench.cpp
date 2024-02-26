@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
-using namidespace std;
+using namespace std;
 
-void relax(vector<tuple<int, int, int>> &edges, vector<long long> &dist, bool detect) {
+void relax(vector<tuple<int, int, int>> &edges, vector<long long> &dist, bool detect = false) {
     for (auto &[u, v, s] : edges)
         if (s <= dist[v] && dist[u] < dist[v] - s) dist[u] = !detect ? dist[v] - s : LLONG_MAX;
 }
@@ -23,9 +23,9 @@ int main() {
         vector<long long> dist(n + 1, LLONG_MIN);
         dist[n] = mid;
 
-        for (int i = 0; i < n; i++) relax(edges, dist, false);
+        for (int i = 0; i < n; i++) relax(edges, dist);
         relax(edges, dist, true);
-        for (int i = 0; i < n; i++) relax(edges, dist, false);
+        for (int i = 0; i < n; i++) relax(edges, dist);
 
         if (dist[1] >= 0) r = mid;
         else l = mid;
