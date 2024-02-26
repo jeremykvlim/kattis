@@ -40,7 +40,7 @@ public class teque {
                 }
                 default: {
                     int i = Integer.parseInt(command[1]);
-                    pw.println(i <= frontSize - 1 ? front[frontHead + 1 + i] : back[backHead + 1 + i - frontSize]);
+                    pw.println(i < frontSize ? front[frontHead + 1 + i] : back[backHead + 1 + i - frontSize]);
                     break;
                 }
             }
