@@ -24,6 +24,7 @@ int main() {
             if (tan(m) - M_PI - m > 0) r = m;
             else l = m;
         }
+        
         cout << (t * (M_PI + m) / sin(m) >= j ? "YES\n" : "NO\n");
     }
 }
