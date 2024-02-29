@@ -10,7 +10,7 @@ int main() {
     cin >> x >> y >> n;
 
     vector<pair<double, double>> hiding(n);
-    for (auto &p : hiding) cin >> p.first >> p.second;
+    for (auto &[x, y] : hiding) cin >> x >> y;
 
     vector<double> dp(1 << n, DBL_MAX);
     dp[0] = 0;
