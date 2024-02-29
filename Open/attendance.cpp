@@ -8,7 +8,7 @@ void update(int i, int val, int inspections, vector<int> &fenwick, vector<bool> 
     for (; i < fenwick.size(); i = i | (i + 1)) fenwick[i] += val;
 }
 
-int pref(int i, int inspections, vector<int> &fenwick) {
+int pref_sum(int i, int inspections, vector<int> &fenwick) {
     if (i >= inspections) i = inspections - 1;
 
     int sum = 0;
@@ -55,7 +55,7 @@ int main() {
         
         int next = *upper_bound(index[inspections[curr]].begin(), index[inspections[curr]].end(), curr);
         update(curr, -1, k, fenwick, attend);
-        cout << pref(next, k, fenwick) + 1 << " ";
+        cout << pref_sum(next, k, fenwick) + 1 << " ";
         update(next, 1, k, fenwick, attend);
     }
 }
