@@ -3,10 +3,10 @@ using namespace std;
 
 constexpr int MODULO1 = 29, MODULO2 = 34483;
 
-long long C(int n, int m, int p, vector<int> &fact, vector<int> &fact_inv) {
-    if (m < 0 || m > n) return 0;
-    if (n >= p || m >= p) return (C(n / p, m / p, p, fact, fact_inv) * C(n % p, m % p, p, fact, fact_inv)) % p;
-    return (fact[n] * fact_inv[m] % p * fact_inv[n - m] % p) % p;
+long long C(int n, int k, int p, vector<long long> &fact, vector<long long> &fact_inv) {
+    if (k < 0 || k > n) return 0;
+    if (n >= p || k >= p) return (C(n / p, k / p, p, fact, fact_inv) * C(n % p, k % p, p, fact, fact_inv)) % p;
+    return (fact[n] * fact_inv[k] % p * fact_inv[n - k] % p) % p;
 }
 
 int main() {
