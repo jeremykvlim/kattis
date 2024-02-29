@@ -5,8 +5,8 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    vector<bool> visited(2e6 + 1, false);
     vector<int> npf(2e6 + 1, 0);
+    vector<bool> visited(2e6 + 1, false);
     visited[1] = true;
     for (int i = 1; i <= 2e6; i++)
         if (visited[i])
