@@ -43,5 +43,5 @@ int main() {
         dp = temp;
     }
 
-    cout << dp[(1 << n) - 1];
+    cout << dp.back();
 }
