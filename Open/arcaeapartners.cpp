@@ -5,13 +5,11 @@ void update(vector<vector<int>> &fenwick, int i, int j, int value) {
     for (; i < fenwick[j].size(); i += i & -i) fenwick[j][i] = max(fenwick[j][i], value);
 }
 
-
 int query(vector<vector<int>> &fenwick, int i, int j) {
     int value = 0;
     for (; i; i ^= i & -i) value = max(value, fenwick[j][i]);
     return value;
 }
-
 
 int main() {
     ios::sync_with_stdio(false);
