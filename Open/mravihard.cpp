@@ -4,10 +4,11 @@ using namespace std;
 bool dfs(long double l, int v, vector<long double> &liquid, vector<vector<int>> &adj_list, vector<vector<long double>> &flow,
          vector<vector<bool>> &superpower, int parent = -1) {
     if (adj_list[v].empty() && liquid[v] != -1 && l < liquid[v]) return false;
+         
     for (int i = 0; i < adj_list[v].size(); i++) {
         int u = adj_list[v][i];
         if (u == parent) continue;
-        long double f = l + log(flow[v][i]);
+        auto f = l + log(flow[v][i]);
         if (!dfs(superpower[v][i] && f > 0 ? 2 * f : f, u, liquid, adj_list, flow, superpower, u)) return false;
     }
     return true;
@@ -23,7 +24,6 @@ int main() {
     vector<vector<int>> adj_list(n);
     vector<vector<long double>> flow(n);
     vector<vector<bool>> superpower(n);
-
     for (int i = 0; i < n - 1; i++) {
         int a, b, x, t;
         cin >> a >> b >> x >> t;
