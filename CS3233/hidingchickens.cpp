@@ -21,7 +21,7 @@ int main() {
                 if (!(mask & 1 << j)) continue;
 
                 int submask = 1 << i | 1 << j;
-                double dist = hypot(hiding[i].first - hiding[j].first, hiding[i].second - hiding[j].second);
+                auto dist = hypot(hiding[i].first - hiding[j].first, hiding[i].second - hiding[j].second);
                 dist += (submask == mask) ? min(hypot(hiding[i].first - x, hiding[i].second - y), hypot(hiding[j].first - x, hiding[j].second - y))
                                           : hypot(hiding[i].first - x, hiding[i].second - y) + hypot(hiding[j].first - x, hiding[j].second - y);
 
@@ -29,5 +29,5 @@ int main() {
             }
         }
 
-    cout << fixed << setprecision(6) << dp[(1 << n) - 1];
+    cout << fixed << setprecision(6) << dp.back();
 }
