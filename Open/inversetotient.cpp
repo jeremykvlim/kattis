@@ -16,8 +16,8 @@ long long inverse(vector<long long> &pd, int i, long long n, long long curr, lon
 }
 
 bool isprime(long long n) {
-    for (auto i = 2LL; i <= sqrt(n); i++)
-        if (!(n % i)) return false;
+    for (int p = 2; p <= sqrt(n); p == 2 ? p++ : p += 2)
+        if (!(n % p)) return false;
 
     return true;
 }
