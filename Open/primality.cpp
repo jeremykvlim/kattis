@@ -13,7 +13,7 @@ __int128 pow(__int128 base, long long exponent, long long mod = 1) {
 bool isprime(long long n) {
     if (n < 2) return false;
 
-    for (int i = 2; i <= cbrt(n); i++)
+    for (int i = 2; i <= cbrt(n); i == 2 ? i++ : i += 2)
         if (!(n % i)) return false;
 
     for (int i = 0; i < 1e5; i++) {
