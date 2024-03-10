@@ -11,7 +11,7 @@ int main() {
     vector<int> a(n);
     for (int &ai : a) cin >> ai;
 
-    vector<int> temp = a;
+    auto temp = a;
     sort(temp.begin(), temp.end());
     unordered_map<int, int> indices;
     for (int i = 0; i < n; i++) indices[temp[i]] = i;
