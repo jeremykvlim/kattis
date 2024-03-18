@@ -14,6 +14,7 @@ int main() {
     for (int i = 0; i < l; i++) {
         int a, b, x, y;
         cin >> a >> b >> x >> y;
+        
         locks[a].emplace_back(b, x, y);
         badges.emplace_back(x);
         badges.emplace_back(y);
