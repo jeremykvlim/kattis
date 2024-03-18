@@ -20,5 +20,6 @@ int main() {
         }
         else sum = (sum + count) % MODULO;
     }
+    
     cout << sum;
 }
