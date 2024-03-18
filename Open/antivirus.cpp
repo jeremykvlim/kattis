@@ -9,8 +9,9 @@ int main() {
     cin >> n;
 
     vector<int> a(n);
-    for (auto &ai : a) {
+    for (int &ai : a) {
         cin >> ai;
+        
         ai--;
     }
 
