@@ -9,7 +9,7 @@ int main() {
     cin >> n >> c;
 
     vector<int> weights(n);
-    for (auto &w : weights) cin >> w;
+    for (int &w : weights) cin >> w;
 
     sort(weights.begin(), weights.end());
     vector<bool> dp(c + 1, false);
