@@ -42,7 +42,7 @@ int main() {
     cin >> z;
 
     auto pw = 1LL;
-    for (int i = 0; i < n; i++) pw = pw * w[i] % p;
+    for (int i = 0; i < n; i++) pw = (pw * w[i]) % p;
     z = (z * pow(pw, p - 2, p)) % p;
 
     if (z == 1) {
