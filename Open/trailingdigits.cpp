@@ -33,22 +33,23 @@ int main() {
     while (l + 1 < r) {
         m = l + (r - l) / 2;
 
-        long long base = 1, B = 0;
+        auto base = 1LL, B = 0LL;
         for (int i = 0; i < m; i++) {
             base = base * 10 % b;
             B = (B * 10 + d) % b;
         }
 
-        long long x = congruence(base, (b - B) % b, b);
+        auto x = congruence(base, (b - B) % b, b);
         if (x == -1) {
             r = m;
             continue;
         }
         
         if (!x && !d) x = b / __gcd(base, b);
-        string s = to_string(x);
+        auto s = to_string(x);
         if (!x) s.clear();
         s += string(m, '0' + d);
+        
         if (!(s.size() == a.size() ? s <= a : s.size() < a.size())) r = m;
         else l = m;
     }
