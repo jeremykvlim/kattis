@@ -7,11 +7,13 @@ int main() {
 
     int n;
     while (cin >> n && n) {
-        vector<int> indices(n);
         cin.ignore(1);
+        
+        vector<int> indices(n);
         for (int i = 0; i < n; i++) {
             int term;
             cin >> term;
+            
             indices[term] = i;
         }
       
