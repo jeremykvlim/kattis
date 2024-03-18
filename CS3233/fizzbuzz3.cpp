@@ -39,6 +39,6 @@ int main() {
         long long x, y;
         cin >> x >> y;
 
-        cout << c(p3, min(33LL, y + 1), x - 1);
+        cout << c(p3, min(36LL, y + 1), x - 1);
     }
 }
