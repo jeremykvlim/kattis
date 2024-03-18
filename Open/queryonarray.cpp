@@ -40,9 +40,9 @@ int main() {
         vector<__int128> temp2(n + 1, 0);
         for (auto i = 1LL; i <= n; i++)
             temp2[i] += temp1[3][i] * i * i * i
-                        + temp1[2][i] * i * i
-                        + temp1[1][i] * i
-                        + temp1[0][i];
+                      + temp1[2][i] * i * i
+                      + temp1[1][i] * i
+                      + temp1[0][i];
 
         for (int i = 1; i <= n; i++) temp2[i] += temp2[i - 1];
         for (int i = 1; i <= n; i++) pref_a[i] += temp2[i];
@@ -61,9 +61,9 @@ int main() {
                 if (l > r) continue;
 
                 sum += sign * (pref_pow[3][r] - pref_pow[3][l - 1]
-                               + (pref_pow[2][r] - pref_pow[2][l - 1]) * (-3 * i + 6)
-                               + (pref_pow[1][r] - pref_pow[1][l - 1]) * ((long long) 3 * i * i - 12 * i + 11)
-                               + (pref_pow[0][r] - pref_pow[0][l - 1]) * ((long long) -i * i * i + (long long) 6 * i * i - 11 * i + 6));
+                            + (pref_pow[2][r] - pref_pow[2][l - 1]) * (-3 * i + 6)
+                            + (pref_pow[1][r] - pref_pow[1][l - 1]) * ((long long) 3 * i * i - 12 * i + 11)
+                            + (pref_pow[0][r] - pref_pow[0][l - 1]) * ((long long) -i * i * i + (long long) 6 * i * i - 11 * i + 6));
             }
 
             cout << (long long) ((sum % MODULO + MODULO) % MODULO) << "\n";
