@@ -21,7 +21,6 @@ int main() {
 
         double curr = 2 * sum_p / n, prev = 201;
         while (curr < prev) {
-            prev = curr;
             double sum_s = 0, count = 0;
             for (auto v : p)
                 if (v <= curr) {
@@ -29,6 +28,7 @@ int main() {
                     count++;
                 }
 
+            prev = curr;
             curr = (sum_p + sum_s) / count;
         }
 
