@@ -3,25 +3,22 @@ using namespace std;
 
 constexpr int MODULO = 1e9 + 7;
 
-int mod(long long x) {
-    return x % MODULO;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    
+
     string s;
     cin >> s;
-    long long sum = 0, count = 0, total = 1;
+
+    auto sum = 0LL, count = 0LL, total = 1LL;
     for (char c : s) {
-        if (c == '1') count = mod(count + total);
+        if (c == '1') count = (count + total) % MODULO;
         else if (c == '?') {
-            sum = mod(mod(sum * 2) + count);
-            count = mod(mod(count * 2) + total);
-            total = mod(total * 2);
+            sum = ((sum * 2) % MODULO + count) % MODULO;
+            count = ((count * 2) % MODULO + total) % MODULO;
+            total = (total * 2) % MODULO;
         }
-        else sum = mod(sum + count);
+        else sum = (sum + count) % MODULO;
     }
     cout << sum;
 }
