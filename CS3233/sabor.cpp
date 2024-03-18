@@ -30,6 +30,7 @@ int main () {
         while (p--) {
             int k, l;
             cin >> k >> l;
+            
             adj_list[k - 1].emplace_back(l - 1);
             adj_list[l - 1].emplace_back(k - 1);
             arguments[k - 1]++;
