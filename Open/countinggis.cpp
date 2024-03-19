@@ -14,6 +14,7 @@ int main() {
     unordered_set<int> g;
     for (int i = 0; i < l; i++) {
         cin >> G[i];
+        
         if (i && G[i - 1] >= G[i]) {
             cout << 0;
             exit(0);
@@ -26,10 +27,10 @@ int main() {
         exit(0);
     }
     
-    long long a = 1;
+    auto a = 1LL;
     int count = 0;
     for (int i = n; i; i--)
-        if (!g.count(i)) a = a * (G.size() - (int)(lower_bound(G.begin(), G.end(), i) - G.begin()) + count++) % MODULO;
+        if (!g.count(i)) a = a * (G.size() - (int) (lower_bound(G.begin(), G.end(), i) - G.begin()) + count++) % MODULO;
 
     cout << a;
 }
