@@ -8,15 +8,15 @@ int main() {
     string s;
     while (cin >> s && s != "END") {
         vector<long long> nums;
-        vector<char> ops;
+        string ops;
         stringstream ss(s);
-        
+
         long long x;
         char op;
         while (ss >> x) {
             nums.emplace_back(x);
             ss >> op;
-            ops.emplace_back(op);
+            ops += op;
         }
 
         int size = nums.size();
@@ -37,6 +37,6 @@ int main() {
                 }
 
 
-        cout << dp_min[0][size - 1] << ' ' << dp_max[0][size - 1] << "\n";
+        cout << dp_min[0].back() << " " << dp_max[0].back() << "\n";
     }
 }
