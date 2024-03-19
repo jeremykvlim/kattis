@@ -1,10 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-char symbol(int r, int c, vector<vector<char>> &board, int n) {
-    return (r < 0 || r >= n || c < 0 || c >= n) ? '.' : board[r][c];
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -12,9 +8,8 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<vector<char>> board(n, vector<char>(n));
-    for (auto &row : board)
-        for (char &cell : row) cin >> cell;
+    vector<string> board(n);
+    for (auto &row : board) cin >> row;
 
     vector<int> XO(2, 0);
     bool filled = true;
@@ -32,14 +27,18 @@ int main() {
 
     vector<int> count(2, 0), dr{1, 1, 0, -1}, dc{0, 1, 1, 1};
     vector<vector<int>> win(n, vector<int>(n, 0));
+    
+    auto symbol = [&](int r, int c) {
+        return (r < 0 || r >= n || c < 0 || c >= n) ? '.' : board[r][c];
+    };
 
     for (int p = 0; p < 2; p++)
         for (int k = 0; k < 4; k++)
             for (int r = 0; r < n; r++)
                 for (int c = 0; c < n; c++)
-                    if (symbol(r - dr[k], c - dc[k], board, n) != "XO"[p]) {
+                    if (symbol(r - dr[k], c - dc[k]) != "XO"[p]) {
                         int seq = 0;
-                        while (symbol(r + seq * dr[k], c + seq * dc[k], board, n) == "XO"[p]) seq++;
+                        while (symbol(r + seq * dr[k], c + seq * dc[k]) == "XO"[p]) seq++;
                         if (seq >= m) {
                             count[p]++;
                             for (int i = 0; i < seq; i++)
