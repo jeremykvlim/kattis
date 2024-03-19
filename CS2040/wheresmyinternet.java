@@ -7,7 +7,7 @@ public class wheresmyinternet {
         var input = br.readLine().split(" ");
         int n = Integer.parseInt(input[0]), m = Integer.parseInt(input[1]);
 
-        int[] sets = new int[n + 1];
+        var sets = new int[n + 1];
         for (int i = 0; i < n; i++) sets[i] = i;
 
         while (m-- > 0) {
