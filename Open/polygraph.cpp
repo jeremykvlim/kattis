@@ -44,7 +44,7 @@ int main() {
         }
 
         sort(bitmasks.begin(), bitmasks.end(), [](auto b1, auto b2) {return b1.to_string() < b2.to_string();});
-        vector<char> cities(n, '-');
+        string cities(n, '-');
         for (auto b : bitmasks) {
             int msb = b._Find_first();
             while (b._Find_next(msb) != 501) msb = b._Find_next(msb);
@@ -53,7 +53,7 @@ int main() {
         }
 
         cout << "Case #" << x + 1 << ": ";
-        for (auto c : cities) cout << c << " ";
+        for (char c : cities) cout << c << " ";
         cout << "\n";
     }
 }
