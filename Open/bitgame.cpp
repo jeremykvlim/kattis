@@ -10,10 +10,10 @@ bool dfs(string &paper) {
         return num;
     }
 
-    vector<char> bits{'0', '1'};
+    string bits{"01"};
     if (rand() & 1) swap(bits[0], bits[1]);
 
-    for (auto &b : bits) {
+    for (char b : bits) {
         paper += b;
         bool win = !dfs(paper);
         paper.pop_back();
