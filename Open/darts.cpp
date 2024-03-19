@@ -13,28 +13,29 @@ int main() {
             dpB[i][j] = (1 - 2.0 / 3) / (1 - (19.0 / 20) * (2.0 / 3));
         }
 
+    auto A = [&](int i, int j) {
+        for (int k = 0; k < 20; k++) dpA[i][j] += (1 - dpB[i >= values[k] ? i - values[k] : i][j]) / 20;
+    };
+    
+    auto B = [&](int i, int j) {
+        for (int k = 0; k < 20; k++) {
+            int l = (k + 1) % 20, m = (k + 2) % 20;
+            dpB[i][j] = max(dpB[i][j], (1 - dpA[i][j >= values[k] ? j - values[k] : j]
+                                      + 1 - dpA[i][j >= values[l] ? j - values[l] : j]
+                                      + 1 - dpA[i][j >= values[m] ? j - values[m] : j]) / 3);
+        }
+    };
+
     for (int i = 1; i <= 501; i++)
         for (int j = 1; j <= 501; j++) {
             if (i <= 20 && j <= 20) continue;
 
             if (i <= 20) {
-                for (int k = 0; k < 20; k++) {
-                    int l = (k + 1) % 20, m = (k + 2) % 20;
-                    dpB[i][j] = max(dpB[i][j], (1 - dpA[i][j >= values[k] ? j - values[k] : j]
-                                              + 1 - dpA[i][j >= values[l] ? j - values[l] : j]
-                                              + 1 - dpA[i][j >= values[m] ? j - values[m] : j]) / 3);
-                }
-
-                for (int k = 0; k < 20; k++) dpA[i][j] += (1 - dpB[i >= values[k] ? i - values[k] : i][j]) / 20;
+                B(i, j);
+                A(i, j);
             } else {
-                for (int k = 0; k < 20; k++) dpA[i][j] += (1 - dpB[i >= values[k] ? i - values[k] : i][j]) / 20;
-
-                for (int k = 0; k < 20; k++) {
-                    int l = (k + 1) % 20, m = (k + 2) % 20;
-                    dpB[i][j] = max(dpB[i][j], (1 - dpA[i][j >= values[k] ? j - values[k] : j]
-                                              + 1 - dpA[i][j >= values[l] ? j - values[l] : j]
-                                              + 1 - dpA[i][j >= values[m] ? j - values[m] : j]) / 3);
-                }
+                A(i, j);
+                B(i, j);
             }
         }
 
