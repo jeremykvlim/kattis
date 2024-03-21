@@ -7,9 +7,9 @@ public class swaptosort {
         int n = Integer.parseInt(input[0]), k = Integer.parseInt(input[1]);
 
         var sets = new int[n + 1];
-        for (int i = 0; i < n + 1; i++) sets[i] = i;
+        for (int i = 1; i <= n; i++) sets[i] = i;
 
-        for (int i = 0; i < k; i++) {
+        while (k-- > 0) {
             var pair = br.readLine().split(" ");
             int a = Integer.parseInt(pair[0]), b = Integer.parseInt(pair[1]), aSet = find(a, sets), bSet = find(b, sets);
             if (aSet != bSet) sets[bSet] = aSet;
