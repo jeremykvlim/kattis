@@ -8,7 +8,7 @@ public class wheresmyinternet {
         int n = Integer.parseInt(input[0]), m = Integer.parseInt(input[1]);
 
         var sets = new int[n + 1];
-        for (int i = 0; i < n; i++) sets[i] = i;
+        for (int i = 1; i <= n; i++) sets[i] = i;
 
         while (m-- > 0) {
             var line = br.readLine().split(" ");
@@ -17,7 +17,7 @@ public class wheresmyinternet {
         }
 
         var connected = true;
-        for (int i = 2, root = find(1, sets); i < n + 1; i++)
+        for (int i = 2, root = find(1, sets); i <= n; i++)
             if (root != find(i, sets)) {
                 pw.println(i);
                 connected = false;
