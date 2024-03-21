@@ -6,7 +6,7 @@ public class swaptosort {
         var input = br.readLine().split(" ");
         int n = Integer.parseInt(input[0]), k = Integer.parseInt(input[1]);
 
-        int[] sets = new int[n + 1];
+        var sets = new int[n + 1];
         for (int i = 0; i < n + 1; i++) sets[i] = i;
 
         for (int i = 0; i < k; i++) {
