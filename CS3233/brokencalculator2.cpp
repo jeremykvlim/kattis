@@ -95,17 +95,13 @@ long long hungarian(vector<vector<long long>> &adj_matrix) {
 long long time(long long a, long long b, long long c, long long x, long long y) {
     if (x == y) return 0;
 
-    auto t = LLONG_MAX;
-    if (x) t = time(a, b, c, 0, y) + c;
+    auto t = x ? time(a, b, c, 0, y) + c : LLONG_MAX;
+    
     if (x > y) return t;
-
+    
     if (LLONG_MAX >= (__int128) a * (y - x)) t = min(t, a * (y - x));
-    if (x <= y / 2) {
-        auto temp = time(a, b, c, x, y / 2);
-        if (y > 1) temp += b;
-        if (y & 1) temp += a;
-        t = min(t, temp);
-    }
+    
+    if (x <= y / 2) t = min(t, time(a, b, c, x, y / 2) + (y & 1 ? a : 0) + (y > 1 ? b : 0));
 
     return t;
 }
