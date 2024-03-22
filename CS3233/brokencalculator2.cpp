@@ -86,8 +86,7 @@ long long hungarian(vector<vector<long long>> &adj_matrix) {
     }
 
     auto cost = 0LL;
-    for (int r = 0; r < R; r++)
-        cost += adj_matrix[r][r_match[r]];
+    for (int r = 0; r < R; r++) cost += adj_matrix[r][r_match[r]];
 
     return cost;
 }
