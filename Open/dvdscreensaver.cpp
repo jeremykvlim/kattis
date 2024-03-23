@@ -8,7 +8,7 @@ pair<long long, long long> bezout(long long a, long long b) {
 }
 
 long long congruence(long long base, long long b, long long mod) {
-    long long g = __gcd(base, mod);
+    auto g = __gcd(base, mod);
     if (b % g) return -1;
 
     b /= g;
