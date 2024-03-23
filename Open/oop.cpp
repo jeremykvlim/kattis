@@ -5,7 +5,7 @@ struct TrieNode {
     TrieNode *children[26]{nullptr};
 };
 
-void dfs(unordered_set<long long> &hashes, map<long long, vector<int>> &shared, unordered_map<TrieNode*, vector<long long>> &word_hash, unordered_map<TrieNode*, int> &start, unordered_map<TrieNode*, int> &end, TrieNode *curr, int &count) {
+void dfs(unordered_set<long long> &hashes, map<long long, vector<int>> &shared, unordered_map<TrieNode *, vector<long long>> &word_hash, unordered_map<TrieNode *, int> &start, unordered_map<TrieNode *, int> &end, TrieNode *curr, int &count) {
     start[curr] = ++count;
 
     for (auto &h : word_hash[curr])
@@ -33,7 +33,7 @@ int main() {
     }
 
     auto *root = new TrieNode();
-    unordered_map<TrieNode*, vector<long long>> word_hash;
+    unordered_map<TrieNode *, vector<long long>> word_hash;
     vector<long long> hash(longest + 1, 0);
     long long b = 1e16 + 61, mod = (1LL << 62) + 135;
     for (auto w : words) {
@@ -69,7 +69,7 @@ int main() {
         hashes.emplace(suff_hash[i]);
     }
 
-    unordered_map<TrieNode*, int> start, end;
+    unordered_map<TrieNode *, int> start, end;
     map<long long, vector<int>> shared;
     int count = 0;
     dfs(hashes, shared, word_hash, start, end, root, count);
