@@ -11,9 +11,8 @@ vector<vector<unsigned>> matmul(vector<vector<unsigned>> &a, vector<vector<unsig
 }
 
 vector<vector<unsigned>> matpow(vector<vector<unsigned>> a, long long n) {
-    vector<vector<unsigned>> b(33, vector<unsigned>(33));
-    for (int i = 0; i < 33; i++)
-        for (int j = 0; j < 33; j++) b[i][j] = (i == j);
+    vector<vector<unsigned>> b(33, vector<unsigned>(33, 0));
+    for (int i = 0; i < 33; i++) b[i][i] = 1;
 
     for (; n; n >>= 1) {
         if (n & 1) b = matmul(a, b);
@@ -30,12 +29,12 @@ int main() {
     int n, k;
     cin >> n >> k;
 
-    vector<vector<unsigned>> r(33, vector<unsigned>(33, 0)), temp(33, vector<unsigned>(33));
+    vector<vector<unsigned>> r(33, vector<unsigned>(33, 0));
     for (int i = 0; i < k; i++) cin >> r[0][i];
     r[0][32] = 1;
 
-    for (int i = 0; i < 33; i++)
-        for (int j = 0; j < 33; j++) temp[i][j] = (i == j);
+    vector<vector<unsigned>> temp(33, vector<unsigned>(33, 0));
+    for (int i = 0; i < 33; i++) temp[i][i] = 1;
     stack<pair<vector<vector<unsigned>>, long long>> st;
     st.emplace(temp, 1);
     while (n--) {
