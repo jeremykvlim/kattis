@@ -42,7 +42,7 @@ int main() {
 
     vector<pair<int, int>> roads(m);
     for (auto &[u, v] : roads) cin >> u >> v;
-    roads.insert(roads.begin(), {-1, -1});
+    roads.insert(roads.begin(), {0, 0});
 
     int q;
     cin >> q;
