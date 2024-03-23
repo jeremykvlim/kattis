@@ -64,8 +64,8 @@ int main() {
 
             if (right.count(zr)) {
                 for (int j = 0; j < n; j++) s[j] = '1';
-                for (auto k : indices) s[k - 1] = '0';
-                for (auto k : right[zr]) s[k - 1] = '1';
+                for (int k : indices) s[k - 1] = '0';
+                for (int k : right[zr]) s[k - 1] = '1';
 
                 cout << s;
                 exit(0);
