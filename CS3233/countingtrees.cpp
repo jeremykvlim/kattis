@@ -44,8 +44,8 @@ int main() {
                 fact_inv1(MODULO1 + 1, 1), fact_inv2(MODULO2 + 1, 1), fact_inv3(MODULO3 + 1, 1), fact_inv4(MODULO4 + 1, 1);
 
     auto prepare = [&](vector<long long> &fact, vector<long long> &fact_inv, int mod) {
-        vector<long long> inv(mod, 1);
-        for (int i = 2; i < mod; i++) inv[i] = ((mod - mod / i) * inv[mod % i]) % mod;
+        vector<long long> inv(mod + 1, 1);
+        for (int i = 2; i <= mod; i++) inv[i] = ((mod - mod / i) * inv[mod % i]) % mod;
 
         for (int i = 1; i <= mod; i++) fact[i] = (i * fact[i - 1]) % mod;
         for (int i = 1; i <= mod; i++) fact_inv[i] = (inv[i] * fact_inv[i - 1]) % mod;
