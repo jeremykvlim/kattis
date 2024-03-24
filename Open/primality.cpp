@@ -13,12 +13,21 @@ __int128 pow(__int128 base, long long exponent, long long mod = 1) {
 bool isprime(long long n) {
     if (n < 2) return false;
 
-    for (int i = 2; i <= cbrt(n); i == 2 ? i++ : i += 2)
-        if (!(n % i)) return false;
+    mt19937_64 rng(random_device{}());
+    for (int i = 0; i < 3; i++) {
+        auto temp = n - 1;
+        auto b = rng() % temp + 1;
+        if (pow(b, temp, n) != 1) return false;
 
-    for (int i = 0; i < 1e5; i++) {
-        auto b = rand() % (n - 1) + 1;
-        if (__gcd(b, n) > 1 || pow(b, n - 1, n) > 1) return false;
+        while (!(temp & 1)) temp >>= 1;
+
+        auto p = pow(b, temp, n);
+        while (p != 1 && p != n - 1) {
+            p = (p * p) % n;
+            temp <<= 1;
+        }
+
+        if (p == 1 && !(temp & 1)) return false;
     }
 
     return true;
