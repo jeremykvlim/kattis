@@ -3,24 +3,32 @@ using namespace std;
 
 constexpr int OFFSET = 5e4;
 
-void fft(vector<complex<double>> &a) {
+void fft(vector<complex<double>> &a, int sign = 1) {
     int n = a.size();
-    if (n == 1) return;
 
-    vector<complex<double>> a_even(n / 2), a_odd(n / 2);
-    for (int i = 0; 2 * i < n; i++) {
-        a_even[i] = a[2 * i];
-        a_odd[i] = a[2 * i + 1];
+    for (int i = 1, j = 0; i < n; i++) {
+        int k = n >> 1;
+        for (; j & k; k >>= 1) j ^= k;
+        j ^= k;
+
+        if (i < j) swap(a[i], a[j]);
     }
 
-    fft(a_even);
-    fft(a_odd);
-
-    for (int i = 0; 2 * i < n; i++) {
-        complex<double> twiddle(cos(2 * M_PI * i / n), sin(2 * M_PI * i / n));
-        a[i] = a_even[i] + twiddle * a_odd[i];
-        a[i + n / 2] = a_even[i] - twiddle * a_odd[i];
+    for (int N = 1; 2 * N <= n; N <<= 1) {
+        complex<double> twiddle(exp(complex<double>(0, M_PI / N * sign)));
+        for (int i = 0; i < n; i += 2 * N) {
+            complex<double> root(1);
+            for (int j = 0; j < N; j++) {
+                auto temp1 = a[i + j], temp2 = root * a[i + j + N];
+                a[i + j] += temp2;
+                a[i + j + N] = temp1 - temp2;
+                root *= twiddle;
+            }
+        }
     }
+
+    if (sign != 1)
+        for (auto &x : a) x /= n;
 }
 
 vector<long long> convolve(vector<long long> &a, vector<long long> &b) {
@@ -32,11 +40,9 @@ vector<long long> convolve(vector<long long> &a, vector<long long> &b) {
     fft(dft_a);
     dft_b.resize(n);
     fft(dft_b);
-    for (int i = 0; i < n; i++) dft_c[i] = dft_a[i] * dft_b[i];
 
-    for (auto &x : dft_c) x = conj(x);
-    fft(dft_c);
-    for (auto &x : dft_c) x /= n;
+    for (int i = 0; i < n; i++) dft_c[i] = dft_a[i] * dft_b[i];
+    fft(dft_c, -1);
 
     vector<long long> c(n);
     for (int i = 0; i < n; i++) c[i] = llround(dft_c[i].real());
