@@ -15,9 +15,34 @@ long long inverse(vector<long long> &pd, int i, long long n, long long curr, lon
     return n;
 }
 
+__int128 pow(__int128 base, long long exponent, long long mod = 1) {
+    __int128 value = 1;
+    for (; exponent; exponent >>= 1) {
+        if (exponent & 1) value = (base * value) % mod;
+        base = (base * base) % mod;
+    }
+    return value;
+}
+
 bool isprime(long long n) {
-    for (int p = 2; p <= sqrt(n); p == 2 ? p++ : p += 2)
-        if (!(n % p)) return false;
+    if (n < 2) return false;
+
+    mt19937_64 rng(random_device{}());
+    for (int i = 0; i < 3; i++) {
+        auto temp = n - 1;
+        auto b = rng() % temp + 1;
+        if (pow(b, temp, n) != 1) return false;
+
+        while (!(temp & 1)) temp >>= 1;
+
+        auto p = pow(b, temp, n);
+        while (p != 1 && p != n - 1) {
+            p = (p * p) % n;
+            temp <<= 1;
+        }
+
+        if (p == 1 && !(temp & 1)) return false;
+    }
 
     return true;
 }
