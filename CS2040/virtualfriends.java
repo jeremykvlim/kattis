@@ -9,15 +9,15 @@ public class virtualfriends {
 
         while (t-- > 0) {
             int f = Integer.parseInt(br.readLine()), count = 0;
-            int[] sets = new int[2*f + 1], size = new int[2*f + 1];
+            int[] sets = new int[2 * f + 1], size = new int[2 * f + 1];
             var compress = new Hashcompress<String, Integer>();
           
             for (int i = 0; i < f; i++) {
                 var friends = br.readLine().split(" ");
                 
-                for (var friend : friends) 
-                    if (!compress.containsKey(friend)) {
-                        compress.put(friend, count);
+                for (var fr : friends) 
+                    if (!compress.containsKey(fr)) {
+                        compress.put(fr, count);
                         sets[count] = count;
                         size[count++] = 1;
                     }
