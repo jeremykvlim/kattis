@@ -60,14 +60,13 @@ int main() {
         ai += OFFSET;
         count[ai]++;
     }
-    auto zeroes = count[OFFSET];
 
     auto c = convolve(count, count);
     for (int ai : a) c[2 * ai]--;
 
     auto ways = 0LL;
     for (int ai : a) ways += c[ai + OFFSET];
-    ways -= 2 * zeroes * (n - 1);
+    ways -= 2 * count[OFFSET] * (n - 1);
 
     cout << ways;
 }
