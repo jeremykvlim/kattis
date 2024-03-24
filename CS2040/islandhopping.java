@@ -9,7 +9,7 @@ public class islandhopping {
         while (n-- > 0) {
             int m = Integer.parseInt(br.readLine());
             var distances = new double[m][2];
-            for (int i = 0; i < m; i++){
+            for (int i = 0; i < m; i++) {
                 var line = br.readLine().split(" ");
                 distances[i][0] = Double.parseDouble(line[0]);
                 distances[i][1] = Double.parseDouble(line[1]);
