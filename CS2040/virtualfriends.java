@@ -7,7 +7,7 @@ public class virtualfriends {
         var pw = new PrintWriter(System.out);
         int t = Integer.parseInt(br.readLine());
 
-        while (t-- > 0){
+        while (t-- > 0) {
             int f = Integer.parseInt(br.readLine()), count = 0;
             int[] sets = new int[2*f + 1], size = new int[2*f + 1];
             var compress = new Hashcompress<String, Integer>();
