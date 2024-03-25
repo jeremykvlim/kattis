@@ -39,7 +39,7 @@ int main() {
                 break;
             }
 
-            for (auto &[b, x, y] : locks[v])
+            for (auto [b, x, y] : locks[v])
                 if (badges[i - 1] >= x && badges[i] <= y && !visited[b]) {
                     q.emplace(b);
                     visited[b] = true;
