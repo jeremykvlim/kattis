@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void search(int l, int r, int &fee, vector<pair<int, int>> &s, vector<int> &city) {
+void dnc(int l, int r, int &fee, vector<pair<int, int>> &s, vector<int> &city) {
     if (l > r || s.empty() || fee++ > 1500) return;
 
     int m = l + (r - l) / 2;
@@ -12,15 +12,15 @@ void search(int l, int r, int &fee, vector<pair<int, int>> &s, vector<int> &city
     cin >> c;
 
     vector<pair<int, int>> left, right;
-    for (auto &p : s) {
-        if (p.first < c) left.emplace_back(p);
-        else if (p.first > c) right.emplace_back(p);
-        
-        if (p.first >= c) city[p.second] = m;
+    for (auto [si, i] : s) {
+        if (si < c) left.emplace_back(si, i);
+        else if (si > c) right.emplace_back(si, i);
+
+        if (si >= c) city[i] = m;
     }
 
-    search(l, m - 1, fee, left, city);
-    search(m + 1, r, fee, right, city);
+    dnc(l, m - 1, fee, left, city);
+    dnc(m + 1, r, fee, right, city);
 }
 
 int main() {
@@ -33,14 +33,15 @@ int main() {
     vector<pair<int, int>> s(a);
     for (int i = 0; i < a; i++) {
         cin >> s[i].first;
+
         s[i].second = i;
     }
 
-    vector<int> city(a + 1);
+    vector<int> city(a);
     int fee = 0;
-    search(1, c, fee, s, city);
+    dnc(1, c, fee, s, city);
 
     cout << "A ";
-    for (int i = 0; i < a; i++) cout << city[i] << " ";
+    for (int p : city) cout << p << " ";
     cout.flush();
 }
