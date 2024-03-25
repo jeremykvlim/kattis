@@ -1,4 +1,4 @@
-# Kattis-Solutions
+# kattis
 
 My solutions for Kattis problems, not all of them have been archived here yet because I haven't bothered scraping through all my submissions from 2022 till now. Solutions are named `"problemname".<languagefilename>`. To find the problem statement, please go to:
 
@@ -6,17 +6,19 @@ My solutions for Kattis problems, not all of them have been archived here yet be
 
 ---
 
-Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizations and a separate self-practice category for non-NUS course problems:
+Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizations and a separate open category for non-NUS course problems:
 
-* Data Structures & Algorithms: CS2040 (`Java`), CS2040C (`C++`), CS2040S (`Java`), IT5003 (`Python`)
+* nus:
 
-* Design and Analysis of Algortithms: CS3230 (`C++`/`Java`/`Python`)
+  * Data Structures & Algorithms: CS2040 (`Java`), CS2040C (`C++`), CS2040S (`Java`), IT5003 (`Python`)
 
-* Competitive Programming: CS3233 (`C++`/`Java`/`Python`)
+  * Design and Analysis of Algortithms: CS3230 (`C++`/`Java`/`Python`)
 
-* Optimization Algorithms: CS4234 (`C++`/`Java`/`Python`)
+  * Competitive Programming: CS3233 (`C++`/`Java`/`Python`)
 
-* Open: `C++`/`Java`/`Python`
+  * Optimization Algorithms: CS4234 (`C++`/`Java`/`Python`)
+
+* open: `C++`/`Java`/`Python`
 
 Some courses share several problems, you might be able to find them under any one of the categories.
 
