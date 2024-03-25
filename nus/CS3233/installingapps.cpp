@@ -11,6 +11,7 @@ int main() {
     vector<pair<pair<int, int>, int>> apps(n);
     for (int i = 0; i < n; i++) {
         cin >> apps[i].first.first >> apps[i].first.second;
+        
         apps[i].second = i;
     }
 
