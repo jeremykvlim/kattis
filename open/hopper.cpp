@@ -112,17 +112,17 @@ void jump(int v, int D, vector<vector<tuple<int, int, int, int, bool>>> &adj_lis
         temp[path[0]] = temp[path[1]] = VISITED;
 
         bool end = true;
-        int temp1 = hash(temp);
-        while (temp1) {
-            if (temp1 % 6 > 1) {
+        int h = hash(temp);
+        while (h) {
+            if (h % 6 > 1) {
                 end = false;
                 break;
             }
 
-            temp1 /= 6;
+            h /= 6;
         }
 
-        if (end) adj_list[v].emplace_back(temp1, 0, path[0], path[1], true);
+        if (end) adj_list[v].emplace_back(h, 0, path[0], path[1], true);
     }
 
     for (int i : unvisited)
