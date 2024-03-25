@@ -29,9 +29,9 @@ int main() {
     }
 
     vector<int> day(count);
-    for (auto &[id, list] : items)
-        for (auto &v : list)
-            for (int &x : v) day[x] = id;
+    for (auto [id, list] : items)
+        for (auto v : list)
+            for (int x : v) day[x] = id;
 
     for (int id : day) cout << id << "\n";
 }
