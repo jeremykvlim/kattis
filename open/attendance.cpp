@@ -2,17 +2,17 @@
 using namespace std;
 
 void update(int i, int value, vector<int> &fenwick, int inspections, vector<bool> &attend) {
-    if (i >= inspections) return;
+    if (i > inspections) return;
 
     attend[i] = value != -1;
-    for (; i < fenwick.size(); i = i | (i + 1)) fenwick[i] += value;
+    for (; i < fenwick.size(); i += i & -i) fenwick[i] += value;
 }
 
 int pref_sum(int i, vector<int> &fenwick, int inspections) {
-    if (i >= inspections) i = inspections - 1;
+    if (i > inspections) i = inspections;
 
     int sum = 0;
-    for (; ~i; i = (i & (i + 1)) - 1) sum += fenwick[i];
+    for (; i; i &= (i - 1)) sum += fenwick[i];
     return sum;
 }
 
@@ -42,19 +42,18 @@ int main() {
     cout << k << "\n";
 
     vector<vector<int>> index(n);
-    for (int i = 0; i < k; i++) index[inspections[i]].emplace_back(i);
-    for (int i = 0; i < n; i++) index[i].emplace_back(INT_MAX - i);
+    for (int i = 0; i < k; i++) index[inspections[i]].emplace_back(i + 1);
+    for (int i = 0; i < n; i++) index[i].emplace_back(INT_MAX - i + 1);
 
-    vector<int> fenwick(k);
-    vector<bool> attend(k, false);
-
+    vector<int> fenwick(k + 1, 0);
+    vector<bool> attend(k + 1, false);
     for (int i = 0; i < n; i++) update(index[i][0], 1, fenwick, k, attend);
 
     curr = 0;
-    for (int i = 0; i < k; i++) {
+    for (int i = 1; i <= k; i++) {
         while (!attend[curr]) curr++;
 
-        int next = *upper_bound(index[inspections[curr]].begin(), index[inspections[curr]].end(), curr);
+        int next = *upper_bound(index[inspections[curr - 1]].begin(), index[inspections[curr - 1]].end(), curr);
         update(curr, -1, fenwick, k, attend);
         cout << pref_sum(next, fenwick, k) + 1 << " ";
         update(next, 1, fenwick, k, attend);
