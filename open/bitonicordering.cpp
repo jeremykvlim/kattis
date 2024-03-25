@@ -7,7 +7,7 @@ void update(int i, int value, vector<int> &fenwick) {
 
 int pref_sum(int i, vector<int> &fenwick) {
     int sum = 0;
-    for (; i; i -= i & -i) sum += fenwick[i];
+    for (; i; i &= (i - 1)) sum += fenwick[i];
     return sum;
 }
 
