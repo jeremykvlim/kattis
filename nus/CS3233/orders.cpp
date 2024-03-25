@@ -13,6 +13,7 @@ int main() {
 
     int m;
     cin >> m;
+    
     vector<int> orders(m);
     for (int &s : orders) cin >> s;
 
