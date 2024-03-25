@@ -1,6 +1,16 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+void update(int i, int value, vector<int> &fenwick) {
+    for (; i < fenwick.size(); i += i & -i) fenwick[i] += value;
+}
+
+int pref_sum(int i, vector<int> &fenwick) {
+    int sum = 0;
+    for (; i; i -= i & -i) sum += fenwick[i];
+    return sum;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -20,9 +30,8 @@ int main() {
     int moves = 0;
     vector<int> fenwick(n, 0);
     for (int i = 0; i < n; i++) {
-        int l = 0, j = cards[i].second;
-        for (int k = j; k; k -= k & -k) l += fenwick[k];
-        for (int k = j + 1; k < n; k += k & -k) fenwick[k]++;
+        int j = cards[i].second, l = pref_sum(j, fenwick);
+        update(j + 1, 1, fenwick);
         moves += min(l, i - l);
     }
 
