@@ -9,29 +9,29 @@ int main() {
     while (cin >> A >> B) {
         int n;
         cin >> n;
-        
-        vector<tuple<long double, long double, long long>> intervals(n);
+
+        vector<tuple<long double, long double, int>> intervals(n);
         for (int i = 0; i < n; i++) {
             long double a, b;
             cin >> a >> b;
+
             intervals[i] = make_tuple(a, b, i);
         }
         sort(intervals.begin(), intervals.end());
 
         long double last = A, end = LLONG_MIN;
-        long long curr = -1;
-        vector<long long> cover;
-        
-        for (auto &[a, b, i] : intervals) {
+        int curr = -1;
+        vector<int> cover;
+        for (auto [a, b, i] : intervals) {
             if (a > last) {
                 if (curr == -1 || end >= B) break;
                 cover.emplace_back(curr);
                 last = end;
+                end = LLONG_MIN;
                 curr = -1;
-                end = -LLONG_MIN;
                 if (a > last) break;
             }
-            
+
             if (b > end) {
                 end = b;
                 curr = i;
@@ -42,7 +42,8 @@ int main() {
         if (end < B) cout << "impossible\n";
         else {
             cout << cover.size() << "\n";
-            for (auto &i : cover) cout << i << "\n";
+            for (int i : cover) cout << i << " ";
+            cout << "\n";
         }
     }
 }
