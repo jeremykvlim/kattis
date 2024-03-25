@@ -13,6 +13,7 @@ int main() {
     while (n--) {
         string s;
         cin >> s;
+        
         int v = (int) bitset<20>(s).to_ulong();
 
         if (!visited[v]) {
