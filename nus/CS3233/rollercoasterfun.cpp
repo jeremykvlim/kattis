@@ -38,7 +38,6 @@ int main() {
     while (q--) {
         int t;
         cin >> t;
-        
         cout << dp[0][t] << "\n";
     }
 }
