@@ -17,6 +17,7 @@ int main() {
 
     string s, s1, s2;
     cin >> s >> s1 >> s2;
+    
     vector<vector<bool>> dp(s1.size() + 1, vector<bool>(s2.size() + 1, true));
     cout << (verify(s, s1, s2, dp) ? "yes" : "no");
 }
