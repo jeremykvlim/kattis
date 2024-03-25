@@ -35,9 +35,9 @@ int main() {
         biggest = max(biggest, m);
     }
 
-    long long finalists = -1;
+    auto finalists = -1LL;
     for (int i = 1; i <= biggest; i++) {
-        long long curr = 0;
+        auto curr = 0LL;
         for (int j = i; j <= biggest; j += i) curr += members[j];
         if (curr > 1) finalists = max(finalists, curr * i);
     }
