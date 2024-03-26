@@ -30,6 +30,7 @@ int main() {
         while (m--) {
             string a, b;
             cin >> a >> b;
+            
             int p1 = compress.count(a) ? compress[a] : compress[a] = compress.size(), p2 = compress.count(b) ? compress[b] : compress[b] = compress.size();
             hostile[p1] |= 1 << p2;
             hostile[p2] |= 1 << p1;
