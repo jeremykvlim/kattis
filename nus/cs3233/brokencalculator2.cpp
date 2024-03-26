@@ -95,11 +95,9 @@ long long time(long long a, long long b, long long c, long long x, long long y) 
     if (x == y) return 0;
 
     auto t = x ? time(a, b, c, 0, y) + c : LLONG_MAX;
-    
     if (x > y) return t;
     
     if (LLONG_MAX >= (__int128) a * (y - x)) t = min(t, a * (y - x));
-    
     if (x <= y / 2) t = min(t, time(a, b, c, x, y / 2) + (y & 1 ? a : 0) + (y > 1 ? b : 0));
 
     return t;
