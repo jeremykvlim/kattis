@@ -32,12 +32,12 @@ int main() {
         }
     }
 
-    int order = 0;
-    for (auto &p : step) p.second = ++order;
+    int index = 0;
+    for (auto &[p, i] : step) i = ++index;
     for (auto &[g, p, b] : values) p = step[p];
     sort(values.begin(), values.end(), [&](auto v1, auto v2) {return get<0>(v1) != get<0>(v2) ? get<0>(v1) > get<0>(v2) : get<1>(v1) < get<1>(v2);});
 
-    vector<vector<int>> fenwick(max(n, k) + 1, vector<int>(order + 1, 0));
+    vector<vector<int>> fenwick(max(n, k) + 1, vector<int>(index + 1, 0));
     for (auto [g, p, b] : values)
         if (!b)
             for (int i = 0; i <= k; i++) update(fenwick, p, i, query(fenwick, p, i) + 1);
@@ -45,6 +45,6 @@ int main() {
             for (int i = k; i; i--) update(fenwick, p, i, query(fenwick, p, i - 1) + 1);
 
     int d = 0;
-    for (int i = 1; i <= n; i++) d = max(d, query(fenwick, order, i));
+    for (int i = 1; i <= n; i++) d = max(d, query(fenwick, index, i));
     cout << d;
 }
