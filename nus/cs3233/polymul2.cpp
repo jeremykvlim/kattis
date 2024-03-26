@@ -43,7 +43,7 @@ vector<int> convolve(vector<int> &a, vector<int> &b) {
     fft(dft_c, -1);
 
     vector<int> c(n);
-    for (int i = 0; i < n; i++) c[i] = llround(dft_c[i].real());
+    for (int i = 0; i < n; i++) c[i] = round(dft_c[i].real());
     c.resize(a.size() + b.size() - 1);
 
     return c;
