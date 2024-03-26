@@ -22,7 +22,7 @@ bool isprime(long long n) {
         while (!(temp & 1)) temp >>= 1;
 
         auto p = pow(b, temp, n);
-        while (p != 1 && p != n - 1) {
+        while (1 < p && p < n - 1) {
             p = (p * p) % n;
             temp <<= 1;
         }
