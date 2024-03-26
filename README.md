@@ -6,7 +6,7 @@ My solutions for Kattis problems, not all of them have been archived here yet be
 
 ---
 
-Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizations and a separate open category for non-NUS course problems:
+Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizations and a separate open category for non-NUS course problems. Some courses share several problems, you might be able to find them under any one of the categories. I generally use `C++` unless the NUS course requires otherwise (language requirements found below). I switch to `Python` if I require big integer operations or if the solution is much shorter and simpler implementation-wise.
 
 * nus:
 
@@ -18,17 +18,11 @@ Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizat
 
   * Optimization Algorithms: CS4234 (`C++`/`Java`/`Python`)
 
-* open: `C++`/`Java`/`Python`
-
-Some courses share several problems, you might be able to find them under any one of the categories.
-
 ---
 
 Kattis compiles using `C++ 17` for [C++](https://open.kattis.com/languages/cpp), `Java 11` for [Java](https://open.kattis.com/languages/java) and `Python 3.8` for [Python](https://open.kattis.com/languages/python3).
 
 Problems have to be solved using base programming language libraries or self-coded structures. External libraries, such as `Boost` for C++, `Guava` for Java, `NumPy` for Python 3 and others are not available. However, you are allowed to attach multiple files in one submission, although I never bothered.
-
-I generally use `C++` unless the NUS course requires otherwise. I switch to `Python` if I require big integer operations or if the solution is much shorter and simpler implementation-wise.
 
 ---
 
