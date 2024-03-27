@@ -1,6 +1,6 @@
 import sys
 
-def convert(n, b, digits, index, power=-1):
+def convert(n, radix, digits, index, power=-1):
     if digits[-1] != -1: return
 
     if power == 0:
@@ -11,13 +11,13 @@ def convert(n, b, digits, index, power=-1):
 
     if power == -1:
         power = 1
-        while b ** (power + 1) <= n: power <<= 1
+        while radix ** (power + 1) <= n: power <<= 1
 
-    l, r = divmod(n, b ** power)
+    l, r = divmod(n, radix ** power)
     power >>= 1
 
-    convert(l, b, digits, index, power)
-    convert(r, b, digits, index, power)
+    convert(l, radix, digits, index, power)
+    convert(r, radix, digits, index, power)
 
 def itoc(i):
     return ' ' if i == 26 else chr(i + 65)
