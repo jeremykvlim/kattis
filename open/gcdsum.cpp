@@ -8,13 +8,16 @@ int main() {
     long long n;
     cin >> n;
 
-    unordered_map<long long, int> pfs;
-    for (int p = 2; p <= sqrt(n); p == 2 ? p++ : p += 2)
+    vector<pair<long long, int>> pfs;
+    for (int p = 2; p <= sqrt(n); p == 2 ? p++ : p += 2) {
+        int pow = 0;
         while (!(n % p)) {
             n /= p;
-            pfs[p]++;
+            pow++;
         }
-    if (n > 1) pfs[n]++;
+        if (pow) pfs.emplace_back(p, pow);
+    }
+    if (n > 1) pfs.emplace_back(n, 1);
 
     auto sum = 1LL;
     for (auto [pf, pow] : pfs) {
