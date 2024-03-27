@@ -23,8 +23,6 @@ vector<long long> phi(int n) {
         }
     }
 
-    for (int i = 1; i <= n; i++) phi[i] += phi[i - 1];
-
     return phi;
 }
 
@@ -36,6 +34,8 @@ int main() {
     cin >> n;
 
     auto totient = phi(n);
+    for (int i = 1; i <= n; i++) totient[i] += totient[i - 1];
+    
     auto sum = 0LL;
     for (int l = 1, r; l <= n; l = r + 1) {
         r = n / (n / l);
