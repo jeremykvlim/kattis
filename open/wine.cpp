@@ -27,36 +27,35 @@ int main() {
         }
 
         int bottled = 0;
-        set<pair<int, int>> pq;
-        pq.emplace(0, 0);
+        set<pair<int, int>> pq{{0, 0}};
         while (!pq.empty()) {
-            auto curr = *pq.begin();
+            auto [l1, r1] = *pq.begin();
             pq.erase(pq.begin());
 
             for (auto [minimum, maximum] : bottles) {
-                auto next = make_pair(curr.first + minimum, curr.second + maximum);
-                if (next.first > wine) continue;
-                if (next.second >= wine) {
+                auto [l2, r2] = make_pair(l1 + minimum, r1 + maximum);
+                if (l2 > wine) continue;
+                if (r2 >= wine) {
                     cout << "0\n";
                     goto next;
                 }
 
-                auto it = pq.lower_bound(next);
-                while (it != pq.begin() && prev(it)->second >= next.first) {
-                    next = {min(prev(it)->first, next.first), max(prev(it)->second, next.second)};
+                auto it = pq.lower_bound({l2, r2});
+                while (it != pq.begin() && prev(it)->second >= l2) {
+                    l2 = min(prev(it)->first, l2);
+                    r2 = max(prev(it)->second, r2);
                     it = pq.erase(prev(it));
                 }
 
-                it = pq.lower_bound(next);
-                while (it != pq.end() && it->first <= next.second) {
-                    next = {min(it->first, next.first), max(it->second, next.second)};
+                it = pq.lower_bound({l2, r2});
+                while (it != pq.end() && it->first <= r2) {
+                    l2 = min(it->first, l2);
+                    r2 = max(it->second, r2);
                     it = pq.erase(it);
                 }
 
-                if (curr != next) {
-                    bottled = max(bottled, next.second);
-                    pq.emplace(next);
-                }
+                bottled = max(bottled, r2);
+                pq.emplace(l2, r2);
             }
         }
 
