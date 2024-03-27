@@ -29,7 +29,6 @@ int main() {
     while (q--) {
         int l, r;
         cin >> l >> r;
-
         cout << (long long) (((pref[r] - pref[l] + mod) % mod) * inv[l] % mod) << "\n";
     }
 }
