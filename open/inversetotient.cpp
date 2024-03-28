@@ -1,15 +1,15 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-long long inverse(vector<long long> &pd, int i, long long n, long long curr, long long totient) {
+long long phi_inv(vector<long long> &pd, int i, long long n, long long curr, long long totient) {
     if (totient == 1) return min(n, curr);
     if (i < 0) return n;
 
-    n = inverse(pd, i - 1, n, curr, totient);
+    n = phi_inv(pd, i - 1, n, curr, totient);
     if (!(totient % (pd[i] - 1))) {
         totient /= pd[i] - 1;
         while (!(totient % pd[i])) totient /= pd[i];
-        n = inverse(pd, i - 1, n, curr  / (pd[i] - 1) * pd[i], totient);
+        n = phi_inv(pd, i - 1, n, curr  / (pd[i] - 1) * pd[i], totient);
     }
 
     return n;
@@ -71,7 +71,7 @@ int main() {
         auto pd = prime_divisors(totient);
         sort(pd.begin(), pd.end());
 
-        auto n = inverse(pd, pd.size() - 1, LLONG_MAX, totient, totient);
+        auto n = phi_inv(pd, pd.size() - 1, LLONG_MAX, totient, totient);
         cout << (n == LLONG_MAX ? -1 : n);
     }
 }
