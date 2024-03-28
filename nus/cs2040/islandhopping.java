@@ -5,6 +5,7 @@ public class islandhopping {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(System.out);
+        
         int n = Integer.parseInt(br.readLine());
         while (n-- > 0) {
             int m = Integer.parseInt(br.readLine());
@@ -50,7 +51,7 @@ public class islandhopping {
         int first;
         double second;
 
-        public Pair(int f, double s){
+        public Pair(int f, double s) {
             first = f;
             second = s;
         }
