@@ -2,7 +2,7 @@
 using namespace std;
 
 long long mul(long long x, long long y, long long mod) {
-    long long product = (__int128) x * y - mod * (long long) (1.L / mod * x * y);
+    auto product = x * y - mod * (long long) (1.L / mod * x * y);
     return product + mod * (product < 0) - mod * (product >= mod);
 }
 
