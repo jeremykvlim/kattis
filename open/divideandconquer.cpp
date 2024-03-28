@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-__int128 pow(long long base, long long exponent, long long mod = 1) {
+__int128 pow(long long base, long long exponent, long long mod = LLONG_MAX) {
     __int128 value = 1;
     for (; exponent; exponent >>= 1) {
         if (exponent & 1) value = (base * value) % mod;
