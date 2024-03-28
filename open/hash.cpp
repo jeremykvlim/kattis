@@ -12,7 +12,7 @@ void f(int state, int size, vector<int> &count, int mod, long long &words, long 
     }
 }
 
-long long pow(long long base, long long exponent, long long mod = 1) {
+long long pow(long long base, long long exponent, long long mod = LLONG_MAX) {
     auto value = 1LL;
     for (; exponent; exponent >>= 1) {
         if (exponent & 1) value = (base * value) % mod;
