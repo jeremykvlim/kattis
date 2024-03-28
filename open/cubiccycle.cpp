@@ -1,4 +1,4 @@
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 using namespace std;
 
 int dfs(vector<vector<int>> &adj_list, vector<bool> &visited, int u) {
