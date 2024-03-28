@@ -3,20 +3,6 @@ using namespace std;
 
 constexpr int MODULO = 1e9 + 7;
 
-void divisors(vector<pair<int, int>> &pfs, vector<pair<double, long long>> &divs, pair<double, long long> d = {0, 1}, int i = 0) {
-    if (i == pfs.size()) return;
-
-    divisors(pfs, divs, d, i + 1);
-
-    auto [pf, pow] = pfs[i];
-    pair<double, long long> p{log(pf), pf};
-    while (pow--) {
-        d = {d.first + p.first, d.second * p.second % MODULO};
-        divs.emplace_back(d);
-        divisors(pfs, divs, d, i + 1);
-    }
-}
-
 vector<int> sieve(int n) {
     vector<int> factors(n + 1), primes{2};
     iota(factors.begin(), factors.end(), 0);
@@ -30,13 +16,33 @@ vector<int> sieve(int n) {
     return primes;
 }
 
-long long pow(long long base, long long exponent, long long mod = LLONG_MAX) {
+long long mul(long long x, long long y, long long mod) {
+    auto product = x * y - mod * (long long) (1.L / mod * x * y);
+    return product + mod * (product < 0) - mod * (product >= mod);
+}
+
+long long pow(long long base, long long exponent, long long mod) {
     auto value = 1LL;
     for (; exponent; exponent >>= 1) {
-        if (exponent & 1) value = (base * value) % mod;
-        base = (base * base) % mod;
+        if (exponent & 1) value = mul(value, base, mod);
+        base = mul(base, base, mod);
     }
+
     return value;
+}
+
+void divisors(vector<pair<int, int>> &pfs, vector<pair<double, long long>> &divs, pair<double, long long> d = {0, 1}, int i = 0) {
+    if (i == pfs.size()) return;
+
+    divisors(pfs, divs, d, i + 1);
+
+    auto [pf, pow] = pfs[i];
+    pair<double, long long> p{log(pf), pf};
+    while (pow--) {
+        d = {d.first + p.first, mul(d.second, p.second, MODULO)};
+        divs.emplace_back(d);
+        divisors(pfs, divs, d, i + 1);
+    }
 }
 
 int main() {
@@ -82,9 +88,9 @@ int main() {
         for (int k = j - (j > 0); k <= j; k++)
             if (diff > abs(divs1[i].first + divs2[k].first - 0.5 * logk)) {
                 diff = abs(divs1[i].first + divs2[k].first - 0.5 * logk);
-                d = (divs1[i].second * divs2[k].second) % MODULO;
+                d = mul(divs1[i].second, divs2[k].second, MODULO);
             }
     }
 
-    cout << (d + (kmod * pow(d, MODULO - 2, MODULO)) % MODULO) % MODULO;
+    cout << (d + mul(kmod, pow(d, MODULO - 2, MODULO), MODULO)) % MODULO;
 }
