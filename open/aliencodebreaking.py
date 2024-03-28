@@ -1,12 +1,14 @@
 import sys
 
-def convert(n, radix, digits, index, power=-1):
+index = 0
+def convert(n, radix, digits, power=-1):
+    global index
     if digits[-1] != -1: return
 
     if power == 0:
         if digits[0] == -1 and not n: return
-        digits[index[0]] = n
-        index[0] += 1
+        digits[index] = n
+        index += 1
         return
 
     if power == -1:
@@ -16,8 +18,8 @@ def convert(n, radix, digits, index, power=-1):
     l, r = divmod(n, radix ** power)
     power >>= 1
 
-    convert(l, radix, digits, index, power)
-    convert(r, radix, digits, index, power)
+    convert(l, radix, digits, power)
+    convert(r, radix, digits, power)
 
 def itoc(i):
     return ' ' if i == 26 else chr(i + 65)
@@ -47,6 +49,6 @@ for i in range(x):
     sum = (33 * sum + x) % MODULO
 digits10 = ''.join(digits10)
 
-digits27, index = [-1] * (len(cipher)), [0]
-convert(int(digits10), 27, digits27, index)
+digits27 = [-1] * (len(cipher))
+convert(int(digits10), 27, digits27)
 print(*[itoc((ctoi(cipher[i]) + d + 27) % 27) for i, d in enumerate(digits27)], sep='')
