@@ -61,7 +61,7 @@ int main() {
     for (int i = 0; i < s.size() / 2; i++) {
         int pf = stoi(s.substr(2 * i, 2));
         logk += log(pf);
-        kmod = (kmod * pf) % MODULO;
+        kmod = mul(kmod, pf, MODULO);
         factors[indices[pf]]++;
     }
 
