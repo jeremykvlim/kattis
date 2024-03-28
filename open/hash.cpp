@@ -12,12 +12,18 @@ void f(int state, int size, vector<int> &count, int mod, long long &words, long 
     }
 }
 
+long long mul(long long x, long long y, long long mod) {
+    auto product = x * y - mod * (long long) (1.L / mod * x * y);
+    return product + mod * (product < 0) - mod * (product >= mod);
+}
+
 long long pow(long long base, long long exponent, long long mod = LLONG_MAX) {
     auto value = 1LL;
     for (; exponent; exponent >>= 1) {
-        if (exponent & 1) value = (base * value) % mod;
-        base = (base * base) % mod;
+        if (exponent & 1) value = mul(value, base, mod);
+        base = mul(base, base, mod);
     }
+
     return value;
 }
 
