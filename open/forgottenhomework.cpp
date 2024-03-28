@@ -3,12 +3,18 @@ using namespace std;
 
 constexpr int MODULO = 1e9 + 7;
 
-long long pow(long long base, long long exponent, long long mod = LLONG_MAX) {
+long long mul(long long x, long long y, long long mod) {
+    auto product = x * y - mod * (long long) (1.L / mod * x * y);
+    return product + mod * (product < 0) - mod * (product >= mod);
+}
+
+long long pow(long long base, long long exponent, long long mod) {
     auto value = 1LL;
     for (; exponent; exponent >>= 1) {
-        if (exponent & 1) value = (base * value) % mod;
-        base = (base * base) % mod;
+        if (exponent & 1) value = mul(value, base, mod);
+        base = mul(base, base, mod);
     }
+
     return value;
 }
 
@@ -31,8 +37,8 @@ vector<long long> berlekamp_massey(vector<long long> seq) {
 
         auto base = 0LL;
         for (int j = 1; j <= prev.size(); j++) base = (base + prev[j - 1] * seq[len + 1 - j]) % MODULO;
-        auto coeff = (discrepancy * pow(base, MODULO - 2, MODULO)) % MODULO;
-        for (auto &c : prev) c = (c * coeff) % MODULO;
+        auto coeff = mul(discrepancy, pow(base, MODULO - 2, MODULO), MODULO);
+        for (auto &c : prev) c = mul(c, coeff, MODULO);
 
         prev.insert(prev.begin(), i - len - 1, 0);
         auto temp2 = curr;
