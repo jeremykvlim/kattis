@@ -12,22 +12,16 @@ __int128 pow(__int128 base, long long exponent, long long mod = LLONG_MAX) {
 
 bool isprime(long long n) {
     if (n < 2) return false;
+    if (n % 6 % 4 != 1) return (n | 1) == 3;
 
-    mt19937_64 rng(random_device{}());
-    for (int i = 0; i < 3; i++) {
-        auto temp = n - 1;
-        auto b = rng() % temp + 1;
-        if (pow(b, temp, n) != 1) return false;
-
-        while (!(temp & 1)) temp >>= 1;
-
-        auto p = pow(b, temp, n);
-        while (1 < p && p < n - 1) {
-            p = (p * p) % n;
-            temp <<= 1;
-        }
-
-        if (p == 1 && !(temp & 1)) return false;
+    vector<int> bases{2, 325, 9375, 28178, 450775, 9780504, 1795265022};
+    int s = __builtin_ctzll(n - 1);
+    auto d = n >> s;
+    for (int a : bases) {
+        auto p = pow(a % n, d, n);
+        int i = s;
+        while (1 < p && p < n - 1 && a % n && i--) p = mul(p, p, n);
+        if (p != n - 1 && i != s) return false;
     }
 
     return true;
