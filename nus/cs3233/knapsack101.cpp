@@ -1,12 +1,18 @@
-#include<bits/stdc++.h>
+#include <bits/stdc++.h>
 using namespace std;
 
-long long pow(long long base, long long exponent, long long mod = LLONG_MAX) {
+long long mul(long long x, long long y, long long mod) {
+    auto product = x * y - mod * (long long) (1.L / mod * x * y);
+    return product + mod * (product < 0) - mod * (product >= mod);
+}
+
+long long pow(long long base, long long exponent, long long mod) {
     auto value = 1LL;
     for (; exponent; exponent >>= 1) {
-        if (exponent & 1) value = (base * value) % mod;
-        base = (base * base) % mod;
+        if (exponent & 1) value = mul(value, base, mod);
+        base = mul(base, base, mod);
     }
+
     return value;
 }
 
@@ -23,7 +29,7 @@ void dfs(vector<int> &w, int p, int i, int j, int depth, int d, vector<int> &ind
     dfs(w, p, i + 1, j, depth, d, indices, half, z);
     indices.emplace_back(i);
 
-    auto zi = (z * w[i - 1]) % p;
+    auto zi = mul(z, w[i - 1], p);
     dfs(w, p, i + 1, j, depth + 1, d, indices, half, zi);
     indices.pop_back();
 }
@@ -42,8 +48,8 @@ int main() {
     cin >> z;
 
     auto pw = 1LL;
-    for (int i = 0; i < n; i++) pw = (pw * w[i]) % p;
-    z = (z * pow(pw, p - 2, p)) % p;
+    for (int i = 0; i < n; i++) pw = mul(pw, w[i], p);
+    z = mul(z, pow(pw, p - 2, p), p);
 
     if (z == 1) {
         for (int i = 0; i < n; i++) cout << 1;
@@ -60,7 +66,7 @@ int main() {
         dfs(w, p, n + 1, 2 * n, 0, i, r, right);
 
         for (auto [zl, indices] : left) {
-            auto zr = (z * zl) % p;
+            auto zr = mul(z, zl, p);
 
             if (right.count(zr)) {
                 for (int j = 0; j < n; j++) s[j] = '1';
