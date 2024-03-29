@@ -15,7 +15,7 @@ int main() {
         vector<int> sizes(n);
         for (int &s : sizes) cin >> s;
 
-        long long steps = 0;
+        auto steps = 0LL;
         for (int i = 1; i < n; i++) {
             sort(sizes.begin(), sizes.begin() + i);
             if (sizes[i - 1] <= sizes[i]) continue;
@@ -23,10 +23,11 @@ int main() {
             vector<int> smaller;
             for (int j = 0; j < i && sizes[j] < sizes[i]; j++) {
                 if (j && sizes[j] == sizes[j - 1]) continue;
+                
                 smaller.emplace_back(count(sizes.begin() + j, sizes.begin() + i, sizes[j]));
             }
 
-            long long sum = 0;
+            auto sum = 0LL;
             for (int s : smaller) sum += (sum + 1) * s;
             ++steps += sum;
         }
