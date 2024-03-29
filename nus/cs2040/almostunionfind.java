@@ -34,9 +34,9 @@ public class almostunionfind {
 
                         sum[sets[p]] += sum[sets[q]];
 
-                        for (var t : nodes[sets[q]]) {
-                            sets[(int) t] = sets[p];
-                            nodes[sets[p]].add(t);
+                        for (var r : nodes[sets[q]]) {
+                            sets[(int) r] = sets[p];
+                            nodes[sets[p]].add(r);
                         }
                     }
                 } else if (o == 2) {
