@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void search(int l, int r, int lower, int upper, int offset, int size, vector<long long> &total, vector<long long> &dp, vector<long long> &temp) {
+void dnc(int l, int r, int lower, int upper, int offset, int size, vector<long long> &total, vector<long long> &dp, vector<long long> &temp) {
     if (l > r) return;
 
     int m = l + (r - l) / 2;
@@ -9,8 +9,8 @@ void search(int l, int r, int lower, int upper, int offset, int size, vector<lon
     for (int i = lower; i <= min(m, upper); i++) p = max(p, {total[(m - i) * size] + dp[i * size + offset], i});
     temp[m * size + offset] = p.first;
 
-    search(l, m - 1, lower, p.second, offset, size, total, dp, temp);
-    search(m + 1, r, p.second, upper, offset, size, total, dp, temp);
+    dnc(l, m - 1, lower, p.second, offset, size, total, dp, temp);
+    dnc(m + 1, r, p.second, upper, offset, size, total, dp, temp);
 }
 
 int main() {
@@ -40,7 +40,7 @@ int main() {
         }
         if (!sum) break;
 
-        for (int j = 0; j < i; j++) search(0, (k - j) / i, 0, (k - j) / i, j, i, total, dp, temp);
+        for (int j = 0; j < i; j++) dnc(0, (k - j) / i, 0, (k - j) / i, j, i, total, dp, temp);
         dp = temp;
     }
 
