@@ -11,6 +11,9 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
+    vector<int> fact(301, 1);
+    for (int i = 1; i < 301; i++) fact[i] = (fact[i - 1] * i) % MODULO;
+
     int t;
     cin >> t;
 
@@ -18,14 +21,10 @@ int main() {
         int n, k;
         cin >> n >> k;
 
-        vector<int> fact(n, 1);
-        for (int i = 1; i < n; i++) fact[i] = i * fact[i - 1] % MODULO;
-
         vector<pair<int, int>> edges(k);
-        for (auto &e : edges) cin >> e.first >> e.second;
+        for (auto &[u, v] : edges) cin >> u >> v;
 
         int y = (fact[n - 1] * (MODULO / 2 + 1)) % MODULO;
-
         for (int i = 1; i < 1 << k; i++) {
             vector<int> degree(n + 1, 0), degree_count(4, 0), sets(n + 1);
             iota(sets.begin(), sets.end(), 0);
@@ -33,13 +32,13 @@ int main() {
             int cycles = 0;
             for (int j = 0; j < k; j++)
                 if (i & (1 << j)) {
-                    auto &[u, v] = edges[j];
+                    auto [u, v] = edges[j];
                     degree[u]++;
                     degree[v]++;
 
                     int u_set = find(u, sets), v_set = find(v, sets);
+                    sets[v_set] = sets[u_set];
                     if (u_set == v_set) cycles++;
-                    else sets[v_set] = sets[u_set];
                 }
 
             int forbidden = __builtin_popcount(i);
