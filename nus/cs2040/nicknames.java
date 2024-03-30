@@ -31,8 +31,8 @@ public class nicknames {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+        
         var root = new TrieNode();
-
         int a = Integer.parseInt(br.readLine());
         for (int i = 0; i < a; i++) insert(root, br.readLine());
 
