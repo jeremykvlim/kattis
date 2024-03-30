@@ -3,7 +3,8 @@ import java.util.*;
 public class akcija {
     public static void main(String[] args) {
         var sc = new Scanner(System.in);
-        int n = sc.nextInt(), max = 0, total = 0, free = 0;
+        
+        int n = sc.nextInt(), max = 0;
         
         var prices = new int[n];
         for (int i = 0; i < n; i++) {
@@ -13,6 +14,7 @@ public class akcija {
         var count = new int[max + 1];
         for (int p : prices) count[p]++;
 
+        int total = 0, free = 0;
         for (int p = max; p >= 0; p--) 
             while (count[p]-- > 0) {
                 if (free++ < 2) total += p;
