@@ -4,6 +4,7 @@ import java.util.*;
 public class dominos {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
+        
         int t = Integer.parseInt(br.readLine());
         while (t-- > 0) {
             var input = br.readLine().split(" ");
@@ -26,6 +27,7 @@ public class dominos {
             int count = 0;
             while (!s.isEmpty()) {
                 int v = s.pop();
+                
                 if (!visited[v]) {
                     dfs(v, visited, adjList, s);
                     count++;
