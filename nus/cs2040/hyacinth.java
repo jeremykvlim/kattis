@@ -5,6 +5,7 @@ public class hyacinth {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(System.out);
+        
         int n = Integer.parseInt(br.readLine());
         var adjList = new ArrayList[n + 1];
         for (int i = 1; i <= n; i++) adjList[i] = new ArrayList<Integer>();
