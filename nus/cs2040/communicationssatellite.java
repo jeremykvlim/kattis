@@ -6,16 +6,15 @@ public class communicationssatellite {
         var br = new BufferedReader(new InputStreamReader(System.in));
         
         int n = Integer.parseInt(br.readLine());
-
         var satellites = new Triplet[n];
         var sets = new int[n];
-        var pq = new PriorityQueue<Edge>();
         for (int i = 0; i < n; i++) {
             sets[i] = i;
             var line = br.readLine().split(" ");
             satellites[i] = new Triplet(Integer.parseInt(line[0]), Integer.parseInt(line[1]), Integer.parseInt(line[2]));
         }
 
+        var pq = new PriorityQueue<Edge>();
         for (int i = 0; i < n; i++)
             for (int j = i + 1; j < n; j++)
                 pq.add(new Edge(i, j, Math.hypot(satellites[i].first - satellites[j].first, satellites[i].second - satellites[j].second) - satellites[i].third - satellites[j].third));
