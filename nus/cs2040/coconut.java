@@ -3,8 +3,8 @@ import java.util.*;
 public class coconut {
     public static void main(String[] args) {
         var sc = new Scanner(System.in);
+        
         int s = sc.nextInt(), n = sc.nextInt();
-
         var players = new ArrayList<Player>();
         for (int i = 0; i < n; i++) players.add(new Player("folded", i + 1));
 
