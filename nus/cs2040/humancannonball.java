@@ -5,12 +5,12 @@ public class humancannonball {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
 
-        var source = Arrays.stream(br.readLine().split(" ")).mapToDouble(Double::parseDouble).toArray();
-        var destination = Arrays.stream(br.readLine().split(" ")).mapToDouble(Double::parseDouble).toArray();
+        var src = Arrays.stream(br.readLine().split(" ")).mapToDouble(Double::parseDouble).toArray();
+        var dest = Arrays.stream(br.readLine().split(" ")).mapToDouble(Double::parseDouble).toArray();
         int n = Integer.parseInt(br.readLine());
         var coords = new double[n + 2][2];
-        coords[0] = source;
-        coords[n + 1] = destination;
+        coords[0] = src;
+        coords[n + 1] = dest;
 
         for (int i = 1; i < n + 1; i++) coords[i] = Arrays.stream(br.readLine().split(" ")).mapToDouble(Double::parseDouble).toArray();
 
@@ -32,7 +32,9 @@ public class humancannonball {
         pq.offer(new Pair(0, 0));
         while (!pq.isEmpty()) {
             var u = pq.poll();
+            
             if (u.second != time[u.first]) continue;
+            
             for (int v = 0; v < n + 2; v++) {
                 var d = time[u.first] + adjMatrix[u.first][v];
                 if (d < time[v]) {
@@ -41,6 +43,7 @@ public class humancannonball {
                 }
             }
         }
+        
         System.out.printf("%3f", time[n + 1]);
     }
 
