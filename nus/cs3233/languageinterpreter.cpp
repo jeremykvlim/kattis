@@ -19,7 +19,7 @@ vector<vector<unsigned>> matmul(vector<vector<unsigned>> &a, vector<vector<unsig
     return c;
 }
 
-vector<vector<unsigned>> matpow(vector<vector<unsigned>> a, long long n) {
+vector<vector<unsigned>> matpow(vector<vector<unsigned>> a, unsigned n) {
     int size = a.size();
     auto b = I(size);
 
