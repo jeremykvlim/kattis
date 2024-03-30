@@ -4,6 +4,7 @@ import java.util.*;
 public class promotions {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
+        
         var input = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
         int a = input[0], b = input[1], e = input[2], p = input[3];
 
