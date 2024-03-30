@@ -50,12 +50,12 @@ int main() {
             continue;
         }
 
-        int l = 0, r = s.size() + 1, m;
+        int l = 0, r = s.size() + 1, mid;
         while (l + 1 < r) {
-            m = l + (r - l) / 2;
+            mid = l + (r - l) / 2;
 
-            if (pos(m) == -1) r = m;
-            else l = m;
+            if (pos(m) == -1) r = mid;
+            else l = mid;
         }
 
         cout << l << " " << pos(l) << "\n";
