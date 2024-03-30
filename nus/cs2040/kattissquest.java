@@ -5,6 +5,7 @@ public class kattissquest {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(System.out);
+        
         int n = Integer.parseInt(br.readLine());
         
         var set = new TreeSet<Quest>();
