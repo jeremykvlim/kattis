@@ -54,7 +54,7 @@ int main() {
         while (l + 1 < r) {
             mid = l + (r - l) / 2;
 
-            if (pos(m) == -1) r = mid;
+            if (pos(mid) == -1) r = mid;
             else l = mid;
         }
 
