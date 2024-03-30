@@ -4,6 +4,7 @@ import java.util.*;
 public class peasoup {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
+        
         int n = Integer.parseInt(br.readLine());
         while (n-- > 0) {
             int k = Integer.parseInt(br.readLine());
