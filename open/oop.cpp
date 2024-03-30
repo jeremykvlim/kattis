@@ -35,7 +35,7 @@ int main() {
     auto *root = new TrieNode();
     unordered_map<TrieNode *, vector<long long>> word_hash;
     vector<long long> hash(longest + 1, 0);
-    long long b = 1e16 + 61, mod = (1LL << 62) + 135;
+    auto b = (long long) 1e16 + 61, mod = (1LL << 62) + 135;
     for (auto w : words) {
         hash[w.size()] = 0;
         for (int i = w.size() - 1; ~i; i--)
@@ -85,7 +85,8 @@ int main() {
             node = node->children[pos];
         }
 
-        cout << upper_bound(shared[suff_hash[i]].begin(), shared[suff_hash[i]].end(), end[node]) - lower_bound(shared[suff_hash[i]].begin(), shared[suff_hash[i]].end(), start[node]) << "\n";
+        cout << upper_bound(shared[suff_hash[i]].begin(), shared[suff_hash[i]].end(), end[node]) - 
+                lower_bound(shared[suff_hash[i]].begin(), shared[suff_hash[i]].end(), start[node]) << "\n";
         next:;
     }
 }
