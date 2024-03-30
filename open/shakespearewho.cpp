@@ -2,15 +2,15 @@
 using namespace std;
 
 int kmp(string s) {
-    vector<int> len(s.size());
+    vector<int> pi(s.size());
     for (int i = 1; i < s.size(); i++) {
-        int j = len[i - 1];
-        while (j && s[i] != s[j]) j = len[j - 1];
+        int j = pi[i - 1];
+        while (j && s[i] != s[j]) j = pi[j - 1];
         if (s[i] == s[j]) j++;
-        len[i] = j;
+        pi[i] = j;
     }
 
-    return len.back();
+    return pi.back();
 }
 
 void dfs(int v, vector<vector<int>> &adj_matrix, vector<bool> &visited, stack<int> &s) {
