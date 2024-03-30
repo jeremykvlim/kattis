@@ -4,6 +4,7 @@ import java.util.*;
 public class skener {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
+        
         var input = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
 
         for (int i = 0; i < input[0]; i++) {
