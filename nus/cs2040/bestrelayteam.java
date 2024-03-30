@@ -4,8 +4,8 @@ import java.util.*;
 public class bestrelayteam {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
-        int runners = Integer.parseInt(br.readLine());
         
+        int runners = Integer.parseInt(br.readLine());
         var array = new Runner[runners];
         for (int i = 0; i < runners; i++) {
             var line = br.readLine().split(" ");
