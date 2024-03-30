@@ -5,8 +5,8 @@ public class bst {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(System.out);
-        int n = Integer.parseInt(br.readLine());
         
+        int n = Integer.parseInt(br.readLine());
         var tree = new TreeSet<Integer, Integer>();
         long total = 0;
         while (n-- > 0) {
