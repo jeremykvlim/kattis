@@ -4,9 +4,9 @@ import java.util.*;
 public class delimitersoup {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
+        
         int len = Integer.parseInt(br.readLine());
         var l = br.readLine().toCharArray();
-        
         var s = new Stack<Character>();
         for (int i = 0; i < len; i++) {
             var c = l[i];
