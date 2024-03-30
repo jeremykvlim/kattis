@@ -4,12 +4,12 @@ import java.util.*;
 public class communicationssatellite {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
+        
         int n = Integer.parseInt(br.readLine());
 
         var satellites = new Triplet[n];
         var sets = new int[n];
         var pq = new PriorityQueue<Edge>();
-
         for (int i = 0; i < n; i++) {
             sets[i] = i;
             var line = br.readLine().split(" ");
