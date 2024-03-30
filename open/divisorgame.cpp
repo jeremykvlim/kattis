@@ -49,7 +49,7 @@ int main() {
         vector<int> power(B - A + 1, 0);
 
         for (int p : primes)
-            for (auto i = A / p * p; i <= B; i += p)
+            for (auto i = A - A % p; i <= B; i += p)
                 if (i >= A)
                     while (!(pf[i - A] % p)) {
                         pf[i - A] /= p;
