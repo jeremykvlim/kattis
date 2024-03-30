@@ -3,6 +3,7 @@ import java.io.*;
 public class swaptosort {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
+        
         var input = br.readLine().split(" ");
         int n = Integer.parseInt(input[0]), k = Integer.parseInt(input[1]);
 
