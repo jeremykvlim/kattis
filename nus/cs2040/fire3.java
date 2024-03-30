@@ -4,6 +4,7 @@ import java.util.*;
 public class fire3 {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
+        
         var input = br.readLine().split(" ");
         int r = Integer.parseInt(input[0]), c = Integer.parseInt(input[1]);
 
