@@ -3,11 +3,12 @@ import java.io.*;
 public class islands3 {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
+        
         var input = br.readLine().split(" ");
         int r = Integer.parseInt(input[0]), c = Integer.parseInt(input[1]);
+        
         var matrix = new char[r][c];
-        for (int i = 0; i < r; i++)
-            matrix[i] = br.readLine().toCharArray();
+        for (int i = 0; i < r; i++) matrix[i] = br.readLine().toCharArray();
 
         int islands = 0;
         for (int i = 0; i < r; i++)
