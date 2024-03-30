@@ -4,6 +4,7 @@ import java.util.*;
 public class boatparts {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
+        
         var input = br.readLine().split(" ");
         int p = Integer.parseInt(input[0]), n = Integer.parseInt(input[1]), day = 1;
         
