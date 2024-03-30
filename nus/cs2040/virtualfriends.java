@@ -5,8 +5,8 @@ public class virtualfriends {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(System.out);
+        
         int t = Integer.parseInt(br.readLine());
-
         while (t-- > 0) {
             int f = Integer.parseInt(br.readLine()), count = 0;
             int[] sets = new int[2 * f + 1], size = new int[2 * f + 1];
