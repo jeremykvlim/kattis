@@ -4,9 +4,9 @@ import java.util.*;
 public class cardtrading {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
+        
         var inputs = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
         int t = inputs[1], k = inputs[2];
-
         int[] count = new int[t], cards = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
         for (int i : cards) count[i - 1]++;
 
