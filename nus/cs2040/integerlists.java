@@ -5,8 +5,9 @@ public class integerlists {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(System.out);
-        int tests = Integer.parseInt(br.readLine());
-        while (tests-- > 0) {
+        
+        int t = Integer.parseInt(br.readLine());
+        while (t-- > 0) {
             var program = br.readLine();
             int elements = Integer.parseInt(br.readLine());
             
