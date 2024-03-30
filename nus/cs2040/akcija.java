@@ -5,7 +5,6 @@ public class akcija {
         var sc = new Scanner(System.in);
         
         int n = sc.nextInt(), max = 0;
-        
         var prices = new int[n];
         for (int i = 0; i < n; i++) {
             prices[i] = sc.nextInt();
