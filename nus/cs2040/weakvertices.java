@@ -4,6 +4,7 @@ import java.util.*;
 public class weakvertices {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
+        
         for (int n = Integer.parseInt(br.readLine()); n != -1; n = Integer.parseInt(br.readLine())) {
             var matrix = new int[n][n];
             for (int i = 0; i < n; i++)
