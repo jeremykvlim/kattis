@@ -4,19 +4,22 @@ import java.util.*;
 public class conformity {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
-        var map = new HashMap<Combination, Integer>();
-        int n = Integer.parseInt(br.readLine()), max = 0, ans = 0;
+        
+        int n = Integer.parseInt(br.readLine()), max = 0;
+        var combo = new HashMap<Combination, Integer>();
         while (n-- > 0) {
             var courses = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
             Arrays.sort(courses);
             var combo = new Combination(courses);
-            map.put(combo, map.getOrDefault(combo, 0) + 1);
-            max = Math.max(max, map.get(combo));
+            combo.put(combo, combo.getOrDefault(combo, 0) + 1);
+            max = Math.max(max, combo.get(combo));
         }
-        for (var set : map.entrySet())
-            if (set.getValue() == max) ans += set.getValue();
 
-        System.out.println(ans);
+        int total = 0;
+        for (var set : combo.entrySet())
+            if (set.getValue() == max) total += set.getValue();
+
+        System.out.println(total);
     }
 
     static class Combination {
