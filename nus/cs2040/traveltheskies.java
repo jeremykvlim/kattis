@@ -4,6 +4,7 @@ import java.util.*;
 public class traveltheskies {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
+        
         var input = br.readLine().split(" ");
         int k = Integer.parseInt(input[0]), n = Integer.parseInt(input[1]), m = Integer.parseInt(input[2]);
 
