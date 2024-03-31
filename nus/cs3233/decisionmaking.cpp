@@ -34,36 +34,36 @@ long long pow(long long base, long long exponent, long long mod) {
     return value;
 }
 
-vector<long long> ref(vector<vector<long long>> &a) {
-    int n = a.size();
-    auto solution = I(n);
+vector<long long> ref(vector<vector<long long>> &matrix) {
+    int r = matrix.size(), c = matrix[0].size();
+    auto solution = I(r);
 
-    for (int i = 0; i < n; i++)
-        for (int j = i; j < n; j++)
-            if (a[j][i]) {
-                swap(a[j], a[i]);
-                swap(solution[j], solution[i]);
+    for (int i = 0; i < r; i++) {
+        int pivot = i;
+        while (pivot < r && !matrix[pivot][i]) pivot++;
 
-                auto temp = pow(a[i][i], MODULO - 2, MODULO);
-                for (int k = 0; k < n; k++) {
-                    a[i][k] = mul(a[i][k], temp, MODULO);
-                    solution[i][k] = mul(solution[i][k], temp, MODULO);
+        if (pivot == r) continue;
+
+        swap(matrix[i], matrix[pivot]);
+        swap(solution[i], solution[pivot]);
+        auto temp = matrix[i][i];
+        for (int j = 0; j < c; j++) {
+            matrix[i][j] = mul(matrix[i][j], pow(temp, MODULO - 2, MODULO), MODULO);
+            solution[i][j] = mul(solution[i][j], pow(temp, MODULO - 2, MODULO), MODULO);
+        }
+
+        for (int j = 0; j < r; j++)
+            if (j != i) {
+                temp = matrix[j][i];
+                for (int k = 0; k < c; k++) {
+                    matrix[j][k] -= mul(temp, matrix[i][k], MODULO);
+                    solution[j][k] -= mul(temp, solution[i][k], MODULO);
+
+                    if (matrix[j][k] < 0) matrix[j][k] += MODULO;
+                    if (solution[j][k] < 0) solution[j][k] += MODULO;
                 }
-
-                for (int k = 0; k < n; k++)
-                    if (i != k) {
-                        temp = a[k][i];
-                        for (int l = 0; l < n; l++) {
-                            a[k][l] -= mul(a[i][l], temp, MODULO);
-                            solution[k][l] -= mul(solution[i][l], temp, MODULO);
-
-                            if (a[k][l] < 0) a[k][l] += MODULO;
-                            if (solution[k][l] < 0) solution[k][l] += MODULO;
-                        }
-                    }
-
-                break;
             }
+    }
 
     return solution[0];
 }
