@@ -2,8 +2,12 @@
 using namespace std;
 
 struct TrieNode {
-    TrieNode *children[26]{nullptr};
+    vector<int> next;
     int count = 0;
+
+    TrieNode() {
+        next.resize(26, -1);
+    }
 };
 
 int main() {
@@ -14,46 +18,62 @@ int main() {
     cin >> n;
 
     vector<int> mapping{0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 7, 7, 7, 7};
-    auto *root = new TrieNode();
+    vector<TrieNode> trie;
+    trie.emplace_back();
     vector<vector<string>> words;
     int count = 0;
     while (n--) {
         string s;
         cin >> s;
 
-        auto *node = root;
+        int node = 0;
         for (char c : s) {
             int pos = mapping[c - 'a'];
-            if (!node->children[pos]) node->children[pos] = new TrieNode();
-            node = node->children[pos];
-        }
 
-        if (!node->count) {
-            node->count = ++count;
+            if (trie[node].next[pos] == -1) {
+                trie[node].next[pos] = trie.size();
+                trie.emplace_back();
+            }
+
+            node = trie[node].next[pos];
+        }
+        if (!trie[node].count) {
+            trie[node].count = ++count;
             words.emplace_back(vector<string>());
         }
-        words[node->count - 1].emplace_back(s);
+
+        words[trie[node].count - 1].emplace_back(s);
     }
 
     for (int i = 0; i < count; i++) {
         for (int j = 0; j <= words[i].size() / 2; j++) {
-            auto *node = root;
+            int node = 0;
             for (char c : words[i][j]) {
                 int pos = c - 'a';
-                if (!node->children[pos]) node->children[pos] = new TrieNode();
-                node = node->children[pos];
+
+                if (trie[node].next[pos] == -1) {
+                    trie[node].next[pos] = trie.size();
+                    trie.emplace_back();
+                }
+
+                node = trie[node].next[pos];
             }
-            node->count = j + 1;
+            trie[node].count = j + 1;
         }
 
         for (int j = words[i].size() - 1; j > words[i].size() / 2; j--) {
-            auto *node = root;
+            int node = 0;
             for (char c : words[i][j]) {
                 int pos = c - 'a';
-                if (!node->children[pos]) node->children[pos] = new TrieNode();
-                node = node->children[pos];
+
+                if (trie[node].next[pos] == -1) {
+                    trie[node].next[pos] = trie.size();
+                    trie.emplace_back();
+                }
+
+                node = trie[node].next[pos];
             }
-            node->count = j - words[i].size();
+            trie[node].count = j - words[i].size();
         }
     }
 
@@ -73,15 +93,15 @@ int main() {
         for (int i = w.size() - 1; ~i; i--) {
             dp[i] = {1e18, 0, 0};
 
-            auto *node = root;
+            int node = 0;
             for (int j = i; j < w.size(); j++) {
                 int pos = w[j] - 'a';
-                if (!node->children[pos]) break;
+                if (trie[node].next[pos] == -1) break;
 
-                node = node->children[pos];
-                if (node->count) {
-                    int c = node->count < 0 ? -node->count : node->count - 1;
-                    dp[i] = min(dp[i], {c + 1 + j + 1 - i + get<0>(dp[j + 1]), j + 1, node->count});
+                node = trie[node].next[pos];
+                if (trie[node].count) {
+                    int c = trie[node].count < 0 ? -trie[node].count : trie[node].count - 1;
+                    dp[i] = min(dp[i], {c + 1 + j + 1 - i + get<0>(dp[j + 1]), j + 1, trie[node].count});
                 }
             }
         }
