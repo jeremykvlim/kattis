@@ -89,7 +89,6 @@ int main() {
                 trie[node].next[pos] = trie.size();
                 trie.emplace_back();
             }
-
             node = trie[node].next[pos];
         }
 
