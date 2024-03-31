@@ -2,15 +2,19 @@
 using namespace std;
 
 struct TrieNode {
-    TrieNode *children[26]{nullptr};
+    vector<int> next;
+
+    TrieNode() {
+        next.resize(26, -1);
+    }
 };
 
-void dfs(int start, TrieNode *curr, TrieNode *self, unordered_map<TrieNode *, bool> &visited, string &s) {
+void dfs(int start, int curr, int self, vector<TrieNode> &trie, vector<bool> &visited, string &s) {
     if (curr != self) visited[curr] = true;
-    
+
     for (int i = start; i < s.size(); i++) {
         int pos = s[i] - 'a';
-        if (curr->children[pos]) dfs(i + 1, curr->children[pos], self, visited, s);
+        if (trie[curr].next[pos] != -1) dfs(i + 1, trie[curr].next[pos], self, trie, visited, s);
     }
 }
 
@@ -18,25 +22,31 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    auto *root = new TrieNode();
+    vector<TrieNode> trie;
+    trie.emplace_back();
     vector<string> sorted, S;
-    vector<TrieNode *> end;
-    unordered_map<TrieNode *, bool> visited;
+    vector<int> end;
     string s;
     while (cin >> s) {
         S.emplace_back(s);
         sort(s.begin(), s.end());
         sorted.emplace_back(s);
 
-        auto *node = root;
+        int node = 0;
         for (char c : s) {
             int pos = c - 'a';
-            if (!node->children[pos]) node->children[pos] = new TrieNode();
-            node = node->children[pos];
+
+            if (trie[node].next[pos] == -1) {
+                trie[node].next[pos] = trie.size();
+                trie.emplace_back();
+            }
+            node = trie[node].next[pos];
         }
         end.emplace_back(node);
     }
-    for (int i = 0; i < end.size(); i++) dfs(0, root, end[i], visited, sorted[i]);
+
+    vector<bool> visited(*max_element(end.begin(), end.end()) + 1, false);
+    for (int i = 0; i < end.size(); i++) dfs(0, 0, end[i], trie, visited, sorted[i]);
 
     vector<string> dominant;
     for (int i = 0; i < end.size(); i++)
