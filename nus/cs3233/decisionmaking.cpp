@@ -142,5 +142,5 @@ int main() {
     }
 
     auto solution = ref(a);
-    for (auto v: solution) cout << v << " ";
+    for (auto v : solution) cout << v << " ";
 }
