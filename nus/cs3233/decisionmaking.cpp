@@ -132,7 +132,7 @@ int main() {
         else {
             int w = trie[v].next[0] ^ trie[v].next[1];
 
-            for (int u: trie[v].next) {
+            for (int u : trie[v].next) {
                 if (!visited[u]) {
                     if (!visited[u ^ w]) p[u][count++] = 1;
                     else
