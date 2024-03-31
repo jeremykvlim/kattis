@@ -12,23 +12,6 @@ struct TrieNode {
     }
 };
 
-void insert(string &s, int i, vector<TrieNode> &trie) {
-    int node = 0;
-
-    for (char ch : s) {
-        int c = ch == 'T';
-
-        if (trie[node].next[c] == -1) {
-            trie[node].next[c] = trie.size();
-            trie.emplace_back();
-        }
-
-        node = trie[node].next[c];
-    }
-
-    if (trie[node].index == -1) trie[node].index = i;
-}
-
 vector<vector<long long>> I(int size) {
     vector<vector<long long>> I(size, vector<long long>(size, 0));
     for (int i = 0; i < size; i++) I[i][i] = 1;
@@ -98,7 +81,19 @@ int main() {
         string s;
         cin >> s;
 
-        insert(s, i, trie);
+        int node = 0;
+        for (char c : s) {
+            int pos = c == 'T';
+
+            if (trie[node].next[pos] == -1) {
+                trie[node].next[pos] = trie.size();
+                trie.emplace_back();
+            }
+
+            node = trie[node].next[pos];
+        }
+
+        if (trie[node].index == -1) trie[node].index = i;
     }
 
     queue<int> q;
