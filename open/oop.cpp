@@ -2,20 +2,12 @@
 using namespace std;
 
 struct TrieNode {
-    TrieNode *children[26]{nullptr};
+    vector<int> next;
+
+    TrieNode() {
+        next.resize(26, -1);
+    }
 };
-
-void dfs(unordered_set<long long> &hashes, map<long long, vector<int>> &shared, unordered_map<TrieNode *, vector<long long>> &word_hash, unordered_map<TrieNode *, int> &start, unordered_map<TrieNode *, int> &end, TrieNode *curr, int &count) {
-    start[curr] = ++count;
-
-    for (auto &h : word_hash[curr])
-        if (hashes.count(h)) shared[h].emplace_back(start[curr]);
-
-    for (auto &c : curr->children)
-        if (c) dfs(hashes, shared, word_hash, start, end, c, count);
-
-    end[curr] = ++count;
-}
 
 int main() {
     ios::sync_with_stdio(false);
@@ -28,12 +20,13 @@ int main() {
     int longest = 0;
     for (auto &w : words) {
         cin >> w;
-        
+
         longest = max(longest, (int) w.size());
     }
 
-    auto *root = new TrieNode();
-    unordered_map<TrieNode *, vector<long long>> word_hash;
+    vector<TrieNode> trie;
+    trie.emplace_back();
+    unordered_map<int, vector<long long>> word_hash;
     vector<long long> hash(longest + 1, 0);
     auto b = (long long) 1e16 + 61, mod = (1LL << 62) + 135;
     for (auto w : words) {
@@ -41,12 +34,16 @@ int main() {
         for (int i = w.size() - 1; ~i; i--)
             hash[i] = (hash[i + 1] * b % mod + w[i] - 'a' + 1) % mod;
 
-        auto *node = root;
+        int node = 0;
         word_hash[node].emplace_back(hash[0]);
         for (int i = 0; i < w.size(); i++) {
             int pos = w[i] - 'a';
-            if (!node->children[pos]) node->children[pos] = new TrieNode();
-            node = node->children[pos];
+
+            if (trie[node].next[pos] == -1) {
+                trie[node].next[pos] = trie.size();
+                trie.emplace_back();
+            }
+            node = trie[node].next[pos];
 
             word_hash[node].emplace_back(hash[i + 1]);
         }
@@ -69,23 +66,34 @@ int main() {
         hashes.emplace(suff_hash[i]);
     }
 
-    unordered_map<TrieNode *, int> start, end;
+    unordered_map<int, int> start, end;
     map<long long, vector<int>> shared;
     int count = 0;
-    dfs(hashes, shared, word_hash, start, end, root, count);
+    auto dfs = [&](auto &&self, int curr) -> void {
+        start[curr] = ++count;
+
+        for (auto &h : word_hash[curr])
+            if (hashes.count(h)) shared[h].emplace_back(start[curr]);
+
+        for (auto &c : trie[curr].next)
+            if (c != -1) self(self, c);
+
+        end[curr] = ++count;
+    };
+    dfs(dfs, 0);
 
     for (int i = 0; i < q; i++) {
-        auto *node = root;
+        int node = 0;
         for (char c : pref[i]) {
             int pos = c - 'a';
-            if (!node->children[pos]) {
+            if (trie[node].next[pos] == -1) {
                 cout << "0\n";
                 goto next;
             }
-            node = node->children[pos];
+            node = trie[node].next[pos];
         }
 
-        cout << upper_bound(shared[suff_hash[i]].begin(), shared[suff_hash[i]].end(), end[node]) - 
+        cout << upper_bound(shared[suff_hash[i]].begin(), shared[suff_hash[i]].end(), end[node]) -
                 lower_bound(shared[suff_hash[i]].begin(), shared[suff_hash[i]].end(), start[node]) << "\n";
         next:;
     }
