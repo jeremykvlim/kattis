@@ -36,7 +36,7 @@ long long pow(long long base, long long exponent, long long mod) {
 
 vector<long long> ref(vector<vector<long long>> &matrix) {
     int r = matrix.size(), c = matrix[0].size();
-    auto solution = I(r);
+    auto solution = I(max(r, c));
 
     for (int i = 0; i < r; i++) {
         int pivot = i;
