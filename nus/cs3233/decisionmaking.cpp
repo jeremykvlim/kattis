@@ -36,7 +36,7 @@ long long pow(long long base, long long exponent, long long mod) {
 
 vector<long long> ref(vector<vector<long long>> &matrix) {
     int r = matrix.size(), c = matrix[0].size();
-    auto solution = I(max(r, c));
+    auto matrix_inv = I(max(r, c));
 
     for (int i = 0; i < r; i++) {
         int pivot = i;
@@ -45,11 +45,11 @@ vector<long long> ref(vector<vector<long long>> &matrix) {
         if (pivot == r) continue;
 
         swap(matrix[i], matrix[pivot]);
-        swap(solution[i], solution[pivot]);
+        swap(matrix_inv[i], matrix_inv[pivot]);
         auto temp = matrix[i][i];
         for (int j = 0; j < c; j++) {
             matrix[i][j] = mul(matrix[i][j], pow(temp, MODULO - 2, MODULO), MODULO);
-            solution[i][j] = mul(solution[i][j], pow(temp, MODULO - 2, MODULO), MODULO);
+            matrix_inv[i][j] = mul(matrix_inv[i][j], pow(temp, MODULO - 2, MODULO), MODULO);
         }
 
         for (int j = 0; j < r; j++)
@@ -57,15 +57,15 @@ vector<long long> ref(vector<vector<long long>> &matrix) {
                 temp = matrix[j][i];
                 for (int k = 0; k < c; k++) {
                     matrix[j][k] -= mul(temp, matrix[i][k], MODULO);
-                    solution[j][k] -= mul(temp, solution[i][k], MODULO);
+                    matrix_inv[j][k] -= mul(temp, matrix_inv[i][k], MODULO);
 
                     if (matrix[j][k] < 0) matrix[j][k] += MODULO;
-                    if (solution[j][k] < 0) solution[j][k] += MODULO;
+                    if (matrix_inv[j][k] < 0) matrix_inv[j][k] += MODULO;
                 }
             }
     }
 
-    return solution[0];
+    return matrix_inv[0];
 }
 
 int main() {
@@ -141,6 +141,6 @@ int main() {
         }
     }
 
-    auto solution = ref(a);
-    for (auto v : solution) cout << v << " ";
+    auto a_inv = ref(a);
+    for (auto v : a_inv) cout << v << " ";
 }
