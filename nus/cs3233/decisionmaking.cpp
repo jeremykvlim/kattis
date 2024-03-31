@@ -106,9 +106,9 @@ int main() {
             int u = trie[v].next[c];
 
             if (u != -1) {
-                trie[u].link = p == -1 ? 0 : trie[p].next[c];
+                trie[u].link = (p == -1) ? 0 : trie[p].next[c];
                 q.emplace(u);
-            } else trie[v].next[c] = p == -1 ? 0 : trie[p].next[c];
+            } else trie[v].next[c] = (p == -1) ? 0 : trie[p].next[c];
         }
     }
 
