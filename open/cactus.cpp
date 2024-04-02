@@ -1,23 +1,28 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void tarjan(int v, vector<int> &order, vector<int> &low, vector<bool> &stacked, int &count, int &sccs, bool &simple, vector<vector<int>> &adj_list, stack<int> &s) {
+void tarjan(int v, vector<int> &order, vector<int> &low, vector<bool> &stacked, int &count, int &sccs, bool &valid, vector<vector<int>> &adj_list, stack<int> &s) {
+    if (!valid) return;
+    
     order[v] = low[v] = ++count;
     s.emplace(v);
     stacked[v] = true;
 
-    int back = 0, cross = 0;
+    int simple = 0;
     for (int &u : adj_list[v])
         if (!order[u]) {
-            tarjan(u, order, low, stacked, count, sccs, simple, adj_list, s);
+            tarjan(u, order, low, stacked, count, sccs, valid, adj_list, s);
             low[v] = min(low[u], low[v]);
-            if (low[u] != order[v]) back++;
+            if (low[u] != order[v]) simple++;
         } else if (stacked[u]) {
             low[v] = min(order[u], low[v]);
-            cross++;
+            simple++;
         }
-
-    if (back + cross > 1) simple = false;
+    if (simple > 1) {
+        valid = false;
+        return;
+    }
+    
     if (order[v] == low[v]) {
         sccs++;
         for (int u = s.top(); u != v; u = s.top()) {
@@ -40,7 +45,7 @@ int main() {
     while (m--) {
         int u, v;
         cin >> u >> v;
-        
+
         adj_list[u].emplace_back(v);
     }
 
@@ -48,10 +53,9 @@ int main() {
     vector<bool> stacked(n, false);
     stack<int> s;
     int count = 0, sccs = 0;
-    bool simple = true;
+    bool valid = true;
+    for (int i = 0; i < n && valid; i++)
+        if (!order[i]) tarjan(i, order, low, stacked, count, sccs, valid, adj_list, s);
 
-    for (int i = 0; i < n; i++)
-        if (!order[i]) tarjan(i, order, low, stacked, count, sccs, simple, adj_list, s);
-
-    cout << (sccs == 1 && simple ? "YES" : "NO");
+    cout << (sccs == 1 && valid ? "YES" : "NO");
 }
