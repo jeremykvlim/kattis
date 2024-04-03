@@ -74,6 +74,7 @@ vector<int> build(vector<int> &str, int ascii_range) {
 
     return sa;
 }
+
 vector<int> suffix_array(string &s, int ascii_range = 128) {
     vector<int> str(s.begin(), s.end());
     str.emplace_back('$');
