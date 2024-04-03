@@ -64,7 +64,8 @@ int main() {
                     }
 
                     if (!queued[u]) {
-                        dist[u] < dist[dq.front()] ? dq.emplace_front(u) : dq.emplace_back(u);
+                        if (dq.empty()) dq.emplace_front(u);
+                        else dist[u] < dist[dq.front()] ? dq.emplace_front(u) : dq.emplace_back(u);
                         queued[u] = true;
                     }
                 }
