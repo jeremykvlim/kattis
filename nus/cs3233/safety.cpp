@@ -16,6 +16,7 @@ int main() {
         double sum_p = 0;
         for (int i = 0; i < n; i++) {
             cin >> p[i];
+            
             sum_p += p[i];
         }
 
