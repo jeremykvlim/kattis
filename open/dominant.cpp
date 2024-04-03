@@ -9,12 +9,12 @@ struct TrieNode {
     }
 };
 
-void dfs(int start, int curr, int self, vector<TrieNode> &trie, vector<bool> &visited, string &s) {
-    if (curr != self) visited[curr] = true;
+void dfs(int start, int curr, int end, vector<TrieNode> &trie, vector<bool> &visited, string &s) {
+    if (curr != end) visited[curr] = true;
 
     for (int i = start; i < s.size(); i++) {
         int pos = s[i] - 'a';
-        if (trie[curr].next[pos] != -1) dfs(i + 1, trie[curr].next[pos], self, trie, visited, s);
+        if (trie[curr].next[pos] != -1) dfs(i + 1, trie[curr].next[pos], end, trie, visited, s);
     }
 }
 
