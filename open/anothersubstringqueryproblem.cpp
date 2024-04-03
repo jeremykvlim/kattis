@@ -111,12 +111,12 @@ int main() {
     cin.tie(nullptr);
 
     string s;
-    int Q;
-    cin >> s >> Q;
+    int q;
+    cin >> s >> q;
 
     auto sa = suffix_array(s);
     unordered_map<pair<int, int>, vector<int>, Hash> occurrences;
-    while (Q--) {
+    while (q--) {
         string t;
         int k;
         cin >> t >> k;
