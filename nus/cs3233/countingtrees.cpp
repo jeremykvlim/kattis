@@ -60,10 +60,10 @@ int main() {
         long long n, k, c;
         cin >> n >> k >> c;
 
-        auto cgood = 0LL, mod_product = 1LL;
+        auto c_good = 0LL, mod_product = 1LL;
         auto count = [&](long long n, long long c, vector<long long> &fact, vector<long long> &fact_inv, int mod) {
             auto choices = (2 * C(n - 1, c - 1, mod, fact, fact_inv)) % mod;
-            cgood = crt(cgood, mod_product, choices, mod);
+            c_good = crt(c_good, mod_product, choices, mod);
             mod_product *= mod;
         };
 
@@ -72,6 +72,6 @@ int main() {
         count(n, c, fact3, fact_inv3, MODULO3);
         count(n, c, fact4, fact_inv4, MODULO4);
 
-        cout << cgood << "\n";
+        cout << c_good << "\n";
     }
 }
