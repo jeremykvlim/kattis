@@ -31,11 +31,11 @@ int main() {
         vector<double> p(n);
         for (int i = 0; i < n; i++) {
             cin >> b[i] >> p[i];
+            
             p[i] /= 100;
         }
 
         vector<vector<double>> dp(1 << n, vector<double>(c + 1, -2));
-
         cout << fixed << setprecision(6) << convert((1 << n) - 1, c, m, b, p, dp) << "\n";
     }
 }
