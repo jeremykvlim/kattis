@@ -51,18 +51,18 @@ int main() {
     for (int i = 1; i <= n; i++)
         if (!order[i]) tarjan(i, order, low, component, stacked, count, sccs, adj_list, st);
 
-    vector<int> same(n + 1, 0), different(n + 1, 0), sales(n + 1, INT_MIN);
+    vector<int> same(n + 1, 0), diff(n + 1, 0), sales(n + 1, INT_MIN);
     for (int i : cheaper)
         if (component[i] == component[f[i]]) same[f[i]] = max(same[f[i]], m[f[i]] - p[i]);
-        else different[f[i]] = max(different[f[i]], m[f[i]] - p[i]);
+        else diff[f[i]] = max(diff[f[i]], m[f[i]] - p[i]);
 
     vector<bool> visited(n + 1, false);
     auto profit = 0LL;
     for (int i = 1; i <= n; i++) {
-        profit += (long long) s[i] * max(same[i], different[i]);
+        profit += (long long) s[i] * max(same[i], diff[i]);
 
-        if (i == f[i] || same[i] <= different[i]) visited[component[i]] = true;
-        else sales[component[i]] = max(sales[component[i]], different[i] - same[i]);
+        if (i == f[i] || same[i] <= diff[i]) visited[component[i]] = true;
+        else sales[component[i]] = max(sales[component[i]], diff[i] - same[i]);
     }
 
     for (int i = 1; i <= sccs; i++)
