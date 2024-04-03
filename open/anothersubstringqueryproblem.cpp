@@ -145,7 +145,7 @@ int main() {
         }
         int last = l;
 
-        if (last - first + 1 < k || s[sa[first] + t.size() - 1] != t.back()) {
+        if (last - first + 1 < k || s[sa[last] + t.size() - 1] != t.back()) {
             cout << "-1\n";
             continue;
         }
