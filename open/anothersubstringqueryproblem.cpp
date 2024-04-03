@@ -1,28 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void induced_sort(vector<int> &str, int ascii_range, vector<int> &sa, vector<bool> &sl, vector<int> &lms_i) {
-    vector<int> l(ascii_range, 0), r(ascii_range, 0);
-    for (int c : str) {
-        if (c + 1 < ascii_range) l[c + 1]++;
-        r[c]++;
-    }
-    partial_sum(l.begin(), l.end(), l.begin());
-    partial_sum(r.begin(), r.end(), r.begin());
-
-    fill(sa.begin(), sa.end(), -1);
-    for (int i = lms_i.size() - 1; ~i; i--) sa[--r[str[lms_i[i]]]] = lms_i[i];
-    for (int i : sa)
-        if (i && sl[i - 1]) sa[l[str[i - 1]]++] = i - 1;
-
-    fill(r.begin(), r.end(), 0);
-    for (int c : str) r[c]++;
-    partial_sum(r.begin(), r.end(), r.begin());
-
-    for (int k = sa.size() - 1, i = sa[k]; ~k; k--, i = sa[k])
-        if (i && !sl[i - 1]) sa[--r[str[i - 1]]] = i - 1;
-}
-
 vector<int> build(vector<int> &str, int ascii_range) {
     int n = str.size();
 
@@ -34,7 +12,29 @@ vector<int> build(vector<int> &str, int ascii_range) {
         if (sl[i] && !sl[i + 1]) lms_i.emplace_back(i + 1);
     }
     reverse(lms_i.begin(), lms_i.end());
-    induced_sort(str, ascii_range, sa, sl, lms_i);
+
+    auto induced_sort = [&](vector<int> lms) -> void {
+        vector<int> l(ascii_range, 0), r(ascii_range, 0);
+        for (int c : str) {
+            if (c + 1 < ascii_range) l[c + 1]++;
+            r[c]++;
+        }
+        partial_sum(l.begin(), l.end(), l.begin());
+        partial_sum(r.begin(), r.end(), r.begin());
+
+        fill(sa.begin(), sa.end(), -1);
+        for (int i = lms.size() - 1; ~i; i--) sa[--r[str[lms[i]]]] = lms[i];
+        for (int i : sa)
+            if (i && sl[i - 1]) sa[l[str[i - 1]]++] = i - 1;
+
+        fill(r.begin(), r.end(), 0);
+        for (int c : str) r[c]++;
+        partial_sum(r.begin(), r.end(), r.begin());
+
+        for (int k = sa.size() - 1, i = sa[k]; ~k; k--, i = sa[k])
+            if (i && !sl[i - 1]) sa[--r[str[i - 1]]] = i - 1;
+    };
+    induced_sort(lms_i);
 
     vector<int> lms_j(lms_i.size()), lms_str(lms_i.size());
     for (int i = 0, j = 0; i < n; i++)
@@ -70,11 +70,10 @@ vector<int> build(vector<int> &str, int ascii_range) {
         auto lms_SA = build(lms_str, curr + 1);
         for (int i = 0; i < lms_i.size(); i++) lms_j[i] = lms_i[lms_SA[i]];
     }
-    induced_sort(str, ascii_range, sa, sl, lms_j);
+    induced_sort(lms_j);
 
     return sa;
 }
-
 vector<int> suffix_array(string &s, int ascii_range = 128) {
     vector<int> str(s.begin(), s.end());
     str.emplace_back('$');
