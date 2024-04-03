@@ -74,7 +74,6 @@ vector<int> build(vector<int> &str, int ascii_range) {
 
     return sa;
 }
-
 vector<int> suffix_array(string &s, int ascii_range = 128) {
     vector<int> str(s.begin(), s.end());
     str.emplace_back('$');
@@ -116,7 +115,7 @@ int main() {
     cin >> s >> Q;
 
     auto sa = suffix_array(s);
-    unordered_map<pair<int, int>, vector<int>, Hash> cache;
+    unordered_map<pair<int, int>, vector<int>, Hash> occurrences;
     while (Q--) {
         string t;
         int k;
@@ -150,15 +149,15 @@ int main() {
             continue;
         }
 
-        if (cache.count({first, last})) {
-            cout << cache[{first, last}][k - 1] + 1 << "\n";
+        if (occurrences.count({first, last})) {
+            cout << occurrences[{first, last}][k - 1] + 1 << "\n";
             continue;
         }
 
-        vector<int> occurrences;
-        for (int i = first; i <= last; i++) occurrences.emplace_back(sa[i]);
-        sort(occurrences.begin(), occurrences.end());
-        cache[{first, last}] = occurrences;
-        cout << occurrences[k - 1] + 1 << "\n";
+        vector<int> o(last - first + 1);
+        for (int i = first; i <= last; i++) o[i - first] = sa[i];
+        sort(o.begin(), o.end());
+        occurrences[{first, last}] = o;
+        cout << o[k - 1] + 1 << "\n";
     }
 }
