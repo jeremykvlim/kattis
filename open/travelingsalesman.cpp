@@ -37,7 +37,7 @@ int main() {
             cin >> n;
 
             vector<tuple<int, int, int>> corners(n);
-            for (auto &t : corners) cin >> get<0>(t) >> get<1>(t) >> get<2>(t);
+            for (auto &[x, y, z] : corners) cin >> x >> y >> z;
 
             for (int j = 0; j < n; j++) {
                 auto &prev = corners[j], &curr = corners[(j + 1) % n];
