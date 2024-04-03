@@ -10,22 +10,23 @@ long long maintain(int v, int mod, vector<unordered_map<int, int>> &build, vecto
     return m[v] = c % mod;
 }
 
-long long rebuild(int v, int mod, unordered_set<int> &y, vector<unordered_map<int, int>> &build, vector<long long> &m, vector<pair<long long, bool>> &r) {
-    if (r[v].first != -1) return r[v].first;
+long long rebuild(int v, int mod, unordered_set<int> &y, vector<unordered_map<int, int>> &build, vector<long long> &m, vector<long long> &r, vector<bool> &extra) {
+    if (r[v] != -1) return r[v];
 
     if (y.count(v)) {
-        r[v].second = true;
+        extra[v] = true;
         return maintain(v, mod, build, m) % mod;
     }
 
     auto c = 0LL;
-    bool extra = false;
+    bool e = false;
     for (auto [u, count] : build[v]) {
-        c += (rebuild(u, mod, y, build, m, r) * count) % mod;
-        extra |= r[u].second;
+        c += (rebuild(u, mod, y, build, m, r, extra) * count) % mod;
+        e |= extra[u];
     }
 
-    return (r[v] = {(c + extra) % mod, extra}).first % mod;
+    extra[v] = e;
+    return (r[v] = (c + e) % mod) % mod;
 }
 
 bool dfs(int v, vector<unordered_map<int, int>> &adj_list, vector<char> &state, vector<unordered_map<int, int>> &build) {
@@ -90,7 +91,8 @@ int main() {
             y.emplace(yi);
         }
 
-        vector<pair<long long, bool>> r(n, {-1, false});
-        cout << rebuild(0, mod, y, build, m, r) << "\n";
+        vector<long long> r(n, -1);
+        vector<bool> extra(n, false);
+        cout << rebuild(0, mod, y, build, m, r, extra) << "\n";
     }
 }
