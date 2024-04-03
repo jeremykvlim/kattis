@@ -17,6 +17,7 @@ int main() {
         for (auto &st : statements) {
             string s;
             getline(cin, s);
+            
             istringstream iss(s);
             copy(istream_iterator<string>(iss), istream_iterator<string>(), back_inserter(st));
         }
