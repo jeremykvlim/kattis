@@ -31,7 +31,7 @@ vector<int> build(vector<int> &str, int ascii_range) {
         for (int c : str) r[c]++;
         partial_sum(r.begin(), r.end(), r.begin());
 
-        for (int k = sa.size() - 1, i = sa[k]; ~k; k--, i = sa[k])
+        for (int j = sa.size() - 1, i = sa[j]; ~j; i = sa[--j])
             if (i && !sl[i - 1]) sa[--r[str[i - 1]]] = i - 1;
     };
     induced_sort(lms_i);
