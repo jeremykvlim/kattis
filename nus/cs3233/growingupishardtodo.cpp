@@ -24,6 +24,7 @@ int main() {
         int l = -1, r = day[i - 1].size() - 1, m;
         while (l + 1 < r) {
             m = l + (r - l) / 2;
+            
             if (day[i - 1][m].first < a) r = m;
             else l = m;
         }
