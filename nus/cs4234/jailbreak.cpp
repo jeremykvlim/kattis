@@ -58,7 +58,6 @@ int main() {
         for (int i = 1; i <= h; i++)
             for (int j = 1; j <= w; j++) {
                 int curr = john[i][j] + d1[i][j] + d2[i][j];
-
                 if (building[i][j] == '#') curr -= 2;
                 doors = min(doors, curr);
             }
