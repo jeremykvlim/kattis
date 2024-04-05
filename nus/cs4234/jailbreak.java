@@ -32,10 +32,11 @@ public class jailbreak {
             bfs(p2, map, d2);
             for (int i = 1; i <= h; i++)
                 for (int j = 1; j <= w; j++) {
-                    int cur = john[i][j] + d1[i][j] + d2[i][j];
-                    if (map[i][j] == '#') cur -= 2;
-                    min = Math.min(min, cur);
+                    int curr = john[i][j] + d1[i][j] + d2[i][j];
+                    if (map[i][j] == '#') curr -= 2;
+                    min = Math.min(min, curr);
                 }
+            
             System.out.println(min);
         }
     }
