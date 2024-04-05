@@ -10,7 +10,7 @@ int main() {
 
     vector<int> blocks(n);
     int highest = 0;
-    for (auto &h : blocks) {
+    for (int &h : blocks) {
         cin >> h;
 
         highest = max(highest, h);
