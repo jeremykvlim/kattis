@@ -43,8 +43,7 @@ int main() {
             for (auto n = 0LL, p = 1LL, z = 1LL;; n++) {
                 p = (long long) a * p + b;
 
-                if (!isprime(p)) break;
-                if ((__int128) p * z > 1e15) break;
+                if (!isprime(p) || (__int128) p * z > 1e15) break;
 
                 z *= p;
                 if (n > 1) zeisel.emplace_back(z);
