@@ -22,7 +22,7 @@ public class amazing {
 
     static void dfs(int x, int y, int prev, boolean[][] visited) throws IOException {
         visited[x][y] = true;
-        int[] dx = {0, 0, 1, -1}, dy = {1, -1, 0, 0};
+        int[] dx = {1, -1, 0, 0}, dy = {0, 0, 1, -1};
         for (int i = 0; i < 4; i++)
             if (!visited[x + dx[i]][y + dy[i]] && i != prev && send(i))
                 dfs(x + dx[i], y + dy[i], i ^ 1, visited);
