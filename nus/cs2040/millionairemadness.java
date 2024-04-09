@@ -28,7 +28,7 @@ public class millionairemadness {
     }
 
     static boolean bfs(int len, int[][] vault) {
-        int[] dx = {-1, 0, 1, 0}, dy = {0, 1, 0, -1};
+        int[] dx = {1, -1, 0, 0}, dy = {0, 0, 1, -1};
         int m = vault.length, n = vault[0].length;
 
         var visited = new boolean[m][n];
