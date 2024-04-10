@@ -10,19 +10,18 @@ public class hyacinth {
         var adjList = new ArrayList[n + 1];
         for (int i = 1; i <= n; i++) adjList[i] = new ArrayList<Integer>();
         
-        for (int m = 0; m < n - 1; m++) {
+        for (int i = 0; i < n - 1; i++) {
             var line = br.readLine().split(" ");
             adjList[Integer.parseInt(line[0])].add(Integer.parseInt(line[1]));
             adjList[Integer.parseInt(line[1])].add(Integer.parseInt(line[0]));
         }
         
         var q = new ArrayDeque<Integer>();
-        for (int i = 1; i <= n; i++) {
+        for (int i = 1; i <= n; i++) 
             if (adjList[i].size() == 1) {
                 q.add(i);
                 break;
             }
-        }
         
         var freq = new int[n + 1][2];
         for (int i = 1; i <= n; i++) Arrays.fill(freq[i], 1);
