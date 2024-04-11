@@ -29,9 +29,9 @@ int main() {
     vector<long long> fact(a + c + m + 1, 1), fact_inv(a + c + m + 1, 1), p2(a + c + m + 1, 1);
     auto prepare = [&](vector<long long> &fact, vector<long long> &fact_inv, vector<long long> &p2, int mod) {
         vector<long long> inv(a + c + m + 1, 1);
-        for (int i = 2; i <= a + c + m; i++) inv[i] = ((mod - mod / i) * inv[mod % i]) % mod;
 
         for (int i = 1; i <= a + c + m; i++) {
+            if (i > 1) inv[i] = ((mod - mod / i) * inv[mod % i]) % mod;
             fact[i] = (i * fact[i - 1]) % mod;
             fact_inv[i] = (inv[i] * fact_inv[i - 1]) % mod;
             p2[i] = (p2[i - 1] * 2) % mod;
