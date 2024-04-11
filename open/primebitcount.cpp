@@ -65,7 +65,7 @@ int main() {
 
     auto primes = sieve(k);
     for (int p : primes) {
-        if (p == 2 || p == 3) continue;
+        if (p < 5) continue;
         count = (count + C(k, p, MODULO, fact, fact_inv)) % MODULO;
     }
 
