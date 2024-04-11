@@ -31,9 +31,11 @@ int main() {
         vector<long long> inv(a + c + m + 1, 1);
         for (int i = 2; i <= a + c + m; i++) inv[i] = ((mod - mod / i) * inv[mod % i]) % mod;
 
-        for (int i = 1; i <= a + c + m; i++) fact[i] = (i * fact[i - 1]) % mod;
-        for (int i = 1; i <= a + c + m; i++) fact_inv[i] = (inv[i] * fact_inv[i - 1]) % mod;
-        for (int i = 1; i <= a + c + m; i++) p2[i] = (p2[i - 1] * 2) % mod;
+        for (int i = 1; i <= a + c + m; i++) {
+            fact[i] = (i * fact[i - 1]) % mod;
+            fact_inv[i] = (inv[i] * fact_inv[i - 1]) % mod;
+            p2[i] = (p2[i - 1] * 2) % mod;
+        }
     };
 
     prepare(fact, fact_inv, p2, MODULO);
