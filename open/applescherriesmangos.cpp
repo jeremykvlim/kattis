@@ -9,9 +9,10 @@ long long C(int n, int k, int p, vector<long long> &fact, vector<long long> &fac
     return (fact[n] * fact_inv[k] % p * fact_inv[n - k] % p) % p;
 }
 
-long long P(int n, int k1, int k2, int k3, int p, vector<long long> &fact, vector<long long> &fact_inv) {
+long long C(int n, int k1, int k2, int k3, int p, vector<long long> &fact, vector<long long> &fact_inv) {
     if (k1 < 0 || k1 > n || k2 < 0 || k2 > n || k3 < 0 || k3 > n) return 0;
-    if (n >= p || k1 >= p || k2 >= p || k3 >= p) return (P(n / p, k1 / p, k2 / p, k3 / p, p, fact, fact_inv) * P(n % p, k1 % p, k2 % p, k3 % p, p, fact, fact_inv)) % p;
+    if (n >= p || k1 >= p || k2 >= p || k3 >= p) return (C(n / p, k1 / p, k2 / p, k3 / p, p, fact, fact_inv) * 
+                                                         C(n % p, k1 % p, k2 % p, k3 % p, p, fact, fact_inv)) % p;
     return (fact[n] * fact_inv[k1] % p * fact_inv[k2] % p * fact_inv[k3] % p) % p;
 }
 
@@ -46,7 +47,7 @@ int main() {
             int j = i + c - m, k = a - i - j;
             if (m - i - k < 0) continue;
 
-            w = (w + P(i + j + k, i, j, k, MODULO, fact, fact_inv) * C(m - i - k + a - 1, a - 1, MODULO, fact, fact_inv) % MODULO * p2[k] % MODULO) % MODULO;
+            w = (w + C(i + j + k, i, j, k, MODULO, fact, fact_inv) * C(m - i - k + a - 1, a - 1, MODULO, fact, fact_inv) % MODULO * p2[k] % MODULO) % MODULO;
         }
 
         return w;
