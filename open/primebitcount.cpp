@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-constexpr long long MODULO = 1e9 + 607;
+constexpr int MODULO = 1e9 + 607;
 
 long long C(long long n, long long k, int p, vector<long long> &fact, vector<long long> &fact_inv) {
     if (k < 0 || k > n) return 0;
