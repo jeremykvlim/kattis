@@ -34,7 +34,7 @@ public class millionairemadness {
         var visited = new boolean[m][n];
         visited[0][0] = true;
         var q = new ArrayDeque<Pair>();
-        q.offer(new Pair(0, 0));
+        q.add(new Pair(0, 0));
         while (!q.isEmpty()) {
             var curr = q.poll();
 
@@ -42,11 +42,10 @@ public class millionairemadness {
                 int x = curr.first + dx[i], y = curr.second + dy[i];
                 if (!(0 <= x && x < m && 0 <= y && y < n) || visited[x][y]) continue;
 
-                int diff = Math.abs(vault[x][y] - vault[curr.first][curr.second]);
-                if (vault[x][y] <= vault[curr.first][curr.second] || diff <= len) {
+                if (vault[x][y] - vault[curr.first][curr.second] <= len) {
                     if (x == m - 1 && y == n - 1) return true;
                     visited[x][y] = true;
-                    q.offer(new Pair(x, y));
+                    q.add(new Pair(x, y));
                 }
             }
         }
