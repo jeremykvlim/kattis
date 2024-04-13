@@ -2,7 +2,7 @@
 using namespace std;
 
 bool cut1(string &s) {
-    string temp = s;
+    auto temp = s;
     transform(temp.begin(), temp.end(), temp.begin(), ::tolower);
 
     int len = s.size(), j = -1;
@@ -33,7 +33,7 @@ bool cut2(string &s, int &arm) {
 bool cut3(string &s, int &leg) {
     if (s.size() < 4) return false;
 
-    string temp = s;
+    auto temp = s;
     transform(temp.begin(), temp.end(), temp.begin(), ::tolower);
 
     int len = s.size(), j = -1;
@@ -57,7 +57,7 @@ bool cut3(string &s, int &leg) {
 }
 
 void cut4(string &s) {
-    string temp = s;
+    auto temp = s;
     transform(temp.begin(), temp.end(), temp.begin(), ::tolower);
 
     int len = s.size(), j = -1, k = rand() % len;
@@ -67,7 +67,7 @@ void cut4(string &s) {
             break;
         }
 
-    if (k > j) swap(k, j);
+    if (j < k) swap(j, k);
     int l = rand() % (j - k);
     auto s1 = s.substr(k + 1, l) + (char) tolower(s[k]) + s.substr(0, k), s2 = s.substr(j + 1) + (char) toupper(s[j]) + s.substr(k + l + 1, j - k - l - 1);
     if (s[j] == s[k]) {
