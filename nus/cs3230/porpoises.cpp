@@ -16,7 +16,7 @@ vector<vector<long long>> matmul(vector<vector<long long>> &a, vector<vector<lon
     vector<vector<long long>> c(r1, vector<long long>(c2, 0));
     for (int i = 0; i < r1; i++)
         for (int j = 0; j < c2; j++)
-            for (int k = 0; k < r2; k++) c[i][j] += (a[i][k] * b[k][j]) % MODULO;
+            for (int k = 0; k < r2; k++) c[i][j] = (c[i][j] + (a[i][k] * b[k][j]) % MODULO) % MODULO;
 
     return c;
 }
