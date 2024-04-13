@@ -7,31 +7,40 @@ public class lostmap {
         var pw = new PrintWriter(System.out);
 
         int n = Integer.parseInt(br.readLine());
-        var dist = new int[n][n];
+        var adjMatrix = new int[n][n];
+        for (int i = 0; i < n; i++) adjMatrix[i] = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
 
-        for (int i = 0; i < n; i++)
-            dist[i] = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
-
-        var adjMatrix = new int[n][2];
-        for (int i = 1; i < n; i++)
-            adjMatrix[i][0] = dist[0][i];
-
-        for (int i = 1; i < n; i++) {
-            int v = 1, min = Integer.MAX_VALUE;
-            for (int u = 1; u < n; u++) 
-                if (adjMatrix[u][0] < min) {
-                    min = adjMatrix[u][0];
-                    v = u;
+        var dist = new int[n];
+        Arrays.fill(dist, Integer.MAX_VALUE);
+        dist[0] = 0;
+        var visited = new boolean[n];
+        var mst = new Edge[n - 1];
+        for (int i = 0; i < n; i++) {
+            int d = Integer.MAX_VALUE, j = 0;
+            for (int k = 0; k < n; k++)
+                if (!visited[k] && d > dist[k]) {
+                    d = dist[k];
+                    j = k;
                 }
-            
-            adjMatrix[v][0] = Integer.MAX_VALUE;
-            pw.println((adjMatrix[v][1] + 1) + " " + (v + 1));
-            for (int u = 1; u < n; u++) 
-                if (adjMatrix[u][0] != Integer.MAX_VALUE && u != v && adjMatrix[u][0] > dist[v][u]) {
-                    adjMatrix[u][0] = dist[v][u];
-                    adjMatrix[u][1] = v;
+
+            visited[j] = true;
+            for (int k = 1; k < n; k++)
+                if (!visited[k] && dist[k] > adjMatrix[j][k]) {
+                    dist[k] = adjMatrix[j][k];
+                    mst[k - 1] = new Edge(Math.min(j, k) + 1, Math.max(j, k) + 1);
                 }
         }
+        
+        for (var e : mst) pw.println(e.v + " " + e.u);
         pw.flush();
+    }
+
+    static class Edge {
+        int v, u;
+
+        Edge(int f, int s) {
+            v = f;
+            u = s;
+        }
     }
 }
