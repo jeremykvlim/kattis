@@ -18,7 +18,6 @@ int main() {
         sort(temp_h.rbegin(), temp_h.rend());
         sort(temp_m.rbegin(), temp_m.rend());
 
-
         int n_h = n - h[i], n_m = n - m[i], s = 0;
         auto sw = [&](int n, vector<int> temp) {
             for (int j = 0; j < k && n > 0; j++) {
