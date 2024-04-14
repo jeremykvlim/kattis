@@ -1,6 +1,3 @@
-import java.io.*;
-import java.util.*;
-
 public class dominos {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
@@ -15,32 +12,39 @@ public class dominos {
 
             var indegree = new int[n + 1];
             while (m-- > 0) {
-                var edge = br.readLine().split(" ");
-                int x = Integer.parseInt(edge[0]), y = Integer.parseInt(edge[1]);
+                var vertices = br.readLine().split(" ");
+                int x = Integer.parseInt(vertices[0]), y = Integer.parseInt(vertices[1]);
 
                 adjList[x].add(y);
                 indegree[y]++;
             }
 
-            var visited = new boolean[n + 1];
             int count = 0;
-            for (int i = 1; i <= n; i++) {
-                if (dfs(visited, i, i, adjList)) indegree[i]--;
-                if (indegree[i] == 0) count++;
-            }
+            var visited = new boolean[n + 1];
+            for (int i = 1; i <= n; i++)
+                if (!visited[i] && indegree[i] == 0) {
+                    count++;
+                    dfs(i, visited, adjList);
+                }
+
+            for (int i = 1; i <= n; i++)
+                if (!visited[i])
+                    for (var j : adjList[i]) adjList[(int) j].add(i);
+
+            for (int i = 1; i <= n; i++)
+                if (!visited[i]) {
+                    count++;
+                    dfs(i, visited, adjList);
+                }
 
             System.out.println(count);
         }
     }
 
-    static boolean dfs(boolean[] visited, int v, int root, ArrayList[] adjList) {
+    static void dfs(int v, boolean[] visited, ArrayList[] adjList) {
         visited[v] = true;
 
-        for (var u : adjList[v]) {
-            if ((int) u == root) return true;
-            else if (!visited[(int) u]) return dfs(visited, (int) u, root, adjList);
-        }
-
-        return false;
+        for (var u : adjList[v])
+            if (!visited[(int) u]) dfs((int) u, visited, adjList);
     }
 }
