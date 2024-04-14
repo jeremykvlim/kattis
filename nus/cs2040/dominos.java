@@ -1,3 +1,6 @@
+import java.io.*;
+import java.util.*;
+
 public class dominos {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
