@@ -4,40 +4,50 @@ import java.util.*;
 public class dominos {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
-        var pw = new PrintWriter(System.out);
 
         int t = Integer.parseInt(br.readLine());
         while (t-- > 0) {
             var inputs = br.readLine().split(" ");
             int n = Integer.parseInt(inputs[0]), m = Integer.parseInt(inputs[1]);
 
-            var sets = new int[n + 1];
-            for (int i = 1; i <= n; i++) sets[i] = i;
-
-            var visited = new boolean[n + 1];
-            int disjoint = n;
+            var adjList = new ArrayList[n + 1];
+            for (int i = 1; i <= n; i++) adjList[i] = new ArrayList<Integer>();
+            
+            var indegree = new int[n + 1];
             while (m-- > 0) {
-                var edge = br.readLine().split(" ");
-                int x = Integer.parseInt(edge[0]), y = Integer.parseInt(edge[1]),
-                    x_set = find(x, sets), y_set = find(y, sets);
+                var vertices = br.readLine().split(" ");
+                int x = Integer.parseInt(vertices[0]), y = Integer.parseInt(vertices[1]);
 
-                if (!visited[y]) {
-                    visited[y] = true;
-                    n--;
-                }
-
-                if (x_set != y_set) {
-                    sets[y_set] = x_set;
-                    disjoint--;
-                }
+                adjList[x].add(y);
+                indegree[y]++;
             }
 
-            pw.println(Math.max(disjoint, n));
+            int count = 0;
+            var visited = new boolean[n + 1];
+            for (int i = 1; i <= n; i++)
+                if (!visited[i] && indegree[i] == 0) {
+                    count++;
+                    dfs(i, visited, adjList);
+                }
+
+            for (int i = 1; i <= n; i++)
+                if (!visited[i])
+                    for (var j : adjList[i]) adjList[(int) j].add(i);
+
+            for (int i = 1; i <= n; i++)
+                if (!visited[i]) {
+                    count++;
+                    dfs(i, visited, adjList);
+                }
+
+            System.out.println(count);
         }
-        pw.flush();
     }
 
-    static int find(int p, int[] sets) {
-        return (sets[p] == p) ? p : (sets[p] = find(sets[p], sets));
+    static void dfs(int v, boolean[] visited, ArrayList[] adjList) {
+        visited[v] = true;
+
+        for (var u : adjList[v])
+            if (!visited[(int) u]) dfs((int) u, visited, adjList);
     }
 }
