@@ -25,7 +25,7 @@ public class ballotboxes {
                 else l = m;
             }
             
-            pw.println(l + 1);
+            pw.println(r);
             br.readLine();
         }
         pw.flush();
