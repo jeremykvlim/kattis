@@ -20,9 +20,11 @@ public class ballotboxes {
                 m = l + (r - l) / 2;
                 int boxes = 0;
                 for (int c : cities) boxes += (c + m) / m;
+                
                 if (boxes <= b) r = m;
                 else l = m;
             }
+            
             pw.println(l + 1);
             br.readLine();
         }
