@@ -12,14 +12,14 @@ public class ballotboxes {
             var cities = new int[n];
             int l = 1, r = -1, m;
             for (int i = 0; i < n; i++) {
-                cities[i] = Integer.parseInt(br.readLine()) - 1;
-                r = Math.max(cities[i] + 1, r);
+                cities[i] = Integer.parseInt(br.readLine());
+                r = Math.max(cities[i], r);
             }
 
             while (l + 1 < r) {
                 m = l + (r - l) / 2;
                 int boxes = 0;
-                for (int c : cities) boxes += (c + m) / m;
+                for (int c : cities) boxes += (c - 1) / m + 1;
                 
                 if (boxes <= b) r = m;
                 else l = m;
