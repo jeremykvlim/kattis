@@ -18,7 +18,7 @@ public class jetpack {
         var pw = new PrintWriter(System.out);
 
         int n = Integer.parseInt(br.readLine());
-        char[][] field = new char[10][n];
+        var field = new char[10][n];
         for (int i = 0; i < field.length; i++) field[i] = br.readLine().toCharArray();
 
         var moves = new ArrayList<Integer>();
