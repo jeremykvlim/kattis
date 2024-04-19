@@ -24,10 +24,10 @@ int main() {
         int v = q.front();
         q.pop();
 
-        for (auto &u : adj_list[v])
-            if (profit[u.first] < min(w, u.second + profit[v])) {
-                profit[u.first] = min(w, u.second + profit[v]);
-                q.emplace(u.first);
+        for (auto &[u, t] : adj_list[v])
+            if (profit[u] < min(w, t + profit[v])) {
+                profit[u] = min(w, t + profit[v]);
+                q.emplace(u);
             }
     }
 
