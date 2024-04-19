@@ -36,7 +36,6 @@ int main() {
     int n, m, a, b, c, d;
     cin >> n >> m >> a >> b >> c >> d;
 
-
     auto encode = [](long long n) -> long long {
         if (!n) return 1;
 
