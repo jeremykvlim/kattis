@@ -4,25 +4,25 @@ using namespace std;
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    
+
     int n, k;
-    multiset<int> classrooms;
     cin >> n >> k;
 
     vector<pair<int, int>> activity(n);
-    for (auto &a : activity) cin >> a.first >> a.second;
+    for (auto &[s, f] : activity) cin >> s >> f;
     sort(activity.begin(), activity.end());
 
-    int most = 0;
-    for (auto &a : activity)
-        if (classrooms.size() < k || (*classrooms.begin()) < a.first) {
+    multiset<int> classrooms;
+    int count = 0;
+    for (auto [s, f] : activity)
+        if (classrooms.size() < k || (*classrooms.begin()) < s) {
             if (classrooms.size() == k) classrooms.erase(classrooms.begin());
-            classrooms.insert(a.second);
-            most++;
-        } else if ((*classrooms.rbegin()) > a.second) {
+            classrooms.emplace(f);
+            count++;
+        } else if ((*classrooms.rbegin()) > f) {
             classrooms.erase(--classrooms.end());
-            classrooms.insert(a.second);
+            classrooms.emplace(f);
         }
 
-    cout << most;
+    cout << count;
 }
