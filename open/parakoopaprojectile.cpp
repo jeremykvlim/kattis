@@ -9,7 +9,7 @@ int main() {
     cin >> n;
 
     vector<pair<double, double>> coords(n);
-    for (auto &c : coords) cin >> c.first >> c.second;
+    for (auto &[x, y] : coords) cin >> x >> y;
     sort(coords.begin(), coords.end());
 
     auto dist = DBL_MAX;
