@@ -15,7 +15,6 @@ public class humancannonball {
         for (int i = 1; i < n + 1; i++) coords[i] = Arrays.stream(br.readLine().split(" ")).mapToDouble(Double::parseDouble).toArray();
 
         var adjMatrix = new double[n + 2][n + 2];
-
         for (int i = 1; i < n + 2; i++)
             adjMatrix[0][i] = Math.hypot(coords[0][0] - coords[i][0], coords[0][1] - coords[i][1]) / 5;
 
