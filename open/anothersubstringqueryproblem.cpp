@@ -78,9 +78,9 @@ vector<int> sais(vector<int> &str, int range) {
     return sa;
 }
 
-vector<int> suffix_array(string &s, int ascii_range = 128) {
+vector<int> suffix_array(string &s, int range = 128) {
     vector<int> str(s.begin(), s.end());
-    return sais(str, ascii_range);
+    return sais(str, range);
 }
 
 struct Hash {
