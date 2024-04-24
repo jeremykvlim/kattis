@@ -12,32 +12,31 @@ long long pref_sum(int i, vector<long long> &fenwick) {
 }
 
 tuple<long long, long long, long long> operator +(tuple<long long, long long, long long> t1, tuple<long long, long long, long long> t2) {
-    auto [i1, j1, k1] = t1;
-    auto [i2, j2, k2] = t2;
-    return {i1 + i2, j1 + j2, i1 * j2 + k1 + k2};
+    auto [x1, y1, z1] = t1;
+    auto [x2, y2, z2] = t2;
+    return {x1 + x2, y1 + y2, x1 * y2 + z1 + z2};
 }
 
 tuple<long long, long long, long long> operator *(tuple<long long, long long, long long> t, long long v) {
-    auto [i, j, k] = t;
-    return {i * v, j * v, i * j * (v * (v - 1) / 2) + k * v};
+    auto [x, y, z] = t;
+    return {v * x, v * y, (v * (v - 1) / 2) * x * y  + v * z};
 }
 
-tuple<long long, long long, long long> calc(long long range, long long a, long long m, long long b, tuple<long long, long long, long long> t1, tuple<long long, long long, long long> t2) {
+tuple<long long, long long, long long> calc(long long range, long long a, long long x, long long b, tuple<long long, long long, long long> t1, tuple<long long, long long, long long> t2) {
     if (!range) return {0, 0, 0};
+    if (x >= b) return calc(range, a, x % b, b, t1, t2) + t1 * (x / b);
+    if (a >= b) return calc(range, a % b, x, b, t2 * (a / b) + t1, t2);
 
-    if (m >= b) return calc(range, a, m % b, b, t1, t2) + t2 * (m / b);
-    if (a >= b) return calc(range, a % b, m, b, t1, t1 * (a / b) + t2);
+    auto r = (a * range + x) / b;
+    if (!r) return t1 * range;
 
-    auto r = (a * range + m) / b;
-    if (!r) return t2 * range;
-
-    return t2 * ((b - m - 1) / a) + t1 + calc(r - 1, b, (b - m - 1) % a, a, t2, t1) + t2 * (range - (b * r - m - 1) / a);
+    return t1 * ((b - x - 1) / a) + t2 + calc(r - 1, b, (b - x - 1) % a, a, t2, t1) + t1 * (range - (b * r - x - 1) / a);
 }
 
 long long sum(int l, int r, int a, int b) {
-    int m = ((long long) a * ((l - 1) % b) + b) % b;
-    auto [i, j, k] = calc(r - l + 1, a, m, b, {-b, 0, 0}, {a, 1, a});
-    return m * j + k;
+    int x = ((long long) a * (l - 1)) % b;
+    auto [_, y, z] = calc(r - l + 1, a, x, b, {a, 1, a}, {-b, 0, 0});
+    return x * y + z;
 }
 
 int main() {
@@ -47,8 +46,8 @@ int main() {
     int n, q;
     cin >> n >> q;
 
-    vector<tuple<int, int, int, int>> queries(q);
     vector<int> boxes;
+    vector<tuple<int, int, int, int>> queries(q);
     for (auto &[l, r, a, b] : queries) {
         int c;
         cin >> c >> l >> r;
