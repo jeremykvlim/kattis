@@ -10,27 +10,28 @@ int main() {
     int n, l;
     cin >> n >> l;
 
-    vector<int> G(l);
-    unordered_set<int> g;
+    vector<int> g(l);
+    vector<bool> seen(n + 1);
     for (int i = 0; i < l; i++) {
-        cin >> G[i];
-        
-        if (i && G[i - 1] >= G[i]) {
+        cin >> g[i];
+
+        if (i && g[i - 1] >= g[i]) {
             cout << 0;
             exit(0);
         }
-        g.insert(G[i]);
+        
+        seen[g[i]] = true;
     }
 
-    if (G.back() != n) {
+    if (g.back() != n) {
         cout << 0;
         exit(0);
     }
-    
+
     auto a = 1LL;
     int count = 0;
     for (int i = n; i; i--)
-        if (!g.count(i)) a = a * (G.size() - (int) (lower_bound(G.begin(), G.end(), i) - G.begin()) + count++) % MODULO;
+        if (!seen[i]) a = (a * (g.size() - (lower_bound(g.begin(), g.end(), i) - g.begin()) + count++)) % MODULO;
 
     cout << a;
 }
