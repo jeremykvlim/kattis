@@ -8,7 +8,7 @@ int main() {
     int n, v;
     while (cin >> n >> v && n && v) {
         vector<pair<int, int>> points(n);
-        for (auto &[x, y]: points) cin >> x >> y;
+        for (auto &[x, y] : points) cin >> x >> y;
         points.emplace_back(0, 0);
 
         vector<double> sun(n);
