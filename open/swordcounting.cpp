@@ -22,7 +22,7 @@ int main() {
 
     auto subtrees = 0LL;
     for (int u = 1; u <= n; u++) {
-        for (int v: adj_list[u]) subtrees += (count[u] - 1) * (count[u] - 2) * (count[u] - 3) / 6 * (count[v] - 1);
+        for (int v : adj_list[u]) subtrees += (count[u] - 1) * (count[u] - 2) * (count[u] - 3) / 6 * (count[v] - 1);
         adj_list[u].clear();
     }
 
