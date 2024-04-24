@@ -86,14 +86,12 @@ int main() {
                     update(index(r2), sum(r1 - r2 + 1 + r3, r3, a2, b2), fenwick);
                 }
             }
-
             s.emplace(l1, r1, a1, b1, 1, r1 - l1 + 1);
             update(index(r1), sum(1, r1 - l1 + 1, a1, b1), fenwick);
         } else {
             auto [l2, r2, a2, b2, l3, r3] = *s.lower_bound({0, r1, 0, 0, 0, 0});
 
-            if (l1 >= l2) cout << sum(l1 - l2 + l3, r1 - r2 + r3, a2, b2) << "\n";
-            else {
+            if (l1 < l2) {
                 auto rq = pref_sum(index(r1), fenwick) - pref_sum(index(l1 - 1), fenwick);
 
                 if (r1 != r2) rq += sum(l3, r1 - l2 + l3, a2, b2);
@@ -101,7 +99,7 @@ int main() {
                 if (l1 != l2) rq -= sum(l3, l1 - l2 - 1 + l3, a2, b2);
 
                 cout << rq << "\n";
-            }
+            } else cout << sum(l1 - l2 + l3, r1 - r2 + r3, a2, b2) << "\n";
         }
     }
 }
