@@ -40,9 +40,9 @@ int main() {
             for (auto &[x, y, z] : corners) cin >> x >> y >> z;
 
             for (int j = 0; j < n; j++) {
-                auto &prev = corners[j], &curr = corners[(j + 1) % n];
+                auto prev = corners[j], curr = corners[(j + 1) % n];
 
-                for (auto &k : connections[{min(prev, curr), max(prev, curr)}]) {
+                for (int k : connections[{min(prev, curr), max(prev, curr)}]) {
                     adj_list[i].emplace_back(k);
                     adj_list[k].emplace_back(i);
                 }
