@@ -21,7 +21,7 @@ void identify(set<vector<int>> &states, unordered_set<vector<int>, Hash> &visite
     sort(groups.begin(), groups.end());
     if (visited.count(groups)) return;
 
-    visited.insert(groups);
+    visited.emplace(groups);
     if (pos == curr.size()) {
         if (mask & 1) {
             if (groups.size() == n) {
