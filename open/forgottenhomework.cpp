@@ -33,7 +33,7 @@ vector<long long> berlekamp_massey(vector<long long> seq) {
 
         auto temp1 = prev;
         for (auto &c : prev) c = (MODULO - c) % MODULO;
-        prev.insert(prev.begin(), 1);
+        prev.emplace(prev.begin(), 1);
 
         auto base = 0LL;
         for (int j = 1; j <= prev.size(); j++) base = (base + prev[j - 1] * seq[len + 1 - j]) % MODULO;
