@@ -43,8 +43,8 @@ int main() {
     }
 
     sort(problems.begin(), problems.end());
-    long long solved = 0, penalty = 0, elapsed = 0;
-    for (auto [ti, count]: problems) {
+    auto solved = 0LL, penalty = 0LL, elapsed = 0LL;
+    for (auto [ti, count] : problems) {
         auto solvable = min(t / ti, (long long) count);
         t -= ti * solvable;
         if (t < 0) break;
