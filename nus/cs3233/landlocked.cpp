@@ -9,7 +9,7 @@ int main() {
     cin >> n >> m;
 
     vector<string> countries(n);
-    for (auto &c: countries) cin >> c;
+    for (auto &c : countries) cin >> c;
 
     vector<vector<bool>> visited(n, vector<bool>(m, false));
     vector<vector<int>> dist(n, vector<int>(m, INT_MAX));
