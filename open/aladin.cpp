@@ -78,12 +78,12 @@ int main() {
                 s.erase(it);
                 update(index(r2), -sum(l3, r3, a2, b2), fenwick);
                 if (l2 < l1) {
-                    s.emplace(l2, l1 - 1, a2, b2, l3, l1 - l2 - 1 + l3);
-                    update(index(l1 - 1), sum(l3, l1 - l2 - 1 + l3, a2, b2), fenwick);
+                    s.emplace(l2, l1 - 1, a2, b2, l3, l1 - l2 + l3 - 1);
+                    update(index(l1 - 1), sum(l3, l1 - l2 + l3 - 1, a2, b2), fenwick);
                 }
                 if (r1 < r2) {
-                    s.emplace(r1 + 1, r2, a2, b2, r1 - r2 + 1 + r3, r3);
-                    update(index(r2), sum(r1 - r2 + 1 + r3, r3, a2, b2), fenwick);
+                    s.emplace(r1 + 1, r2, a2, b2, r1 - r2 + r3 + 1, r3);
+                    update(index(r2), sum(r1 - r2 + r3 + 1, r3, a2, b2), fenwick);
                 }
             }
             s.emplace(l1, r1, a1, b1, 1, r1 - l1 + 1);
@@ -96,7 +96,7 @@ int main() {
 
                 if (r1 != r2) rq += sum(l3, r1 - l2 + l3, a2, b2);
                 auto [l2, r2, a2, b2, l3, r3] = *s.lower_bound({0, l1, 0, 0, 0, 0});
-                if (l1 != l2) rq -= sum(l3, l1 - l2 - 1 + l3, a2, b2);
+                if (l1 != l2) rq -= sum(l3, l1 - l2 + l3 - 1, a2, b2);
 
                 cout << rq << "\n";
             } else cout << sum(l1 - l2 + l3, r1 - r2 + r3, a2, b2) << "\n";
