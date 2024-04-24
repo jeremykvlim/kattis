@@ -8,22 +8,22 @@ int main() {
     int n;
     cin >> n;
 
-    vector<int> value(n + 1), parent(n + 1), index(n + 1);
-    for (int i = 1; i <= n; i++) cin >> value[i] >> parent[i];
-    iota(index.begin(), index.end(), 0);
+    vector<int> v(n + 1), p(n + 1), indices(n + 1);
+    for (int i = 1; i <= n; i++) cin >> v[i] >> p[i];
+    iota(indices.begin(), indices.end(), 0);
 
     vector<multiset<int>> sets(n + 1);
-    for (int i = n; i >= 1; i--) {
-        auto it = sets[index[i]].upper_bound(value[i] - 1);
-        if (it != sets[index[i]].end()) sets[index[i]].erase(it);
-        sets[index[i]].insert(value[i]);
-      
-        if (sets[index[i]].size() < sets[index[parent[i]]].size()) sets[index[parent[i]]].insert(sets[index[i]].begin(), sets[index[i]].end());
+    for (int i = n; i; i--) {
+        auto it = sets[indices[i]].upper_bound(v[i] - 1);
+        if (it != sets[indices[i]].end()) sets[indices[i]].erase(it);
+        sets[indices[i]].emplace(v[i]);
+
+        if (sets[indices[i]].size() < sets[indices[p[i]]].size()) sets[indices[p[i]]].insert(sets[indices[i]].begin(), sets[indices[i]].end());
         else {
-            sets[index[i]].insert(sets[index[parent[i]]].begin(), sets[index[parent[i]]].end());
-            index[parent[i]] = index[i];
+            sets[indices[i]].insert(sets[indices[p[i]]].begin(), sets[indices[p[i]]].end());
+            indices[p[i]] = indices[i];
         }
     }
 
-    cout << sets[index[0]].size();
+    cout << sets[indices[0]].size();
 }
