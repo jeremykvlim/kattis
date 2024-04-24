@@ -31,7 +31,7 @@ int main() {
     cin >> n;
 
     vector<pair<int, int>> houses(n);
-    for (auto &[x, y]: houses) cin >> x >> y;
+    for (auto &[x, y] : houses) cin >> x >> y;
 
     vector<double> dist(1 << n, 0), dp(1 << n, LLONG_MAX);
     dp[0] = 0;
