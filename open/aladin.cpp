@@ -69,7 +69,7 @@ int main() {
     auto cmp = [](auto t1, auto t2) {return get<1>(t1) < get<1>(t2);};
     set<tuple<int, int, int, int, int, int>, decltype(cmp)> s(cmp);
     s.emplace(1, n, 0, 1, 1, n);
-    for (auto [l1, r1, a1, b1] : queries) {
+    for (auto [l1, r1, a1, b1] : queries) 
         if (a1 && b1) {
             for (auto it = s.lower_bound({0, l1, 0, 0, 0, 0}); it != s.end(); it = s.lower_bound({0, l1, 0, 0, 0, 0})) {
                 auto [l2, r2, a2, b2, l3, r3] = *it;
@@ -101,5 +101,4 @@ int main() {
                 cout << rq << "\n";
             } else cout << sum(l1 - l2 + l3, r1 - r2 + r3, a2, b2) << "\n";
         }
-    }
 }
