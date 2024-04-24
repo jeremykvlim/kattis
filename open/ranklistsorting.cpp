@@ -58,14 +58,14 @@ int main() {
         auto it1 = find(rank.begin(), rank.end(), k);
         int i = it1 - rank.begin() + 1;
         rank.erase(it1);
-        
+
         auto it2 = find(rank.begin(), rank.end(), k + 1);
         int j = it2 - rank.begin() + 1;
-        rank.insert(it2, k);
+        rank.emplace(it2, k);
 
         moves.emplace_back(i, j);
     }
 
     cout << moves.size() << "\n";
-    for (auto [i, j]: moves) cout << i << " " << j << "\n";
+    for (auto [i, j] : moves) cout << i << " " << j << "\n";
 }
