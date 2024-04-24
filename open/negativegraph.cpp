@@ -17,7 +17,8 @@ int main() {
 
         adj_list_pos[a][b] = adj_list_pos[a].count(b) ? min(adj_list_pos[a][b], c) : c;
         if (c < 0) {
-            stations_neg.insert({a, b});
+            stations_neg.emplace(a);
+            stations_neg.emplace(b);
             adj_list_neg[a][b] = adj_list_pos[a][b];
         }
     }
@@ -29,7 +30,7 @@ int main() {
         while (!pq.empty()) {
             auto [d, u] = pq.top();
             pq.pop();
-            
+
             if (visited[u]) continue;
 
             visited[u] = true;
