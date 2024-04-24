@@ -11,13 +11,13 @@ long long pref_sum(int i, vector<long long> &fenwick) {
     return sum;
 }
 
-tuple<long long, long long, long long> operator +(tuple<long long, long long, long long> t1, tuple<long long, long long, long long> t2) {
+tuple<long long, long long, long long> operator+(tuple<long long, long long, long long> t1, tuple<long long, long long, long long> t2) {
     auto [x1, y1, z1] = t1;
     auto [x2, y2, z2] = t2;
     return {x1 + x2, y1 + y2, x1 * y2 + z1 + z2};
 }
 
-tuple<long long, long long, long long> operator *(tuple<long long, long long, long long> t, long long v) {
+tuple<long long, long long, long long> operator*(tuple<long long, long long, long long> t, long long v) {
     auto [x, y, z] = t;
     return {v * x, v * y, (v * (v - 1) / 2) * x * y  + v * z};
 }
