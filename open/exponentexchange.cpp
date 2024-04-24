@@ -18,7 +18,7 @@ int main() {
         for (int j = 0; j < 2; j++) {
             sort(prev[j].begin(), prev[j].end());
             int least = INT_MAX;
-            for (auto [alice, bob]: prev[j]) 
+            for (auto [alice, bob] : prev[j]) 
                 if (least > bob) {
                     least = bob;
                     curr[0].emplace_back(alice + (digits[i] + j), bob);
