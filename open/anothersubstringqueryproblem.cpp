@@ -24,7 +24,7 @@ vector<int> sais(vector<int> &str, int range) {
         fill(sa.begin(), sa.end(), -1);
         vector<int> b(range + 1, 0);
         copy(sum_s.begin(), sum_s.end(), b.begin());
-        for (auto i : lms)
+        for (int i : lms)
             if (i < n) sa[b[str[i]]++] = i;
 
         copy(sum_l.begin(), sum_l.end(), b.begin());
