@@ -34,8 +34,8 @@ int main() {
                     if (j > biggest) return;
                 }
 
-            vector<int> next;
             int h = ((long long) v * b % m + j) % m;
+            vector<int> next;
             for (int i = upper_bound(indices[j].begin(), indices[j].end(), curr[0]) - indices[j].begin(); i < indices[j].size(); i++)
                 for (int l : curr) {
                     if (l >= indices[j][i]) break;
