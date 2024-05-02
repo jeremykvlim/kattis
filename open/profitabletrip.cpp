@@ -25,8 +25,8 @@ int main() {
         q.pop();
 
         for (auto &[u, t] : adj_list[v])
-            if (profit[u] < min(w, t + profit[v])) {
-                profit[u] = min(w, t + profit[v]);
+            if (profit[u] < min(w, profit[v] + t)) {
+                profit[u] = min(w, profit[v] + t);
                 q.emplace(u);
             }
     }
