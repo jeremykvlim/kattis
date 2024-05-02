@@ -52,5 +52,5 @@ int main() {
     for (int i = 0; i < end.size(); i++)
         if (!visited[end[i]]) dominant.emplace_back(S[i]);
     sort(dominant.begin(), dominant.end());
-    for (auto &d : dominant) cout << d << "\n";
+    for (auto d : dominant) cout << d << "\n";
 }
