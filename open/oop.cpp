@@ -72,10 +72,10 @@ int main() {
     auto dfs = [&](auto &&self, int curr) -> void {
         start[curr] = ++count;
 
-        for (auto &h : word_hash[curr])
+        for (auto h : word_hash[curr])
             if (hashes.count(h)) shared[h].emplace_back(start[curr]);
 
-        for (auto &c : trie[curr].next)
+        for (auto c : trie[curr].next)
             if (c != -1) self(self, c);
 
         end[curr] = ++count;
