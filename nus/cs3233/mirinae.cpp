@@ -17,7 +17,7 @@ int main() {
 
     vector<bool> visited(n, false);
     int count = 0;
-    auto dfs = [&](auto &&self, int v, bool guard) {
+    auto dfs = [&](auto &&self, int v, bool guard) -> void {
         visited[v] = true;
         indegree[a[v]]--;
         if (guard) count++;
