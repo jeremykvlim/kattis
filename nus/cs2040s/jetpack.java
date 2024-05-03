@@ -2,17 +2,6 @@ import java.io.*;
 import java.util.*;
 
 public class jetpack {
-    static boolean dfs(int i, int j, int n, char[][] field, ArrayList<Integer> moves) {
-        if (field[i][j] == 'X') return false;
-        if (j == n - 1 || dfs(Math.min(9, i + 1), j + 1, n, field, moves)) return true;
-        field[i][j] = 'X';
-        if (dfs(Math.max(0, i - 1), j + 1, n, field, moves)) {
-            moves.add(j);
-            return true;
-        }
-        return false;
-    }
-
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(System.out);
@@ -28,5 +17,16 @@ public class jetpack {
         pw.println(moves.size());
         moves.forEach(t -> pw.println(t + " 1"));
         pw.flush();
+    }
+
+    static boolean dfs(int i, int j, int n, char[][] field, ArrayList<Integer> moves) {
+        if (field[i][j] == 'X') return false;
+        if (j == n - 1 || dfs(Math.min(9, i + 1), j + 1, n, field, moves)) return true;
+        field[i][j] = 'X';
+        if (dfs(Math.max(0, i - 1), j + 1, n, field, moves)) {
+            moves.add(j);
+            return true;
+        }
+        return false;
     }
 }
