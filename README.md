@@ -20,7 +20,7 @@ Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizat
 
 ---
 
-Kattis compiles using `C++ 17` for [C++](https://open.kattis.com/languages/cpp), `Java 11` for [Java](https://open.kattis.com/languages/java) and `Python 3.8` for [Python](https://open.kattis.com/languages/python3).
+Kattis compiles using `C++ 17` for [C++](https://open.kattis.com/languages/cpp), `Java 17` for [Java](https://open.kattis.com/languages/java) and `Python 3.10` for [Python](https://open.kattis.com/languages/python3).
 
 Problems have to be solved using base programming language libraries or self-coded structures. External libraries, such as `Boost` for C++, `Guava` for Java, `NumPy` for Python 3 and others are not available. However, you are allowed to attach multiple files in one submission, although I never bothered.
 
