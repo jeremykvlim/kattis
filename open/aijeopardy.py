@@ -12,13 +12,11 @@ for i in range(2, min(x + 1, 200)):
             if c > x:
                 r = m
                 break
-        else:
-            if c == x:
-                (n, k) = min((n, k), (m, i))
-                break
-            elif c < x:
-                l = m
-            else:
-                r = m
+        
+        if c == x:
+            (n, k) = min((n, k), (m, i))
+            break
+        elif c < x:
+            l = m
 
 print(n, k)
