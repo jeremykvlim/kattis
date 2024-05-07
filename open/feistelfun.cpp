@@ -10,10 +10,10 @@ int main() {
 
     int upper = m / 2 + 1;
     unordered_map<bitset<80>, long long> seen;
-    bitset<80> y1(1), x1(0), x2(1), y2(0), mask((1LL << m) - 1);
+    bitset<80> x1(0), y1(1), x2(1), y2(0);
 
     auto f = [&](bitset<80> y, int shift = 1) -> bitset<80> {
-        return ((y << shift) >> m) ^ (y << shift) & mask;
+        return ((y << shift) >> m) ^ (y << shift) & bitset<80>((1LL << m) - 1);
     };
 
     for (auto i = 0LL; i < 1 << upper; i++) {
