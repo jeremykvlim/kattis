@@ -125,25 +125,10 @@ int main() {
             continue;
         }
 
-        int l = -1, r = s.size(), m;
-        while (l + 1 < r) {
-            m = l + (r - l) / 2;
+        int first = lower_bound(sa.begin(), sa.end(), 0, [&](int i, int) -> bool {return lexicographical_compare(s.begin() + i, s.end(), t.begin(), t.end());}) - sa.begin(),
+            last = lower_bound(sa.begin() + first, sa.end(), 0, [&](int i, int) -> bool {return mismatch(t.begin(), t.end(), s.begin() + i, s.end()).first == t.end();}) - sa.begin();
 
-            if (s.compare(sa[m], t.size(), t) >= 0) r = m;
-            else l = m;
-        }
-        int first = r;
-
-        l = first, r = s.size();
-        while (l + 1 < r) {
-            m = l + (r - l) / 2;
-
-            if (s.compare(sa[m], t.size(), t)) r = m;
-            else l = m;
-        }
-        int last = l;
-
-        if (last - first + 1 < k || s[sa[last] + t.size() - 1] != t.back()) {
+        if (last - first < k || s[sa[last - 1] + t.size() - 1] != t.back()) {
             cout << "-1\n";
             continue;
         }
@@ -153,8 +138,8 @@ int main() {
             continue;
         }
 
-        vector<int> o(last - first + 1);
-        for (int i = first; i <= last; i++) o[i - first] = sa[i];
+        vector<int> o(last - first);
+        for (int i = first; i < last; i++) o[i - first] = sa[i];
         sort(o.begin(), o.end());
         occurrences[{first, last}] = o;
         cout << o[k - 1] + 1 << "\n";
