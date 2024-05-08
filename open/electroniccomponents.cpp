@@ -20,19 +20,18 @@ int main() {
     vector<vector<pair<int, long long>>> placements(most + 1);
     vector<long long> dp(most + 1, LLONG_MAX);
     dp[0] = 0;
-    for (int i = 0; i < n; i++) {
-        auto [f, t] = components[i];
-        for (int j = 0; j < dp.size(); j++)
-            if (dp[j] != LLONG_MAX) placements[f + j - 2 * min(f, j)].emplace_back(f + j, dp[j] + (f - min(j, f)) * t);
+    for (auto [fi, ti] : components) {
+        for (int i = 0; i < dp.size(); i++)
+            if (dp[i] != LLONG_MAX) placements[fi + i - 2 * min(fi, i)].emplace_back(fi + i, dp[i] + (fi - min(fi, i)) * ti);
 
-        for (int j = 0; j < 2; j++) {
+        for (int i = 0; i < 2; i++) {
             priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<>> pq;
-            for (int k = j; k < dp.size(); k += 2) {
-                while (!pq.empty() && pq.top().second < k) pq.pop();
+            for (int j = i; j < dp.size(); j += 2) {
+                while (!pq.empty() && pq.top().second < j) pq.pop();
 
-                for (auto &p : placements[k]) pq.emplace(p.second - k / 2 * t, p.first);
-                placements[k].clear();
-                dp[k] = !pq.empty() ? pq.top().first + k / 2 * t : LLONG_MAX;
+                for (auto [fj, tj] : placements[j]) pq.emplace(tj - j / 2 * ti, fj);
+                placements[j].clear();
+                dp[j] = !pq.empty() ? pq.top().first + j / 2 * ti : LLONG_MAX;
             }
         }
     }
