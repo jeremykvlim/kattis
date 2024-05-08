@@ -26,8 +26,9 @@ int main() {
     for (int i = 0; i < k && exists; i++)
         if (key[i] == '.')
             for (int j = 0; exists; j++) {
-                string save = key;
+                auto save = key;
                 if (check(i, "FT"[j], key, answers)) break;
+                
                 key = save;
                 if (j) exists = false;
             }
