@@ -17,6 +17,7 @@ int main() {
         vector<int> position(n);
         for (int i = 0; i < n; i++) {
             cin >> boats[i].first >> boats[i].second;
+            
             position[i] = boats[i].first;
             visited[i] = !position[i];
         }
