@@ -49,7 +49,7 @@ bool isprime(long long n) {
 
 vector<long long> prime_divisors(long long n) {
     vector<long long> pd;
-    for (auto i = 1LL; i <= sqrt(n); i++)
+    for (int i = 1; i <= sqrt(n); i++)
         if (!(n % i)) {
             if (isprime(i + 1)) pd.emplace_back(i + 1);
             if (n / i != i && isprime(n / i + 1)) pd.emplace_back(n / i + 1);
