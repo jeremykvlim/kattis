@@ -64,12 +64,12 @@ void dfs(Die curr, vector<vector<int>> &board, gp_hash_table<Die, null_type, Has
         exit(0);
     }
 
-    for (auto d : directions) {
+    for (auto [d, c] : directions) {
         Die next = curr;
-        next.height += d.first.first;
-        next.width += d.first.second;
+        next.height += d.first;
+        next.width += d.second;
         if (next.height < 0 || next.height >= board.size() || next.width < 0 || next.width >= board[0].size()) continue;
-        rotate(next, d.second);
+        rotate(next, c);
 
         if (next.down == -1) next.down = board[next.height][next.width];
         if (next.down != board[next.height][next.width]) continue;
@@ -93,8 +93,8 @@ int main() {
 
     vector<pair<pair<int, int>, char>> directions{{{-1, 0}, 'N'},
                                                   {{1,  0}, 'S'},
-                                                  {{0,  -1}, 'W'},
-                                                  {{0,  1}, 'E'}};
+                                                  {{0,  1}, 'E'},
+                                                  {{0,  -1}, 'W'}};
 
     gp_hash_table<Die, null_type, Hash> visited;
     Die start{-1, board[0][0], -1, -1, -1, -1, 0, 0};
