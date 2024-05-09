@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int kmp(string s) {
+vector<int> prefix_function(string s) {
     vector<int> pi(s.size());
     for (int i = 1; i < s.size(); i++) {
         int j = pi[i - 1];
@@ -10,12 +10,12 @@ int kmp(string s) {
         pi[i] = j;
     }
 
-    return pi.back();
+    return pi;
 }
 
 void dfs(int v, vector<vector<int>> &adj_matrix, vector<bool> &visited, stack<int> &s) {
     visited[v] = true;
-    for (int u = 0; u < adj_matrix.size(); u++) 
+    for (int u = 0; u < adj_matrix.size(); u++)
         if (u != v && !visited[u] && adj_matrix[v][u]) dfs(u, adj_matrix, visited, s);
 
     s.emplace(v);
@@ -34,8 +34,8 @@ int main() {
     vector<vector<int>> adj_matrix(n, vector<int>(n, 0));
     for (int i = 0; i < n; i++)
         for (int j = i + 1; j < n; j++) {
-            adj_matrix[i][j] = kmp(words[i] + words[j]);
-            adj_matrix[j][i] = kmp(words[j] + words[i]);
+            adj_matrix[i][j] = prefix_function(words[i] + words[j]).back();
+            adj_matrix[j][i] = prefix_function(words[j] + words[i]).back();
         }
 
     vector<bool> visited(n);
