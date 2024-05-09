@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-vector<int> kmp(string s) {
+vector<int> prefix_function(string s) {
     vector<int> pi(s.size());
     for (int i = 1; i < s.size(); i++) {
         int j = pi[i - 1];
@@ -35,7 +35,7 @@ int main() {
     string s;
     cin >> n >> s;
 
-    auto pi = kmp(s);
+    auto pi = prefix_function(s);
     stack<int> st;
     for (int i = n; i; i = pi[i - 1])
         if (i > pi[i - 1] * 2) st.emplace(i);
