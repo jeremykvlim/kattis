@@ -1,6 +1,18 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+vector<int> kmp(string s) {
+    vector<int> pi(s.size());
+    for (int i = 1; i < s.size(); i++) {
+        int j = pi[i - 1];
+        while (j && s[i] != s[j]) j = pi[j - 1];
+        if (s[i] == s[j]) j++;
+        pi[i] = j;
+    }
+
+    return pi;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -12,15 +24,9 @@ int main() {
     for (auto &[p, len] : preds) {
         cin >> p;
 
-        vector<int> pref(p.size());
-        for (int j = 1, k = 0; j < p.size(); j++) {
-            while (k && p[j] != p[k]) k = pref[k - 1];
-            if (p[j] == p[k]) k++;
-            pref[j] = k;
-        }
-
-        for (int j = pref.size() - 1; j > 0; j = pref[j] - 1)
-            if (2 * p.size() - pref[j] <= n) len.emplace_back(pref[j]);
+        auto pi = kmp(p);
+        for (int j = pi.size() - 1; j > 0; j = pi[j] - 1)
+            if (2 * p.size() - pi[j] <= n) len.emplace_back(pi[j]);
     }
 
     sort(preds.begin(), preds.end(), [](auto p1, auto p2) {return p1.second < p2.second;});
