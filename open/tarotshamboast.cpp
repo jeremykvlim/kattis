@@ -1,15 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct Prediction {
-    string p;
-    vector<int> len;
-
-    bool operator<(const Prediction &pred) const {
-        return len < pred.len;
-    }
-};
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -17,7 +8,7 @@ int main() {
     int n, s;
     cin >> n >> s;
 
-    vector<Prediction> preds(s);
+    vector<pair<string, vector<int>>> preds(s);
     for (auto &[p, len] : preds) {
         cin >> p;
 
@@ -32,6 +23,6 @@ int main() {
             if (2 * p.size() - pref[j] <= n) len.emplace_back(pref[j]);
     }
 
-    sort(preds.begin(), preds.end());
+    sort(preds.begin(), preds.end(), [](auto p1, auto p2) {return p1.second < p2.second;});
     for (auto &[p, len] : preds) cout << p << "\n";
 }
