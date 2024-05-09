@@ -46,7 +46,7 @@ vector<vector<long long>> matpow(vector<vector<long long>> a, long long n, long 
     return b;
 }
 
-vector<int> kmp(string s) {
+vector<int> prefix_function(string s) {
     vector<int> pi(s.size());
     for (int i = 1; i < s.size(); i++) {
         int j = pi[i - 1];
@@ -80,7 +80,7 @@ int main() {
         cin >> n >> m >> s;
 
         int size = s.size();
-        auto pi = kmp(s);
+        auto pi = prefix_function(s);
         auto fsm = automaton(s, pi);
 
         vector<vector<long long>> count(size, vector<long long>(size, 0));
