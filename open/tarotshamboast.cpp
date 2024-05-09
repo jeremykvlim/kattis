@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-vector<int> kmp(string s) {
+vector<int> prefix_function(string s) {
     vector<int> pi(s.size());
     for (int i = 1; i < s.size(); i++) {
         int j = pi[i - 1];
@@ -24,9 +24,9 @@ int main() {
     for (auto &[p, len] : preds) {
         cin >> p;
 
-        auto pi = kmp(p);
-        for (int j = pi.size() - 1; j > 0; j = pi[j] - 1)
-            if (2 * p.size() - pi[j] <= n) len.emplace_back(pi[j]);
+        auto pi = prefix_function(p);
+        for (int i = pi.size(); i; i = pi[i - 1])
+            if (2 * p.size() - pi[i - 1] <= n) len.emplace_back(pi[i - 1]);
     }
 
     sort(preds.begin(), preds.end(), [](auto p1, auto p2) {return p1.second < p2.second;});
