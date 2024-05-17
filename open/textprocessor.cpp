@@ -60,7 +60,7 @@ struct SuffixTree {
                 pos += r[node] - l[node];
             }
             link[size] = (pos == r[size]) ? node : size + 2;
-            pos = r[node] - (pos - r[size]);
+            pos = r[node] + r[size] - pos;
             size += 2;
 
             add(c);
