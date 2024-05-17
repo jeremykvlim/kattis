@@ -1,0 +1,153 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+struct SuffixTree {
+    struct TrieNode {
+        vector<int> next;
+
+        TrieNode() {
+            next.resize(26, -1);
+        }
+    };
+
+    string s;
+    vector<TrieNode> trie;
+    vector<int> l, r, prev, link;
+    int node = 0, pos = 0, size = 2, index = 0, leaves = 0;
+    long long count = 0;
+    queue<int> order;
+
+    void add(int c) {
+        if (pos >= r[node]) {
+            if (trie[node].next[c] == -1) {
+                trie[node].next[c] = size;
+                leaves++;
+                order.emplace(size);
+
+                l[size] = index;
+                prev[size++] = node;
+                node = link[node];
+                pos = r[node];
+
+                add(c);
+                return;
+            }
+
+            node = trie[node].next[c];
+            pos = l[node];
+        }
+
+        if (pos == -1 || c == s[pos] - 'a') pos++;
+        else {
+            l[size + 1] = index;
+            l[size] = l[node];
+            l[node] = r[size] = pos;
+
+            prev[size + 1] = size;
+            prev[size] = prev[node];
+            prev[node] = size;
+
+            trie[prev[size]].next[s[l[size]] - 'a'] = size;
+            trie[size].next[s[pos] - 'a'] = node;
+            trie[size].next[c] = size + 1;
+            leaves++;
+            order.emplace(size + 1);
+
+            node = link[prev[size]];
+            pos = l[size];
+            while (pos < r[size]) {
+                node = trie[node].next[s[pos] - 'a'];
+                pos += r[node] - l[node];
+            }
+            link[size] = (pos == r[size]) ? node : size + 2;
+            pos = r[node] - (pos - r[size]);
+            size += 2;
+
+            add(c);
+            return;
+        }
+
+        count += leaves;
+        index++;
+    }
+
+    void remove(int i) {
+        int v = order.front();
+        order.pop();
+        if (v == node) {
+            int len = i - pos;
+            count -= len;
+            l[v] += len;
+            pos = l[v];
+
+            node = link[prev[v]];
+            node = trie[node].next[s[pos] - 'a'];
+            while (pos + r[node] - l[node] < i) {
+                pos += r[node] - l[node];
+                node = trie[node].next[s[pos] - 'a'];
+            }
+            pos = l[node] + i - pos;
+            order.emplace(v);
+        } else {
+            leaves--;
+            count -= i - l[v];
+
+            int p = prev[v];
+            trie[p].next[s[l[v]] - 'a'] = -1;
+
+            if (p) {
+                int ch = -1;
+                for (int c : trie[p].next)
+                    if (c != -1) {
+                        if (ch != -1) return;
+                        else ch = c;
+                    }
+
+                trie[prev[p]].next[s[l[p]] - 'a'] = ch;
+                prev[ch] = prev[p];
+                l[ch] -= r[p] - l[p];
+                if (node == p) {
+                    node = ch;
+                    pos = l[ch] + pos - l[p];
+                }
+            }
+        }
+    }
+
+    SuffixTree(string &s) : s(s),
+                            trie(2 * s.size() + 1, TrieNode()),
+                            l(2 * s.size() + 1, 0),
+                            r(2 * s.size() + 1, s.size()),
+                            link(2 * s.size() + 1, 0),
+                            prev(2 * s.size() + 1, 0) {
+        fill(trie[1].next.begin(), trie[1].next.end(), 0);
+        link[0] = 1;
+        l[0] = l[1] = -1;
+        r[0] = r[1] = prev[0] = prev[1] = 0;
+    }
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    string s;
+    int q, w;
+    cin >> s >> q >> w;
+
+    SuffixTree suff_tree(s);
+    for (int i = 0; i < w; i++) suff_tree.add(s[i] - 'a');
+
+    vector<long long> count(s.size() + 1, suff_tree.count);
+    for (int i = w; i < s.size(); i++) {
+        suff_tree.remove(i);
+        suff_tree.add(s[i] - 'a');
+        count[i - w + 2] = suff_tree.count;
+    }
+
+    while (q--) {
+        int i;
+        cin >> i;
+        cout << count[i] << "\n";
+    }
+}
