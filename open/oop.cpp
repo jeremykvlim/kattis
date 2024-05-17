@@ -75,7 +75,7 @@ int main() {
         for (auto h : word_hash[curr])
             if (hashes.count(h)) shared[h].emplace_back(start[curr]);
 
-        for (auto c : trie[curr].next)
+        for (int c : trie[curr].next)
             if (c != -1) self(self, c);
 
         end[curr] = ++count;
