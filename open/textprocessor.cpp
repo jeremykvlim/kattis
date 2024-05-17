@@ -108,7 +108,7 @@ struct SuffixTree {
                 l[ch] -= r[p] - l[p];
                 if (node == p) {
                     node = ch;
-                    pos = l[ch] + pos - l[p];
+                    pos += l[ch] - l[p];
                 }
             }
         }
