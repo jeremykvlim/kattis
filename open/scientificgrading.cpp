@@ -15,7 +15,7 @@ int sgn(vector<pair<__int128, __int128>> v) {
             s *= 10;
             e--;
 
-            if (abs(s) > (__int128) 1 << 86) goto done;
+            if (abs(s) > (__int128) 1 << 70) goto done;
         }
 
         s += significand;
