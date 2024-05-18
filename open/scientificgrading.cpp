@@ -66,7 +66,7 @@ int main() {
         return add({x.first * y.first, x.second + y.second}, {0, 0}, z);
     };
 
-    auto div = [&](pair<__int128, __int128> x, pair<__int128, __int128> y, pair<__int128, __int128> z) {
+    auto div = [&](pair<__int128, __int128> x, pair<__int128, __int128> y, pair<__int128, __int128> z) -> bool {
         int s1 = (x.first > 0) - (x.first < 0), s2 = (y.first > 0) - (y.first < 0), s3 = sgn({{-x.first, x.second}, {y.first * z.first, y.second + z.second}});
 
         return sgn({{s1 * -x.first, x.second}, {s3 * y.first * z.first, y.second + z.second + 9}, {s3 * -x.first, x.second + 9}}) < 0
