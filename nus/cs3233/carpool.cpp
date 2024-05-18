@@ -20,7 +20,8 @@ int main() {
     for (int i = 0; i < n + 2; i++) dist[i][i] = 0;
     for (int i = 0; i < n + 2; i++)
         for (int j = 0; j < n + 2; j++)
-            for (int k = 0; k < n + 2; k++) dist[j][k] = min(dist[j][k], dist[j][i] + dist[i][k]);
+            for (int k = 0; k < n + 2; k++) 
+                dist[j][k] = min(dist[j][k], dist[j][i] + dist[i][k]);
 
     vector<long long> time(1 << n, INT_MAX);
     for (int p1 = 1; p1 < n + 1; p1++)
