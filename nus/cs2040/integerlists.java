@@ -10,21 +10,22 @@ public class integerlists {
         int t = Integer.parseInt(br.readLine());
         next:
         while (t-- > 0) {
-            var program = br.readLine();
-            int elements = Integer.parseInt(br.readLine());
+            var p = br.readLine();
+            int n = Integer.parseInt(br.readLine());
 
-            if (elements == 0) {
+            if (n == 0) {
                 var empty = br.readLine();
-                pw.println(program.contains("D") ? "error" : empty);
+                pw.println(p.contains("D") ? "error" : empty);
                 continue;
             }
 
             var dq = Arrays.stream(br.readLine().replaceAll("\\[","").replaceAll("]","").split(","))
-                     .map(Integer::parseInt).collect(Collectors.toCollection(ArrayDeque::new));
+                    .map(Integer::parseInt)
+                    .collect(Collectors.toCollection(ArrayDeque::new));
 
             var reversed = false;
-            for (int i = 0; i < program.length(); i++)
-                if (program.charAt(i) == 'R') reversed = !reversed;
+            for (var c : p.toCharArray())
+                if (c == 'R') reversed = !reversed;
                 else {
                     if (!dq.isEmpty()) {
                         if (!reversed) dq.removeFirst();
@@ -37,12 +38,12 @@ public class integerlists {
                 }
 
             pw.print("[");
-            while (!dq.isEmpty())
-                if (dq.size() > 1) pw.print((!reversed ? dq.removeFirst() : dq.removeLast()) + ",");
-                else pw.print(!reversed ? dq.removeFirst() : dq.removeLast());
+            while (!dq.isEmpty()) {
+                pw.print(!reversed ? dq.removeFirst() : dq.removeLast());
+                if (!dq.isEmpty()) pw.print(",");
+            }
             pw.println("]");
         }
-        
         pw.flush();
     }
 }
