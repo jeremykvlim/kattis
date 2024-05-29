@@ -16,21 +16,20 @@ int main() {
             string node1, node2;
             cin >> node1 >> node2;
 
-            auto parse = [&](string node) -> int {
+            auto index = [&](string node) -> int {
                 int i = stoi(node.substr(2)) - 1;
 
-                if (node[0] == 'A' && node[1] == 'S') i += n;
-                else if (node[0] == 'B' && node[1] == 'P') i += n + k;
-                else if (node[0] == 'B' && node[1] == 'S') i += n + k + m;
-
-                return i;
+                if (node[0] == 'A' && node[1] == 'P') return i;
+                if (node[0] == 'A' && node[1] == 'S') return i + n;
+                if (node[0] == 'B' && node[1] == 'P') return i + n + k;
+                if (node[0] == 'B' && node[1] == 'S') return i + n + k + m;
             };
 
-            return {parse(node1), parse(node2)};
+            return {index(node1), index(node2)};
         };
 
-        vector<vector<int>> adj_list(n + m + 2 * k);
-        for (int i = 0; i < n + m + 2 * k - 2; i++) {
+        vector<vector<int>> adj_list(n + k + m + k);
+        for (int i = 0; i < n + k + m + k - 2; i++) {
             auto [v, u] = read();
             adj_list[v].emplace_back(u);
             adj_list[u].emplace_back(v);
@@ -52,9 +51,9 @@ int main() {
 
         vector<int> indices;
         auto valid = [&]() -> bool {
-            if (path.size() != n + m + 2 * k) return false;
+            if (path.size() != n + k + m + k) return false;
 
-            vector<int> p(n + m + 2 * k, -1), c(n + m + 2 * k, -1);
+            vector<int> p(n + k + m + k, -1), c(n + k + m + k, -1);
             auto connect = [&](int v, int u) -> bool {
                 if (p[v] == -1) p[v] = u;
                 else if (c[v] == -1) c[v] = u;
@@ -74,7 +73,7 @@ int main() {
                 curr = next;
             } while (curr);
 
-            return indices.size() == n + m + 2 * k;
+            return indices.size() == n + k + m + k;
         };
 
         if (dfs(dfs, 0) || dfs(dfs, n + k) || !valid()) cout << "NO\n";
@@ -83,12 +82,12 @@ int main() {
 
             auto node = [&](int i) -> string {
                 if (i <= n) return "AP" + to_string(i);
-                else if (i <= n + k) return "AS" + to_string(i - n);
-                else if (i <= n + k + m) return "BP" + to_string(i - n - k);
-                else return "BS" + to_string(i - n - k - m);
+                if (i <= n + k) return "AS" + to_string(i - n);
+                if (i <= n + k + m) return "BP" + to_string(i - n - k);
+                if (i <= n + k + m + k) return "BS" + to_string(i - n - k - m);
             };
 
-            for (int i = 0; i < n + m + 2 * k; i++) cout << " " << node(indices[i] + 1);
+            for (int i = 0; i < n + k + m + k; i++) cout << " " << node(indices[i] + 1);
             cout << "\n";
         }
     }
