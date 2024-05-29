@@ -53,10 +53,10 @@ int main() {
         auto valid = [&]() -> bool {
             if (path.size() != n + k + m + k) return false;
 
-            vector<int> p(n + k + m + k, -1), c(n + k + m + k, -1);
+            vector<int> child(n + k + m + k, -1), parent(n + k + m + k, -1);
             auto connect = [&](int v, int u) -> bool {
-                if (p[v] == -1) p[v] = u;
-                else if (c[v] == -1) c[v] = u;
+                if (child[v] == -1) child[v] = u;
+                else if (parent[v] == -1) parent[v] = u;
                 else return false;
 
                 return true;
@@ -65,10 +65,10 @@ int main() {
             for (auto [v, u] : path)
                 if (!connect(v, u) || !connect(u, v)) return false;
 
-            int prev = c[0], curr = 0, next;
+            int prev = parent[0], curr = 0, next;
             do {
                 indices.emplace_back(curr);
-                next = prev ^ p[curr] ^ c[curr];
+                next = prev ^ child[curr] ^ parent[curr];
                 prev = curr;
                 curr = next;
             } while (curr);
