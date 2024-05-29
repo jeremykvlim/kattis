@@ -48,6 +48,5 @@ int main() {
     };
 
     dfs(dfs);
-    
     cout << time;
 }
