@@ -17,19 +17,19 @@ struct Hash {
     }
 };
 
-int calculate(vector<int> groups, unordered_map<vector<int>, int, Hash> &dp, vector<int> pref) {
+int calc(vector<int> groups, unordered_map<vector<int>, int, Hash> &dp, vector<int> pref) {
     if (dp.count(groups)) return dp[groups];
 
     int least = pref[13];
     for (int i = 0; i < groups.size(); i++)
         if (groups[i]) {
             groups[i]--;
-            int required = calculate(groups, dp, pref);
-            if (required == pref[13]) continue;
+            int req = calc(groups, dp, pref);
+            if (req == pref[13]) continue;
 
             groups[i]++;
-            auto x = upper_bound(pref.begin() + i + 1, pref.end(), required);
-            least = min(least, (*x - required > i + 1 ? max(required, *(x - 1)) : *x) + i + 2);
+            auto x = upper_bound(pref.begin() + i + 1, pref.end(), req);
+            least = min(least, (*x - req > i + 1 ? max(req, *(x - 1)) : *x) + i + 2);
         }
 
     return dp[groups] = least;
@@ -57,7 +57,7 @@ int main() {
 
     if (people > pref[13]) cout << "impossible";
     else {
-        int x = upper_bound(pref.begin(), pref.end(), calculate(groups, dp, pref) - 1) - pref.begin();
+        int x = upper_bound(pref.begin(), pref.end(), calc(groups, dp, pref) - 1) - pref.begin();
         cout << (x > 12 ? "impossible" : to_string(x));
     }
 }
