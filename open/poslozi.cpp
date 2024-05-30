@@ -10,7 +10,7 @@ struct Hash {
         return hash;
     }
 
-    size_t operator()(vector<int> v) const {
+    size_t operator()(const vector<int> &v) const {
         auto key = 0ULL;
         for (int e : v) key ^= e + 0x9e3779b9 + (key << 6) + (key >> 2);
         return h(key);
