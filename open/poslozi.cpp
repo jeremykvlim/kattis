@@ -3,16 +3,16 @@ using namespace std;
 
 struct Hash {
     static uint64_t h(uint64_t key) {
-        uint64_t hash = key + 0x9e3779b97f4a7c15;
+        auto hash = key + 0x9e3779b97f4a7c15;
         hash = (hash ^ (hash >> 30)) * 0xbf58476d1ce4e5b9;
         hash = (hash ^ (hash >> 27)) * 0x94d049bb133111eb;
         hash = hash ^ (hash >> 31);
         return hash;
     }
 
-    size_t operator()(const vector<int> &v) const {
-        uint64_t key = 0;
-        for (int i : v) key ^= i + 0x9e3779b9 + (key << 6) + (key >> 2);
+    size_t operator()(vector<int> v) const {
+        auto key = 0ULL;
+        for (int e : v) key ^= e + 0x9e3779b9 + (key << 6) + (key >> 2);
         return h(key);
     }
 };
@@ -36,15 +36,15 @@ int main() {
     }
 
     auto cmp = [&](auto p1, auto p2) {
-            auto count = [&](vector<int> v) {
-                int c = 0;
-                for (int i = 1; i <= n; i++)
-                    if (v[i] != i) c += (s[i][v[i]] ? 1 : 2);
+        auto count = [&](vector<int> v) {
+            int c = 0;
+            for (int i = 1; i <= n; i++)
+                if (v[i] != i) c += (s[i][v[i]] ? 1 : 2);
 
-                return c;
-            };
+            return c;
+        };
 
-            return count(p1.first) + p1.second > count(p2.first) + p2.second;
+        return count(p1.first) + p1.second > count(p2.first) + p2.second;
     };
 
     auto arranged = [&](vector<int> v) -> bool {
