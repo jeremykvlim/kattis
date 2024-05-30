@@ -31,6 +31,7 @@ int main() {
         vector<vector<int>> adj_list(n + k + m + k);
         for (int i = 0; i < n + k + m + k - 2; i++) {
             auto [v, u] = read();
+            
             adj_list[v].emplace_back(u);
             adj_list[u].emplace_back(v);
         }
@@ -40,6 +41,7 @@ int main() {
 
         auto dfs = [&](auto &&self, int v, int prev = -1) -> bool {
             bool pendant = adj_list[v].size() == 1;
+            
             for (int u : adj_list[v])
                 if (u != prev && self(self, u, v)) {
                     path.emplace_back(v, u);
