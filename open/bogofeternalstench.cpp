@@ -1,9 +1,15 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void relax(vector<tuple<int, int, int>> &edges, vector<long long> &dist, bool detect = false) {
+bool relax(vector<tuple<int, int, int>> &edges, vector<long long> &dist, bool detect = false) {
+    bool change = false;
     for (auto &[u, v, s] : edges)
-        if (s <= dist[v] && dist[u] < dist[v] - s) dist[u] = !detect ? dist[v] - s : LLONG_MAX;
+        if (s <= dist[v] && dist[u] < dist[v] - s) {
+            dist[u] = !detect ? dist[v] - s : LLONG_MAX;
+            change = true;
+        }
+
+    return change;
 }
 
 int main() {
@@ -23,9 +29,14 @@ int main() {
         vector<long long> dist(n + 1, LLONG_MIN);
         dist[n] = mid;
 
-        for (int i = 0; i < n; i++) relax(edges, dist);
+        auto bellman_ford = [&]() {
+            for (int i = 0; i < n; i++)
+                if (!relax(edges, dist)) break;
+        };
+
+        bellman_ford();
         relax(edges, dist, true);
-        for (int i = 0; i < n; i++) relax(edges, dist);
+        bellman_ford();
 
         if (dist[1] >= 0) r = mid;
         else l = mid;
