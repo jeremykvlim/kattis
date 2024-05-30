@@ -45,16 +45,16 @@ int main() {
             sum += field;
         }
 
-    vector<int> overlap(2 * biggest + 1, 0);
+    vector<int> count(2 * biggest + 1, 0);
     for (int i = 0; i < n; i++)
         for (int j = 0; j < n; j++) {
-            if (i + 1 < n) overlap[table[i][j] + table[i + 1][j]]++;
-            if (j + 1 < n) overlap[table[i][j] + table[i][j + 1]]++;
+            if (i + 1 < n) count[table[i][j] + table[i + 1][j]]++;
+            if (j + 1 < n) count[table[i][j] + table[i][j + 1]]++;
         }
 
-    for (int i = overlap.size() - 1, dominos = min(2 * n * (n - 1), 7 * (k - 1) + 1); ~i; i--) {
-        overlap[i] = min(overlap[i], dominos);
-        dominos -= overlap[i];
+    for (int i = count.size() - 1, dominos = min(2 * n * (n - 1), 7 * (k - 1) + 1); ~i; i--) {
+        count[i] = min(count[i], dominos);
+        dominos -= count[i];
     }
 
     vector<tuple<int, int, int, int, int, int>> edges;
@@ -64,47 +64,47 @@ int main() {
         edges.emplace_back(v, u, -w, 0, 0, index++);
     };
 
-    int count = 2;
-    vector<vector<int>> id(n, vector<int>(n, -1));
+    int id = 2;
+    vector<vector<int>> coverable(n, vector<int>(n, -1));
     for (int i = 0; i < n; i++)
         for (int j = 0; j < n; j++) {
-            if (i + 1 < n && overlap[table[i][j] + table[i + 1][j]]-- > 0) {
-                if (id[i][j] == -1) id[i][j] = count++;
-                if (id[i + 1][j] == -1) id[i + 1][j] = count++;
+            if (i + 1 < n && count[table[i][j] + table[i + 1][j]]-- > 0) {
+                if (coverable[i][j] == -1) coverable[i][j] = id++;
+                if (coverable[i + 1][j] == -1) coverable[i + 1][j] = id++;
 
-                if (i + j & 1) add(id[i + 1][j], id[i][j], 0);
-                else add(id[i][j], id[i + 1][j], 0);
+                if (i + j & 1) add(coverable[i + 1][j], coverable[i][j], 0);
+                else add(coverable[i][j], coverable[i + 1][j], 0);
             }
 
-            if (j + 1 < n && overlap[table[i][j] + table[i][j + 1]]-- > 0) {
-                if (id[i][j] == -1) id[i][j] = count++;
-                if (id[i][j + 1] == -1) id[i][j + 1] = count++;
+            if (j + 1 < n && count[table[i][j] + table[i][j + 1]]-- > 0) {
+                if (coverable[i][j] == -1) coverable[i][j] = id++;
+                if (coverable[i][j + 1] == -1) coverable[i][j + 1] = id++;
 
-                if (i + j & 1) add(id[i][j + 1], id[i][j], 0);
-                else add(id[i][j], id[i][j + 1], 0);
+                if (i + j & 1) add(coverable[i][j + 1], coverable[i][j], 0);
+                else add(coverable[i][j], coverable[i][j + 1], 0);
             }
 
-            if (id[i][j] == -1) continue;
+            if (coverable[i][j] == -1) continue;
 
-            if (i + j & 1) add(id[i][j], 1, -table[i][j]);
-            else add(0, id[i][j], -table[i][j]);
+            if (i + j & 1) add(coverable[i][j], 1, -table[i][j]);
+            else add(0, coverable[i][j], -table[i][j]);
         }
 
-    vector<vector<tuple<int, int, int, int, int, int> *>> adj_list(count);
+    vector<vector<tuple<int, int, int, int, int, int> *>> adj_list(id);
     for (auto &e : edges) adj_list[get<0>(e)].emplace_back(&e);
 
-    vector<int> potential(count, INT_MAX);
+    vector<int> potential(id, INT_MAX);
     potential[0] = 0;
 
     auto bellman_ford = [&]() {
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < id; i++)
             for (auto [u, v, w, capacity, flow, index] : edges)
                 if (capacity != flow) potential[v] = min(potential[v], potential[u] + w);
     };
 
     bellman_ford();
 
-    vector<bool> visited(count, false);
+    vector<bool> visited(id, false);
     auto dfs = [&](auto &&self, int v = 0) -> bool {
         visited[v] = true;
 
@@ -127,7 +127,7 @@ int main() {
     };
 
     while (k--) {
-        dijkstra(count, adj_list, potential);
+        dijkstra(id, adj_list, potential);
 
         fill(visited.begin(), visited.end(), false);
         dfs(dfs);
