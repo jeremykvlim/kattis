@@ -5,8 +5,7 @@ void dnc(int l, int r, int &fee, vector<pair<int, int>> &s, vector<int> &city) {
     if (l > r || s.empty() || fee++ > 1500) return;
 
     int m = l + (r - l) / 2;
-    cout << "Q " << m << "\n";
-    cout.flush();
+    cout << "Q " << m << "\n" << flush;
 
     int c;
     cin >> c;
@@ -43,5 +42,4 @@ int main() {
 
     cout << "A ";
     for (int p : city) cout << p << " ";
-    cout.flush();
 }
