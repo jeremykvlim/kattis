@@ -2,23 +2,23 @@
 using namespace std;
 
 struct Hash {
-    uint64_t encode(const pair<int, int> &p) const {
-        uint64_t encoded = 0;
+    static uint64_t encode(pair<int, int> p) {
+        auto encoded = 0ULL;
         encoded = (encoded << 8) | p.first;
         encoded = (encoded << 8) | p.second;
         return encoded;
     }
 
     static uint64_t h(uint64_t key) {
-        uint64_t hash = key + 0x9e3779b97f4a7c15;
+        auto hash = key + 0x9e3779b97f4a7c15;
         hash = (hash ^ (hash >> 30)) * 0xbf58476d1ce4e5b9;
         hash = (hash ^ (hash >> 27)) * 0x94d049bb133111eb;
         hash = hash ^ (hash >> 31);
         return hash;
     }
 
-    size_t operator()(const pair<int, int> &p) const {
-        static const uint64_t SEED = chrono::steady_clock::now().time_since_epoch().count();
+    size_t operator()(pair<int, int> p) const {
+        static uint64_t SEED = chrono::steady_clock::now().time_since_epoch().count();
         return h(encode(p) + SEED);
     }
 };
