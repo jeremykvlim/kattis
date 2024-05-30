@@ -4,6 +4,7 @@ using namespace std;
 void dijkstra(int count, vector<vector<tuple<int, int, int, int, int, int> *>> adj_list, vector<int> &potential) {
     vector<int> dist(count, INT_MAX);
     dist[0] = 0;
+
     priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
     pq.emplace(0, 0);
     while (!pq.empty()) {
@@ -51,9 +52,9 @@ int main() {
             if (j + 1 < n) overlap[table[i][j] + table[i][j + 1]]++;
         }
 
-    for (int i = overlap.size() - 1, j = min(2 * n * (n - 1), 7 * (k - 1) + 1); ~i; i--) {
-        overlap[i] = min(overlap[i], j);
-        j -= overlap[i];
+    for (int i = overlap.size() - 1, dominos = min(2 * n * (n - 1), 7 * (k - 1) + 1); ~i; i--) {
+        overlap[i] = min(overlap[i], dominos);
+        dominos -= overlap[i];
     }
 
     vector<tuple<int, int, int, int, int, int>> edges;
