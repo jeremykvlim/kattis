@@ -1,9 +1,15 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void relax(vector<tuple<int, int, int>> &edges, vector<int> &dist, bool detect = false) {
+bool relax(vector<tuple<int, int, int>> &edges, vector<int> &dist, bool detect = false) {
+    bool change = false;
     for (auto &[u, v, e] : edges)
-        if (-e <= dist[u] && dist[v] < dist[u] + e) dist[v] = !detect ? dist[u] + e : 1e6;
+        if (-e <= dist[u] && dist[v] < dist[u] + e) {
+            dist[v] = !detect ? dist[u] + e : 1e6;
+            change = true;
+        }
+
+    return change;
 }
 
 int main() {
@@ -29,9 +35,14 @@ int main() {
         vector<int> dist(n + 1, INT_MIN);
         dist[1] = 100;
 
-        for (int i = 0; i < n; i++) relax(edges, dist);
+        auto bellman_ford = [&]() {
+            for (int i = 0; i < n - 1; i++)
+                if (!relax(edges, dist)) break;
+        };
+        
+        bellman_ford();
         relax(edges, dist, true);
-        for (int i = 0; i < n; i++) relax(edges, dist);
+        bellman_ford();
 
         cout << (dist[n] > 0 ? "winnable\n" : "hopeless\n");
     }
