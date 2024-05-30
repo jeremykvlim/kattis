@@ -72,7 +72,7 @@ int main() {
                 if (coverable[i][j] == -1) coverable[i][j] = id++;
                 if (coverable[i + 1][j] == -1) coverable[i + 1][j] = id++;
 
-                if (i + j & 1) add(coverable[i + 1][j], coverable[i][j], 0);
+                if ((i + j) & 1) add(coverable[i + 1][j], coverable[i][j], 0);
                 else add(coverable[i][j], coverable[i + 1][j], 0);
             }
 
@@ -80,13 +80,13 @@ int main() {
                 if (coverable[i][j] == -1) coverable[i][j] = id++;
                 if (coverable[i][j + 1] == -1) coverable[i][j + 1] = id++;
 
-                if (i + j & 1) add(coverable[i][j + 1], coverable[i][j], 0);
+                if ((i + j) & 1) add(coverable[i][j + 1], coverable[i][j], 0);
                 else add(coverable[i][j], coverable[i][j + 1], 0);
             }
 
             if (coverable[i][j] == -1) continue;
 
-            if (i + j & 1) add(coverable[i][j], 1, -table[i][j]);
+            if ((i + j) & 1) add(coverable[i][j], 1, -table[i][j]);
             else add(0, coverable[i][j], -table[i][j]);
         }
 
