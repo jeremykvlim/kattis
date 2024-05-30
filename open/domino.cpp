@@ -2,7 +2,7 @@
 using namespace std;
 
 void dijkstra(vector<vector<tuple<int, int, int, int, int, int> *>> adj_list, vector<int> &potential) {
-    vector<int> dist(adj_list.size(), INT_MAX);
+    vector<int> dist(potential.size(), INT_MAX);
     dist[0] = 0;
 
     priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
@@ -23,7 +23,7 @@ void dijkstra(vector<vector<tuple<int, int, int, int, int, int> *>> adj_list, ve
         }
     }
 
-    for (int i = 0; i < id; i++)
+    for (int i = 0; i < dist.size(); i++)
         if (dist[i] != INT_MAX) potential[i] += dist[i];
 }
 
