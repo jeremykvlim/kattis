@@ -36,7 +36,7 @@ int main() {
         dist[1] = 100;
 
         auto bellman_ford = [&]() {
-            for (int i = 0; i < n - 1; i++)
+            for (int i = 0; i < n; i++)
                 if (!relax(edges, dist)) break;
         };
         
