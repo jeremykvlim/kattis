@@ -10,32 +10,33 @@ struct Die {
         return tie(up, down, left, right, front, back, height, width) ==
                tie(d.up, d.down, d.left, d.right, d.front, d.back, d.height, d.width);
     }
-
-    uint64_t encode() const {
-        uint64_t encoded = 0;
-        encoded = (encoded << 8) | up;
-        encoded = (encoded << 8) | down;
-        encoded = (encoded << 8) | left;
-        encoded = (encoded << 8) | right;
-        encoded = (encoded << 8) | front;
-        encoded = (encoded << 8) | back;
-        encoded = (encoded << 16) | (height << 8) | width;
-        return encoded;
-    }
 };
 
 struct Hash {
+    static uint64_t encode(Die d) {
+        auto encoded = 0ULL;
+        encoded = (encoded << 8) | d.up;
+        encoded = (encoded << 8) | d.down;
+        encoded = (encoded << 8) | d.left;
+        encoded = (encoded << 8) | d.right;
+        encoded = (encoded << 8) | d.front;
+        encoded = (encoded << 8) | d.back;
+        encoded = (encoded << 8) | d.height;
+        encoded = (encoded << 8) | d.width;
+        return encoded;
+    }
+    
     static uint64_t h(uint64_t key) {
-        uint64_t hash = key + 0x9e3779b97f4a7c15;
+        auto hash = key + 0x9e3779b97f4a7c15;
         hash = (hash ^ (hash >> 30)) * 0xbf58476d1ce4e5b9;
         hash = (hash ^ (hash >> 27)) * 0x94d049bb133111eb;
         hash = hash ^ (hash >> 31);
         return hash;
     }
 
-    size_t operator()(const Die &d) const {
-        static const uint64_t SEED = chrono::steady_clock::now().time_since_epoch().count();
-        return h(d.encode() + SEED);
+    size_t operator()(Die d) const {
+        static uint64_t SEED = chrono::steady_clock::now().time_since_epoch().count();
+        return h(encode(d) + SEED);
     }
 };
 
@@ -68,11 +69,13 @@ void dfs(Die curr, vector<vector<int>> &board, gp_hash_table<Die, null_type, Has
         Die next = curr;
         next.height += d.first;
         next.width += d.second;
-        if (next.height < 0 || next.height >= board.size() || next.width < 0 || next.width >= board[0].size()) continue;
+        if (!(0 <= next.height && next.height < board.size() && 0 <= next.width && next.width < board[0].size())) continue;
+        
         rotate(next, c);
 
         if (next.down == -1) next.down = board[next.height][next.width];
         if (next.down != board[next.height][next.width]) continue;
+        
         if (visited.find(next) == visited.end()) {
             visited.insert(next);
             dfs(next, board, visited, directions);
