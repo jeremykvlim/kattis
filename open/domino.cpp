@@ -1,8 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void dijkstra(int id, vector<vector<tuple<int, int, int, int, int, int> *>> adj_list, vector<int> &potential) {
-    vector<int> dist(id, INT_MAX);
+void dijkstra(vector<vector<tuple<int, int, int, int, int, int> *>> adj_list, vector<int> &potential) {
+    vector<int> dist(adj_list.size(), INT_MAX);
     dist[0] = 0;
 
     priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
@@ -127,7 +127,7 @@ int main() {
     };
 
     while (k--) {
-        dijkstra(id, adj_list, potential);
+        dijkstra(adj_list, potential);
 
         fill(visited.begin(), visited.end(), false);
         dfs(dfs);
