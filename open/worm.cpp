@@ -30,7 +30,7 @@ int main() {
         if (!(0 <= x && x < n && 0 <= y && y < m && 0 <= z && z < k)) return 0;
 
         int &h = H[(x * m + y) * k + z];
-        if (h > 0) return h;
+        if (h) return h;
 
         cout << "? " << x + 1 << " " << y + 1 << " " << z + 1 << "\n" << flush;
         q--;
