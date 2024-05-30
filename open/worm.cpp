@@ -123,7 +123,7 @@ int main() {
         while (q)
             if (!update(x + 1, y, z) && !update(x - 1, y, z) &&
                 !update(x, y + 1, z) && !update(x, y - 1, z) &&
-                !update(x, y, z + 1) && !update(x, y, z - 1)) guess(x, y, z);
+                !update(x, y, z + 1) && !update(x, y, z - 1)) break;
 
         guess(x, y, z);
     };
