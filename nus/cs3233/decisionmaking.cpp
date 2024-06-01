@@ -75,8 +75,7 @@ int main() {
     int n;
     cin >> n;
 
-    vector<TrieNode> trie;
-    trie.emplace_back();
+    vector<TrieNode> trie(1);
     for (int i = 0; i < n; i++) {
         string s;
         cin >> s;
@@ -113,9 +112,9 @@ int main() {
     }
 
     vector<vector<long long>> a(n, vector<long long>(n, 0)), p(trie.size(), vector<long long>(n));
+    p[0][0] = 1;
     vector<bool> visited(trie.size(), false);
     visited[0] = true;
-    p[0][0] = 1;
     int count = 1;
     q.emplace(0);
     while (!q.empty()) {
