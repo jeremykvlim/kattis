@@ -20,7 +20,6 @@ int main() {
     while (q--) {
         int i;
         cin >> i;
-
         cout << npf[i] << "\n";
     }
 }
