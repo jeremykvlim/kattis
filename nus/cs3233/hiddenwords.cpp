@@ -32,16 +32,17 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int h, w, n;
+    int h, w;
     cin >> h >> w;
 
     vector<string> grid(h);
     for (auto &row : grid) cin >> row;
+
+    int n;
     cin >> n;
 
-    vector<TrieNode> trie;
-    trie.emplace_back();
-    for (int i = 0; i < n; i++) {
+    vector<TrieNode> trie(1);
+    while (n--) {
         string s;
         cin >> s;
 
