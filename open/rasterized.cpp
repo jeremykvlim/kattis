@@ -62,7 +62,7 @@ int main() {
     int t;
     cin >> t;
 
-    auto primes = sieve(10000000);
+    auto primes = sieve(1e7);
     while (t--) {
         long long n;
         cin >> n;
