@@ -18,8 +18,7 @@ int main() {
     cin >> n;
 
     vector<int> mapping{0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 7, 7, 7, 7};
-    vector<TrieNode> trie;
-    trie.emplace_back();
+    vector<TrieNode> trie(1);
     vector<vector<string>> words;
     int count = 0;
     while (n--) {
@@ -34,9 +33,9 @@ int main() {
                 trie[node].next[pos] = trie.size();
                 trie.emplace_back();
             }
-
             node = trie[node].next[pos];
         }
+
         if (!trie[node].count) {
             trie[node].count = ++count;
             words.emplace_back(vector<string>());
@@ -55,9 +54,9 @@ int main() {
                     trie[node].next[pos] = trie.size();
                     trie.emplace_back();
                 }
-
                 node = trie[node].next[pos];
             }
+
             trie[node].count = j + 1;
         }
 
@@ -80,16 +79,16 @@ int main() {
     int q;
     cin >> q;
 
-    vector<string> type(q);
+    vector<string> queries(q);
     int longest = 0;
-    for (auto &w : type) {
+    for (auto &w : queries) {
         cin >> w;
 
         longest = max(longest, (int) w.size());
     }
 
     vector<tuple<long long, int, int>> dp(longest + 1, {0, 0, 0});
-    for (auto w : type) {
+    for (auto w : queries) {
         for (int i = w.size() - 1; ~i; i--) {
             dp[i] = {1e18, 0, 0};
 
