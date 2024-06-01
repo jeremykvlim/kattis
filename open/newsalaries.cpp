@@ -18,7 +18,8 @@ int main() {
         pref_m[i] = pref_m[i - 1] + m[i];
 
         double k = 1;
-        for (int j = 0; j < 4; j++, k *= r[i]) pref_r[i][j] = pref_r[i - 1][j] + (len[i] < 1e-9 ? 0 : k / len[i]);
+        for (int j = 0; j < 4; j++, k *= r[i]) 
+            pref_r[i][j] = pref_r[i - 1][j] + (len[i] < 1e-9 ? 0 : k / len[i]);
     }
 
     double damages = 0;
@@ -27,7 +28,8 @@ int main() {
         if (len[i] < 1e-9) continue;
 
         double k = 1;
-        for (int j = 3, p = upper_bound(r.begin(), r.end(), l[i]) - r.begin(); ~j; j--, k *= l[i]) damages -= (j & 1 ? -1 : 1) * k / len[i] * (pref_r[i - 1][j] - pref_r[p - 1][j]) / (j == 3 || !j ? 3 : 1);
+        for (int j = 3, p = upper_bound(r.begin(), r.end(), l[i]) - r.begin(); ~j; j--, k *= l[i]) 
+            damages -= (j & 1 ? -1 : 1) * k / len[i] * (pref_r[i - 1][j] - pref_r[p - 1][j]) / (j == 3 || !j ? 3 : 1);
     }
 
     cout << fixed << setprecision(4) << damages / n / n;
