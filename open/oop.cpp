@@ -24,8 +24,7 @@ int main() {
         longest = max(longest, (int) w.size());
     }
 
-    vector<TrieNode> trie;
-    trie.emplace_back();
+    vector<TrieNode> trie(1);
     unordered_map<int, vector<long long>> word_hash;
     vector<long long> hash(longest + 1, 0);
     auto b = (long long) 1e16 + 61, mod = (1LL << 62) + 135;
@@ -80,6 +79,7 @@ int main() {
 
         end[curr] = ++count;
     };
+    
     dfs(dfs, 0);
 
     for (int i = 0; i < q; i++) {
