@@ -22,8 +22,7 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    vector<TrieNode> trie;
-    trie.emplace_back();
+    vector<TrieNode> trie(1);
     vector<string> sorted, S;
     vector<int> end;
     string s;
