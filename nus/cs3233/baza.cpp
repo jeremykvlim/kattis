@@ -18,8 +18,7 @@ int main() {
     cin >> n;
 
     unordered_map<string, int> database;
-    vector<TrieNode> trie;
-    trie.emplace_back();
+    vector<TrieNode> trie(1);
     for (int i = 0; i < n; i++) {
         string s;
         cin >> s;
