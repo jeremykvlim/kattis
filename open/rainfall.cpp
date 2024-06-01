@@ -13,6 +13,7 @@ int main() {
     vector<int> r(T), pref(T + 1);
     for (int i = 0; i < T; i++) {
         cin >> r[i];
+        
         pref[i + 1] = pref[i] + r[i];
     }
 
