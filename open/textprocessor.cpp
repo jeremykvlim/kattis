@@ -115,7 +115,7 @@ struct SuffixTree {
     }
 
     SuffixTree(string &s) : s(s),
-                            trie(2 * s.size() + 1, TrieNode()),
+                            trie(2 * s.size() + 1),
                             l(2 * s.size() + 1, 0),
                             r(2 * s.size() + 1, s.size()),
                             link(2 * s.size() + 1, 0),
