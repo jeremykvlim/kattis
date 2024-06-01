@@ -7,7 +7,6 @@ int main() {
 
     int T;
     double c, d;
-
     cin >> T >> c >> d;
 
     vector<int> r(T), pref(T + 1);
