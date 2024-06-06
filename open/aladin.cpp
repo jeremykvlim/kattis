@@ -1,15 +1,22 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void update(int i, long long value, vector<long long> &fenwick) {
-    for (; i < fenwick.size(); i += i & -i) fenwick[i] += value;
-}
+template <typename T>
+struct FenwickTree {
+    vector<T> BIT;
 
-long long pref_sum(int i, vector<long long> &fenwick) {
-    auto sum = 0LL;
-    for (; i; i &= (i - 1)) sum += fenwick[i];
-    return sum;
-}
+    void update(int i, T value) {
+        for (; i < BIT.size(); i += i & -i) BIT[i] += value;
+    }
+
+    T pref_sum(int i) {
+        T sum = 0;
+        for (; i; i &= (i - 1)) sum += BIT[i];
+        return sum;
+    }
+
+    FenwickTree(int n) : BIT(n, 0) {}
+};
 
 tuple<long long, long long, long long> operator+(tuple<long long, long long, long long> t1, tuple<long long, long long, long long> t2) {
     auto [x1, y1, z1] = t1;
@@ -65,34 +72,34 @@ int main() {
         return lower_bound(boxes.begin(), boxes.end(), v) - boxes.begin() + 1;
     };
 
-    vector<long long> fenwick(boxes.size() + 1, 0);
+    FenwickTree<long long> fw(boxes.size() + 1);
     auto cmp = [](auto t1, auto t2) {return get<1>(t1) < get<1>(t2);};
     set<tuple<int, int, int, int, int, int>, decltype(cmp)> s(cmp);
     s.emplace(1, n, 0, 1, 1, n);
-    for (auto [l1, r1, a1, b1] : queries) 
+    for (auto [l1, r1, a1, b1] : queries)
         if (a1 && b1) {
             for (auto it = s.lower_bound({0, l1, 0, 0, 0, 0}); it != s.end(); it = s.lower_bound({0, l1, 0, 0, 0, 0})) {
                 auto [l2, r2, a2, b2, l3, r3] = *it;
                 if (l2 > r1) break;
 
                 s.erase(it);
-                update(index(r2), -sum(l3, r3, a2, b2), fenwick);
+                fw.update(index(r2), -sum(l3, r3, a2, b2));
                 if (l2 < l1) {
                     s.emplace(l2, l1 - 1, a2, b2, l3, l1 - l2 + l3 - 1);
-                    update(index(l1 - 1), sum(l3, l1 - l2 + l3 - 1, a2, b2), fenwick);
+                    fw.update(index(l1 - 1), sum(l3, l1 - l2 + l3 - 1, a2, b2));
                 }
                 if (r1 < r2) {
                     s.emplace(r1 + 1, r2, a2, b2, r1 - r2 + r3 + 1, r3);
-                    update(index(r2), sum(r1 - r2 + r3 + 1, r3, a2, b2), fenwick);
+                    fw.update(index(r2), sum(r1 - r2 + r3 + 1, r3, a2, b2));
                 }
             }
             s.emplace(l1, r1, a1, b1, 1, r1 - l1 + 1);
-            update(index(r1), sum(1, r1 - l1 + 1, a1, b1), fenwick);
+            fw.update(index(r1), sum(1, r1 - l1 + 1, a1, b1));
         } else {
             auto [l2, r2, a2, b2, l3, r3] = *s.lower_bound({0, r1, 0, 0, 0, 0});
 
             if (l1 < l2) {
-                auto rq = pref_sum(index(r1), fenwick) - pref_sum(index(l1 - 1), fenwick);
+                auto rq = fw.pref_sum(index(r1)) - fw.pref_sum(index(l1 - 1));
 
                 if (r1 != r2) rq += sum(l3, r1 - l2 + l3, a2, b2);
                 auto [l2, r2, a2, b2, l3, r3] = *s.lower_bound({0, l1, 0, 0, 0, 0});
