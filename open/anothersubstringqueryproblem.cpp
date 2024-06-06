@@ -98,6 +98,52 @@ struct SuffixArray {
     };
 };
 
+template <typename T>
+struct WaveletTree {
+    vector<T> WT, temp;
+    vector<int> pref1, pref2;
+    int b;
+
+    void range_order_statistic(vector<tuple<int, int, int>> &queries) {
+        for (int bit = b; ~bit; bit--) {
+            for (int i = 0; i < WT.size(); i++) {
+                pref1[i + 1] = pref1[i] + !((WT[i] >> bit) & 1);
+                pref2[i + 1] = pref2[i] + ((WT[i] >> bit) & 1);
+            }
+
+            int it1 = 0, it2 = pref1.back();
+            for (int e : WT) temp[!((e >> bit) & 1) ? it1++ : it2++] = e;
+            swap(WT, temp);
+
+            for (auto &[l, r, k] : queries) {
+                if (r - l < k || !k) continue;
+
+                int K = pref1[r] - pref1[l];
+                if (k <= K) {
+                    l = pref1[l];
+                    r = pref1[r];
+                } else {
+                    k -= K;
+                    l = pref1.back() + pref2[l];
+                    r = pref1.back() + pref2[r];
+                }
+            }
+        }
+    }
+
+    auto operator[](int i) {
+        return WT[i];
+    }
+
+    WaveletTree(vector<T> array, vector<tuple<int, int, int>> &queries) : WT(array.begin(), array.end()),
+                                                                          temp(array.size()),
+                                                                          pref1(array.size() + 1),
+                                                                          pref2(array.size() + 1) {
+        b = __lg(*max_element(array.begin(), array.end()));
+        range_order_statistic(queries);
+    }
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -123,32 +169,6 @@ int main() {
         if (r - l < k || s[sa[r - 1] + t.size() - 1] != t.back()) k = 0;
     }
 
-    int n = s.size();
-    vector<int> pref1(n + 1), pref2(n + 1), temp(n);
-    for (int b = __lg(*max_element(sa.begin(), sa.end())); ~b; b--) {
-        for (int i = 0; i < n; i++) {
-            pref1[i + 1] = pref1[i] + !((sa[i] >> b) & 1);
-            pref2[i + 1] = pref2[i] + ((sa[i] >> b) & 1);
-        }
-
-        int it1 = 0, it2 = pref1[n];
-        for (int i : sa) temp[!((i >> b) & 1) ? it1++ : it2++] = i;
-        swap(sa.SA, temp);
-
-        for (auto &[l, r, k] : queries) {
-            if (!k) continue;
-
-            int K = pref1[r] - pref1[l];
-            if (k <= K) {
-                l = pref1[l];
-                r = pref1[r];
-            } else {
-                k -= K;
-                l = pref1[n] + pref2[l];
-                r = pref1[n] + pref2[r];
-            }
-        }
-    }
-
-    for (auto [l, r, k] : queries) cout << (k ? sa[r - 1] + 1 : -1) << "\n";
+    WaveletTree<int> wt(sa.SA, queries);
+    for (auto [l, r, k] : queries) cout << (k ? wt[r - 1] + 1 : -1) << "\n";
 }
