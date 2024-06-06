@@ -1,15 +1,22 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void update(int i, long long value, vector<long long> &fenwick) {
-    for (; i < fenwick.size(); i += i & -i) fenwick[i] += value;
-}
+template <typename T>
+struct FenwickTree {
+    vector<T> BIT;
 
-long long pref_sum(int i, vector<long long> &fenwick) {
-    auto sum = 0LL;
-    for (; i; i &= (i - 1)) sum += fenwick[i];
-    return sum;
-}
+    void update(int i, T value) {
+        for (; i < BIT.size(); i += i & -i) BIT[i] += value;
+    }
+
+    T pref_sum(int i) {
+        T sum = 0;
+        for (; i; i &= (i - 1)) sum += BIT[i];
+        return sum;
+    }
+
+    FenwickTree(int n) : BIT(n, 0) {}
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -30,14 +37,14 @@ int main() {
     for (auto &[hi, i] : indices) i = unique++;
     indices[INT_MAX] = unique;
 
-    vector<long long> fenwick1(unique + 1), fenwick2(unique + 1);
+    FenwickTree<long long> fw1(unique + 1), fw2(unique + 1);
     auto messy = 0LL;
     for (int i = n - 1; ~i; i--) {
         int j = indices[h[i]], k = indices.upper_bound(h[i] / 2)->second;
 
-        auto ps1 = pref_sum(k, fenwick1), ps2 = pref_sum(k, fenwick2);
-        update(j + 1, 1, fenwick1);
-        update(j + 1, ps1, fenwick2);
+        auto ps1 = fw1.pref_sum(k), ps2 = fw2.pref_sum(k);
+        fw1.update(j + 1, 1);
+        fw2.update(j + 1, ps1);
         messy += ps2;
     }
 
