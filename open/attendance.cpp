@@ -1,20 +1,22 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void update(int i, int value, vector<int> &fenwick, int inspections, vector<bool> &attend) {
-    if (i > inspections) return;
+template <typename T>
+struct FenwickTree {
+    vector<T> BIT;
 
-    attend[i] = value != -1;
-    for (; i < fenwick.size(); i += i & -i) fenwick[i] += value;
-}
+    void update(int i, T value) {
+        for (; i < BIT.size(); i += i & -i) BIT[i] += value;
+    }
 
-int pref_sum(int i, vector<int> &fenwick, int inspections) {
-    if (i > inspections) i = inspections;
+    T pref_sum(int i) {
+        T sum = 0;
+        for (; i; i &= (i - 1)) sum += BIT[i];
+        return sum;
+    }
 
-    int sum = 0;
-    for (; i; i &= (i - 1)) sum += fenwick[i];
-    return sum;
-}
+    FenwickTree(int n) : BIT(n, 0) {}
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -41,21 +43,27 @@ int main() {
     int k = inspections.size();
     cout << k << "\n";
 
-    vector<vector<int>> index(n);
-    for (int i = 0; i < k; i++) index[inspections[i]].emplace_back(i + 1);
-    for (int i = 0; i < n; i++) index[i].emplace_back(INT_MAX - i + 1);
+    vector<vector<int>> indices(n);
+    for (int i = 0; i < k; i++) indices[inspections[i]].emplace_back(i + 1);
+    for (int i = 0; i < n; i++) indices[i].emplace_back(i + 1e7);
 
-    vector<int> fenwick(k + 1, 0);
+    FenwickTree<int> fw(k + 1);
     vector<bool> attend(k + 1, false);
-    for (int i = 0; i < n; i++) update(index[i][0], 1, fenwick, k, attend);
+    auto process = [&](int i, int value) {
+        if (i <= k) {
+            attend[i] = value == 1;
+            fw.update(i, value);
+        }
+    };
+    for (auto i : indices) process(i[0], 1);
 
     curr = 0;
-    for (int i = 1; i <= k; i++) {
+    for (int i = 0; i < k; i++) {
         while (!attend[curr]) curr++;
 
-        int next = *upper_bound(index[inspections[curr - 1]].begin(), index[inspections[curr - 1]].end(), curr);
-        update(curr, -1, fenwick, k, attend);
-        cout << pref_sum(next, fenwick, k) + 1 << " ";
-        update(next, 1, fenwick, k, attend);
+        int next = *upper_bound(indices[inspections[curr - 1]].begin(), indices[inspections[curr - 1]].end(), curr);
+        process(curr, -1);
+        cout << fw.pref_sum(min(next, k)) + 1 << " ";
+        process(next, 1);
     }
 }
