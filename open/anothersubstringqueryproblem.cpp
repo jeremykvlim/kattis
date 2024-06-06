@@ -94,7 +94,6 @@ struct SuffixArray {
     }
 
     SuffixArray(string &s, int r = 128) {
-
         vector<int> ascii(s.begin(), s.end());
         SA = sais(ascii, r);
     };
