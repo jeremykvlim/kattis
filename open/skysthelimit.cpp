@@ -1,6 +1,10 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+double cross(pair<int, double> i, pair<int, double> j, pair<int, double> k) {
+    return (double) (k.first - i.first) * (double) (j.second - i.second) - (double) (k.second - i.second) * (double) (j.first - i.first);
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -16,16 +20,16 @@ int main() {
         houses[i] -= k * i * (n + 1 - i);
     }
 
-    deque<int> convex{0};
+    deque<pair<int, double>> convex{{0, houses[0]}};
     for (int i = 1; i <= n + 1; i++) {
-        while (convex.size() > 1 && (houses[i] - houses[convex[1]]) * (convex[0] - convex[1]) >= (houses[convex[0]] - houses[convex[1]]) * (i - convex[1]))
+        while (convex.size() > 1 && cross(convex[1], {i, houses[i]}, convex[0]) > 0)
             convex.pop_front();
 
-        convex.emplace_front(i);
+        convex.emplace_front(i, houses[i]);
     }
 
     for (int i = convex.size() - 1; i; i--) {
-        int l = convex[i], r = convex[i - 1];
+        int l = convex[i].first, r = convex[i - 1].first;
 
         for (int j = l; j < r; j++) houses[j] = (houses[l] * (r - j) + houses[r] * (j - l)) / (r - l);
     }
