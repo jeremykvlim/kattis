@@ -1,15 +1,22 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void update(int i, int value, vector<int> &fenwick) {
-    for (; i < fenwick.size(); i += i & -i) fenwick[i] += value;
-}
+template <typename T>
+struct FenwickTree {
+    vector<T> BIT;
 
-int pref_sum(int i, vector<int> &fenwick) {
-    int sum = 0;
-    for (; i; i &= (i - 1)) sum += fenwick[i];
-    return sum;
-}
+    void update(int i, T value) {
+        for (; i < BIT.size(); i += i & -i) BIT[i] += value;
+    }
+
+    T pref_sum(int i) {
+        T sum = 0;
+        for (; i; i &= (i - 1)) sum += BIT[i];
+        return sum;
+    }
+
+    FenwickTree(int n) : BIT(n, 0) {}
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -29,13 +36,14 @@ int main() {
     }
 
     vector<int> fenwick(n + 1, 0);
+    FenwickTree<int> fw(n + 1);
     int a = INT_MAX;
     for (int i = n; i; i--)
         if (next[i] != -1) {
-            if (pref_sum(next[i], fenwick) > 0) a = min(a, s[i]);
+            if (fw.pref_sum(next[i])) a = min(a, s[i]);
 
-            update(i + 1, 1, fenwick);
-            update(next[i] + 1, -1, fenwick);
+            fw.update(i + 1, 1);
+            fw.update(next[i] + 1, -1);
         }
 
     if (a == INT_MAX) {
