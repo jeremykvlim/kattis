@@ -27,22 +27,22 @@ int main() {
     cin >> n >> k;
 
     vector<tuple<int, int, int>> values;
-    map<int, int> step;
+    map<int, int> indices;
     for (int i = 0; i < n; i++) {
         int g, p, ga, pa;
         cin >> g >> p >> ga >> pa;
 
-        step[p];
+        indices[p];
         values.emplace_back(g, p, 0);
         if (ga && pa) {
-            step[pa];
+            indices[pa];
             values.emplace_back(ga, pa, 1);
         }
     }
 
     int index = 1;
-    for (auto &[p, i] : step) i = index++;
-    for (auto &[g, p, b] : values) p = step[p];
+    for (auto &[p, i] : indices) i = index++;
+    for (auto &[g, p, b] : values) p = indices[p];
     sort(values.begin(), values.end(), [&](auto v1, auto v2) {return get<0>(v1) != get<0>(v2) ? get<0>(v1) > get<0>(v2) : get<1>(v1) < get<1>(v2);});
 
     auto _max = [](int x, int y) {return max(x, y);};
