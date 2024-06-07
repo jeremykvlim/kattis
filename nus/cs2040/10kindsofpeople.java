@@ -33,19 +33,17 @@ public class 10kindsofpeople {
     }
 
     static class DisjointSet {
-        int[] sets, rank;
+        int[] sets;
 
         DisjointSet(int n) {
             sets = new int[n];
-            rank = new int[n];
             for (int i = 0; i < n; i++) sets[i] = i;
         }
 
         boolean unite(int p, int q) {
             int p_set = find(p), q_set = find(q);
             if (p_set != q_set) {
-                sets[rank[p_set] < rank[q_set] ? p_set : q_set] = rank[p_set] < rank[q_set] ? q_set : p_set;
-                rank[p_set] = rank[p_set] == rank[q_set] ? rank[p_set]++ : rank[p_set];
+                sets[q_set] = sets[p_set];
                 return true;
             }
             return false;
