@@ -1,6 +1,27 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T, typename F>
+struct SparseTable {
+    vector<vector<T>> ST;
+    F f;
+
+    SparseTable(vector<T> v, F func) : f(func) {
+        int n = __lg(v.size()) + 1;
+        ST.resize(n);
+        ST.front() = v;
+        for (int i = 1; i < n; i++) {
+            ST[i].resize(v.size() - (1 << i) + 1);
+            for (int j = 0; j < v.size() - (1 << i); j++)
+                ST[i][j] = f(ST[i - 1][j], ST[i - 1][j + (1 << (i - 1))]);
+        }
+    }
+
+    auto size() {
+        return ST.size();
+    }
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -16,20 +37,19 @@ int main() {
         biggest = max(biggest, a[i]);
     }
 
-    vector<vector<int>> sparse(__lg(biggest) + 1, vector<int>(biggest + 1, 0)), indices(biggest + 1);
+    vector<int> last(biggest + 1);
+    vector<vector<int>> indices(biggest + 1);
     for (int i = 1; i <= n; i++) {
-        sparse[0][a[i]] = i;
+        last[a[i]] = i;
         indices[a[i]].emplace_back(i);
     }
 
-    for (int i = 1; i < sparse.size(); i++)
-        for (int j = 1; j + (1 << i) - 1 <= biggest; j++)
-            sparse[i][j] = max(sparse[i - 1][j], sparse[i - 1][j + (1 << (i - 1))]);
-
+    auto _max = [](int x, int y) {return max(x, y);};
+    SparseTable<int, decltype(_max)> st(last, _max);
     auto dfs = [&](auto &&self, vector<int> curr = {-1}, int v = 0) {
-        for (int j = 1; j <= biggest; j++) {
-            for (int i = sparse.size() - 1; ~i; i--)
-                if (sparse[i][j] && sparse[i][j] <= curr[0]) {
+        for (int j = 0; j <= biggest; j++) {
+            for (int i = st.size() - 1; ~i; i--)
+                if (j < st.ST.size() && st.ST[i][j] && st.ST[i][j] <= curr[0]) {
                     j += (1 << i);
                     if (j > biggest) return;
                 }
