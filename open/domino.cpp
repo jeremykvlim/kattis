@@ -101,7 +101,6 @@ int main() {
             for (auto [u, v, w, capacity, flow, index] : edges)
                 if (capacity != flow) potential[v] = min(potential[v], potential[u] + w);
     };
-
     bellman_ford();
 
     vector<bool> visited(id, false);
