@@ -5,36 +5,55 @@ public class virtualfriends {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(System.out);
-        
+
         int t = Integer.parseInt(br.readLine());
         while (t-- > 0) {
-            int f = Integer.parseInt(br.readLine()), count = 0;
-            int[] sets = new int[2 * f + 1], size = new int[2 * f + 1];
+            int f = Integer.parseInt(br.readLine()), index = 0;
+            var dsu = new DisjointSet(2 * f + 1);
             var compress = new HashMap<String, Integer>();
-          
+
             for (int i = 0; i < f; i++) {
                 var friends = br.readLine().split(" ");
-                
-                for (var fr : friends) 
+
+                for (var fr : friends)
                     if (!compress.containsKey(fr)) {
-                        compress.put(fr, count);
-                        sets[count] = count;
-                        size[count++] = 1;
+                        compress.put(fr, index);
+                        dsu.sets[index] = index;
+                        dsu.size[index++] = 1;
                     }
-                
-                int a = find(compress.get(friends[0]), sets), b = find(compress.get(friends[1]), sets);
-                if (a != b) {
-                    sets[b] = a;
-                    size[a] += size[b];
-                }
-                
-                pw.println(size[a]);
+
+                int a = compress.get(friends[0]), b = compress.get(friends[1]);
+                dsu.unite(a, b);
+                pw.println(dsu.size[dsu.find(a)]);
             }
         }
         pw.flush();
     }
 
-    static int find(int p, int[] sets) {
-        return (sets[p] == p) ? p : (sets[p] = find(sets[p], sets));
+    static class DisjointSet {
+        int[] sets, size;
+
+        DisjointSet(int n) {
+            sets = new int[n];
+            size = new int[n];
+            for (int i = 0; i < n; i++) {
+                sets[i] = i;
+                size[i] = 1;
+            }
+        }
+
+        boolean unite(int p, int q) {
+            int p_set = find(p), q_set = find(q);
+            if (p_set != q_set) {
+                sets[q_set] = p_set;
+                size[p_set] += size[q_set];
+                return true;
+            }
+            return false;
+        }
+
+        int find(int p) {
+            return (sets[p] == p) ? p : (sets[p] = find(sets[p]));
+        }
     }
 }
