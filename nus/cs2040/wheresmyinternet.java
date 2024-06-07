@@ -27,22 +27,17 @@ public class wheresmyinternet {
     }
 
     static class DisjointSet {
-        int[] sets, size;
+        int[] sets;
 
         DisjointSet(int n) {
             sets = new int[n];
-            size = new int[n];
-            for (int i = 0; i < n; i++) {
-                sets[i] = i;
-                size[i] = 1;
-            }
+            for (int i = 0; i < n; i++) sets[i] = i;
         }
 
         boolean unite(int p, int q) {
             int p_set = find(p), q_set = find(q);
             if (p_set != q_set) {
                 sets[q_set] = p_set;
-                size[p_set] += size[q_set];
                 return true;
             }
             return false;
