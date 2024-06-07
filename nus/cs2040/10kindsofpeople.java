@@ -12,13 +12,12 @@ public class 10kindsofpeople {
         var world = new char[r][c];
         for (int i = 0; i < r; i++) world[i] = br.readLine().toCharArray();
 
-        int[] sets = new int[r * c], rank = new int[r * c];
-        for (int i = 0; i < sets.length; i++) sets[i] = i;
+        var dsu = new DisjointSet(r * c);
 
         for (int i = 0; i < r; i++)
             for (int j = 0; j < c; j++) {
-                if (i > 0 && world[i][j] == world[i - 1][j]) union(i * c + j, (i - 1) * c + j, sets, rank);
-                if (j > 0 && world[i][j] == world[i][j - 1]) union(i * c + j, i * c + j - 1, sets, rank);
+                if (i > 0 && world[i][j] == world[i - 1][j]) dsu.unite(i * c + j, (i - 1) * c + j);
+                if (j > 0 && world[i][j] == world[i][j - 1]) dsu.unite(i * c + j, i * c + j - 1);
             }
 
         int n = Integer.parseInt(br.readLine());
@@ -27,22 +26,33 @@ public class 10kindsofpeople {
             var query = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
             int r1 = query[0], c1 = query[1], r2 = query[2], c2 = query[3];
 
-            if (find((r1 - 1) * c + c1 - 1, sets) == find((r2 - 1) * c + c2 - 1, sets)) System.out.println((world[r1 - 1][c1 - 1] == '0' ? "binary" : "decimal"));
-            else System.out.println("neither");
+            if (dsu.find((r1 - 1) * c + c1 - 1) == dsu.find((r2 - 1) * c + c2 - 1)) pw.println((world[r1 - 1][c1 - 1] == '0' ? "binary" : "decimal"));
+            else pw.println("neither");
         }
+        pw.flush();
     }
 
-    static void union(int curr, int prev, int[] sets, int[] rank) {
-        curr = find(curr, sets);
-        prev = find(prev, sets);
+    static class DisjointSet {
+        int[] sets, rank;
 
-        if (curr != prev) {
-            sets[rank[curr] < rank[prev] ? curr : prev] = rank[curr] < rank[prev] ? prev : curr;
-            rank[curr] = rank[curr] == rank[prev] ? rank[curr]++ : rank[curr];
+        DisjointSet(int n) {
+            sets = new int[n];
+            rank = new int[n];
+            for (int i = 0; i < n; i++) sets[i] = i;
         }
-    }
 
-    static int find(int p, int[] sets) {
-        return (sets[p] == p) ? p : (sets[p] = find(sets[p], sets));
+        boolean unite(int p, int q) {
+            int p_set = find(p), q_set = find(q);
+            if (p_set != q_set) {
+                sets[rank[p_set] < rank[q_set] ? p_set : q_set] = rank[p_set] < rank[q_set] ? q_set : p_set;
+                rank[p_set] = rank[p_set] == rank[q_set] ? rank[p_set]++ : rank[p_set];
+                return true;
+            }
+            return false;
+        }
+
+        int find(int p) {
+            return (sets[p] == p) ? p : (sets[p] = find(sets[p]));
+        }
     }
 }
