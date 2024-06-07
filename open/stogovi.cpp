@@ -50,15 +50,15 @@ int main() {
             cin >> w;
 
             id[i] = id[v];
-            queries.emplace_back(id[i], id[w], i);
+            queries.emplace_back(id[v], id[w], i);
         }
     }
 
     vector<int> order(n + 1, 0), euler_tour, depth(2 * n);
     auto dfs = [&](auto &&self, int v = 0, int p = -1, int d = 0) -> void {
         euler_tour.emplace_back(v);
-        order[v] = euler_tour.size();
         depth[euler_tour.size()] = d;
+        order[v] = euler_tour.size();
         for (int u : adj_list[v])
             if (u != p) {
                 self(self, u, v, d + 1);
@@ -70,7 +70,7 @@ int main() {
 
     auto _min = [](int x, int y) {return min(x, y);};
     SparseTable<int, decltype(_min)> st(depth, _min);
-    for (auto [x, y, i] : queries) op[i] = st.range_query(min(order[x], order[y]), max(order[x], order[y]));
+    for (auto [v, w, i] : queries) op[i] = st.range_query(min(order[v], order[w]), max(order[v], order[w]));
 
     for (int i = 1; i <= n; i++)
         if (op[i] != -1) cout << op[i] << "\n";
