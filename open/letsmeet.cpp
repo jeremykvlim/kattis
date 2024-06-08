@@ -7,7 +7,7 @@ void rref(int n, vector<vector<double>> &matrix) {
     for (int i = 0; i < min(r, c); i++) {
         int pivot = max_element(matrix.begin() + i, matrix.end(), [&](auto r1, auto r2) {return fabs(r1[i]) < fabs(r2[i]);}) - matrix.begin();
 
-        if (pivot == r) return;
+        if (pivot >= r) return;
 
         swap(matrix[i], matrix[pivot]);
 
