@@ -1,55 +1,73 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct TrieNode {
-    vector<int> next;
+struct Trie {
+    struct TrieNode {
+        vector<int> next;
 
-    TrieNode() {
-        next.resize(26, -1);
+        TrieNode() {
+            next.resize(26, -1);
+        }
+    };
+
+    vector<TrieNode> T;
+    vector<int> ends;
+
+    Trie(int n = 1) : T(n) {}
+
+    void add(string &s) {
+        int node = 0;
+        for (char c : s) {
+            int pos = c - 'a';
+
+            if (T[node].next[pos] == -1) {
+                T[node].next[pos] = T.size();
+                T.emplace_back();
+            }
+            node = T[node].next[pos];
+        }
+        ends.emplace_back(node);
+    }
+
+    auto size() {
+        return T.size();
+    }
+
+    auto & operator[](int i) {
+        return T[i];
     }
 };
-
-void dfs(int start, int curr, int end, vector<TrieNode> &trie, vector<bool> &visited, string &s) {
-    if (curr != end) visited[curr] = true;
-
-    for (int i = start; i < s.size(); i++) {
-        int pos = s[i] - 'a';
-        if (trie[curr].next[pos] != -1) dfs(i + 1, trie[curr].next[pos], end, trie, visited, s);
-    }
-}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    vector<TrieNode> trie(1);
+    Trie trie;
     vector<string> sorted, S;
-    vector<int> end;
     string s;
     while (cin >> s) {
         S.emplace_back(s);
         sort(s.begin(), s.end());
         sorted.emplace_back(s);
 
-        int node = 0;
-        for (char c : s) {
-            int pos = c - 'a';
-
-            if (trie[node].next[pos] == -1) {
-                trie[node].next[pos] = trie.size();
-                trie.emplace_back();
-            }
-            node = trie[node].next[pos];
-        }
-        end.emplace_back(node);
+        trie.add(s);
     }
 
-    vector<bool> visited(*max_element(end.begin(), end.end()) + 1, false);
-    for (int i = 0; i < end.size(); i++) dfs(0, 0, end[i], trie, visited, sorted[i]);
+    vector<bool> visited(trie.size(), false);
+    auto dfs = [&](auto &&self, int i, int node, int end, string s) -> void {
+        if (node != end) visited[node] = true;
+
+        for (; i < s.size(); i++) {
+            int pos = s[i] - 'a';
+            if (trie[node].next[pos] != -1) self(self, i + 1, trie[node].next[pos], end, s);
+        }
+    };
+    for (int i = 0; i < trie.ends.size(); i++) dfs(dfs, 0, 0, trie.ends[i], sorted[i]);
 
     vector<string> dominant;
-    for (int i = 0; i < end.size(); i++)
-        if (!visited[end[i]]) dominant.emplace_back(S[i]);
+    for (int i = 0; i < trie.ends.size(); i++)
+        if (!visited[trie.ends[i]]) dominant.emplace_back(S[i]);
     sort(dominant.begin(), dominant.end());
+    
     for (auto d : dominant) cout << d << "\n";
 }
