@@ -1,9 +1,26 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int find(int p, vector<int> &sets) {
-    return (sets[p] == p) ? p : (sets[p] = find(sets[p], sets));
-}
+struct DisjointSet {
+    vector<int> sets;
+
+    int find(int p) {
+        return (sets[p] == p) ? p : (sets[p] = find(sets[p]));
+    }
+
+    bool unite(int p, int q) {
+        int p_set = find(p), q_set = find(q);
+        if (p_set != q_set) {
+            sets[q_set] = p_set;
+            return true;
+        }
+        return false;
+    }
+
+    DisjointSet(int n) : sets(n) {
+        iota(sets.begin(), sets.end(), 0);
+    }
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -12,8 +29,7 @@ int main() {
     int n;
     cin >> n;
 
-    vector<int> sets(2 * n);
-    iota(sets.begin(), sets.end(), 0);
+    DisjointSet dsu(2 * n);
     map<string, int> compress;
     vector<pair<int, int>> unequivalent;
     while (n--) {
@@ -24,7 +40,7 @@ int main() {
         reverse(Y.begin(), Y.end());
 
         int x = compress.emplace(X, compress.size()).first->second, y = compress.emplace(Y, compress.size()).first->second;
-        if (s == "is") sets[find(x, sets)] = find(y, sets);
+        if (s == "is") dsu.unite(x, y);
         else unequivalent.emplace_back(x, y);
     }
 
@@ -34,15 +50,15 @@ int main() {
             int len = min({(int) x->first.size(), (int) y->first.size(), 3});
 
             if (x->first.substr(0, len) == y->first.substr(0, len)) {
-                sets[find(x->second, sets)] = find(y->second, sets);
+                dsu.unite(x->second, y->second);
                 y++;
             } else break;
         }
     }
 
     bool consistent = true;
-    for (auto &[x, y] : unequivalent)
-        if (find(x, sets) ==  find(y, sets)) {
+    for (auto [x, y] : unequivalent)
+        if (dsu.find(x) == dsu.find(y)) {
             consistent = false;
             break;
         }
