@@ -12,7 +12,7 @@ struct Trie {
 
     vector<TrieNode> T;
 
-    Trie() : T(1) {}
+    Trie(int n = 1) : T(n) {}
 
     void add(string &s) {
         int node = 0;
@@ -27,7 +27,7 @@ struct Trie {
         }
     }
 
-    auto operator[](int i) {
+    auto & operator[](int i) {
         return T[i];
     }
 };
@@ -86,7 +86,7 @@ int main() {
     unordered_map<int, int> start, end;
     map<long long, vector<int>> shared;
     int count = 0;
-    auto dfs = [&](auto &&self, int curr) -> void {
+    auto dfs = [&](auto &&self, int curr = 0) -> void {
         start[curr] = ++count;
 
         for (auto h : word_hash[curr])
@@ -97,8 +97,7 @@ int main() {
 
         end[curr] = ++count;
     };
-
-    dfs(dfs, 0);
+    dfs(dfs);
 
     for (int i = 0; i < q; i++) {
         int node = 0;
