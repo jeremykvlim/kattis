@@ -1,18 +1,18 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T, typename F>
+template <typename T>
 struct SparseTable {
     vector<vector<T>> ST;
-    F f;
+    function<T(T, T)> f;
 
-    SparseTable(vector<T> v, F func) : f(func) {
+    SparseTable(vector<T> v, function<T(T, T)> func) : f(std::move(func)) {
         int n = __lg(v.size()) + 1;
         ST.resize(n);
         ST.front() = v;
         for (int i = 1; i < n; i++) {
             ST[i].resize(v.size() - (1 << i) + 1);
-            for (int j = 0; j <= v.size() - (1 << i); j++)
+            for (int j = 0; j < v.size() - (1 << i); j++)
                 ST[i][j] = f(ST[i - 1][j], ST[i - 1][j + (1 << (i - 1))]);
         }
     }
@@ -68,8 +68,7 @@ int main() {
     };
     dfs(dfs);
 
-    auto _min = [](int x, int y) {return min(x, y);};
-    SparseTable<int, decltype(_min)> st(depth, _min);
+    SparseTable<int> st(depth, [](int x, int y) {return min(x, y);});
     for (auto [v, w, i] : queries) op[i] = st.range_query(min(order[v], order[w]), max(order[v], order[w]));
 
     for (int i = 1; i <= n; i++)
