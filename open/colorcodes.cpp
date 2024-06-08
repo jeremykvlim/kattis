@@ -1,27 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-bool ref(vector<vector<bool>> &matrix) {
-    int r = matrix.size(), c = matrix[0].size();
-    auto temp = matrix;
-
-    for (int i = 0; i < min(r, c); i++) {
-        int pivot = find_if(temp.begin() + i, temp.end(), [i](auto r) {return r[i];}) - temp.begin();
-
-        if (pivot >= r) return false;
-
-        swap(matrix[i], matrix[pivot]);
-        swap(temp[i], temp[pivot]);
-
-        for (int j = i + 1; j < r; j++) {
-            for (int k = i + 1; k < c; k++) temp[j][k] = temp[j][k] - temp[i][k] * temp[j][i] / temp[i][i];
-            temp[j][i] = false;
-        }
-    }
-
-    return true;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -29,38 +8,32 @@ int main() {
     int n, p;
     cin >> n >> p;
 
-    vector<bool> P(n + 1, false);
-    while (p--) {
-        int s;
-        cin >> s;
+    vector<int> s(p);
+    for (int &si : s) cin >> si;
 
-        P[s] = true;
-    }
+    auto next = [](int i) {
+        int b = i | (i - 1) + 1;
+        return b | ((((b & -b) / (i & -i)) >> 1) - 1);
+    };
 
-    vector<vector<bool>> valid{vector<bool>(n, false)};
-    for (int i = 0; i < 1 << n; i++) {
-        vector<bool> bits(n, false);
-        for (int j = 0; j < n; j++) bits[j] = (i >> j) & 1;
+    vector<int> code(1 << n);
+    vector<bool> visited(1 << n, false);
+    visited[0] = true;
+    for (int i = 1; i < 1 << n; i++) {
+        for (int si : s)
+            for (int j = (1 << si) - 1; j < 1 << n; j = next(j)) {
+                int c = code[i - 1] ^ j;
+                if (!visited[c]) {
+                    code[i] = c;
+                    visited[c] = true;
+                    goto next;
+                }
+            }
 
-        if (P[count(bits.begin(), bits.end(), true)]) valid.emplace_back(bits);
-    }
-
-    if (!ref(valid)) {
         cout << "impossible";
         exit(0);
+        next:;
     }
 
-    vector<vector<bool>> code{vector<bool>(n, false)};
-    valid.resize(n);
-    for (auto m : valid)
-        for (int i = code.size() - 1; ~i; i--) {
-            vector<bool> x(n);
-            for (int j = 0; j < n; j++) x[j] = code[i][j] ^ m[j];
-            code.emplace_back(x);
-        }
-
-    for (auto &x : code) {
-        for (bool b : x) cout << b;
-        cout << "\n";
-    }
+    for (int c : code) cout << bitset<16>(c).to_string().substr(16 - n) << "\n";
 }
