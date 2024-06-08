@@ -1,6 +1,27 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+struct DisjointSet {
+    vector<int> sets;
+
+    int find(int p) {
+        return (sets[p] == p) ? p : (sets[p] = find(sets[p]));
+    }
+
+    bool unite(int p, int q) {
+        int p_set = find(p), q_set = find(q);
+        if (p_set != q_set) {
+            sets[q_set] = p_set;
+            return true;
+        }
+        return false;
+    }
+
+    DisjointSet(int n) : sets(n) {
+        iota(sets.begin(), sets.end(), 0);
+    }
+};
+
 vector<int> sieve(int n) {
     vector<int> factors(n + 1), primes{2};
     iota(factors.begin(), factors.end(), 0);
@@ -12,10 +33,6 @@ vector<int> sieve(int n) {
         }
 
     return primes;
-}
-
-int find(int p, vector<int> &sets) {
-    return (sets[p] == p) ? p : (sets[p] = find(sets[p], sets));
 }
 
 int main() {
@@ -30,19 +47,13 @@ int main() {
         long long a, b, p;
         cin >> a >> b >> p;
 
-        auto size = b - a + 1;
-        vector<int> sets(size);
-        iota(sets.begin(), sets.end(), 0);
+        int size = b - a + 1;
+        DisjointSet dsu(size);
 
         for (int i = primes.size() - 1; ~i && primes[i] >= p; i--) {
-            auto l = (primes[i] - a % primes[i]) % primes[i];
-            for (auto r = l + primes[i]; r <= b - a; r += primes[i]) {
-                int l_set = find(l, sets), r_set = find(r, sets);
-                if (l_set != r_set) {
-                    size--;
-                    sets[r_set] = sets[l_set];
-                }
-            }
+            int l = (primes[i] - a % primes[i]) % primes[i];
+            for (int r = l + primes[i]; r <= b - a; r += primes[i])
+                if (dsu.unite(l, r)) size--;
         }
 
         cout << "Case #" << x << ": " << size << "\n";
