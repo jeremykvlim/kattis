@@ -1,19 +1,21 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-bool ref(int n, vector<vector<bool>> &valid) {
-    auto matrix = valid;
-    for (int i = 0; i < n; i++) {
-        int d = find_if(matrix.begin() + i, matrix.end(), [i](auto r) {return r[i];}) - matrix.begin();
+bool ref(vector<vector<bool>> &matrix) {
+    int r = matrix.size(), c = matrix[0].size();
+    auto temp = matrix;
 
-        if (d == matrix.size()) return false;
+    for (int i = 0; i < min(r, c); i++) {
+        int pivot = find_if(temp.begin() + i, temp.end(), [i](auto r) {return r[i];}) - temp.begin();
 
-        swap(matrix[d], matrix[i]);
-        swap(valid[d], valid[i]);
+        if (pivot == matrix.size()) return false;
 
-        for (int j = i + 1; j < matrix.size(); j++) {
-            for (int k = i + 1; k <= n; k++) matrix[j][k] = matrix[j][k] - matrix[i][k] * matrix[j][i] / matrix[i][i];
-            matrix[j][i] = false;
+        swap(matrix[pivot], matrix[i]);
+        swap(temp[pivot], temp[i]);
+
+        for (int j = i + 1; j < r; j++) {
+            for (int k = i + 1; k < c; k++) temp[j][k] = temp[j][k] - temp[i][k] * temp[j][i] / temp[i][i];
+            temp[j][i] = false;
         }
     }
 
@@ -43,7 +45,7 @@ int main() {
         if (P[count(bits.begin(), bits.end(), true)]) valid.emplace_back(bits);
     }
 
-    if (!ref(n, valid)) {
+    if (!ref(valid)) {
         cout << "impossible";
         exit(0);
     }
