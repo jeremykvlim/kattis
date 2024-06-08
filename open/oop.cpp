@@ -1,11 +1,34 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct TrieNode {
-    vector<int> next;
+struct Trie {
+    struct TrieNode {
+        vector<int> next;
 
-    TrieNode() {
-        next.resize(26, -1);
+        TrieNode() {
+            next.resize(26, -1);
+        }
+    };
+
+    vector<TrieNode> T;
+
+    Trie() : T(1) {}
+
+    void add(string &s) {
+        int node = 0;
+        for (char c : s) {
+            int pos = c - 'a';
+
+            if (T[node].next[pos] == -1) {
+                T[node].next[pos] = T.size();
+                T.emplace_back();
+            }
+            node = T[node].next[pos];
+        }
+    }
+
+    auto operator[](int i) {
+        return T[i];
     }
 };
 
@@ -16,15 +39,16 @@ int main() {
     int n, q;
     cin >> n >> q;
 
+    Trie trie;
     vector<string> words(n);
     int longest = 0;
     for (auto &w : words) {
         cin >> w;
 
+        trie.add(w);
         longest = max(longest, (int) w.size());
     }
 
-    vector<TrieNode> trie(1);
     unordered_map<int, vector<long long>> word_hash;
     vector<long long> hash(longest + 1, 0);
     auto b = (long long) 1e16 + 61, mod = (1LL << 62) + 135;
@@ -37,13 +61,7 @@ int main() {
         word_hash[node].emplace_back(hash[0]);
         for (int i = 0; i < w.size(); i++) {
             int pos = w[i] - 'a';
-
-            if (trie[node].next[pos] == -1) {
-                trie[node].next[pos] = trie.size();
-                trie.emplace_back();
-            }
             node = trie[node].next[pos];
-
             word_hash[node].emplace_back(hash[i + 1]);
         }
     }
@@ -79,7 +97,7 @@ int main() {
 
         end[curr] = ++count;
     };
-    
+
     dfs(dfs, 0);
 
     for (int i = 0; i < q; i++) {
