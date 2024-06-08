@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct SuffixTree {
+struct Trie {
     struct TrieNode {
         vector<int> next;
 
@@ -10,8 +10,18 @@ struct SuffixTree {
         }
     };
 
+    vector<TrieNode> T;
+
+    Trie(int n = 1) : T(n) {}
+
+    auto & operator[](int i) {
+        return T[i];
+    }
+};
+
+struct SuffixTree {
     string s;
-    vector<TrieNode> trie;
+    Trie trie;
     vector<int> l, r, parent, link;
     int node = 0, pos = 0, size = 2, index = 0, leaves = 0;
     long long count = 0;
