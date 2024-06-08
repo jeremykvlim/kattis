@@ -3,9 +3,26 @@ using namespace std;
 
 constexpr int MODULO = 9901;
 
-int find(int p, vector<int> &sets) {
-    return (sets[p] == p) ? p : (sets[p] = find(sets[p], sets));
-}
+struct DisjointSet {
+    vector<int> sets;
+
+    int find(int p) {
+        return (sets[p] == p) ? p : (sets[p] = find(sets[p]));
+    }
+
+    bool unite(int p, int q) {
+        int p_set = find(p), q_set = find(q);
+        if (p_set != q_set) {
+            sets[q_set] = p_set;
+            return true;
+        }
+        return false;
+    }
+
+    DisjointSet(int n) : sets(n) {
+        iota(sets.begin(), sets.end(), 0);
+    }
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -26,8 +43,8 @@ int main() {
 
         int y = (fact[n - 1] * (MODULO / 2 + 1)) % MODULO;
         for (int i = 1; i < 1 << k; i++) {
-            vector<int> degree(n + 1, 0), degree_count(4, 0), sets(n + 1);
-            iota(sets.begin(), sets.end(), 0);
+            DisjointSet dsu(n + 1);
+            vector<int> degree(n + 1, 0), degree_count(4, 0);
 
             int cycles = 0;
             for (int j = 0; j < k; j++)
@@ -36,9 +53,7 @@ int main() {
                     degree[u]++;
                     degree[v]++;
 
-                    int u_set = find(u, sets), v_set = find(v, sets);
-                    sets[v_set] = sets[u_set];
-                    if (u_set == v_set) cycles++;
+                    if (!dsu.unite(u, v)) cycles++;
                 }
 
             int forbidden = __builtin_popcount(i);
