@@ -10,8 +10,8 @@ bool ref(vector<vector<bool>> &matrix) {
 
         if (pivot == matrix.size()) return false;
 
-        swap(matrix[pivot], matrix[i]);
-        swap(temp[pivot], temp[i]);
+        swap(matrix[i], matrix[pivot]);
+        swap(temp[i], temp[pivot]);
 
         for (int j = i + 1; j < r; j++) {
             for (int k = i + 1; k < c; k++) temp[j][k] = temp[j][k] - temp[i][k] * temp[j][i] / temp[i][i];
