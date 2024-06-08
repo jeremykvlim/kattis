@@ -4,7 +4,9 @@ using namespace std;
 struct Trie {
     enum ascii {
         LOWER = 97,
-        UPPER = 65
+        UPPER = 65,
+        NUM = 48,
+        NA = 0
     };
 
     struct TrieNode {
