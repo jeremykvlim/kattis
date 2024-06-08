@@ -1,12 +1,12 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T, typename F>
+template <typename T>
 struct SparseTable {
     vector<vector<T>> ST;
-    F f;
+    function<T(T, T)> f;
 
-    SparseTable(vector<T> v, F func) : f(func) {
+    SparseTable(vector<T> v, function<T(T, T)> func) : f(std::move(func)) {
         int n = __lg(v.size()) + 1;
         ST.resize(n);
         ST.front() = v;
@@ -44,12 +44,11 @@ int main() {
         indices[a[i]].emplace_back(i);
     }
 
-    auto _max = [](int x, int y) {return max(x, y);};
-    SparseTable<int, decltype(_max)> st(last, _max);
+    SparseTable<int> st(last, [](int x, int y) {return max(x, y);});
     auto dfs = [&](auto &&self, vector<int> curr = {-1}, int v = 0) {
         for (int j = 0; j <= biggest; j++) {
             for (int i = st.size() - 1; ~i; i--)
-                if (j < st.ST.size() && st.ST[i][j] && st.ST[i][j] <= curr[0]) {
+                if (j < st.ST[i].size() && st.ST[i][j] && st.ST[i][j] <= curr[0]) {
                     j += (1 << i);
                     if (j > biggest) return;
                 }
