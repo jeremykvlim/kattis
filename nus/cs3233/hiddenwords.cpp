@@ -17,7 +17,7 @@ struct Trie {
     vector<TrieNode> T;
     ascii a;
 
-    Trie(int n = 1, ascii a = LOWER) : T(n), a(a) {}
+    Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha) {}
 
     void add(string &s) {
         int node = 0;
