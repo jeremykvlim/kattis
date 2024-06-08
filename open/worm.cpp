@@ -45,7 +45,7 @@ int main() {
     };
 
     auto _1D = [&]() {
-        int fib1 = 1, fib2 = 1;
+        int fib1 = 0, fib2 = 1;
         while (fib2 < n) {
             fib1 += fib2;
             swap(fib1, fib2);
