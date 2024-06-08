@@ -8,7 +8,7 @@ bool ref(vector<vector<bool>> &matrix) {
     for (int i = 0; i < min(r, c); i++) {
         int pivot = find_if(temp.begin() + i, temp.end(), [i](auto r) {return r[i];}) - temp.begin();
 
-        if (pivot == matrix.size()) return false;
+        if (pivot >= r) return false;
 
         swap(matrix[i], matrix[pivot]);
         swap(temp[i], temp[pivot]);
