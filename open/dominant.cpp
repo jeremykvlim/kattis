@@ -29,7 +29,7 @@ struct Trie {
 
             if (T[node].next[pos] == -1) {
                 T[node].next[pos] = T.size();
-                T.emplace_back();
+                T.emplace_back(TrieNode(r));
             }
             node = T[node].next[pos];
         }
