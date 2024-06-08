@@ -1,10 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int find(int p, vector<int> &sets) {
-    return (sets[p] == p) ? p : (sets[p] = find(sets[p], sets));
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -13,7 +9,7 @@ int main() {
     cin >> n >> m >> S;
 
     vector<vector<tuple<int, int, int>>> adj_list(n + 1);
-    for (int i = 0; i < m; i++) {
+    for (int i = 1; i <= m; i++) {
         int a, b, c;
         cin >> a >> b >> c;
 
@@ -25,13 +21,13 @@ int main() {
     vector<vector<tuple<int, int, int>>> curr(n + 1);
     while (S--) {
         s[1] = true;
-        for (int i = 0; i < n - 1; i++) {
+        for (int _ = 0; _ < n - 1; _++) {
             int p;
             cin >> p;
 
             s[p] = true;
-            for (auto [v, w, x] : adj_list[p])
-                if (s[v]) curr[p].emplace_back(v, w, x);
+            for (auto [q, r, i] : adj_list[p])
+                if (s[q]) curr[p].emplace_back(q, r, i);
         }
 
         for (int i = 1; i <= n; i++) {
@@ -41,18 +37,15 @@ int main() {
         }
     }
 
-    vector<int> sets(n + 1), branches;
-    iota(sets.begin(), sets.end(), 0);
-    for (int u = 1; u <= n; u++) {
+    vector<int> branches;
+    for (int p = 1; p <= n; p++) {
         tuple<int, int, int> best{-1, -1, -1};
+        auto &[a, c, i] = best;
 
-        for (auto [v, w, x] : adj_list[u])
-            if (get<1>(best) < w) best = {v, w, x};
+        for (auto [q, r, j] : adj_list[p])
+            if (c < r) best = {q, r, j};
 
-        if (get<2>(best) != -1) {
-            sets[find(get<0>(best), sets)] = sets[find(u, sets)];
-            branches.emplace_back(get<2>(best) + 1);
-        }
+        if (a != -1) branches.emplace_back(i);
     }
 
     if (branches.size() != n - 1) cout << "IMPOSSIBLE";
@@ -60,6 +53,6 @@ int main() {
         sort(branches.begin(), branches.end());
 
         cout << n - 1 << "\n";
-        for (auto b : branches) cout << b << " ";
+        for (int b : branches) cout << b << " ";
     }
 }
