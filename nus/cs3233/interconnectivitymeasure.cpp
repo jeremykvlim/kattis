@@ -1,34 +1,26 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int find(int p, vector<int> &sets) {
-    return (sets[p] == p) ? p : (sets[p] = find(sets[p], sets));
-}
+struct DisjointSet {
+    vector<int> sets;
 
-void dnc(int curr, int lg, vector<int> &days, vector<int> &cost, vector<int> &sets, vector<pair<int, int>> &roads, vector<pair<int, int>> &junctions) {
-    if (lg < 0) {
-        for (int d : days) cost[d] = curr;
-        return;
+    int find(int p) {
+        return (sets[p] == p) ? p : (sets[p] = find(sets[p]));
     }
 
-    int next = curr ^ (1 << lg);
-    vector<int> undo;
-    for (int i = next; i; --i &= next) {
-        auto [u, v] = roads[i];
-        int u_set = find(u, sets), v_set = find(v, sets);
-        sets[v_set] = u_set;
-
-        undo.emplace_back(u);
-        undo.emplace_back(v);
+    bool unite(int p, int q) {
+        int p_set = find(p), q_set = find(q);
+        if (p_set != q_set) {
+            sets[q_set] = p_set;
+            return true;
+        }
+        return false;
     }
 
-    vector<int> same, diff;
-    for (int d : days) (find(junctions[d].first, sets) == find(junctions[d].second, sets) ? same : diff).emplace_back(d);
-
-    for (int i : undo) sets[i] = i;
-    dnc(next, lg - 1, same, cost, sets, roads, junctions);
-    dnc(curr, lg - 1, diff, cost, sets, roads, junctions);
-}
+    DisjointSet(int n) : sets(n) {
+        iota(sets.begin(), sets.end(), 0);
+    }
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -36,9 +28,6 @@ int main() {
 
     int n, m;
     cin >> n >> m;
-
-    vector<int> sets(n + 1);
-    iota(sets.begin(), sets.end(), 0);
 
     vector<pair<int, int>> roads(m);
     for (auto &[u, v] : roads) cin >> u >> v;
@@ -50,9 +39,36 @@ int main() {
     vector<pair<int, int>> junctions(q);
     for (auto &[s, t] : junctions) cin >> s >> t;
 
-    vector<int> days(q), cost(q);
-    iota(days.begin(), days.end(), 0);
-    dnc((1 << (__lg(m) + 1)) - 1, __lg(m), days, cost, sets, roads, junctions);
+    DisjointSet dsu(n + 1);
+    vector<int> all(q), cost(q);
+    iota(all.begin(), all.end(), 0);
+    auto dnc = [&](auto &&self, int curr, int lg, vector<int> &days) {
+        if (lg < 0) {
+            for (int d : days) cost[d] = curr;
+            return;
+        }
+
+        int next = curr ^ (1 << lg);
+        vector<int> undo;
+        for (int i = next; i; --i &= next) {
+            auto [u, v] = roads[i];
+            dsu.unite(u, v);
+
+            undo.emplace_back(u);
+            undo.emplace_back(v);
+        }
+
+        vector<int> same, diff;
+        for (int d : days) {
+            auto [s, t] = junctions[d];
+            (dsu.find(s) == dsu.find(t) ? same : diff).emplace_back(d);
+        }
+
+        for (int i : undo) dsu.sets[i] = i;
+        self(self, next, lg - 1, same);
+        self(self, curr, lg - 1, diff);
+    };
+    dnc(dnc, (1 << (__lg(m) + 1)) - 1, __lg(m), all);
 
     for (int c : cost) cout << c << "\n";
 }
