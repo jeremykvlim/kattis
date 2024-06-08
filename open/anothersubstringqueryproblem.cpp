@@ -89,7 +89,7 @@ struct SuffixArray {
         return SA.end();
     }
 
-    auto & operator[](int i) {
+    int & operator[](int i) {
         return SA[i];
     }
 
