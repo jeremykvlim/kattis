@@ -2,18 +2,25 @@
 using namespace std;
 
 struct Trie {
+    enum ascii {
+        LOWER = 97,
+        UPPER = 65,
+        NUM = 48,
+        NA = 0
+    };
+
     struct TrieNode {
         vector<int> next;
 
-        TrieNode() {
-            next.resize(26, -1);
-        }
+        TrieNode(int range = 26) : next(range, -1) {}
     };
 
     vector<TrieNode> T;
+    ascii a;
+    int r;
     vector<int> ends;
 
-    Trie(int n = 1) : T(n) {}
+    Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
 
     void add(string &s) {
         int node = 0;
@@ -68,6 +75,6 @@ int main() {
     for (int i = 0; i < trie.ends.size(); i++)
         if (!visited[trie.ends[i]]) dominant.emplace_back(S[i]);
     sort(dominant.begin(), dominant.end());
-    
+
     for (auto d : dominant) cout << d << "\n";
 }
