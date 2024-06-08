@@ -1,9 +1,26 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int find(int p, vector<int> &sets) {
-    return (sets[p] == p) ? p : (sets[p] = find(sets[p], sets));
-}
+struct DisjointSet {
+    vector<int> sets;
+
+    int find(int p) {
+        return (sets[p] == p) ? p : (sets[p] = find(sets[p]));
+    }
+
+    bool unite(int p, int q) {
+        int p_set = find(p), q_set = find(q);
+        if (p_set != q_set) {
+            sets[q_set] = p_set;
+            return true;
+        }
+        return false;
+    }
+
+    DisjointSet(int n) : sets(n) {
+        iota(sets.begin(), sets.end(), 0);
+    }
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -12,16 +29,15 @@ int main() {
     int n, m;
     cin >> n >> m;
 
+    DisjointSet dsu(n);
     vector<vector<int>> adj_list(n);
-    vector<int> sets(n), size(n, 1);
-    iota(sets.begin(), sets.end(), 0);
     while (m--) {
         int u, v;
         cin >> u >> v;
 
         adj_list[u].emplace_back(v);
         adj_list[v].emplace_back(u);
-        sets[find(v, sets)] = find(u, sets);
+        dsu.unite(u, v);
     }
 
     int q;
@@ -31,7 +47,7 @@ int main() {
         int u, v;
         cin >> u >> v;
 
-        if (find(u, sets) != find(v, sets)) {
+        if (dsu.find(u) != dsu.find(v)) {
             cout << -1 << "\n";
             continue;
         }
@@ -41,14 +57,12 @@ int main() {
         queue<int> q_u, q_v;
         q_u.emplace(u);
         q_v.emplace(v);
-        int dist = 0;
-        for (;;) {
-            dist++;
+        for (int dist = 1;; dist++) {
             queue<int> temp;
             while (!q_u.empty()) {
                 int u = q_u.front();
                 q_u.pop();
-                for (auto v : adj_list[u]) {
+                for (int v : adj_list[u]) {
                     if (visited_v[v]) {
                         cout << dist << "\n";
                         goto next;
