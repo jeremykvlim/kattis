@@ -18,8 +18,9 @@ struct Trie {
 
     vector<TrieNode> T;
     ascii a;
+    int r;
 
-    Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha) {}
+    Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
 
     void add(string &s) {
         int node = 0;
@@ -28,7 +29,7 @@ struct Trie {
 
             if (T[node].next[pos] == -1) {
                 T[node].next[pos] = T.size();
-                T.emplace_back();
+                T.emplace_back(TrieNode(r));
             }
             node = T[node].next[pos];
         }
