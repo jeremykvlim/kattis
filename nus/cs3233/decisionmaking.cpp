@@ -4,18 +4,25 @@ using namespace std;
 constexpr int MODULO = 998244353;
 
 struct Trie {
+    enum ascii {
+        LOWER = 97,
+        UPPER = 65,
+        NUM = 48,
+        NA = 0
+    };
+
     struct TrieNode {
         vector<int> next;
         int index = -1, link = -1;
 
-        TrieNode() {
-            next.resize(2, -1);
-        }
+        TrieNode(int range = 26) : next(range, -1) {}
     };
 
     vector<TrieNode> T;
+    ascii a;
+    int r;
 
-    Trie(int n = 1) : T(n) {}
+    Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
 
     void add(string &s, int i) {
         int node = 0;
@@ -24,7 +31,7 @@ struct Trie {
 
             if (T[node].next[pos] == -1) {
                 T[node].next[pos] = T.size();
-                T.emplace_back();
+                T.emplace_back(TrieNode(r));
             }
             node = T[node].next[pos];
         }
@@ -123,7 +130,7 @@ int main() {
     int n;
     cin >> n;
 
-    Trie trie;
+    Trie trie(1, Trie::NA, 2);
     for (int i = 0; i < n; i++) {
         string s;
         cin >> s;
