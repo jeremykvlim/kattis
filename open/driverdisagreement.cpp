@@ -1,9 +1,26 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int find(int p, vector<int> &sets) {
-    return (sets[p] == p) ? p : (sets[p] = find(sets[p], sets));
-}
+struct DisjointSet {
+    vector<int> sets;
+
+    int find(int p) {
+        return (sets[p] == p) ? p : (sets[p] = find(sets[p]));
+    }
+
+    bool unite(int p, int q) {
+        int p_set = find(p), q_set = find(q);
+        if (p_set != q_set) {
+            sets[q_set] = p_set;
+            return true;
+        }
+        return false;
+    }
+
+    DisjointSet(int n) : sets(n) {
+        iota(sets.begin(), sets.end(), 0);
+    }
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -12,10 +29,10 @@ int main() {
     int n, A, B;
     cin >> n >> A >> B;
 
-    vector<int> l(n), r(n), t(n), sets(n);
+    vector<int> l(n), r(n), t(n);
     for (int i = 0; i < n; i++) cin >> l[i] >> r[i] >> t[i];
-    iota(sets.begin(), sets.end(), 0);
 
+    DisjointSet dsu(n);
     queue<tuple<int, int, int>> q;
     q.emplace(A, B, 0);
     while (!q.empty()) {
@@ -27,9 +44,7 @@ int main() {
             exit(0);
         }
 
-        int a_set = find(a, sets), b_set = find(b, sets);
-        if (a_set != b_set) {
-            sets[a_set] = sets[b_set];
+        if (dsu.unite(a, b)) {
             q.emplace(l[a], l[b], d + 1);
             q.emplace(r[a], r[b], d + 1);
         }
