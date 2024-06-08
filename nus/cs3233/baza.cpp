@@ -1,12 +1,43 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct TrieNode {
-    vector<int> next;
-    int count = 0;
+struct Trie {
+    enum ascii {
+        LOWER = 97,
+        UPPER = 65,
+        NUM = 48,
+        NA = 0
+    };
 
-    TrieNode() {
-        next.resize(26, -1);
+    struct TrieNode {
+        vector<int> next;
+        int count = 0;
+
+        TrieNode(int range = 26) : next(range, -1) {}
+    };
+
+    vector<TrieNode> T;
+    ascii a;
+    int r;
+
+    Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
+
+    void add(string &s, int &steps) {
+        int node = 0;
+        for (char c : s) {
+            int pos = c - a;
+
+            if (T[node].next[pos] == -1) {
+                T[node].next[pos] = T.size();
+                T.emplace_back(TrieNode(r));
+            }
+            node = T[node].next[pos];
+            steps += ++T[node].count;
+        }
+    }
+
+    auto & operator[](int i) {
+        return T[i];
     }
 };
 
@@ -18,23 +49,13 @@ int main() {
     cin >> n;
 
     unordered_map<string, int> database;
-    vector<TrieNode> trie(1);
+    Trie trie;
     for (int i = 0; i < n; i++) {
         string s;
         cin >> s;
 
-        int steps = i, node = 0;
-        for (char c : s) {
-            int pos = c - 'a';
-
-            if (trie[node].next[pos] == -1) {
-                trie[node].next[pos] = trie.size();
-                trie.emplace_back();
-            }
-            node = trie[node].next[pos];
-            steps += ++trie[node].count;
-        }
-
+        int steps = i;
+        trie.add(s, steps);
         database[s] = steps;
     }
 
@@ -51,6 +72,7 @@ int main() {
             for (char c : s) {
                 int pos = c - 'a';
                 if (trie[node].next[pos] == -1) break;
+
                 node = trie[node].next[pos];
                 steps += trie[node].count;
             }
