@@ -1,9 +1,27 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int find(int p, vector<int> &sets) {
-    return (sets[p] == p) ? p : (sets[p] = find(sets[p], sets));
-}
+struct DisjointSet {
+    vector<int> sets, size;
+
+    int find(int p) {
+        return (sets[p] == p) ? p : (sets[p] = find(sets[p]));
+    }
+
+    bool unite(int p, int q) {
+        int p_set = find(p), q_set = find(q);
+        if (p_set != q_set) {
+            sets[q_set] = p_set;
+            size[p_set] += size[q_set];
+            return true;
+        }
+        return false;
+    }
+
+    DisjointSet(int n) : sets(n), size(n, 1) {
+        iota(sets.begin(), sets.end(), 0);
+    }
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -56,22 +74,17 @@ int main() {
             if (!--indegree[lover[lover[v]]]) q.emplace(lover[lover[v]]);
     }
 
+    DisjointSet dsu(n);
     vector<int> sets(n), size(n, 1);
     iota(sets.begin(), sets.end(), 0);
     for (int i = 0; i < n; i++)
-        if (!cycle[i] && !cycle[lover[i]]) {
-            int i_set = find(i, sets), lover_set = find(lover[i], sets);
-            if (i_set != lover_set) {
-                sets[lover_set] = i_set;
-                size[i_set] += size[lover_set];
-            }
-        }
+        if (!cycle[i] && !cycle[lover[i]]) dsu.unite(i, lover[i]);
 
     vector<bool> visited(n, false);
     for (int i = 0, i_set; i < n; i++)
-        if (!cycle[i] && !visited[i_set = find(i, sets)]) {
+        if (!cycle[i] && !visited[i_set = dsu.find(i)]) {
             visited[i_set] = true;
-            arrows += (size[i_set] + 1) / 2;
+            arrows += (dsu.size[i_set] + 1) / 2;
         }
 
     cout << arrows;
