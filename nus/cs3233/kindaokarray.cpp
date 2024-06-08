@@ -96,7 +96,7 @@ struct SuffixArray {
         }
     }
 
-    auto operator[](int i) {
+    int & operator[](int i) {
         return SA[i];
     }
 
