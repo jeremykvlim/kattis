@@ -3,10 +3,10 @@ using namespace std;
 
 void radix_sort(vector<long long> &s) {
     long long radix = 1 << 16, biggest = *max_element(s.begin(), s.end());
-    auto msd = (long long) ceil((log(biggest)) / (log(radix)));
+    int msd = ceil((log(biggest)) / (log(radix)));
 
     vector<int> bucket(radix, 0), r(s.size());
-    for (auto d = 0LL; d < msd; d++) {
+    for (int d = 0; d < msd; d++) {
         fill(bucket.begin(), bucket.end(), 0);
         for (auto i : s) bucket[(i >> (d * 16)) & (radix - 1)]++;
         for (int i = 1; i < radix; i++) bucket[i] += bucket[i - 1];
