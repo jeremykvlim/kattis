@@ -24,7 +24,7 @@ int main() {
         cin >> a >> b;
 
         for (int x = 1; x <= c; x++)
-            if ((lower_bound(begin(indices[x]), end(indices[x]), b) - lower_bound(begin(indices[x]), end(indices[x]), a - 1)) > (b - a + 1) / 2) {
+            if ((lower_bound(indices[x].begin(), indices[x].end(), b) - lower_bound(indices[x].begin(), indices[x].end(), a - 1)) > (b - a + 1) / 2) {
                 cout << "yes " << x << "\n";
                 goto next;
             }
