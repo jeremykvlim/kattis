@@ -2,8 +2,8 @@
 using namespace std;
 
 void radix_sort(vector<long long> &s) {
-    long long radix = 1 << 16, biggest = *max_element(s.begin(), s.end());
-    int msd = ceil((log(biggest)) / (log(radix)));
+    auto biggest = *max_element(s.begin(), s.end());
+    int msd = ceil((log(biggest)) / (log(radix))), radix = 1 << 16;
 
     vector<int> bucket(radix, 0), r(s.size());
     for (int d = 0; d < msd; d++) {
