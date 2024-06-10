@@ -47,13 +47,6 @@ int main() {
         return count(p1.first) + p1.second > count(p2.first) + p2.second;
     };
 
-    auto arranged = [&](vector<int> v) -> bool {
-        for (int i = 1; i <= n; i++)
-            if (v[i] != i) return false;
-
-        return true;
-    };
-
     unordered_map<vector<int>, int, Hash> indices;
     indices[perm] = 0;
     priority_queue<pair<vector<int>, int>, vector<pair<vector<int>, int>>, decltype(cmp)> pq(cmp);
@@ -62,7 +55,7 @@ int main() {
         auto [v, d] = pq.top();
         pq.pop();
 
-        if (arranged(v)) break;
+        if (is_sorted(v.begin(), v.end())) break;
 
         for (int i = 1; i <= n; i++)
             for (int j = 1; j <= n; j++) {
@@ -79,7 +72,7 @@ int main() {
             }
     }
 
-    auto dfs = [&](auto &&self, vector<int> v, int swaps) -> void {
+    auto dfs = [&](auto &&self, vector<int> v, int swaps = 0) -> void {
         if (!indices[v]) {
             cout << swaps;
             exit(0);
@@ -91,5 +84,5 @@ int main() {
 
     vector<int> ordered(n + 1);
     iota(ordered.begin(), ordered.end(), 0);
-    dfs(dfs, ordered, 0);
+    dfs(dfs, ordered);
 }
