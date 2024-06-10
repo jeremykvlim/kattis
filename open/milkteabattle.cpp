@@ -53,7 +53,7 @@ int main() {
 
         V = x;
         for (int j = 1; j <= limit * k && c.size() < limit - i - 1; j += k) {
-            if (v[j] + 0.9 < most) continue;
+            if (v[j] + 1 < most) continue;
             V += v[j];
             c.emplace_back(j);
         }
