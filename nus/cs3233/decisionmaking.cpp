@@ -89,7 +89,7 @@ long long pow(long long base, long long exponent, long long mod) {
     return value;
 }
 
-vector<vector<long long>> ref(vector<vector<long long>> &matrix) {
+vector<vector<long long>> rref(vector<vector<long long>> &matrix) {
     int r = matrix.size(), c = matrix[0].size();
     auto matrix_inv = I(r);
 
@@ -168,6 +168,6 @@ int main() {
         }
     }
 
-    auto a_inv = ref(a);
+    auto a_inv = rref(a);
     for (auto v : a_inv[0]) cout << v << " ";
 }
