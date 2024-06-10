@@ -1,25 +1,24 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void rref(int n, vector<vector<double>> &matrix) {
+void rref(vector<vector<double>> &matrix) {
     int r = matrix.size(), c = matrix[0].size();
 
-    for (int i = 0; i < min(r, c); i++) {
-        int pivot = max_element(matrix.begin() + i, matrix.end(), [&](auto r1, auto r2) {return fabs(r1[i]) < fabs(r2[i]);}) - matrix.begin();
+    for (int i = 0; i < r; i++) {
+        int pivot = find_if(matrix.begin() + i, matrix.end(), [i](auto r) {return r[i];}) - matrix.begin();
 
-        if (pivot >= r) return;
+        if (pivot == r) continue;
 
         swap(matrix[i], matrix[pivot]);
 
-        for (int j = i + 1; j < r; j++) {
-            for (int k = i + 1; k < c; k++) matrix[j][k] -= matrix[i][k] * matrix[j][i] / matrix[i][i];
-            matrix[j][i] = 0;
-        }
-    }
+        auto temp = 1 / matrix[i][i];
+        for (int j = 0; j < c; j++) matrix[i][j] *= temp;
 
-    for (int i = n - 1; ~i; i--) {
-        for (int j = n - 1; j > i; j--) matrix[i][n] -= matrix[i][j] * matrix[j][n];
-        matrix[i][n] /= matrix[i][i];
+        for (int j = 0; j < r; j++)
+            if (j != i) {
+                temp = matrix[j][i];
+                for (int k = 0; k < c; k++) matrix[j][k] -= matrix[i][k] * temp;
+            }
     }
 }
 
@@ -81,6 +80,6 @@ int main() {
                     if (adj_matrix[i][k] && adj_matrix[j][l]) matrix[i * n + j][k * n + l] = -1;
         }
 
-    rref(n * n, matrix);
+    rref(matrix);
     cout << fixed << setprecision(6) << matrix[s * n + t][n * n];
 }
