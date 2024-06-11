@@ -26,7 +26,7 @@ Problems have to be solved using base programming language libraries or self-cod
 
 ---
 
-My code isn't particularly optimized. I do try to come up with efficient solutions to the problems that don't just scrape by the time or memory limit (I also do not like to overallocate memory just for speed), but I've been prioritising coding style as I want my code to be pleasant to read (with some exceptions because I did get lazy sometimes).
+My code isn't particularly optimized. I do try to come up with efficient solutions to the problems that don't just scrape by the time or memory limit (I also do not like to overallocate memory just for speed), but I've been prioritising coding style as I want my code to be pleasant to read (with some exceptions because I do get lazy sometimes).
 
 As such, I will try to find a compromise between both efficiency and preference. I hope you can tolerate some habits of mine:
 
