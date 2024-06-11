@@ -104,7 +104,7 @@ struct WaveletTree {
     vector<int> pref1, pref2;
     int b;
 
-    void range_order_statistic(vector<tuple<int, int, int>> &queries) {
+    void range_select(vector<tuple<int, int, int>> &queries) {
         for (int bit = b; ~bit; bit--) {
             for (int i = 0; i < WT.size(); i++) {
                 pref1[i + 1] = pref1[i] + !((WT[i] >> bit) & 1);
@@ -135,12 +135,12 @@ struct WaveletTree {
         return WT[i];
     }
 
-    WaveletTree(vector<T> array, vector<tuple<int, int, int>> &queries) : WT(array.begin(), array.end()),
-                                                                          temp(array.size()),
-                                                                          pref1(array.size() + 1),
-                                                                          pref2(array.size() + 1) {
+    WaveletTree(vector<T> array, vector<tuple<int, int, int>> &order_statistics) : WT(array.begin(), array.end()),
+                                                                                   temp(array.size()),
+                                                                                   pref1(array.size() + 1),
+                                                                                   pref2(array.size() + 1) {
         b = __lg(*max_element(array.begin(), array.end()));
-        range_order_statistic(queries);
+        range_select(order_statistics);
     }
 };
 
@@ -153,8 +153,8 @@ int main() {
     cin >> s >> q;
 
     SuffixArray sa(s);
-    vector<tuple<int, int, int>> queries(q);
-    for (auto &[l, r, k] : queries) {
+    vector<tuple<int, int, int>> order_statistics(q);
+    for (auto &[l, r, k] : order_statistics) {
         string t;
         cin >> t >> k;
 
@@ -169,6 +169,6 @@ int main() {
         if (r - l < k || s[sa[r - 1] + t.size() - 1] != t.back()) k = 0;
     }
 
-    WaveletTree<int> wt(sa.SA, queries);
-    for (auto [l, r, k] : queries) cout << (k ? wt[r - 1] + 1 : -1) << "\n";
+    WaveletTree<int> wt(sa.SA, order_statistics);
+    for (auto [l, r, k] : order_statistics) cout << (k ? wt[r - 1] + 1 : -1) << "\n";
 }
