@@ -16,10 +16,12 @@ struct SegmentTree {
     vector<Segment> ST;
 
     SegmentTree(int n, int s = 32) : n(n),
-                         segment_size(s),
-                         ST(2 * n, Segment(s)) {}
+                                     segment_size(s),
+                                     ST(2 * n, Segment(s)) {
+        build();
+    }
 
-    Segment join(Segment sl, Segment sr) {
+    auto join(Segment sl, Segment sr) {
         Segment s(segment_size);
         for (int i = 0; i < segment_size; i++) s[i] = min(sl[i], sr[i]);
         return s;
@@ -29,14 +31,18 @@ struct SegmentTree {
         ST[p] = join(ST[p << 1], ST[p << 1 | 1]);
     }
 
+    void build() {
+        for (int i = n - 1; i; i--) pull(i);
+    }
+
     void assign(int i, Segment s) {
         ST[i += n] = std::move(s);
         for (i >>= 1; i; i >>= 1) pull(i);
     }
 
-    Segment query(int l, int r) {
+    auto query(int l, int r) {
         Segment sl(segment_size), sr(segment_size);
-        for (l += n, r += n + 1; l < r; l >>= 1, r >>= 1) {
+        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
             if (l & 1) sl = join(sl, ST[l++]);
             if (r & 1) sr = join(ST[--r], sr);
         }
@@ -128,7 +134,7 @@ int main() {
 
         WaveletTree<int> wt(a, order_statistics);
         vector<vector<int>> OR(q, vector<int>(3));
-        vector<vector<tuple<int, int, int, int>>> subrange(n);
+        vector<vector<tuple<int, int, int, int>>> subranges(n);
         for (int i = 0; i < q; i++) {
             auto [l, r, u, v] = queries[i];
             auto [l1, r1, k1] = order_statistics[2 * i];
@@ -138,7 +144,7 @@ int main() {
             for (int j = 0; j < min({3, freq1, v - u + 1}); j++) OR[i][j] |= wt[r1 - 1];
             for (int j = 0; j < min({3, freq2, v - u + 1}); j++) OR[i][j] |= wt[r2 - 1];
 
-            subrange[l].emplace_back(r, compress[wt[r1 - 1]] + 1, compress[wt[r2 - 1]] - 1, i);
+            subranges[l].emplace_back(r, compress[wt[r1 - 1]] + 1, compress[wt[r2 - 1]], i);
         }
 
         int b = __lg(biggest) + 1;
@@ -156,8 +162,8 @@ int main() {
                 sts[j].assign(i, s);
             }
 
-            for (auto [r, u, v, i] : subrange[l]) {
-                if (u > v) continue;
+            for (auto [r, u, v, i] : subranges[l]) {
+                if (u >= v) continue;
                 for (int j = 0; j < 3; j++) {
                     auto s = sts[j].query(u, v);
                     for (int k = 0; k < b; k++)
