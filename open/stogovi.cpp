@@ -69,7 +69,10 @@ int main() {
     dfs(dfs);
 
     SparseTable<int> st(depth, [](int x, int y) {return min(x, y);});
-    for (auto [v, w, i] : queries) op[i] = st.range_query(min(order[v], order[w]), max(order[v], order[w]));
+    auto lca = [&](int v, int w) -> int {
+        return st.range_query(min(order[v], order[w]), max(order[v], order[w]));
+    };
+    for (auto [v, w, i] : queries) op[i] = lca(v, w);
 
     for (int i = 1; i <= n; i++)
         if (op[i] != -1) cout << op[i] << "\n";
