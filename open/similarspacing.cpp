@@ -35,7 +35,7 @@ int main() {
         pref[i + 1] = pref[i] + dist[i];
     }
 
-    long long diff = 1e18;
+    auto diff = 1e18;
     for (int i = 0; i < n; i++)
         for (int j = 0; j < i; j++) {
             auto b = pref[i] - pref[j], l = b - 1, r = min(diff + b, pref[n - 1]);
