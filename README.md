@@ -6,7 +6,7 @@ My solutions for Kattis problems, not all of them have been archived here yet be
 
 ---
 
-Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizations and a separate open category for non-NUS course problems. Some courses share several problems, you might be able to find them under any one of the categories. I generally use `C++` unless the NUS course requires otherwise (language requirements found below). I switch to `Python` if I require big integer operations or if the solution is much shorter and simpler implementation-wise.
+Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizations and a separate open category for non-NUS course problems. Some courses share several problems, you might be able to find them under any one of the categories. I generally use C++ unless the NUS course requires otherwise (language requirements found below). I switch to Python if I require big integer operations or if the solution is much shorter and simpler implementation-wise.
 
 * NUS:
 
@@ -39,8 +39,6 @@ As such, I will try to find a compromise between both efficiency and preference.
 * using `constexpr` instead of `const` for compile-time initialization
 
 * avoiding global variables as much as possible
-
-* avoiding containers being declared outside of loops (unless necessary)
 
 * avoiding any macros (even pre-defined constraints) or typedefs
 
