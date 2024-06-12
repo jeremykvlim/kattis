@@ -1,10 +1,12 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T, typename F>
+template <typename T>
 struct FenwickTree2D {
     vector<vector<T>> BIT;
-    F f;
+    function<T(T, T)> f;
+
+    FenwickTree2D(int n, int m, function<T(T, T)> func) : BIT(n, vector<T>(m, 0)), f(std::move(func)) {}
 
     void update(int i, int j, T value) {
         for (; i < BIT[j].size(); i += i & -i) BIT[j][i] = f(BIT[j][i], value);
@@ -15,8 +17,6 @@ struct FenwickTree2D {
         for (; i; i &= (i - 1)) value = f(value, BIT[j][i]);
         return value;
     }
-
-    FenwickTree2D(int n, int m, F func) : BIT(n, vector<T>(m, 0)), f(func) {}
 };
 
 int main() {
@@ -45,8 +45,7 @@ int main() {
     for (auto &[g, p, b] : values) p = indices[p];
     sort(values.begin(), values.end(), [&](auto v1, auto v2) {return get<0>(v1) != get<0>(v2) ? get<0>(v1) > get<0>(v2) : get<1>(v1) < get<1>(v2);});
 
-    auto _max = [](int x, int y) {return max(x, y);};
-    FenwickTree2D<int, decltype(_max)> fw(max(n, k) + 1, index + 1, _max);
+    FenwickTree2D<int> fw(max(n, k) + 1, index + 1, [](int x, int y) {return max(x, y);});
     for (auto [g, p, b] : values)
         if (!b)
             for (int i = 0; i <= k; i++) fw.update(p, i, fw.range_query(p, i) + 1);
