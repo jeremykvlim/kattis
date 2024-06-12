@@ -110,12 +110,10 @@ int main() {
 
         vector<int> a(n);
         map<int, int> compress;
-        int biggest = 0;
         for (int &ai : a) {
             cin >> ai;
 
             compress[ai];
-            biggest = max(biggest, ai);
         }
 
         int count = 0;
@@ -147,16 +145,15 @@ int main() {
             subranges[l].emplace_back(r, compress[wt[r1 - 1]] + 1, compress[wt[r2 - 1]], i);
         }
 
-        int b = __lg(biggest) + 1;
-        vector<SegmentTree> sts(3, SegmentTree(n, b));
+        vector<SegmentTree> sts(3, SegmentTree(n, wt.b + 1));
         vector<vector<int>> appearances(compress.size());
         for (int l = n - 1; ~l; l--) {
             int i = compress[a[l]];
             appearances[i].emplace_back(l);
 
             for (int j = 0; j < 3 && j < appearances[i].size(); j++) {
-                SegmentTree::Segment s(b);
-                for (int k = 0; k < b; k++)
+                SegmentTree::Segment s(wt.b + 1);
+                for (int k = 0; k <= wt.b; k++)
                     if (a[l] & (1 << k)) s[k] = appearances[i][appearances[i].size() - j - 1];
 
                 sts[j].assign(i, s);
@@ -166,7 +163,7 @@ int main() {
                 if (u >= v) continue;
                 for (int j = 0; j < 3; j++) {
                     auto s = sts[j].query(u, v);
-                    for (int k = 0; k < b; k++)
+                    for (int k = 0; k <= wt.b; k++)
                         if (s[k] < r) OR[i][j] |= 1 << k;
                 }
             }
