@@ -43,7 +43,7 @@ long long brent(long long n) {
             for (int j = 1; j < i; j++) x = mul(x, x, n) + c;
             for (int j = 0; j < i && g == 1; j += 128) {
                 xs = x;
-                for (int k = 0; k < 128 && k < i - j; k++) {
+                for (int k = 0; k < min(128, i - j); k++) {
                     x = mul(x, x, n) + c;
                     q = mul(q, abs(x - y), n);
                 }
