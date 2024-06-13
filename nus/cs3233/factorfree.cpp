@@ -34,15 +34,14 @@ int main() {
 
     int biggest = *max_element(elements.begin(), elements.end());
     vector<int> lpf = sieve(biggest), prev(biggest + 1, -1), left(n, -1), right(n, n), parent(n, 0);
-    for (int i = 0; i < n; i++) {
-        for (int num = elements[i]; num > 1; num /= lpf[num]) {
-            if (prev[lpf[num]] < i) {
-                left[i] = max(left[i], prev[lpf[num]]);
-                if (prev[lpf[num]] != -1) right[prev[lpf[num]]] = min(right[prev[lpf[num]]], i);
+    for (int i = 0; i < n; i++) 
+        for (int e = elements[i]; e > 1; e /= lpf[e]) {
+            if (prev[lpf[e]] < i) {
+                left[i] = max(left[i], prev[lpf[e]]);
+                if (prev[lpf[e]] != -1) right[prev[lpf[e]]] = min(right[prev[lpf[e]]], i);
             }
-            prev[lpf[num]] = i;
+            prev[lpf[e]] = i;
         }
-    }
 
     if (dfs(0, n, parent, left, right))
         for (int p : parent) cout << p + 1 << " ";
