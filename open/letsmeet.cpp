@@ -5,7 +5,7 @@ void rref(vector<vector<double>> &matrix) {
     int r = matrix.size(), c = matrix[0].size();
 
     for (int i = 0; i < r; i++) {
-        int pivot = find_if(matrix.begin() + i, matrix.end(), [i](auto r) {return r[i];}) - matrix.begin();
+        int pivot = max_element(matrix.begin() + i, matrix.end(), [&](auto r1, auto r2) {return fabs(r1[i]) < fabs(r2[i]);}) - matrix.begin();
 
         if (pivot == r) continue;
 
