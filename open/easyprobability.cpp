@@ -2,23 +2,27 @@
 using namespace std;
 
 void rref(vector<vector<long double>> &matrix) {
-    int r = matrix.size(), c = matrix[0].size();
+    int n = matrix.size(), m = matrix[0].size();
 
-    for (int i = 0; i < r; i++) {
-        int pivot = max_element(matrix.begin() + i, matrix.end(), [&](auto r1, auto r2) {return fabs(r1[i]) < fabs(r2[i]);}) - matrix.begin();
+    int rank = 0;
+    for (int c = 0; c < m && rank < n; c++) {
+        int pivot = rank;
+        for (int i = rank + 1; i < n; i++)
+            if (fabs(matrix[i][c]) > fabs(matrix[pivot][c])) pivot = i;
 
-        if (pivot == r) continue;
+        if (fabs(matrix[pivot][c]) < 1e-9) continue;
+        swap(matrix[pivot], matrix[rank]);
 
-        swap(matrix[i], matrix[pivot]);
+        auto temp = 1 / matrix[rank][c];
+        for (int j = 0; j < m; j++) matrix[rank][j] *= temp;
 
-        auto temp = 1 / matrix[i][i];
-        for (int j = 0; j < c; j++) matrix[i][j] *= temp;
-
-        for (int j = 0; j < r; j++)
-            if (j != i) {
-                temp = matrix[j][i];
-                for (int k = 0; k < c; k++) matrix[j][k] -= matrix[i][k] * temp;
+        for (int i = 0; i < n; i++)
+            if (i != rank && fabs(matrix[i][c]) > 1e-9) {
+                temp = matrix[i][c];
+                for (int j = 0; j < m; j++) matrix[i][j] -= temp * matrix[rank][j];
             }
+
+        rank++;
     }
 }
 
@@ -75,7 +79,7 @@ int main() {
     for (int i = 0; i <= n; i++)
         for (int j = 0; j <= m; j++) {
             if (indices[i][j] == -1) continue;
-          
+
             prob[indices[i][j]][indices[i][j]] = 100;
             if (j == m) continue;
             if (i == n) {
