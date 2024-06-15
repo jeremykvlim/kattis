@@ -90,34 +90,38 @@ long long pow(long long base, long long exponent, long long mod) {
 }
 
 vector<vector<long long>> rref(vector<vector<long long>> &matrix) {
-    int r = matrix.size(), c = matrix[0].size();
-    auto matrix_inv = I(r);
+    int n = matrix.size(), m = matrix[0].size();
+    auto matrix_inv = I(n);
 
-    for (int i = 0; i < r; i++) {
-        int pivot = max_element(matrix.begin() + i, matrix.end(), [&](auto r1, auto r2) {return fabs(r1[i]) < fabs(r2[i]);}) - matrix.begin();
+    int rank = 0;
+    for (int c = 0; c < m && rank < n; c++) {
+        int pivot = rank;
+        for (int i = rank + 1; i < n; i++)
+            if (matrix[i][c] > matrix[pivot][c]) pivot = i;
 
-        if (pivot == r) continue;
+        if (!matrix[pivot][c]) continue;
+        swap(matrix[pivot], matrix[rank]);
+        swap(matrix_inv[pivot], matrix_inv[rank]);
 
-        swap(matrix[i], matrix[pivot]);
-        swap(matrix_inv[i], matrix_inv[pivot]);
-
-        auto temp = matrix[i][i];
-        for (int j = 0; j < c; j++) {
-            matrix[i][j] = mul(matrix[i][j], pow(temp, MODULO - 2, MODULO), MODULO);
-            matrix_inv[i][j] = mul(matrix_inv[i][j], pow(temp, MODULO - 2, MODULO), MODULO);
+        auto temp = pow(matrix[rank][c], MODULO - 2, MODULO);
+        for (int j = 0; j < m; j++) {
+            matrix[rank][j] = mul(matrix[rank][j], temp, MODULO);
+            matrix_inv[rank][j] = mul(matrix_inv[rank][j], temp, MODULO);
         }
 
-        for (int j = 0; j < r; j++)
-            if (j != i) {
-                temp = matrix[j][i];
-                for (int k = 0; k < c; k++) {
-                    matrix[j][k] -= mul(temp, matrix[i][k], MODULO);
-                    matrix_inv[j][k] -= mul(temp, matrix_inv[i][k], MODULO);
+        for (int i = 0; i < n; i++)
+            if (i != rank && matrix[i][c]) {
+                temp = matrix[i][c];
+                for (int j = 0; j < m; j++) {
+                    matrix[i][j] -= mul(temp, matrix[rank][j], MODULO);
+                    matrix_inv[i][j] -= mul(temp, matrix_inv[rank][j], MODULO);
 
-                    if (matrix[j][k] < 0) matrix[j][k] += MODULO;
-                    if (matrix_inv[j][k] < 0) matrix_inv[j][k] += MODULO;
+                    if (matrix[i][j] < 0) matrix[i][j] += MODULO;
+                    if (matrix_inv[i][j] < 0) matrix_inv[i][j] += MODULO;
                 }
             }
+
+        rank++;
     }
 
     return matrix_inv;
