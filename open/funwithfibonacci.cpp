@@ -35,7 +35,7 @@ long long pow(long long base, long long exponent, long long mod) {
     return value;
 }
 
-long long lcm(long long a, long long b){
+long long lcm(long long a, long long b) {
     return (a / __gcd(a, b)) * b;
 }
 
