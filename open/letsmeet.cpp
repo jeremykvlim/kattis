@@ -4,21 +4,25 @@ using namespace std;
 void rref(vector<vector<double>> &matrix) {
     int r = matrix.size(), c = matrix[0].size();
 
-    for (int i = 0; i < r; i++) {
-        int pivot = max_element(matrix.begin() + i, matrix.end(), [&](auto r1, auto r2) {return fabs(r1[i]) < fabs(r2[i]);}) - matrix.begin();
+    int pivot = 0;
+    for (int i = 0; i < c - 1 && pivot < r; i++) {
+        for (int j = pivot; j < r; j++)
+            if (fabs(matrix[j][i]) > 1e-9) {
+                matrix[pivot].swap(matrix[j]);
+                break;
+            }
 
-        if (pivot == r) continue;
-
-        swap(matrix[i], matrix[pivot]);
-
-        auto temp = 1 / matrix[i][i];
-        for (int j = 0; j < c; j++) matrix[i][j] *= temp;
+        if (fabs(matrix[pivot][i]) < 1e-9) continue;
+        auto temp = 1 / matrix[pivot][i];
+        for (int j = pivot; j < c; j++) matrix[pivot][j] *= temp;
 
         for (int j = 0; j < r; j++)
-            if (j != i) {
-                temp = matrix[j][i];
-                for (int k = 0; k < c; k++) matrix[j][k] -= matrix[i][k] * temp;
+            if (j != pivot && fabs(matrix[j][i]) > 1e-9) {
+                temp = matrix[j][i] / matrix[pivot][i];
+                for (int k = pivot; k < c; k++) matrix[j][k] -= matrix[pivot][k] * temp;
             }
+
+        pivot++;
     }
 }
 
