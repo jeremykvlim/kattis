@@ -21,21 +21,21 @@ struct SegmentTree {
         build();
     }
 
-    auto join(Segment sl, Segment sr) {
+    auto join(Segment &sl, Segment &sr) {
         Segment s(segment_size);
         for (int i = 0; i < segment_size; i++) s[i] = min(sl[i], sr[i]);
         return s;
     }
 
-    void pull(int p) {
-        ST[p] = join(ST[p << 1], ST[p << 1 | 1]);
+    void pull(int i) {
+        ST[i] = join(ST[i << 1], ST[i << 1 | 1]);
     }
 
     void build() {
         for (int i = n - 1; i; i--) pull(i);
     }
 
-    void assign(int i, Segment s) {
+    void assign(int i, Segment &s) {
         ST[i += n] = std::move(s);
         for (i >>= 1; i; i >>= 1) pull(i);
     }
