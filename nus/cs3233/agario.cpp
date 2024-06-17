@@ -2,7 +2,7 @@
 using namespace std;
 
 struct DisjointSet {
-    vector<int> sets, size;
+    vector<int> sets;
 
     int find(int p) {
         return (sets[p] == p) ? p : (sets[p] = find(sets[p]));
@@ -10,7 +10,6 @@ struct DisjointSet {
 
     bool unite(int p, int q) {
         int p_set = find(p), q_set = find(q);
-        if (size[p_set] < size[q_set]) swap(p_set, q_set);
         if (p_set != q_set) {
             sets[q_set] = p_set;
             return true;
@@ -18,7 +17,7 @@ struct DisjointSet {
         return false;
     }
 
-    DisjointSet(int n, vector<int> &a) : sets(n), size(a) {
+    DisjointSet(int n) : sets(n) {
         iota(sets.begin(), sets.end(), 0);
     }
 };
@@ -43,7 +42,7 @@ int main() {
     sort(edges.begin(), edges.end());
 
     vector<vector<int>> adj_list(n + 1);
-    DisjointSet dsu(n + 1, a);
+    DisjointSet dsu(n + 1);
     vector<bool> visited(n + 1, false);
     for (auto [w, u, v] : edges)
         if (dsu.unite(u, v)) {
@@ -53,19 +52,19 @@ int main() {
         }
 
     vector<long long> size(a.begin(), a.end());
-    
+
     auto dfs1 = [&](auto &&self, int v) -> void {
         for (int u : adj_list[v]) {
             self(self, u);
             size[v] += size[u];
         }
     };
-    
+
     auto dfs2 = [&](auto &&self, int v, int prev = -1) -> void {
         if (prev != -1 && size[v] >= a[prev]) size[v] = size[prev];
         for (int u : adj_list[v]) self(self, u, v);
     };
-    
+
     for (int i = 1; i <= n; i++)
         if (dsu.sets[i] == i) {
             dfs1(dfs1, i);
