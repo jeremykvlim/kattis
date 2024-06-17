@@ -37,8 +37,8 @@ struct SegmentTree {
 
             for (int i = sl.suff.size() - 1, j = 0; ~i; i--) {
                 while (j < sr.pref.size() && (sl.suff[i].first | sr.pref[j].first) != *seg.K) j++;
-
                 if (j == sr.pref.size() || (sl.suff[i].first | sr.pref[j].first) != *seg.K) break;
+                
                 seg.dp = min(seg.dp, sl.suff[i].second + sr.pref[j].second);
             }
 
