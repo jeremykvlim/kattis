@@ -88,7 +88,6 @@ int main() {
     }
 
     SegmentTree st(1 << (__lg(n) + 1), (1LL << k) - 1, a);
-
     while (m--) {
         int q;
         cin >> q;
