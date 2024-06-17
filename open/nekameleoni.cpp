@@ -2,29 +2,26 @@
 using namespace std;
 
 struct SegmentTree {
-    long long K;
-
     struct Segment {
         vector<pair<long long, int>> pref, suff;
         int len, dp;
-        long long *K;
+        long long K;
 
-        Segment(long long &K) : len(0), dp(INT_MAX), K(&K) {}
+        Segment(long long K) : len(0), dp(INT_MAX), K(K) {}
 
         auto & operator=(long long v) {
             len = 1;
-            dp = (v == *K ? 1 : INT_MAX);
+            dp = (v == K ? 1 : INT_MAX);
             pref = {{v, 1}};
             suff = {{v, 1}};
             return *this;
         }
 
         friend auto operator+(Segment &sl, Segment &sr) {
-            Segment seg(*sl.K);
+            Segment seg(sl.K);
 
             auto add = [](vector<pair<long long, int>> &aff1, vector<pair<long long, int>> &aff2, vector<pair<long long, int>> &aff3, int len) {
-                for (auto aff : aff2) aff1.emplace_back(aff);
-
+                aff1.insert(aff1.end(), aff2.begin(), aff2.end());
                 auto mask = aff2.back().first;
                 for (auto [m, l] : aff3) {
                     if ((mask | m) == mask) continue;
@@ -36,9 +33,9 @@ struct SegmentTree {
             if (!sr.suff.empty()) add(seg.suff, sr.suff, sl.suff, sr.len);
 
             for (int i = sl.suff.size() - 1, j = 0; ~i; i--) {
-                while (j < sr.pref.size() && (sl.suff[i].first | sr.pref[j].first) != *seg.K) j++;
-                if (j == sr.pref.size() || (sl.suff[i].first | sr.pref[j].first) != *seg.K) break;
-                
+                while (j < sr.pref.size() && (sl.suff[i].first | sr.pref[j].first) != seg.K) j++;
+                if (j == sr.pref.size()) break;
+
                 seg.dp = min(seg.dp, sl.suff[i].second + sr.pref[j].second);
             }
 
@@ -67,7 +64,7 @@ struct SegmentTree {
         return ST[i];
     }
 
-    SegmentTree(int n, long long k, vector<int> &a) : n(n), K(k), ST(2 * n, Segment(K)) {
+    SegmentTree(int n, long long k, vector<int> &a) : n(n), ST(2 * n, Segment(k)) {
         for (int i = 0; i < a.size(); i++) assign(i + 1, 1LL << a[i]);
         build();
     }
