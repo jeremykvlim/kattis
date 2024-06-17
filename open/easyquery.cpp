@@ -1,53 +1,62 @@
 #include <bits/stdc++.h>
+
+#include <utility>
 using namespace std;
 
 struct SegmentTree {
     struct Segment {
         vector<int> s;
 
-        Segment(int size = 32, int value = INT_MAX) : s(size, value) {}
+        Segment(int size = 32) : s(size, INT_MAX) {}
+
+        auto & operator=(vector<int> &v) {
+            s = v;
+            return *this;
+        }
 
         auto & operator[](int i) {
             return s[i];
+        }
+
+        auto operator+=(Segment seg) {
+            for (int i = 0; i < s.size(); i++) s[i] = min(s[i], seg.s[i]);
+            return *this;
+        }
+
+        friend auto operator+(Segment sl, Segment sr) {
+            return sl += std::move(sr);
         }
     };
 
     int n, segment_size;
     vector<Segment> ST;
 
-    SegmentTree(int n, int s = 32) : n(n),
-                                     segment_size(s),
-                                     ST(2 * n, Segment(s)) {
-        build();
-    }
-
-    auto join(Segment &sl, Segment &sr) {
-        Segment s(segment_size);
-        for (int i = 0; i < segment_size; i++) s[i] = min(sl[i], sr[i]);
-        return s;
-    }
-
-    void pull(int i) {
-        ST[i] = join(ST[i << 1], ST[i << 1 | 1]);
+    void pull(int p) {
+        ST[p] = ST[p << 1] + ST[p << 1 | 1];
     }
 
     void build() {
         for (int i = n - 1; i; i--) pull(i);
     }
 
-    void assign(int i, Segment &s) {
-        ST[i += n] = std::move(s);
-        for (i >>= 1; i; i >>= 1) pull(i);
+    void assign(int i, vector<int> &v) {
+        for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
     auto query(int l, int r) {
-        Segment sl(segment_size), sr(segment_size);
+        Segment seg(segment_size);
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) sl = join(sl, ST[l++]);
-            if (r & 1) sr = join(ST[--r], sr);
+            if (l & 1) seg += ST[l++];
+            if (r & 1) seg += ST[--r];
         }
 
-        return join(sl, sr);
+        return seg;
+    }
+
+    SegmentTree(int n, int s) : n(n),
+                                segment_size(s),
+                                ST(2 * n, Segment(s)) {
+        build();
     }
 };
 
@@ -152,7 +161,7 @@ int main() {
             appearances[i].emplace_back(l);
 
             for (int j = 0; j < 3 && j < appearances[i].size(); j++) {
-                SegmentTree::Segment s(wt.b + 1);
+                vector<int> s(wt.b + 1, INT_MAX);
                 for (int k = 0; k <= wt.b; k++)
                     if (a[l] & (1 << k)) s[k] = appearances[i][appearances[i].size() - j - 1];
 
