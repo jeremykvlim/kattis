@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void rref(vector<vector<long double>> &matrix) {
+void rref(vector<vector<double>> &matrix) {
     int n = matrix.size(), m = matrix[0].size();
 
     int rank = 0;
