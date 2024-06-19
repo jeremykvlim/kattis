@@ -1,28 +1,28 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void rref(vector<vector<double>> &matrix) {
-    int r = matrix.size(), c = matrix[0].size();
+void rref(vector<vector<long double>> &matrix) {
+    int n = matrix.size(), m = matrix[0].size();
 
-    int pivot = 0;
-    for (int i = 0; i < c - 1 && pivot < r; i++) {
-        for (int j = pivot; j < r; j++)
-            if (fabs(matrix[j][i]) > 1e-9) {
-                matrix[pivot].swap(matrix[j]);
-                break;
+    int rank = 0;
+    for (int c = 0; c < m && rank < n; c++) {
+        int pivot = rank;
+        for (int i = rank + 1; i < n; i++)
+            if (fabs(matrix[i][c]) > fabs(matrix[pivot][c])) pivot = i;
+
+        if (fabs(matrix[pivot][c]) < 1e-9) continue;
+        swap(matrix[pivot], matrix[rank]);
+
+        auto temp = 1 / matrix[rank][c];
+        for (int j = 0; j < m; j++) matrix[rank][j] *= temp;
+
+        for (int i = 0; i < n; i++)
+            if (i != rank && fabs(matrix[i][c]) > 1e-9) {
+                temp = matrix[i][c];
+                for (int j = 0; j < m; j++) matrix[i][j] -= temp * matrix[rank][j];
             }
 
-        if (fabs(matrix[pivot][i]) < 1e-9) continue;
-        auto temp = 1 / matrix[pivot][i];
-        for (int j = pivot; j < c; j++) matrix[pivot][j] *= temp;
-
-        for (int j = 0; j < r; j++)
-            if (j != pivot && fabs(matrix[j][i]) > 1e-9) {
-                temp = matrix[j][i] / matrix[pivot][i];
-                for (int k = pivot; k < c; k++) matrix[j][k] -= matrix[pivot][k] * temp;
-            }
-
-        pivot++;
+        rank++;
     }
 }
 
