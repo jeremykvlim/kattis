@@ -86,6 +86,7 @@ int main() {
             }
 
         cin >> e[i];
+        
         e[i] *= e[i];
     }
 
