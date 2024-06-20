@@ -34,7 +34,7 @@ vector<vector<double>> I(int size) {
     return I;
 }
 
-pair<vector<vector<double>>, vector<vector<double>>> householder_reflection(vector<vector<double>> &a) {
+pair<vector<vector<double>>, vector<vector<double>>> QR_decomposition(vector<vector<double>> &a) {
     int n = a.size(), m = a[0].size();
 
     auto Q = I(n), R = a;
@@ -99,7 +99,7 @@ int main() {
     for (int i = 0; i < n - 1; i++)
         for (int j = 0; j < d; j++) a[j][i] = 2 * results[j][i];
 
-    auto [Q, R] = householder_reflection(a);
+    auto [Q, R] = QR_decomposition(a);
     auto results_T = transpose(results), R_T = transpose(R);
     vector<double> b(n - 1, e[0]), y(d, 0.0);
     for (int i = 0; i < n - 1; i++) b[i] += pow(norm(results_T[i], d), 2) - e[i + 1];
