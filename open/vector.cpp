@@ -1,14 +1,14 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-vector<double> matvecmul(vector<vector<double>> &a, vector<double> &v1) {
-    int r = a.size(), c = v1.size();
+vector<double> matvecmul(vector<vector<double>> &a, vector<double> &v) {
+    int r = a.size(), c = v.size();
 
-    vector<double> v2(r, 0);
+    vector<double> u(r, 0);
     for (int i = 0; i < r; i++)
-        for (int j = 0; j < c; j++) v2[i] += a[i][j] * v1[j];
+        for (int j = 0; j < c; j++) u[i] += a[i][j] * v[j];
 
-    return v2;
+    return u;
 }
 
 vector<vector<double>> transpose(vector<vector<double>> &a) {
@@ -34,10 +34,10 @@ vector<vector<double>> I(int size) {
     return I;
 }
 
-pair<vector<vector<double>>, vector<vector<double>>> householder_reflection(vector<vector<double>> &A) {
-    int n = A.size(), m = A[0].size();
+pair<vector<vector<double>>, vector<vector<double>>> householder_reflection(vector<vector<double>> &a) {
+    int n = a.size(), m = a[0].size();
 
-    auto Q = I(n), R = A;
+    auto Q = I(n), R = a;
     vector<double> curr(n), v(n), u(max(n, m));
     for (int i = 0; i < min(n - 1, m); i++) {
         for (int j = 0; j < n - i; j++) curr[j] = R[j + i][i];
