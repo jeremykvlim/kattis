@@ -102,7 +102,7 @@ int main() {
 
     auto [Q, R] = QR_decomposition(a);
     auto results_T = transpose(results), R_T = transpose(R);
-    vector<double> b(n - 1, e[0]), y(d, 0.0);
+    vector<double> b(n - 1, e[0]), y(d, 0);
     for (int i = 0; i < n - 1; i++) b[i] += pow(norm(results_T[i], d), 2) - e[i + 1];
     for (int i = 0; i < n - 1; i++) {
         if (fabs(R_T[i][i]) > 1e-9) y[i] = b[i] / R_T[i][i];
