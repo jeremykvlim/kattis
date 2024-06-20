@@ -45,8 +45,8 @@ pair<vector<vector<double>>, vector<vector<double>>> householder_reflection(vect
         v[0] = norm(curr, n - i);
         for (int j = 0; j < n; j++) v[j] = curr[j] - v[j];
         auto temp = norm(v, n - i);
-        if (fabs(temp) < 1e-9) continue;
-        for (int j = 0; j < n; j++) v[j] /= temp;
+        if (fabs(temp) > 1e-9)
+            for (auto &vi : v) vi /= temp;
 
         auto reflect = [&](vector<vector<double>> &P, bool left) {
             fill(u.begin(), u.end(), 0);
