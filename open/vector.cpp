@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-vector<double> matvecmul(vector<vector<double>> a, vector<double> v1) {
+vector<double> matvecmul(vector<vector<double>> &a, vector<double> &v1) {
     int r = a.size(), c = v1.size();
 
     vector<double> v2(r, 0);
@@ -16,13 +16,12 @@ vector<vector<double>> transpose(vector<vector<double>> &a) {
     vector<vector<double>> a_T(m, vector<double>(n));
 
     for (int i = 0; i < n; i++)
-        for (int j = 0; j < m; j++)
-            a_T[j][i] = a[i][j];
+        for (int j = 0; j < m; j++) a_T[j][i] = a[i][j];
 
     return a_T;
 }
 
-double norm(vector<double> v, int n) {
+double norm(vector<double> &v, int n) {
     double value = 0;
     for (int i = 0; i < n; i++) value += v[i] * v[i];
     return sqrt(value);
