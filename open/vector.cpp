@@ -97,8 +97,7 @@ int main() {
 
     vector<vector<double>> a(d, vector<double>(n - 1));
     for (int i = 0; i < n - 1; i++)
-        for (int j = 0; j < d; j++)
-            a[j][i] = 2 * results[j][i];
+        for (int j = 0; j < d; j++) a[j][i] = 2 * results[j][i];
 
     auto [Q, R] = householder_reflection(a);
     auto results_T = transpose(results), R_T = transpose(R);
