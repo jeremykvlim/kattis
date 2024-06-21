@@ -22,9 +22,7 @@ vector<vector<double>> transpose(vector<vector<double>> &a) {
 }
 
 double norm(vector<double> &v, int n) {
-    double value = 0;
-    for (int i = 0; i < n; i++) value += v[i] * v[i];
-    return sqrt(value);
+    return sqrt(inner_product(v.begin(), v.begin() + n, v.begin(), 0.0));
 }
 
 vector<vector<double>> I(int size) {
