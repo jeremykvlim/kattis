@@ -14,7 +14,7 @@ int main() {
         cin >> coords[i].first >> coords[i].second;
 
         for (int j = i; ~j; j--)
-            if (hypot((coords[i].first - coords[j].first), coords[i].second - coords[j].second) <= d)
+            if (hypot(coords[i].first - coords[j].first, coords[i].second - coords[j].second) <= d)
                 valid[i][j] = valid[j][i] = true;
     }
 
