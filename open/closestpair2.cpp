@@ -32,7 +32,7 @@ int main() {
         multiset<tuple<double, double, int>, decltype(cmp)> ms(cmp);
         vector<decltype(ms)::const_iterator> its(n);
         for (int i = 0, j = 0; i < n; i++) {
-            while (j < i && (sq(get<0>(sorted[j]) - get<0>(sorted[i])) >= d)) ms.erase(its[j++]);
+            for (; j < i && sq(get<0>(sorted[j]) - get<0>(sorted[i])) >= d; j++) ms.erase(its[j]);
 
             auto it = ms.upper_bound(sorted[i]);
             if (it != ms.begin()) {
