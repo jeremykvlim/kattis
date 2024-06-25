@@ -31,7 +31,7 @@ int main() {
         auto cmp = [](auto t1, auto t2) {return get<1>(t1) < get<1>(t2);};
         multiset<tuple<double, double, int>, decltype(cmp)> ms(cmp);
         vector<decltype(ms)::const_iterator> its(n);
-        for (int i = 0, j = 0; i < n; ++i) {
+        for (int i = 0, j = 0; i < n; i++) {
             while (j < i && (sq(get<0>(sorted[j]) - get<0>(sorted[i])) >= d)) ms.erase(its[j++]);
 
             auto it = ms.upper_bound(sorted[i]);
