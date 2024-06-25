@@ -33,10 +33,6 @@ struct SegmentTree {
         ST[p] = ST[p << 1] + ST[p << 1 | 1];
     }
 
-    void build() {
-        for (int i = n - 1; i; i--) pull(i);
-    }
-
     void assign(int i, vector<int> &v) {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
@@ -53,9 +49,7 @@ struct SegmentTree {
 
     SegmentTree(int n, int s) : n(n),
                                 segment_size(s),
-                                ST(2 * n, Segment(s)) {
-        build();
-    }
+                                ST(2 * n, Segment(s)) {}
 };
 
 template <typename T>
