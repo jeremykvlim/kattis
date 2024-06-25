@@ -11,12 +11,12 @@ int main() {
     while (t--) {
         int s, n;
         cin >> s >> n;
-        
-        vector<int> history(n + 2 * s, -1), count(s, 0);
-        vector<bool> reshuffle(n + s + 1, false);
 
+        vector<int> history(n + 2 * s, -1);
         for (int i = 0; i < n; i++) cin >> history[i + s];
 
+        vector<int> count(s, 0);
+        vector<bool> reshuffle(n + s + 1, false);
         int songs = 0, positions = 0;
         for (int i = 0; i < n + s + 1; i++) {
             if (songs == s || i < s && songs == i || i > n && songs == n + s - i) reshuffle[i] = true;
@@ -26,16 +26,13 @@ int main() {
         }
 
         for (int i = 0; i < s; i++) {
-            bool shuffle = true;
             for (int j = i; j < n + s + 1; j += s)
-                if (!reshuffle[j]) {
-                    shuffle = false;
-                    break;
-                }
-            if (shuffle) positions++;
+                if (!reshuffle[j]) goto next;
+
+            positions++;
+            next:;
         }
 
-        if (positions == n + 1) positions = s;
-        cout << positions << "\n";
+        cout << (positions == n + 1 ? s : positions) << "\n";
     }
 }
