@@ -8,7 +8,7 @@ int main() {
     int n;
     cin >> n;
 
-    vector<pair<long long, long long>> points(n);
+    vector<pair<long long, long long>> points(n + 1, {0, 0});
     for (int i = 0; i < n; i++) {
         cin >> points[i].first;
 
@@ -20,12 +20,11 @@ int main() {
 
         if (i) points[i].second += points[i - 1].second;
     }
-    points.emplace_back(0, 0);
     sort(points.begin(), points.end());
 
     auto sq = [](long long v) -> __int128 {return (__int128) v * v;};
 
-    __int128 d = LLONG_MAX;
+    __int128 d = 1e27;
     auto update = [&](auto p1, auto p2) {
         d = min(d, sq(p1.first - p2.first) + sq(p1.second - p2.second));
     };
