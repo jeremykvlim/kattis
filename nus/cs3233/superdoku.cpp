@@ -29,10 +29,12 @@ int main() {
     for (int i = 1; i <= k; i++)
         for (int j = 1; j <= n; j++) {
             cin >> grid[i][j];
+            
             if (row[grid[i][j]][i] || col[grid[i][j]][j]) {
                 cout << "no\n";
                 exit(0);
             }
+            
             row[grid[i][j]][i] = col[grid[i][j]][j] = true;
         }
 
