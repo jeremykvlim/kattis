@@ -8,7 +8,7 @@ My solutions for Kattis problems, not all of them have been archived here yet be
 
 Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizations and a separate open category for non-NUS course problems. Some courses share several problems, you might be able to find them under any one of the categories. I generally use C++ unless the NUS course requires otherwise (language requirements found below). I switch to Python if I require big integer operations or if the solution is much shorter and simpler implementation-wise.
 
-* `NUS`:
+* NUS:
 
   * CS2040/CS2040C/CS2040S/IT5003 Data Structures & Algorithms: C++ (CS2040C)/Java (CS2040, CS2040S)/Python (IT5003)
 
