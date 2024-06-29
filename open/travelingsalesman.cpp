@@ -2,11 +2,11 @@
 using namespace std;
 
 struct Hash {
-    static uint64_t encode(tuple<int, int, int> &t) {
+    static uint64_t encode(array<int, 3> &a) {
         auto encoded = 0ULL;
-        encoded = (encoded << 8) | get<0>(t);
-        encoded = (encoded << 8) | get<1>(t);
-        encoded = (encoded << 8) | get<2>(t);
+        encoded = (encoded << 8) | a[0];
+        encoded = (encoded << 8) | a[1];
+        encoded = (encoded << 8) | a[2];
         return encoded;
     }
 
@@ -18,7 +18,7 @@ struct Hash {
         return hash;
     }
 
-    size_t operator()(pair<tuple<int, int, int>, tuple<int, int, int>> p) const {
+    size_t operator()(pair<array<int, 3>, array<int, 3>> p) const {
         static uint64_t SEED = chrono::steady_clock::now().time_since_epoch().count();
         return h(encode(p.first) + encode(p.second) + SEED);
     }
@@ -30,13 +30,13 @@ int main() {
 
     int c;
     while (cin >> c && c) {
-        unordered_map<pair<tuple<int, int, int>, tuple<int, int, int>>, vector<int>, Hash> connections;
+        unordered_map<pair<array<int, 3>, array<int, 3>>, vector<int>, Hash> connections;
         vector<vector<int>> adj_list(c + 1);
         for (int i = 1; i <= c; i++) {
             int n;
             cin >> n;
 
-            vector<tuple<int, int, int>> corners(n);
+            vector<array<int, 3>> corners(n);
             for (auto &[x, y, z] : corners) cin >> x >> y >> z;
 
             for (int j = 0; j < n; j++) {
