@@ -9,7 +9,7 @@ int main() {
     cin >> n;
 
     vector<double> y;
-    vector<tuple<double, double, double, double>> plots(n);
+    vector<array<double, 4>> plots(n);
     for (auto &[x1, y1, x2, y2] : plots) {
         cin >> x1 >> y1 >> x2 >> y2;
 
