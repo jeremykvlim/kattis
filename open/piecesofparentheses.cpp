@@ -1,27 +1,20 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-bool cmp(tuple<int, int, int, int> t1, tuple<int, int, int, int> t2) {
-    auto [o1, c1, d1, l1] = t1;
-    auto [o2, c2, d2, l2] = t2;
-    if ((d1 > 0) ^ (d2 > 0)) return d2 < d1;
-    else if (d1 > 0) return c1 == c2 ? d2 < d1 : c1 < c2;
-    else return o1 == o2 ? d2 < d1 : o2 < o1;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n, total = 0;
+    int n;
     cin >> n;
 
-    vector<tuple<int, int, int, int>> pieces(n);
+    vector<array<int, 4>> pieces(n);
+    int total = 0;
     for (int i = 0; i < n; i++) {
         string s;
         cin >> s;
 
-        total += s.length();
+        total += s.size();
         int open = 0, close = 0;
         for (char c : s) {
             if (c == '(') open++;
@@ -29,8 +22,14 @@ int main() {
             else close++;
         }
 
-        pieces[i] = make_tuple(open, close, open - close, s.length());
+        pieces[i] = {open, close, open - close, (int) s.size()};
     }
+
+    auto cmp = [](auto a1, auto a2) {
+        if ((a1[2] > 0) ^ (a2[2] > 0)) return a2[2] < a1[2];
+        else if (a1[2] > 0) return a1[1] == a2[1] ? a2[2] < a1[2] : a1[1] < a2[1];
+        else return a1[0] == a2[0] ? a2[2] < a1[2] : a2[0] < a1[0];
+    };
     sort(pieces.begin(), pieces.end(), cmp);
 
     vector<int> dp(total, -1);
