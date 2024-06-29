@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-bool relax(vector<tuple<int, int, int>> &edges, vector<long long> &dist, bool detect = false) {
+bool relax(vector<array<int, 3>> &edges, vector<long long> &dist, bool detect = false) {
     bool change = false;
     for (auto &[u, v, s] : edges)
         if (s <= dist[v] && dist[u] < dist[v] - s) {
@@ -19,7 +19,7 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<tuple<int, int, int>> edges(m);
+    vector<array<int, 3>> edges(m);
     for (auto &[u, v, s] : edges) cin >> u >> v >> s;
 
     long long l = 0, r = LLONG_MAX, mid;
