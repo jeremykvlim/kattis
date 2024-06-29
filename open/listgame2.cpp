@@ -33,19 +33,19 @@ int main() {
         n = temp / n;
     } else n = temp;
 
-    auto div = divisors(n);
-    sort(div.begin(), div.end());
-    unordered_set<long long> s(div.begin() + 1, div.end());
+    auto divs = divisors(n);
+    sort(divs.begin(), divs.end());
+    unordered_set<long long> s(divs.begin() + 1, divs.end());
     for (auto &pf : pfs) s.erase(pf);
 
-    vector<int> dp(div.size(), INT_MIN);
+    vector<int> dp(divs.size(), INT_MIN);
     dp[0] = 0;
     for (auto d : s)
-        for (int i = div.size() - 1, j = div.size(); ~i; i--) {
-            while (j && d * div[j - 1] > div[i]) j--;
+        for (int i = divs.size() - 1, j = divs.size(); ~i; i--) {
+            while (j && d * divs[j - 1] > divs[i]) j--;
             if (!j) break;
 
-            if (d * div[j - 1] == div[i]) dp[i] = max(dp[i], dp[j - 1] + 1);
+            if (d * divs[j - 1] == divs[i]) dp[i] = max(dp[i], dp[j - 1] + 1);
         }
 
     cout << *max_element(dp.begin(), dp.end()) + pfs.size();
