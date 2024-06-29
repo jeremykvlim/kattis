@@ -56,11 +56,8 @@ int main() {
     cin >> q;
 
     while (q--) {
-        int p, ap, bp;
-        cin >> p >> bp >> ap;
-
-        ap %= MODULO;
-        bp %= MODULO;
+        int p, bp, ap;
+        cin >> p >> ap >> bp;
 
         if (b[p]) {
             bw = mul(bw, pow(b[p], MODULO - 2, MODULO), MODULO);
@@ -71,11 +68,13 @@ int main() {
             rgb = mul(rgb, pow(a[p], MODULO - 2, MODULO), MODULO);
         }
 
-        a[p] = bp;
-        b[p] = ap;
+        ap %= MODULO;
+        bp %= MODULO;
+        a[p] = ap;
+        b[p] = bp;
 
         if (b[p]) {
-            a[p] = bp = mul(bp, pow(ap, MODULO -2, MODULO), MODULO);
+            a[p] = ap = mul(ap, pow(bp, MODULO - 2, MODULO), MODULO);
             bw = mul(bw, b[p], MODULO);
             total = mul(total, a[p] + 1, MODULO);
             for (int j = c - 1; j; j--) dp[j] = (dp[j] + mul(dp[j - 1], a[p], MODULO)) % MODULO;
