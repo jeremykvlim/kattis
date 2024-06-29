@@ -6,7 +6,7 @@ struct FenwickTree2D {
     vector<vector<T>> BIT;
     function<T(T, T)> f;
 
-    FenwickTree2D(int n, int m, function<T(T, T)> func) : BIT(n, vector<T>(m, 0)), f(std::move(func)) {}
+    FenwickTree2D(int n, int m, function<T(T, T)> func) : BIT(n, vector<T>(m, 0)), f(move(func)) {}
 
     void update(int i, int j, T value) {
         for (; i < BIT[j].size(); i += i & -i) BIT[j][i] = f(BIT[j][i], value);
