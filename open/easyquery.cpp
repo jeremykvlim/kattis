@@ -1,11 +1,15 @@
 #include <bits/stdc++.h>
+
+#include <utility>
 using namespace std;
 
 struct SegmentTree {
     struct Segment {
         vector<int> s;
 
-        Segment(int size = 32) : s(size, INT_MAX) {}
+        auto size() {
+            return s.size();
+        }
 
         auto & operator=(vector<int> &v) {
             s = v;
@@ -17,16 +21,18 @@ struct SegmentTree {
         }
 
         auto operator+=(Segment seg) {
-            for (int i = 0; i < s.size(); i++) s[i] = min(s[i], seg.s[i]);
+            if (s.empty()) s = seg.s;
+            else if (!seg.s.empty())
+                for (int i = 0; i < s.size(); i++) s[i] = min(s[i], seg.s[i]);
             return *this;
         }
 
         friend auto operator+(Segment sl, Segment sr) {
-            return sl += std::move(sr);
+            return sl += move(sr);
         }
     };
 
-    int n, segment_size;
+    int n;
     vector<Segment> ST;
 
     void pull(int p) {
@@ -38,7 +44,7 @@ struct SegmentTree {
     }
 
     auto query(int l, int r) {
-        Segment seg(segment_size);
+        Segment seg;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
             if (l & 1) seg += ST[l++];
             if (r & 1) seg += ST[--r];
@@ -47,9 +53,7 @@ struct SegmentTree {
         return seg;
     }
 
-    SegmentTree(int n, int s) : n(n),
-                                segment_size(s),
-                                ST(2 * n, Segment(s)) {}
+    SegmentTree(int n) : n(n), ST(2 * n) {}
 };
 
 template <typename T>
@@ -146,7 +150,7 @@ int main() {
             subranges[l].emplace_back(r, compress[wt[r1 - 1]] + 1, compress[wt[r2 - 1]], i);
         }
 
-        vector<SegmentTree> sts(3, SegmentTree(n, wt.b + 1));
+        vector<SegmentTree> sts(3, SegmentTree(n));
         vector<vector<int>> appearances(compress.size());
         for (int l = n - 1; ~l; l--) {
             int i = compress[a[l]];
@@ -164,7 +168,7 @@ int main() {
                 if (u >= v) continue;
                 for (int j = 0; j < 3; j++) {
                     auto s = sts[j].query(u, v);
-                    for (int k = 0; k <= wt.b; k++)
+                    for (int k = 0; k < s.size(); k++)
                         if (s[k] < r) OR[i][j] |= 1 << k;
                 }
             }
