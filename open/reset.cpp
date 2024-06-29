@@ -4,11 +4,11 @@ using namespace std;
 bool complete(vector<pair<int, int>> tasks, long long total, long long &resets, long long attempts, int c) {
     auto remaining = attempts * c;
     for (auto [t, d] : tasks) {
-        auto spent = min<long long>(t / d + (t % d != 0), attempts);
+        auto spent = min((long long) t / d + (t % d != 0), attempts);
         if (remaining < spent) return false;
 
         remaining -= spent;
-        total -= min<long long>(t, attempts * d);
+        total -= min((long long) t, attempts * d);
         c -= spent == attempts;
     }
 
