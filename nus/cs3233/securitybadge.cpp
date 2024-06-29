@@ -8,16 +8,15 @@ int main() {
     int n, l, B, s, d;
     cin >> n >> l >> B >> s >> d;
 
-    vector<vector<tuple<int, int, int>>> locks(n + 1);
-    vector<int> badges;
-
+    vector<vector<array<int, 3>>> locks(n + 1);
+    vector<int> badges(2 * l);
     for (int i = 0; i < l; i++) {
         int a, b, x, y;
         cin >> a >> b >> x >> y;
-        
-        locks[a].emplace_back(b, x, y);
-        badges.emplace_back(x);
-        badges.emplace_back(y);
+
+        locks[a].push_back({b, x, y});
+        badges[2 * i] = x;
+        badges[2 * i + 1] = y;
     }
     sort(badges.begin(), badges.end());
 
@@ -40,7 +39,7 @@ int main() {
             }
 
             for (auto [b, x, y] : locks[v])
-                if (badges[i - 1] >= x && badges[i] <= y && !visited[b]) {
+                if (!visited[b] && badges[i - 1] >= x && badges[i] <= y) {
                     q.emplace(b);
                     visited[b] = true;
                 }
