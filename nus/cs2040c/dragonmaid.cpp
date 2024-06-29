@@ -8,7 +8,7 @@ int main() {
     int n;
     cin >> n;
 
-    vector<tuple<int, int, int>> items(n);
+    vector<array<int, 3>> items(n);
     for (int i = 0; i < n; i++) {
         int p, v;
         cin >> p >> v;
@@ -20,7 +20,7 @@ int main() {
     int q;
     cin >> q;
 
-    vector<tuple<int, int, int>> queries(q);
+    vector<array<int, 3>> queries(q);
     for (int i = 0; i < q; i++) {
         int x, k;
         cin >> x >> k;
@@ -34,17 +34,17 @@ int main() {
     int m = 0;
     for (auto [x, k, i] : queries) {
         for (; m < n; m++) {
-            auto [v, p, j] = items[m];
-            if (v <= x) order.emplace(-p, j);
+            if (items[m][0] <= x) order.emplace(-items[m][1], items[m][2]);
             else break;
         }
 
-        for (auto it = order.begin(); k-- && it != order.end(); it++) indices[i].emplace_back(it->second);
+        for (auto it = order.begin(); k && it != order.end(); k--, it++) indices[i].emplace_back(it->second);
     }
 
     for (auto &i : indices) {
         if (i.empty()) cout << "-1";
-        else for (auto j : i) cout << j + 1 << " ";
+        else 
+            for (int j : i) cout << j + 1 << " ";
         cout << "\n";
     }
 }
