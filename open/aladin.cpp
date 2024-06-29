@@ -18,18 +18,18 @@ struct FenwickTree {
     FenwickTree(int n) : BIT(n, 0) {}
 };
 
-tuple<long long, long long, long long> operator+(tuple<long long, long long, long long> t1, tuple<long long, long long, long long> t2) {
+array<long long, 3> operator+(array<long long, 3> t1, array<long long, 3> t2) {
     auto [x1, y1, z1] = t1;
     auto [x2, y2, z2] = t2;
     return {x1 + x2, y1 + y2, x1 * y2 + z1 + z2};
 }
 
-tuple<long long, long long, long long> operator*(tuple<long long, long long, long long> t, long long v) {
+array<long long, 3> operator*(array<long long, 3> t, long long v) {
     auto [x, y, z] = t;
     return {v * x, v * y, (v * (v - 1) / 2) * x * y  + v * z};
 }
 
-tuple<long long, long long, long long> calc(long long range, long long a, long long x, long long b, tuple<long long, long long, long long> t1, tuple<long long, long long, long long> t2) {
+array<long long, 3> calc(long long range, long long a, long long x, long long b, array<long long, 3> t1, array<long long, 3> t2) {
     if (!range) return {0, 0, 0};
     if (x >= b) return calc(range, a, x % b, b, t1, t2) + t1 * (x / b);
     if (a >= b) return calc(range, a % b, x, b, t2 * (a / b) + t1, t2);
@@ -54,7 +54,7 @@ int main() {
     cin >> n >> q;
 
     vector<int> boxes;
-    vector<tuple<int, int, int, int>> queries(q);
+    vector<array<int, 4>> queries(q);
     for (auto &[l, r, a, b] : queries) {
         int c;
         cin >> c >> l >> r;
@@ -74,8 +74,8 @@ int main() {
 
     FenwickTree<long long> fw(boxes.size() + 1);
     auto cmp = [](auto t1, auto t2) {return get<1>(t1) < get<1>(t2);};
-    set<tuple<int, int, int, int, int, int>, decltype(cmp)> s(cmp);
-    s.emplace(1, n, 0, 1, 1, n);
+    set<array<int, 6>, decltype(cmp)> s(cmp);
+    s.insert({1, n, 0, 1, 1, n});
     for (auto [l1, r1, a1, b1] : queries)
         if (a1 && b1) {
             for (auto it = s.lower_bound({0, l1, 0, 0, 0, 0}); it != s.end(); it = s.lower_bound({0, l1, 0, 0, 0, 0})) {
@@ -85,15 +85,15 @@ int main() {
                 s.erase(it);
                 fw.update(index(r2), -sum(l3, r3, a2, b2));
                 if (l2 < l1) {
-                    s.emplace(l2, l1 - 1, a2, b2, l3, l1 - l2 + l3 - 1);
+                    s.insert({l2, l1 - 1, a2, b2, l3, l1 - l2 + l3 - 1});
                     fw.update(index(l1 - 1), sum(l3, l1 - l2 + l3 - 1, a2, b2));
                 }
                 if (r1 < r2) {
-                    s.emplace(r1 + 1, r2, a2, b2, r1 - r2 + r3 + 1, r3);
+                    s.insert({r1 + 1, r2, a2, b2, r1 - r2 + r3 + 1, r3});
                     fw.update(index(r2), sum(r1 - r2 + r3 + 1, r3, a2, b2));
                 }
             }
-            s.emplace(l1, r1, a1, b1, 1, r1 - l1 + 1);
+            s.insert({l1, r1, a1, b1, 1, r1 - l1 + 1});
             fw.update(index(r1), sum(1, r1 - l1 + 1, a1, b1));
         } else {
             auto [l2, r2, a2, b2, l3, r3] = *s.lower_bound({0, r1, 0, 0, 0, 0});
