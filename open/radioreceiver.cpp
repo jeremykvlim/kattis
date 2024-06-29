@@ -29,16 +29,8 @@ int main() {
 
                 if (l1 - t > r2 || r1 + t < l2) return false;
 
-                if (l1 - t >= l2 && r1 + t <= r2) {
-                    l1 -= t;
-                    r1 += t;
-                } else if (l1 - t < l2 && r1 + t > r2) {
-                    l1 = l2;
-                    r1 = r2;
-                } else {
-                    l1 = max(l1 - t, l2);
-                    r1 = min(r1 + t, r2);
-                }
+                l1 = max(l1 - t, l2);
+                r1 = min(r1 + t, r2);
             }
 
             return true;
