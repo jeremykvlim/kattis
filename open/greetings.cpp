@@ -8,29 +8,28 @@ int main() {
     int n, k;
     cin >> n >> k;
 
-    vector<tuple<int, int, int>> cards(n);
+    vector<array<int, 3>> cards(n);
     for (auto &[w, h, q] : cards) cin >> w >> h >> q;
 
     vector<long long> waste(1 << n);
-    vector<vector<long long>> dp(max(n, k) + 1, vector<long long>(1 << n, 1e13));
-
     for (int i = 0; i < 1 << n; i++) {
-        auto w = 0, h = 0;
+        int w = 0, h = 0;
         for (int j = 0; j < n; j++)
             if (i & (1 << j)) {
-                w = max(w, get<0>(cards[j]));
-                h = max(h, get<1>(cards[j]));
+                w = max(w, cards[j][0]);
+                h = max(h, cards[j][1]);
             }
 
         waste[i] = 0;
         for (int j = 0; j < n; j++)
-            if (i & (1 << j)) waste[i] += ((long long) w * h - (long long) get<0>(cards[j]) * get<1>(cards[j])) * get<2>(cards[j]);
+            if (i & (1 << j)) waste[i] += ((long long) w * h - (long long) cards[j][0] * cards[j][1]) * cards[j][2];
     }
 
+    vector<vector<long long>> dp(max(n, k) + 1, vector<long long>(1 << n, 1e13));
     dp[0][0] = 0;
     for (int i = 1; i <= k; i++)
         for (int j = 0; j < 1 << n; j++)
             for (int mask = j; mask; --mask &= j) dp[i][j] = min(dp[i][j], dp[i - 1][j & ~mask] + waste[mask]);
 
-    cout << dp[min(n, k)][(1 << n) - 1];
+    cout << dp[min(n, k)].back();
 }
