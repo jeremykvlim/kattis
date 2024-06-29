@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void dijkstra(vector<vector<tuple<int, int, int, int, int, int> *>> adj_list, vector<int> &potential) {
+void dijkstra(vector<vector<array<int, 6> *>> adj_list, vector<int> &potential) {
     vector<int> dist(potential.size(), INT_MAX);
     dist[0] = 0;
 
@@ -57,11 +57,11 @@ int main() {
         dominos -= count[i];
     }
 
-    vector<tuple<int, int, int, int, int, int>> edges;
+    vector<array<int, 6>> edges;
     int index = 0;
     auto add = [&](int u, int v, int w) {
-        edges.emplace_back(u, v, w, 1, 0, index++);
-        edges.emplace_back(v, u, -w, 0, 0, index++);
+        edges.push_back({u, v, w, 1, 0, index++});
+        edges.push_back({v, u, -w, 0, 0, index++});
     };
 
     int id = 2;
@@ -90,8 +90,8 @@ int main() {
             else add(0, coverable[i][j], -table[i][j]);
         }
 
-    vector<vector<tuple<int, int, int, int, int, int> *>> adj_list(id);
-    for (auto &e : edges) adj_list[get<0>(e)].emplace_back(&e);
+    vector<vector<array<int, 6> *>> adj_list(id);
+    for (auto &e : edges) adj_list[e[0]].emplace_back(&e);
 
     vector<int> potential(id, INT_MAX);
     potential[0] = 0;
@@ -115,7 +115,7 @@ int main() {
 
             if (!visited[u] && self(self, u)) {
                 flow++;
-                get<4>(edges[index ^ 1])--;
+                edges[index ^ 1][4]--;
 
                 sum += w;
                 return true;
@@ -129,7 +129,7 @@ int main() {
         dijkstra(adj_list, potential);
 
         fill(visited.begin(), visited.end(), false);
-        dfs(dfs);
+        if (!dfs(dfs)) break;
     }
 
     cout << sum;
