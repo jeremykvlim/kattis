@@ -26,24 +26,24 @@ int main() {
     int n, k;
     cin >> n >> k;
 
-    vector<tuple<int, int, int>> values;
+    vector<array<int, 3>> values;
     map<int, int> indices;
     for (int i = 0; i < n; i++) {
         int g, p, ga, pa;
         cin >> g >> p >> ga >> pa;
 
         indices[p];
-        values.emplace_back(g, p, 0);
+        values.push_back({g, p, 0});
         if (ga && pa) {
             indices[pa];
-            values.emplace_back(ga, pa, 1);
+            values.push_back({ga, pa, 1});
         }
     }
 
     int index = 1;
     for (auto &[p, i] : indices) i = index++;
     for (auto &[g, p, b] : values) p = indices[p];
-    sort(values.begin(), values.end(), [&](auto v1, auto v2) {return get<0>(v1) != get<0>(v2) ? get<0>(v1) > get<0>(v2) : get<1>(v1) < get<1>(v2);});
+    sort(values.begin(), values.end(), [&](auto v1, auto v2) {return v1[0] != v2[0] ? v1[0] > v2[0] : v1[1] < v2[1];});
 
     FenwickTree2D<int> fw(max(n, k) + 1, index + 1, [](int x, int y) {return max(x, y);});
     for (auto [g, p, b] : values)
