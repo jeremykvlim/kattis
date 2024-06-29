@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-bool relax(vector<tuple<int, int, int>> &edges, vector<int> &dist, bool detect = false) {
+bool relax(vector<array<int, 3>> &edges, vector<int> &dist, bool detect = false) {
     bool change = false;
     for (auto &[u, v, e] : edges)
         if (-e <= dist[u] && dist[v] < dist[u] + e) {
@@ -18,7 +18,7 @@ int main() {
 
     int n;
     while (cin >> n && n != -1) {
-        vector<tuple<int, int, int>> edges;
+        vector<array<int, 3>> edges;
 
         for (int u = 1; u <= n; u++) {
             int e, doorways;
@@ -28,7 +28,7 @@ int main() {
                 int v;
                 cin >> v;
 
-                edges.emplace_back(u, v, e);
+                edges.push_back({u, v, e});
             }
         }
 
@@ -39,7 +39,7 @@ int main() {
             for (int i = 0; i < n; i++)
                 if (!relax(edges, dist)) break;
         };
-        
+
         bellman_ford();
         relax(edges, dist, true);
         bellman_ford();
