@@ -18,15 +18,12 @@ struct FenwickTree {
     FenwickTree(int n) : BIT(n, 0) {}
 };
 
-array<long long, 3> operator+(array<long long, 3> t1, array<long long, 3> t2) {
-    auto [x1, y1, z1] = t1;
-    auto [x2, y2, z2] = t2;
-    return {x1 + x2, y1 + y2, x1 * y2 + z1 + z2};
+array<long long, 3> operator+(array<long long, 3> a1, array<long long, 3> a2) {
+    return {a1[0] + a2[0], a1[1] + a2[1], a1[0] * a2[1] + a1[2] + a2[2]};
 }
 
-array<long long, 3> operator*(array<long long, 3> t, long long v) {
-    auto [x, y, z] = t;
-    return {v * x, v * y, (v * (v - 1) / 2) * x * y  + v * z};
+array<long long, 3> operator*(array<long long, 3> a, long long v) {
+    return {v * a[0], v * a[1], (v * (v - 1) / 2) * a[0] * a[1] + v * a[2]};
 }
 
 array<long long, 3> calc(long long range, long long a, long long x, long long b, array<long long, 3> t1, array<long long, 3> t2) {
@@ -73,7 +70,7 @@ int main() {
     };
 
     FenwickTree<long long> fw(boxes.size() + 1);
-    auto cmp = [](auto t1, auto t2) {return get<1>(t1) < get<1>(t2);};
+    auto cmp = [](auto a1, auto a2) {return a1[1] < a2[1];};
     set<array<int, 6>, decltype(cmp)> s(cmp);
     s.insert({1, n, 0, 1, 1, n});
     for (auto [l1, r1, a1, b1] : queries)
