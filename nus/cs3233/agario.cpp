@@ -32,7 +32,7 @@ int main() {
     vector<int> a(n + 1);
     for (int i = 1; i <= n; i++) cin >> a[i];
 
-    vector<tuple<int, int, int>> edges(m);
+    vector<array<int, 3>> edges(m);
     for (auto &[w, u, v] : edges) {
         cin >> u >> v;
 
