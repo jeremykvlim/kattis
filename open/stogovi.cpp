@@ -32,7 +32,7 @@ int main() {
 
     vector<int> id(n + 1, 0), parent(n + 1, 0), op(n + 1, -1);
     vector<vector<int>> adj_list(n + 1);
-    vector<tuple<int, int, int>> queries;
+    vector<array<int, 3>> queries;
     for (int i = 1; i <= n; i++) {
         char c;
         int v;
@@ -50,7 +50,7 @@ int main() {
             cin >> w;
 
             id[i] = id[v];
-            queries.emplace_back(id[v], id[w], i);
+            queries.push_back({id[v], id[w], i});
         }
     }
 
