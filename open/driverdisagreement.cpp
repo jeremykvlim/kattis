@@ -33,8 +33,8 @@ int main() {
     for (int i = 0; i < n; i++) cin >> l[i] >> r[i] >> t[i];
 
     DisjointSet dsu(n);
-    queue<tuple<int, int, int>> q;
-    q.emplace(A, B, 0);
+    queue<array<int, 3>> q;
+    q.push({A, B, 0});
     while (!q.empty()) {
         auto [a, b, d] = q.front();
         q.pop();
@@ -45,8 +45,8 @@ int main() {
         }
 
         if (dsu.unite(a, b)) {
-            q.emplace(l[a], l[b], d + 1);
-            q.emplace(r[a], r[b], d + 1);
+            q.push({l[a], l[b], d + 1});
+            q.push({r[a], r[b], d + 1});
         }
     }
 
