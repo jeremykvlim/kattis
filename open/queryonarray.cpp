@@ -12,7 +12,7 @@ int main() {
 
     vector<__int128> pref_a(n + 1, 0);
     vector<vector<__int128>> pref_pow(4, vector<__int128>(n + 1, 0));
-    deque<tuple<int, int, int>> lazy;
+    deque<array<int, 3>> lazy;
     for (auto i = 1LL; i <= n; i++) {
         pref_pow[3][i] = pref_pow[3][i - 1] + i * i * i;
         pref_pow[2][i] = pref_pow[2][i - 1] + i * i;
@@ -44,8 +44,10 @@ int main() {
                       + temp1[1][i] * i
                       + temp1[0][i];
 
-        for (int i = 1; i <= n; i++) temp2[i] += temp2[i - 1];
-        for (int i = 1; i <= n; i++) pref_a[i] += temp2[i];
+        for (int i = 1; i <= n; i++) {
+            temp2[i] += temp2[i - 1];
+            pref_a[i] += temp2[i];
+        }
     };
 
     while (m--) {
@@ -67,6 +69,6 @@ int main() {
             }
 
             cout << (long long) ((sum % MODULO + MODULO) % MODULO) << "\n";
-        } else lazy.emplace_back((t == 1 ? 1 : -1), x, y);
+        } else lazy.push_back({t == 1 ? 1 : -1, x, y});
     }
 }
