@@ -21,8 +21,8 @@ int main() {
     vector<int> dr{0, 0, 1, -1}, dc{1, -1, 0, 0};
     vector<vector<vector<int>>> dist(n, vector<vector<int>>(m, vector<int>(k + 1, -1)));
     dist[s.first][s.second][k] = 1;
-    priority_queue<tuple<int, int, int, int>, vector<tuple<int, int, int, int>>, greater<>> pq;
-    pq.emplace(1, s.first, s.second, k);
+    priority_queue<array<int, 4>, vector<array<int, 4>>, greater<>> pq;
+    pq.push({1, s.first, s.second, k});
     while (!pq.empty()) {
         auto [d, x, y, stam] = pq.top();
         pq.pop();
@@ -36,14 +36,14 @@ int main() {
                     if (stam >= 2)
                         if (dist[r][c][stam - 2] == -1) {
                             dist[r][c][stam - 2] = dist[x][y][stam];
-                            pq.emplace(d, r, c, stam - 2);
+                            pq.push({d, r, c, stam - 2});
                         }
                     break;
                 case 'M':
                     if (stam >= 3)
                         if (dist[r][c][stam - 3] == -1) {
                             dist[r][c][stam - 3] = dist[x][y][stam];
-                            pq.emplace(d, r, c, stam - 3);
+                            pq.push({d, r, c, stam - 3});
                         }
                     break;
                 case '#':
@@ -53,7 +53,7 @@ int main() {
                     if (stam >= 1)
                         if (dist[r][c][stam - 1] == -1) {
                             dist[r][c][stam - 1] = dist[x][y][stam];
-                            pq.emplace(d, r, c, stam - 1);
+                            pq.push({d, r, c, stam - 1});
                         }
                     break;
             }
@@ -61,7 +61,7 @@ int main() {
 
         if (dist[x][y][k] == -1) {
             dist[x][y][k] = d + 1;
-            pq.emplace(d + 1, x, y, k);
+            pq.push({d + 1, x, y, k});
         }
     }
 
