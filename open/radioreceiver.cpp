@@ -44,15 +44,12 @@ int main() {
             return true;
         };
 
-        int count = 0;
         double l = 0, r = bound, m;
         while (l + 1e-9 < r && r / l > 1 + 1e-9) {
             m = l + (r - l) / 2;
 
             if (possible(m)) r = m;
             else l = m;
-
-            count++;
         }
 
         cout << "Case #" << x << ": " << fixed << setprecision(9) << m << "\n";
