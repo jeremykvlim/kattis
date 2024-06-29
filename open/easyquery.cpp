@@ -60,7 +60,7 @@ struct WaveletTree {
     vector<int> pref1, pref2;
     int b;
 
-    void range_select(vector<tuple<int, int, int>> &order_statistics) {
+    void range_select(vector<array<int, 3>> &order_statistics) {
         for (int bit = b; ~bit; bit--) {
             for (int i = 0; i < WT.size(); i++) {
                 pref1[i + 1] = pref1[i] + !((WT[i] >> bit) & 1);
@@ -91,11 +91,11 @@ struct WaveletTree {
         return WT[i];
     }
 
-    WaveletTree(vector<T> array, vector<tuple<int, int, int>> &order_statistics) : WT(array.begin(), array.end()),
-                                                                                   temp(array.size()),
-                                                                                   pref1(array.size() + 1),
-                                                                                   pref2(array.size() + 1) {
-        b = __lg(*max_element(array.begin(), array.end()));
+    WaveletTree(vector<T> a, vector<array<int, 3>> &order_statistics) : WT(a.begin(), a.end()),
+                                                                        temp(a.size()),
+                                                                        pref1(a.size() + 1),
+                                                                        pref2(a.size() + 1) {
+        b = __lg(*max_element(a.begin(), a.end()));
         range_select(order_statistics);
     }
 };
@@ -123,7 +123,7 @@ int main() {
         for (auto &[ai, i] : compress) i = count++;
 
         vector<tuple<int, int, int, int>> queries(q);
-        vector<tuple<int, int, int>> order_statistics(2 * q);
+        vector<array<int, 3>> order_statistics(2 * q);
         for (int i = 0; i < q; i++) {
             int l, r, u ,v;
             cin >> l >> r >> u >> v;
