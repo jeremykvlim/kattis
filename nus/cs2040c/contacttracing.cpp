@@ -9,9 +9,9 @@ int main() {
     cin >> n >> d >> c;
 
     vector<int> infected(c);
-    for (auto &i : infected) cin >> i;
+    for (int &i : infected) cin >> i;
 
-    vector<tuple<int, int, int>> times(n);
+    vector<array<int, 3>> times(n);
     for (int i = 0; i < n; i++) {
         int s, t;
         cin >> s >> t;
