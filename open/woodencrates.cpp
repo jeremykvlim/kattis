@@ -67,8 +67,8 @@ int main() {
     for (auto &c : crates) cin >> c;
 
     auto total = accumulate(crates.begin(), crates.end(), 0LL), actions = LLONG_MAX;
-    auto div = divisors(total);
-    for (auto d : div)
+    auto divs = divisors(total);
+    for (auto d : divs)
         if (d >= n) actions = min(actions, rearrange(d, total, crates));
 
     cout << actions;
