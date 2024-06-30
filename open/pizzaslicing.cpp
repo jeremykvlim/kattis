@@ -13,19 +13,19 @@ int main() {
     b /= g;
 
     long long slice;
-    if ((long double) n / a / b > 1) {
-        slice = sqrtl((long double) n / a / b);
+    if ((double) n / a / b > 1) {
+        slice = sqrt((double) n / a / b);
         while (slice * a * slice * b < n) slice++;
         a *= slice;
         b *= slice;
     }
 
-    int least = 0;
+    int cuts = 0;
     while (a > 1 || b > 1) {
         if (b > a) swap(a, b);
         a = (a + 1) / 2;
-        least++;
+        cuts++;
     }
-    
-    cout << least;
+
+    cout << cuts;
 }
