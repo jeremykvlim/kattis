@@ -36,7 +36,7 @@ int main() {
     for (auto &[f, q] : food) cin >> q >> f;
 
     double l = 0, r = INT_MAX, m;
-    while (l + 1e-9 < r && r / l > 1 + 1e-9) {
+    while (l + 1e-9 < r && l + l * 1e-9 < r) {
         m = l + (r - l) / 2;
 
         if (!survive(food, m)) r = m;
