@@ -34,10 +34,10 @@ int main() {
             for (int i = j; i < k; i++) a += acos(1 - (segments[i] * segments[i] / (2 * m * m)));
             return a;
         };
-        
+
         bool covered = angle((double) segments.back() / 2, 0, n) >= 2 * M_PI;
         double area = 0, l = (double) segments.back() / 2, r = covered ? (double) total / 4 : 1e6, m;
-        while (l + 1e-9 < r) {
+        while (l + l * 1e-11 < r) {
             m = l + (r - l) / 2;
 
             if (covered ? (angle(m, 0, n) >= 2 * M_PI) : (angle(m, n - 1, n) >= angle(m, 0, n - 1))) l = m;
@@ -62,7 +62,7 @@ int main() {
         cout << fixed << setprecision(3) << a << "\n";
         exit(0);
     }
-    
+
     total -= segments.back();
     segments.pop_back();
     n--;
