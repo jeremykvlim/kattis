@@ -18,10 +18,10 @@ int main() {
         }
 
         double l = 0, r = M_PI_2, m;
-        while (l + l * 1e-10 < r) {
+        while (l + 1e-8 < r && l + l * 1e-8 < r) {
             m = l + (r - l) / 2;
 
-            if (tan(m) - M_PI - m > 0) r = m;
+            if (tan(m) > M_PI + m) r = m;
             else l = m;
         }
 
