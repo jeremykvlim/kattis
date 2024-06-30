@@ -19,6 +19,7 @@ int main() {
                 int l = -1, r = len - 1, m;
                 while (l + 1 < r) {
                     m = l + (r - l) / 2;
+                    
                     if (seq[tail[m]] >= seq[i]) r = m;
                     else l = m;
                 }
