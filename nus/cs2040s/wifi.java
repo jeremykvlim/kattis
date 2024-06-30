@@ -16,7 +16,7 @@ public class wifi {
 
             Arrays.sort(houses);
             double l = 0, r = houses[m - 1], mid;
-            while (l + 1e-2 < r) {
+            while (l + 1e-7 < r && l + l * 1e-7 < r) {
                 mid = l + (r - l) / 2;
 
                 var dist = houses[0] + mid;
