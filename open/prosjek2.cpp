@@ -12,7 +12,7 @@ int main() {
     for (int &ai : a) cin >> ai;
 
     double l = 0, r = 1e6, m;
-    while (l + 1e-11 < r && l + l * 1e-11 < r) {
+    while (l + 1e-10 < r && l + l * 1e-10 < r) {
         m = l + (r - l) / 2;
 
         auto valid = [&]() -> bool {
