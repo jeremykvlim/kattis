@@ -141,24 +141,31 @@ int main() {
         cin >> s;
 
         int n = s.size();
+        
+        if (n == 1) {
+            cout << "1\n";
+            continue;
+        }
+        
         SuffixArray sa(s);
         sa.kasai();
-        
+
         vector<int> indices(n - 1), len(n);
         iota(indices.begin(), indices.end(), 0);
         sort(indices.begin(), indices.end(), [&](int i, int j) {return sa.lcp[i] > sa.lcp[j];});
         for (int i = 0; i < n; i++) len[i] = n - i;
 
         DisjointSet dsu(n);
-        auto h = n == 1 ? 1LL : ((long long) n * n % MODULO * *min_element(sa.lcp.begin(), sa.lcp.end())) % MODULO;
+        auto h = ((long long) n * n % MODULO * *min_element(sa.lcp.begin(), sa.lcp.end())) % MODULO;
 
-        auto process = [&](auto &&self, int i = 0) -> void {
+        auto compute = [&](auto &&self, int i = 0) -> void {
             if (i >= n - 1) return;
 
             auto add = [&](int i, int l) {
                 int i_set = dsu.find(i), size = dsu.size[i_set];
                 h += (len[i_set] - l) * ((long long) size * size % MODULO) % MODULO;
             };
+            
             int l = sa.lcp[indices[i]];
             for (; i < n - 1 && sa.lcp[indices[i]] == l; i++) {
                 int curr = sa[indices[i] + 1], prev = sa[indices[i]];
@@ -173,7 +180,7 @@ int main() {
             self(self, i);
         };
 
-        process(process);
+        compute(compute);
         cout << h % MODULO << "\n";
     }
 }
