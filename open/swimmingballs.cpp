@@ -1,12 +1,10 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-constexpr double EPSILON = 1e-4;
-
 double height(double radius, double weight) {
     if (1.0 <= weight) return 2.0 * radius;
     double l = 0, r = 2.0 * radius, m;
-    while (l + EPSILON < r) {
+    while (l + l * 1e-4 < r) {
         m = l + (r - l) / 2;
         if (M_PI * m * m * (radius - m / 3.0) >= weight * 4 * M_PI * pow(radius, 3) / 3.0) r = m;
         else l = m;
@@ -39,8 +37,9 @@ int main() {
         vector<pair<double, double>> balls(n);
         for (auto &[r, w] : balls) cin >> r >> w;
         double l = 0, r = D, m;
-        while (l + EPSILON < r) {
+        while (l + l * 1e-4 < r) {
             m = l + (r - l) / 2;
+            
             if (W * L * m - volume(m, balls) > V) r = m;
             else l = m;
         }
