@@ -31,7 +31,7 @@ int main() {
 
         vector<int> lis(len);
         for (int i = tail[len - 1]; ~i; i = prev[i]) lis[--len] = i;
-        for (auto &e : lis) cout << e << " ";
+        for (int e : lis) cout << e << " ";
         cout << "\n";
     }
 }
