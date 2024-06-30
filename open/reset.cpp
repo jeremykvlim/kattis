@@ -12,7 +12,7 @@ bool complete(vector<pair<int, int>> tasks, long long total, long long &resets, 
         c -= spent == attempts;
     }
 
-    if (total > min<long long>(remaining, c)) return false;
+    if (total > min(remaining, (long long) c)) return false;
     resets = attempts;
     return true;
 }
