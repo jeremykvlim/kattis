@@ -16,10 +16,10 @@ int main() {
         for (int i = 0; i < n; i++) cin >> x[i] >> y[i] >> z[i] >> p[i];
 
         double l = 0, r = INT_MAX, m;
-        while (l + 1e-9 < r) {
+        while (l + l * 1e-13 < r) {
             m = l + (r - l) / 2;
-            vector<vector<vector<double>>> ships(2, vector<vector<double>>(2, vector<double>(2, DBL_MAX)));
 
+            vector<vector<vector<double>>> ships(2, vector<vector<double>>(2, vector<double>(2, DBL_MAX)));
             for (int i = 0; i < n; i++)
                 for (int X = 0; X < 2; X++)
                     for (int Y = 0; Y < 2; Y++)
@@ -31,7 +31,7 @@ int main() {
                     for (int Z = 0; Z < 2; Z++)
                         if (!((X + Y + Z) & 1)) {
                             if (ships[X][Y][Z] + ships[!X][!Y][!Z] < 0) goto next;
-                            
+
                             even += ships[X][Y][Z];
                             odd += ships[!X][!Y][!Z];
                         }
@@ -43,6 +43,6 @@ int main() {
             }
         }
 
-        cout << fixed << setprecision(6) << "Case #" << t << ": " << m << "\n";
+        cout << fixed << setprecision(6) << "Case #" << t << ": " << l << "\n";
     }
 }
