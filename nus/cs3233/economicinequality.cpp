@@ -30,7 +30,7 @@ int main() {
 
     long long l = -1, r = 1e13, mid;
     while (l + 1 < r) {
-        mid = (l + r) / 2;
+        mid = l + (r - l) / 2;
 
         vector<long long> diff(m - 1);
         for (int i = 1; i < m; i++) diff[i - 1] = min(c[i], mid) - b[i];
