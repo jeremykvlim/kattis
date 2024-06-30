@@ -141,12 +141,12 @@ int main() {
         cin >> s;
 
         int n = s.size();
-        
+
         if (n == 1) {
             cout << "1\n";
             continue;
         }
-        
+
         SuffixArray sa(s);
         sa.kasai();
 
@@ -163,9 +163,9 @@ int main() {
 
             auto add = [&](int i, int l) {
                 int i_set = dsu.find(i), size = dsu.size[i_set];
-                h += (len[i_set] - l) * ((long long) size * size % MODULO) % MODULO;
+                h += ((long long) size * size % MODULO * (len[i_set] - l)) % MODULO;
             };
-            
+
             int l = sa.lcp[indices[i]];
             for (; i < n - 1 && sa.lcp[indices[i]] == l; i++) {
                 int curr = sa[indices[i] + 1], prev = sa[indices[i]];
