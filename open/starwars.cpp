@@ -16,7 +16,7 @@ int main() {
         for (int i = 0; i < n; i++) cin >> x[i] >> y[i] >> z[i] >> p[i];
 
         double l = 0, r = INT_MAX, m;
-        while (l + l * 1e-13 < r) {
+        while (l + 1e-13 < r && l + l * 1e-13 < r) {
             m = l + (r - l) / 2;
 
             vector<vector<vector<double>>> ships(2, vector<vector<double>>(2, vector<double>(2, DBL_MAX)));
