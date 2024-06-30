@@ -2,7 +2,7 @@
 using namespace std;
 
 struct SuffixArray {
-    vector<int> SA, ascii, lcp;
+    vector<int> SA, ascii;
 
     vector<int> sais(vector<int> &ascii1, int range) {
         int n = ascii1.size();
