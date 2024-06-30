@@ -1,22 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void dfs(int v, int prev, vector<double> &cost, vector<double> &dp, vector<vector<int>> &adj_list) {
-    dp[v] = cost[v];
-    for (int u : adj_list[v])
-        if (u != prev) {
-            dfs(u, v, cost, dp, adj_list);
-            dp[v] += max(0.0, dp[u]);
-        }
-}
-
-bool contains(double m, vector<int> &gdp, vector<int> &population, vector<double> &cost, vector<double> &dp, vector<vector<int>> &adj_list) {
-    for (int i = 0; i < cost.size(); i++) cost[i] = gdp[i] - m * population[i];
-    dfs(0, -1, cost, dp, adj_list);
-
-    return dp[0] >= 0;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -38,13 +22,29 @@ int main() {
     }
 
     vector<double> cost(n), dp(n);
-    double l = 0, r = INT_MAX, m;
-    while (l + l * 1e-6 < r) {
+    double l = 0, r = 1e6, m;
+    while (l + 1e-7 < r && l + l * 1e-7 < r) {
         m = l + (r - l) / 2;
 
-        if (!contains(m, gdp, population, cost, dp, adj_list)) r = m;
+        auto valid = [&]() -> bool {
+            auto dfs = [&](auto &&self, int v = 0, int prev = -1) -> void {
+                dp[v] = cost[v];
+                for (int u : adj_list[v])
+                    if (u != prev) {
+                        self(self, u, v);
+                        dp[v] += max(0.0, dp[u]);
+                    }
+            };
+
+            for (int i = 0; i < cost.size(); i++) cost[i] = gdp[i] - m * population[i];
+            dfs(dfs);
+
+            return dp[0] < 0;
+        };
+
+        if (valid()) r = m;
         else l = m;
     }
 
-    cout << fixed << setprecision(6) << m;
+    cout << fixed << setprecision(6) << r;
 }
