@@ -12,7 +12,7 @@ int main() {
 
         vector<tuple<double, double, int>> intervals(n);
         for (int i = 0; i < n; i++) {
-            long double a, b;
+            double a, b;
             cin >> a >> b;
 
             intervals[i] = make_tuple(a, b, i);
@@ -25,12 +25,12 @@ int main() {
         for (auto [a, b, i] : intervals) {
             if (a > last) {
                 if (curr == -1 || end >= B) break;
-                
+
                 cover.emplace_back(curr);
                 last = end;
                 end = LLONG_MIN;
                 curr = -1;
-            
+
                 if (a > last) break;
             }
 
