@@ -14,7 +14,7 @@ int main() {
 
     long long l = -1, r = 1e14, m;
     while (l + 1 < r) {
-        m = (l + r) / 2;
+        m = l + (r - l) / 2;
 
         auto pages = 0LL;
         int late = 0;
