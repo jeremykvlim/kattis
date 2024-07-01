@@ -1,6 +1,19 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+struct Point {
+    T x, y;
+
+    Point() {}
+    Point(T x, T y) : x(x), y(y) {}
+};
+
+template <typename T>
+double dist(Point<T> a, Point<T> b) {
+    return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -8,14 +21,13 @@ int main() {
     int n, d;
     cin >> n >> d;
 
-    vector<pair<int, int>> coords(n);
+    vector<Point<int>> points(n);
     vector<bitset<100>> valid(n, bitset<100>(0));
     for (int i = 0; i < n; i++) {
-        cin >> coords[i].first >> coords[i].second;
+        cin >> points[i].x >> points[i].y;
 
         for (int j = i; ~j; j--)
-            if (hypot(coords[i].first - coords[j].first, coords[i].second - coords[j].second) <= d)
-                valid[i][j] = valid[j][i] = true;
+            if (dist(points[i], points[j]) <= d) valid[i][j] = valid[j][i] = true;
     }
 
     vector<int> indices(n);
