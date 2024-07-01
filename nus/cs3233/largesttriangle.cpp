@@ -27,6 +27,8 @@ deque<Point<T>> monotone(vector<Point<T>> &points) {
     sort(points.begin(), points.end());
     points.erase(unique(points.begin(), points.end()), points.end());
 
+    if (points.size() < 3) return deque<Point<T>>(points.begin(), points.end());
+    
     deque<Point<T>> convex_hull;
     for (auto p : points) {
         while (convex_hull.size() > 1 && cross(convex_hull[1], convex_hull[0], p) <= 0) convex_hull.pop_front();
@@ -41,6 +43,7 @@ deque<Point<T>> monotone(vector<Point<T>> &points) {
         convex_hull.emplace_front(p);
     }
 
+    convex_hull.pop_front();
     return convex_hull;
 }
 
@@ -56,13 +59,13 @@ int main() {
 
     auto convex_hull = monotone(points);
     reverse(convex_hull.begin(), convex_hull.end());
-    
+
     int size = convex_hull.size();
     if (size < 3) {
         cout << 0;
         exit(0);
     }
-    
+
     double area = 0;
     for (int i = 0; i < size; i++)
         for (int j = i + 1, k = j + 1; j < size; j++) {
