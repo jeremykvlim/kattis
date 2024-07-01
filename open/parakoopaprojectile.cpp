@@ -1,6 +1,23 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+struct Point {
+    T x, y;
+
+    Point() {}
+    Point(T x, T y) : x(x), y(y) {}
+
+    auto operator<(Point<T> &p) const {
+        return x != p.x ? x < p.x : y < p.y;
+    }
+};
+
+template <typename T>
+double det(Point<T> a, Point<T> b) {
+    return (double) (a.x * b.y) - (a.y * b.x);
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -8,15 +25,15 @@ int main() {
     int n;
     cin >> n;
 
-    vector<pair<double, double>> coords(n);
-    for (auto &[x, y] : coords) cin >> x >> y;
-    sort(coords.begin(), coords.end());
+    vector<Point<double>> points(n);
+    for (auto &[x, y] : points) cin >> x >> y;
+    sort(points.begin(), points.end());
 
-    auto dist = DBL_MAX;
+    auto dist = 1e18;
     for (int i = 1; i < n; i++) {
-        auto [x1, y1] = coords[i - 1];
-        auto [x2, y2] = coords[i];
-        if (x1 != x2 && y1 * x2 - y2 * x1 > 0) dist = min(dist, (y1 * x2 * x2 - y2 * x1 * x1) / (y1 * x2 - y2 * x1));
+        auto [x1, y1] = points[i - 1];
+        auto [x2, y2] = points[i];
+        if (x1 != x2 && det(points[i], points[i - 1]) > 0) dist = min(dist, (y1 * x2 * x2 - y2 * x1 * x1) / det(points[i], points[i - 1]));
     }
 
     cout << fixed << setprecision(6) << dist;
