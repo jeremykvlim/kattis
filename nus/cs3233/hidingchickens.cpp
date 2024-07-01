@@ -1,16 +1,29 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+struct Point {
+    T x, y;
+
+    Point() {}
+    Point(T x, T y) : x(x), y(y) {}
+};
+
+template <typename T>
+double dist(Point<T> a, Point<T> b) {
+    return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    double x, y;
+    Point<double> roost;
     int n;
-    cin >> x >> y >> n;
+    cin >> roost.x >> roost.y >> n;
 
-    vector<pair<double, double>> hiding(n);
-    for (auto &[x, y] : hiding) cin >> x >> y;
+    vector<Point<double>> points(n);
+    for (auto &[x, y] : points) cin >> x >> y;
 
     vector<double> dp(1 << n, DBL_MAX);
     dp[0] = 0;
@@ -21,11 +34,10 @@ int main() {
                 if (!(mask & 1 << j)) continue;
 
                 int submask = 1 << i | 1 << j;
-                auto dist = hypot(hiding[i].first - hiding[j].first, hiding[i].second - hiding[j].second);
-                dist += (submask == mask) ? min(hypot(hiding[i].first - x, hiding[i].second - y), hypot(hiding[j].first - x, hiding[j].second - y))
-                                          : hypot(hiding[i].first - x, hiding[i].second - y) + hypot(hiding[j].first - x, hiding[j].second - y);
+                auto d = dist(points[i], points[j]);
+                d += (submask == mask) ? min(dist(points[i], roost), dist(points[j], roost)) : dist(points[i], roost) + dist(points[j], roost);
 
-                dp[mask] = min(dp[mask], dp[mask ^ submask] + dist);
+                dp[mask] = min(dp[mask], dp[mask ^ submask] + d);
             }
         }
 
