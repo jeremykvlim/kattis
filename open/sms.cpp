@@ -108,10 +108,10 @@ int main() {
         longest = max(longest, (int) w.size());
     }
 
-    vector<tuple<long long, int, int>> dp(longest + 1, {0, 0, 0});
+    vector<pair<long long, pair<int, int>>> dp(longest + 1, {0, {0, 0}});
     for (auto w : queries) {
         for (int i = w.size() - 1; ~i; i--) {
-            dp[i] = {1e18, 0, 0};
+            dp[i] = {(long long) 1e10, {0, 0}};
 
             int node = 0;
             for (int j = i; j < w.size(); j++) {
@@ -121,13 +121,13 @@ int main() {
                 node = trie[node].next[pos];
                 if (trie[node].count) {
                     int c = trie[node].count < 0 ? -trie[node].count : trie[node].count - 1;
-                    dp[i] = min(dp[i], {c + 1 + j + 1 - i + get<0>(dp[j + 1]), j + 1, trie[node].count});
+                    dp[i] = min(dp[i], {c + j + 2 - i + dp[j + 1].first, {j + 1, trie[node].count}});
                 }
             }
         }
 
         for (int i = 0; i < w.size();) {
-            auto [_, len, x] = dp[i];
+            auto [len, x] = dp[i].second;
 
             if (i) cout << "R";
             for (; i < len; i++) cout << mapping[w[i] - 'a'] + 2;
