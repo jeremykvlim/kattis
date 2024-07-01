@@ -14,7 +14,7 @@ struct Point {
 };
 
 template <typename T>
-double det(Point<T> a, Point<T> b) {
+double cross(Point<T> a, Point<T> b) {
     return (double) (a.x * b.y) - (a.y * b.x);
 }
 
@@ -33,7 +33,7 @@ int main() {
     for (int i = 1; i < n; i++) {
         auto [x1, y1] = points[i - 1];
         auto [x2, y2] = points[i];
-        if (x1 != x2 && det(points[i], points[i - 1]) > 0) dist = min(dist, (y1 * x2 * x2 - y2 * x1 * x1) / det(points[i], points[i - 1]));
+        if (x1 != x2 && cross(points[i], points[i - 1]) > 0) dist = min(dist, (y1 * x2 * x2 - y2 * x1 * x1) / cross(points[i], points[i - 1]));
     }
 
     cout << fixed << setprecision(6) << dist;
