@@ -1,26 +1,47 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-double cross(pair<int, int> i, pair<int, int> j, pair<int, int> k) {
-    return (double) (k.first - i.first) * (double) (j.second - i.second) - (double) (k.second - i.second) * (double) (j.first - i.first);
+template <typename T>
+struct Point {
+    T x, y;
+
+    Point() {}
+    Point(T x, T y) : x(x), y(y) {}
+
+    auto operator<(Point<T> &p) const {
+        return x != p.x ? x < p.x : y < p.y;
+    }
+
+    auto operator==(Point<T> &p) const {
+        return x == p.x && y == p.y;
+    }
+};
+
+template <typename T>
+double cross(Point<T> a, Point<T> b, Point<T> c) {
+    return (double) (c.x - a.x) * (double) (b.y - a.y) - (double) (c.y - a.y) * (double) (b.x - a.x);
 }
 
-void monotone(vector<pair<int, int>> &points, deque<pair<int, int>> &convex) {
+template <typename T>
+deque<Point<T>> monotone(vector<Point<T>> &points) {
     sort(points.begin(), points.end());
     points.erase(unique(points.begin(), points.end()), points.end());
 
+    deque<Point<T>> convex_hull;
     for (auto p : points) {
-        while (convex.size() > 1 && cross(convex[1], convex[0], p) <= 0) convex.pop_front();
-        convex.emplace_front(p);
+        while (convex_hull.size() > 1 && cross(convex_hull[1], convex_hull[0], p) <= 0) convex_hull.pop_front();
+        convex_hull.emplace_front(p);
     }
 
-    int s = convex.size();
+    int s = convex_hull.size();
     points.pop_back();
     reverse(points.begin(), points.end());
     for (auto p : points) {
-        while (convex.size() > s && cross(convex[1], convex[0], p) <= 0) convex.pop_front();
-        convex.emplace_front(p);
+        while (convex_hull.size() > s && cross(convex_hull[1], convex_hull[0], p) <= 0) convex_hull.pop_front();
+        convex_hull.emplace_front(p);
     }
+
+    return convex_hull;
 }
 
 int main() {
@@ -30,20 +51,24 @@ int main() {
     int n;
     cin >> n;
 
-    vector<pair<int, int>> points(n);
+    vector<Point<int>> points(n);
     for (auto &[x, y] : points) cin >> x >> y;
 
-    deque<pair<int, int>> convex;
-    monotone(points, convex);
-    reverse(convex.begin(), convex.end());
-    int s = convex.size();
+    auto convex_hull = monotone(points);
+    reverse(convex_hull.begin(), convex_hull.end());
+    
+    int size = convex_hull.size();
+    if (size < 3) {
+        cout << 0;
+        exit(0);
+    }
+    
     double area = 0;
-    if (convex.size() > 2)
-        for (int i = 0; i < s; i++)
-            for (int j = i + 1, k = j + 1; j < s; j++) {
-                while (k % s != i && cross(convex[i], convex[j], convex[(k + 1) % s]) >= cross(convex[i], convex[j], convex[k])) ++k %= s;
-                area = max(area, cross(convex[i], convex[j], convex[k % s]));
-            }
+    for (int i = 0; i < size; i++)
+        for (int j = i + 1, k = j + 1; j < size; j++) {
+            while (k % size != i && cross(convex_hull[i], convex_hull[j], convex_hull[(k + 1) % size]) >= cross(convex_hull[i], convex_hull[j], convex_hull[k])) ++k %= size;
+            area = max(area, cross(convex_hull[i], convex_hull[j], convex_hull[k % size]));
+        }
 
     cout << fixed << setprecision(5) << area / 2;
 }
