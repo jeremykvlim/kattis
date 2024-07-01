@@ -35,9 +35,8 @@ int main() {
     for (int i = 0; i < n; i++)
         for (int j = i + 1; j < n; j++)
             for (int k = i + 1; k < j; k++)
-                if (cross(points[i], points[j], points[k]) > 0) {
-                    count[i][j] = ++count[j][i];
-                }
+                if (cross(points[i], points[j], points[k]) > 0) count[i][j] = ++count[j][i];
+                
 
     auto sum = 0LL;
     for (int i = 0; i < n; i++)
