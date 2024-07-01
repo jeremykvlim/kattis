@@ -1,8 +1,17 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-double cross(pair<double, double> i, pair<double, double> j) {
-    return (i.first * j.second) - (i.second * j.first);
+template <typename T>
+struct Point {
+    T x, y;
+
+    Point() {}
+    Point(T x, T y) : x(x), y(y) {}
+};
+
+template <typename T>
+double cross(Point<T> a, Point<T> b) {
+    return (double) (a.x * b.y) - (a.y * b.x);
 }
 
 int main() {
@@ -12,8 +21,8 @@ int main() {
     int n, k;
     cin >> n >> k;
 
-    vector<pair<double, double>> vertices(n);
-    for (auto &[x, y]: vertices) cin >> x >> y;
+    vector<Point<double>> points(n);
+    for (auto &[x, y] : points) cin >> x >> y;
 
     vector<vector<double>> ways(n, vector<double>(n, -1));
     double lg_nck = 0, lg_kci = 0;
@@ -26,8 +35,7 @@ int main() {
     double area = 0;
     for (int i = 0; i < n; i++)
         for (int j = 0; j < n; j++)
-            if (ways[i][j] != -1)
-                area += pow(10, ways[i][j] - lg_nck) * cross(vertices[i], vertices[j]);
+            if (ways[i][j] != -1) area += pow(10, ways[i][j] - lg_nck) * cross(points[i], points[j]);
 
     cout << fixed << setprecision(6) << abs(area) / 2;
 }
