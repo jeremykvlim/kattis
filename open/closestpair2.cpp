@@ -1,49 +1,65 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+struct Point {
+    T x, y;
+
+    Point() {}
+    Point(T x, T y) : x(x), y(y) {}
+
+    auto operator<(Point<T> &p) const {
+        return x != p.x ? x < p.x : y < p.y;
+    }
+
+    auto operator==(Point<T> &p) const {
+        return x == p.x && y == p.y;
+    }
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     int n;
     while (cin >> n && n) {
-        vector<pair<double, double>> points(n);
-        vector<pair<pair<double, double>, int>> sorted(n);
+        vector<Point<double>> points(n);
+        vector<pair<Point<double>, int>> sorted(n);
         for (int i = 0; i < n; i++) {
-            cin >> points[i].first >> points[i].second;
+            cin >> points[i].x >> points[i].y;
 
             sorted[i] = {points[i], i};
         }
-        sort(sorted.begin(), sorted.end());
+        sort(sorted.begin(), sorted.end(), [](auto p1, auto p2) {return p1.first == p2.first ? p1.second < p2.second : p1.first < p2.first;});
 
         auto sq = [](double v) -> double {return v * v;};
 
         auto d = DBL_MAX;
         int a = -1, b = -1;
         auto update = [&](auto p1, auto p2) {
-            auto dist = sq(p1.first.first - p2.first.first) + sq(p1.first.second - p2.first.second);
+            auto dist = sq(p1.first.x - p2.first.x) + sq(p1.first.y - p2.first.y);
             if (d > dist) {
                 d = dist;
                 a = p1.second;
-                b = p2.second; 
+                b = p2.second;
             }
         };
 
-        auto cmp = [](auto p1, auto p2) {return p1.first.second < p2.first.second;};
-        multiset<pair<pair<double, double>, int>, decltype(cmp)> ms(cmp);
+        auto cmp = [](auto p1, auto p2) {return p1.first.y < p2.first.y;};
+        multiset<pair<Point<double>, int>, decltype(cmp)> ms(cmp);
         vector<decltype(ms)::const_iterator> its(n);
         for (int i = 0, j = 0; i < n; i++) {
-            for (; j < i && sq(sorted[j].first.first - sorted[i].first.first) >= d; j++) ms.erase(its[j]);
+            for (; j < i && sq(sorted[j].first.x - sorted[i].first.x) >= d; j++) ms.erase(its[j]);
 
             auto it = ms.upper_bound(sorted[i]);
             if (it != ms.begin()) {
                 update(*prev(it), sorted[i]);
-                for (auto p = prev(it); p != ms.begin() && sq(sorted[i].first.second - p->first.second) < d;) update(*--p, sorted[i]);
+                for (auto p = prev(it); p != ms.begin() && sq(sorted[i].first.y - p->first.y) < d;) update(*--p, sorted[i]);
             }
-            for (; it != ms.end() && sq(it->first.second - sorted[i].first.second) < d; it++) update(*it, sorted[i]);
+            for (; it != ms.end() && sq(it->first.y - sorted[i].first.y) < d; it++) update(*it, sorted[i]);
             its[i] = ms.emplace_hint(ms.upper_bound(sorted[i]), sorted[i]);
         }
 
-        cout << fixed << setprecision(2) << points[a].first << " " << points[a].second << " " << points[b].first << " " << points[b].second << "\n";
+        cout << fixed << setprecision(2) << points[a].x << " " << points[a].y << " " << points[b].x << " " << points[b].y << "\n";
     }
 }
