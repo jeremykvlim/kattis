@@ -1,8 +1,37 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-double cross(pair<int, double> i, pair<int, double> j, pair<int, double> k) {
-    return (double) (k.first - i.first) * (double) (j.second - i.second) - (double) (k.second - i.second) * (double) (j.first - i.first);
+template <typename T>
+struct Point {
+    T x, y;
+
+    Point() {}
+    Point(T x, T y) : x(x), y(y) {}
+
+    auto operator<(Point<T> &p) const {
+        return x != p.x ? x < p.x : y < p.y;
+    }
+
+    auto operator==(Point<T> &p) const {
+        return x == p.x && y == p.y;
+    }
+};
+
+template <typename T>
+double cross(Point<T> a, Point<T> b, Point<T> c) {
+    return (double) (c.x - a.x) * (double) (b.y - a.y) - (double) (c.y - a.y) * (double) (b.x - a.x);
+}
+
+template <typename T>
+deque<Point<T>> half_hull(vector<Point<T>> &points) {
+    deque<Point<T>> convex_hull;
+    for (auto p : points) {
+        while (convex_hull.size() > 1 && cross(convex_hull[1], p, convex_hull[0]) > 0) convex_hull.pop_front();
+        convex_hull.emplace_front(p);
+    }
+    
+    reverse(convex_hull.begin(), convex_hull.end());
+    return convex_hull;
 }
 
 int main() {
@@ -14,22 +43,19 @@ int main() {
     cin >> n >> k;
 
     vector<double> houses(n + 2, 0);
+    vector<Point<double>> points(n + 2);
+    points[0] = {0, 0};
+    points[n + 1] = {(double) n + 1, 0};
     for (int i = 1; i <= n; i++) {
         cin >> houses[i];
 
         houses[i] -= k * i * (n + 1 - i);
+        points[i] = {(double) i, houses[i]};
     }
 
-    deque<pair<int, double>> convex{{0, houses[0]}};
-    for (int i = 1; i <= n + 1; i++) {
-        while (convex.size() > 1 && cross(convex[1], {i, houses[i]}, convex[0]) > 0)
-            convex.pop_front();
-
-        convex.emplace_front(i, houses[i]);
-    }
-
-    for (int i = convex.size() - 1; i; i--) {
-        int l = convex[i].first, r = convex[i - 1].first;
+    auto convex_hull = half_hull(points);
+    for (int i = 0; i < convex_hull.size() - 1; i++) {
+        int l = convex_hull[i].x, r = convex_hull[i + 1].x;
 
         for (int j = l; j < r; j++) houses[j] = (houses[l] * (r - j) + houses[r] * (j - l)) / (r - l);
     }
