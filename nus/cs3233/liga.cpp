@@ -4,6 +4,7 @@ using namespace std;
 int read() {
     string s;
     cin >> s;
+    
     return s == "?" ? -1 : stoi(s);
 }
 
