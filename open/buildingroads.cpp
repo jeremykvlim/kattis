@@ -10,7 +10,7 @@ struct Point {
 };
 
 template <typename T>
-double hypot(Point<T> a, Point<T> b) {
+double dist(Point<T> a, Point<T> b) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
@@ -25,30 +25,30 @@ int main() {
     for (auto &[x, y] : points) cin >> x >> y;
 
     double len = 0;
-    vector<vector<double>> dist(n, vector<double>(n, 0));
+    vector<vector<double>> d(n, vector<double>(n, 0));
     for (int i = 0; i < n; i++)
         for (int j = i; j < n; j++) {
-            dist[i][j] = dist[j][i] = hypot(points[i], points[j]);
-            len += dist[i][j];
+            d[i][j] = d[j][i] = dist(points[i], points[j]);
+            len += d[i][j];
         }
 
     for (int i = 0; i < n; i++)
         for (int j = 0; j < n; j++)
-            for (int k = 0; k < n; k++) dist[j][k] = min(dist[j][k], dist[j][i] + dist[i][k]);
+            for (int k = 0; k < n; k++) d[j][k] = min(d[j][k], d[j][i] + d[i][k]);
 
     vector<vector<int>> indices(n, vector<int>(n, 0));
     for (int i = 0; i < n; i++) {
         iota(indices[i].begin(), indices[i].end(), 0);
-        sort(indices[i].begin(), indices[i].end(), [&](int j, int k) {return dist[i][j] < dist[i][k];});
+        sort(indices[i].begin(), indices[i].end(), [&](int j, int k) {return d[i][j] < d[i][k];});
     }
-    for (int i = 0; i < n; i++) len = min(len, dist[i][indices[i][n - 1]] * 2);
+    for (int i = 0; i < n; i++) len = min(len, d[i][indices[i][n - 1]] * 2);
 
     for (int i = 0; i < n; i++)
         for (int j = i + 1; j < n; j++) {
             int longest = indices[i][n - 1];
             for (int k = n - 1; ~k; k--)
-                if (dist[j][indices[i][k]] > dist[j][longest]) {
-                    len = min(len, dist[i][indices[i][k]] + dist[i][j] + dist[j][longest]);
+                if (d[j][indices[i][k]] > d[j][longest]) {
+                    len = min(len, d[i][indices[i][k]] + d[i][j] + d[j][longest]);
                     longest = indices[i][k];
                 }
         }
