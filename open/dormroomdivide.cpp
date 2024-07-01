@@ -1,8 +1,25 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-double area(pair<double, double> p1, pair<double, double> p2, pair<double, double> p3) {
-    return 0.5 * fabs(p1.first * p2.second + p2.first * p3.second + p3.first * p1.second - p2.first * p1.second - p3.first * p2.second - p1.first * p3.second);
+template <typename T>
+struct Point {
+    T x, y;
+
+    Point() {}
+    Point(T x, T y) : x(x), y(y) {}
+
+    auto operator<(Point<T> &p) const {
+        return x != p.x ? x < p.x : y < p.y;
+    }
+
+    auto operator==(Point<T> &p) const {
+        return x == p.x && y == p.y;
+    }
+};
+
+template <typename T>
+double area_of_triangle(Point<T> a, Point<T> b, Point<T> c) {
+    return 0.5 * fabs(a.x * b.y + b.x * c.y + c.x * a.y - b.x * a.y - c.x * b.y - a.x * c.y);
 }
 
 int main() {
@@ -12,15 +29,12 @@ int main() {
     int n;
     cin >> n;
 
-    vector<pair<double, double>> coords(n);
-    for (auto &[x, y] : coords) cin >> x >> y;
+    vector<Point<double>> points(n);
+    for (auto &[x, y] : points) cin >> x >> y;
 
     vector<double> pref(n - 1, 0);
     double sum = 0;
-    for (int i = 1; i < n - 1; i++) {
-        sum += area(coords[0], coords[i], coords[i + 1]);
-        pref[i] = sum;
-    }
+    for (int i = 1; i < n - 1; i++) pref[i] = sum += area_of_triangle(points[0], points[i], points[i + 1]);
 
     int j;
     for (int i = 0; i < n - 1; i++)
@@ -30,9 +44,8 @@ int main() {
         }
 
     auto calc = [&](int i) -> array<double, 3> {
-        return {coords[i].first - coords[0].first,
-                coords[0].second - coords[i].second,
-                sum - 2 * pref[i - 1] + coords[i].first * coords[0].second - coords[0].first * coords[i].second};
+        return {points[i].x - points[0].x, points[0].y - points[i].y,
+                sum - 2 * pref[i - 1] + points[i].x * points[0].y - points[0].x * points[i].y};
     };
 
     auto [x1, y1, a1] = calc(j);
