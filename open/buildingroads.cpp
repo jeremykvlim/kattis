@@ -1,6 +1,19 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+struct Point {
+    T x, y;
+
+    Point() {}
+    Point(T x, T y) : x(x), y(y) {}
+};
+
+template <typename T>
+double hypot(Point<T> a, Point<T> b) {
+    return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -8,21 +21,20 @@ int main() {
     int n;
     cin >> n;
 
-    vector<pair<int, int>> coords(n);
-    for (auto &[x, y] : coords) cin >> x >> y;
+    vector<Point<int>> points(n);
+    for (auto &[x, y] : points) cin >> x >> y;
 
     double len = 0;
     vector<vector<double>> dist(n, vector<double>(n, 0));
     for (int i = 0; i < n; i++)
         for (int j = i; j < n; j++) {
-            dist[i][j] = dist[j][i] = hypot(coords[i].first - coords[j].first, coords[i].second - coords[j].second);
+            dist[i][j] = dist[j][i] = hypot(points[i], points[j]);
             len += dist[i][j];
         }
 
     for (int i = 0; i < n; i++)
         for (int j = 0; j < n; j++)
-            for (int k = 0; k < n; k++)
-                dist[j][k] = min(dist[j][k], dist[j][i] + dist[i][k]);
+            for (int k = 0; k < n; k++) dist[j][k] = min(dist[j][k], dist[j][i] + dist[i][k]);
 
     vector<vector<int>> indices(n, vector<int>(n, 0));
     for (int i = 0; i < n; i++) {
