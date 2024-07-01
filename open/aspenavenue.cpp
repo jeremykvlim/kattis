@@ -21,7 +21,8 @@ int main() {
 
     for (int i = 1; i <= n / 2; i++)
         for (int j = 1; j <= n / 2; j++)
-            dp[i][j] = min(dp[i - 1][j] + hypot((i - 1) * between - positions[i + j - 1], 0), dp[i][j - 1] + hypot((j - 1) * between - positions[i + j - 1], w));
+            dp[i][j] = min(dp[i - 1][j] + hypot((i - 1) * between - positions[i + j - 1], 0), 
+                           dp[i][j - 1] + hypot((j - 1) * between - positions[i + j - 1], w));
 
     cout << fixed << setprecision(6) << dp[n / 2][n / 2];
 }
