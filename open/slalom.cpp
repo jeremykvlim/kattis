@@ -1,35 +1,46 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+struct Point {
+    T x, y;
+
+    Point() {}
+    Point(T x, T y) : x(x), y(y) {}
+};
+
+template <typename T>
+double dist(Point<T> a, Point<T> b) {
+    return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     int n;
     while (cin >> n && n) {
-        double x, y;
-        cin >> x >> y;
+        vector<Point<double>> points(2 * n - 1);
+        vector<double> X(2 * n + 1);
 
-        vector<pair<double, double>> points;
-        vector<double> X;
-        points.emplace_back(x, y);
-        X.emplace_back(x);
+        cin >> points[0].x >> points[0].y;
+        X[0] = points[0].x;
 
-        for (int i = 0; i < n - 1; i++) {
-            double x1, x2;
+        for (int i = 1; i < n; i++) {
+            double y, x1, x2;
             cin >> y >> x1 >> x2;
 
-            points.emplace_back(x1, y);
-            points.emplace_back(x2, y);
-            X.emplace_back(x1);
-            X.emplace_back(x2);
+            points[2 * i - 1] = {x1, y};
+            points[2 * i] = {x2, y};
+            X[2 * i - 1] = x1;
+            X[2 * i] = x2;
         }
 
-        double x1, x2;
+        double y, x1, x2;
         cin >> y >> x1 >> x2;
 
-        X.emplace_back(x1);
-        X.emplace_back(x2);
+        X[2 * n - 1] = x1;
+        X[2 * n] = x2;
         sort(X.begin(), X.end());
         X.erase(unique(X.begin(), X.end()), X.end());
 
@@ -37,25 +48,26 @@ int main() {
             if (x1 <= x && x <= x2) points.emplace_back(x, y);
 
         vector<vector<pair<int, double>>> adj_list(points.size());
-        for (int i = 0; i <= 2 * (n - 1); i++) {
+        for (int i = 0; i < 2 * n - 1; i++) {
             double l = INT_MIN, r = INT_MAX;
-            auto [x1, y1] = points[i];
 
-            for (int j = (i & 1) ? i + 2 : i + 1; j <= 2 * (n - 1) && l <= r; j++) {
-                auto [x2, y2] = points[j];
-                auto gradient = (x2 - x1) / (y2 - y1);
+            auto pos = [](Point<double> a, Point<double> b) {
+                return (b.x - a.x) / (b.y - a.y);
+            };
 
-                if (l <= gradient && gradient <= r) adj_list[i].emplace_back(j, hypot(x2 - x1, y2 - y1));
+            for (int j = i + 1 + (i & 1); j < 2 * n - 1 && l <= r; j++) {
+                auto curr = pos(points[i], points[j]);
 
-                if (j & 1) r = min(r, gradient);
-                else l = max(l, gradient);
+                if (l <= curr && curr <= r) adj_list[i].emplace_back(j, dist(points[i], points[j]));
+
+                if (j & 1) r = min(r, curr);
+                else l = max(l, curr);
             }
 
-            for (int j = 2 * (n - 1) + 1; j < points.size(); j++) {
-                auto [x2, y2] = points[j];
-                auto gradient = (x2 - x1) / (y2 - y1);
+            for (int j = 2 * n - 1; j < points.size(); j++) {
+                auto curr = pos(points[i], points[j]);
 
-                if (l <= gradient && gradient <= r) adj_list[i].emplace_back(j, hypot(x2 - x1, y2 - y1));
+                if (l <= curr && curr <= r) adj_list[i].emplace_back(j, dist(points[i], points[j]));
             }
         }
 
@@ -77,6 +89,6 @@ int main() {
             }
         }
 
-        cout << fixed << setprecision(7) << *min_element(dist.begin() + 2 * (n - 1) + 1, dist.end()) << "\n";
+        cout << fixed << setprecision(7) << *min_element(dist.begin() + 2 * n - 1, dist.end()) << "\n";
     }
 }
