@@ -3,15 +3,16 @@ using namespace std;
 
 void radix_sort(vector<long long> &s) {
     auto biggest = *max_element(s.begin(), s.end());
-    int msd = ceil((log(biggest)) / (log(radix))), radix = 1 << 16;
+    int radix = 1 << 16, msd = ceil((log(biggest)) / (log(radix)));
 
-    vector<int> bucket(radix, 0), r(s.size());
+    vector<int> count(radix);
+    vector<long long> temp(s.size());
     for (int d = 0; d < msd; d++) {
-        fill(bucket.begin(), bucket.end(), 0);
-        for (auto i : s) bucket[(i >> (d * 16)) & (radix - 1)]++;
-        for (int i = 1; i < radix; i++) bucket[i] += bucket[i - 1];
-        for (int i = r.size() - 1; ~i; i--) r[--bucket[(s[i] >> (d * 16)) & (radix - 1)]] = s[i];
-        copy(r.begin(), r.end(), s.begin());
+        fill(count.begin(), count.end(), 0);
+        for (auto i : s) count[(i >> (d * 16)) & (radix - 1)]++;
+        for (int i = 1; i < radix; i++) count[i] += count[i - 1];
+        for (int i = temp.size() - 1; ~i; i--) temp[--count[(s[i] >> (d * 16)) & (radix - 1)]] = s[i];
+        copy(temp.begin(), temp.end(), s.begin());
     }
 }
 
