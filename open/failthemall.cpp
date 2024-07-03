@@ -1,16 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-bool check(int i, char c, string &key, vector<string> &answers) {
-    if (key[i] != '.') return key[i] == c;
-    key[i] = c;
-    for (auto &s : answers)
-        if (s[i] == c)
-            for (int j = 0; j < s.size(); j++)
-                if (j != i && s[j] != 'X' && !check(j, s[j] ^ 'F' ^ 'T', key, answers)) return false;
-    return true;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -22,16 +12,32 @@ int main() {
     for (auto &s : answers) cin >> s;
 
     string key(k, '.');
-    bool exists = true;
-    for (int i = 0; i < k && exists; i++)
+
+    auto check = [&](auto &&self, int i, char c) -> bool {
+        if (key[i] != '.') return key[i] == c;
+
+        key[i] = c;
+        for (auto &s : answers)
+            if (s[i] == c)
+                for (int j = 0; j < s.size(); j++)
+                    if (j != i && s[j] != 'X' && !self(self, j, s[j] ^ 'F' ^ 'T')) return false;
+
+        return true;
+    };
+
+    for (int i = 0; i < k; i++)
         if (key[i] == '.')
-            for (int j = 0; exists; j++) {
-                auto save = key;
-                if (check(i, "FT"[j], key, answers)) break;
+            for (char c : {'F', 'T'}) {
+                auto temp = key;
+                if (check(check, i, c)) break;
+                else if (c == 'T') {
+                    cout << -1;
+                    exit(0);
+                }
                 
-                key = save;
-                if (j) exists = false;
+                key = temp;
+
             }
 
-    cout << (exists ? key : "-1");
+    cout << key;
 }
