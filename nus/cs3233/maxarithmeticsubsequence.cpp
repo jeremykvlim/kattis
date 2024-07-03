@@ -12,30 +12,31 @@ int main() {
         int n, c;
         cin >> n >> c;
 
-        vector<long long> array(n);
-        unordered_set<long long> nums;
-        for (auto &a : array) {
-            cin >> a;
+        vector<long long> a(n);
+        unordered_set<long long> seen;
+        for (auto &ai : a) {
+            cin >> ai;
 
-            nums.emplace(a);
+            seen.emplace(ai);
         }
 
         mt19937 rng(random_device{}());
-        uniform_int_distribution<int> dis;
-        auto ans = -1LL;
-        for (int i = 0; i < 200; i++) {
-            int j = dis(rng) % n, offset;
+        auto len = -1LL;
+        for (int fails = 0; fails < 175;) {
+            int j = rng() % n, offset;
             do {
-                offset = dis(rng) % (2 * c + 1) - c;
+                offset = rng() % (2 * c + 1) - c;
             } while (!offset || j + offset < 0 || j + offset >= n);
 
-            auto l = array[j], r = array[j], diff = abs(array[j + offset] - array[j]);
-            while (nums.count(l - diff)) l -= diff;
-            while (nums.count(r + diff)) r += diff;
+            auto l = a[j], r = a[j], diff = abs(a[j + offset] - a[j]);
+            while (seen.count(l - diff)) l -= diff;
+            while (seen.count(r + diff)) r += diff;
 
-            if ((r - l) / diff + 1 > n / c) ans = max(ans, (r - l) / diff + 1);
+            auto curr = (r - l) / diff + 1;
+            if (curr > n / c && curr > len) len = curr;
+            else fails++;
         }
 
-        cout << ans << "\n";
+        cout << len << "\n";
     }
 }
