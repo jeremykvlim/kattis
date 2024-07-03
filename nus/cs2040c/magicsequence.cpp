@@ -9,7 +9,7 @@ void radix_sort(vector<long long> &s) {
     vector<long long> temp(s.size());
     for (int d = 0; d < msd; d++) {
         fill(count.begin(), count.end(), 0);
-        for (auto i : s) count[(i >> (d * 16)) & (radix - 1)]++;
+        for (auto si : s) count[(si >> (d * 16)) & (radix - 1)]++;
         for (int i = 1; i < radix; i++) count[i] += count[i - 1];
         for (int i = temp.size() - 1; ~i; i--) temp[--count[(s[i] >> (d * 16)) & (radix - 1)]] = s[i];
         copy(temp.begin(), temp.end(), s.begin());
