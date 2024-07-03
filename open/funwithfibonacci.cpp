@@ -96,7 +96,7 @@ long long brent(long long n) {
     }
 }
 
-gp_hash_table<int, int, Hash> factorize(int n, vector<int> &spf) {
+vector<pair<int, int>> factorize(int n, vector<int> &spf) {
     gp_hash_table<int, int, Hash> pfs;
 
     auto dfs = [&](auto &&self, int m) -> void {
@@ -120,7 +120,7 @@ gp_hash_table<int, int, Hash> factorize(int n, vector<int> &spf) {
     };
     dfs(dfs, n);
 
-    return pfs;
+    return {pfs.begin(), pfs.end()};
 }
 
 void divisors(vector<pair<int, int>> &pfs, vector<int> &divs, long long d = 1, int i = 0) {
@@ -144,8 +144,7 @@ int pisano_period(int p, vector<int> &spf, gp_hash_table<int, int, Hash> &cache)
         if (p == 2) return 3;
         if (p == 5) return 20;
 
-        auto temp = factorize((p % 10 == 1 || p % 10 == 9) ? p - 1 : 2 * (p + 1), spf);
-        vector<pair<int, int>> pfs(temp.begin(), temp.end());
+        auto pfs = factorize((p % 10 == 1 || p % 10 == 9) ? p - 1 : 2 * (p + 1), spf);
         vector<int> divs;
         divisors(pfs, divs);
         sort(divs.begin(), divs.end());
@@ -230,6 +229,7 @@ int main() {
                 seq_indices[curr] = i;
                 visited[curr] = t;
             }
+            
             return curr;
         };
 
