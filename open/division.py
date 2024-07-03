@@ -7,7 +7,7 @@ for line in sys.stdin:
         print(f, "is not an integer with less than 100 digits.")
     elif a == b:
         print(f, 1)
-    elif (t ** a - 1) // (t ** b - 1) >= 10 ** 99:
+    elif (t**a - 1) // (t**b - 1) >= 10**99:
         print(f, "is not an integer with less than 100 digits.")
     else:
-        print(f, (t ** a - 1) // (t ** b - 1))
+        print(f, (t**a - 1) // (t**b - 1))
