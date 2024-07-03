@@ -77,7 +77,7 @@ long long brent(long long n) {
     }
 }
 
-gp_hash_table<long long, int, Hash> factorize(long long n, vector<int> &spf) {
+vector<pair<long long, int>> factorize(long long n, vector<int> &spf) {
     gp_hash_table<long long, int, Hash> pfs;
 
     auto dfs = [&](auto &&self, long long m) -> void {
@@ -101,7 +101,7 @@ gp_hash_table<long long, int, Hash> factorize(long long n, vector<int> &spf) {
     };
     dfs(dfs, n);
 
-    return pfs;
+    return {pfs.begin(), pfs.end()};
 }
 
 void divisors(vector<pair<long long, int>> &pfs, vector<long long> &divs, long long d = 1, int i = 0) {
@@ -150,17 +150,12 @@ int main() {
         long long n;
         cin >> n;
 
-        auto temp = factorize(n, spf);
-        vector<pair<long long, int>> pfs(temp.begin(), temp.end());
+        auto pfs = factorize(n, spf);
         vector<long long> divs{1};
         divisors(pfs, divs);
 
         auto sum = 0LL;
-        for (auto d : divs) {
-            temp = factorize(d + 1, spf);
-
-            sum += phi(d + 1, vector<pair<long long, int>>(temp.begin(), temp.end()));
-        }
+        for (auto d : divs) sum += phi(d + 1, factorize(d + 1, spf));
         cout << sum << "\n";
     }
 }
