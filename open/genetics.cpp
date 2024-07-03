@@ -24,7 +24,7 @@ bool cut1(string &s) {
 bool cut2(string &s, int &arm) {
     auto it = adjacent_find(s.begin(), s.end());
     if (it == s.end()) return false;
-    
+
     s.erase(it, it + 2);
     arm++;
     return true;
@@ -60,7 +60,8 @@ void cut4(string &s) {
     auto temp = s;
     transform(temp.begin(), temp.end(), temp.begin(), ::tolower);
 
-    int len = s.size(), j = -1, k = rand() % len;
+    mt19937 rng(random_device{}());
+    int len = s.size(), j = -1, k = rng() % len;
     for (int i = 0; i < len; i++)
         if (i != k && temp[i] == temp[k]) {
             j = i;
@@ -68,7 +69,7 @@ void cut4(string &s) {
         }
 
     if (j < k) swap(j, k);
-    int l = rand() % (j - k);
+    int l = rng() % (j - k);
     auto s1 = s.substr(k + 1, l) + (char) tolower(s[k]) + s.substr(0, k), s2 = s.substr(j + 1) + (char) toupper(s[j]) + s.substr(k + l + 1, j - k - l - 1);
     if (s[j] == s[k]) {
         transform(s2.begin(), s2.end(), s2.begin(), [](char c) {return islower(c) ? toupper(c) : tolower(c);});
