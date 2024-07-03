@@ -36,7 +36,6 @@ int main() {
                 }
                 
                 key = temp;
-
             }
 
     cout << key;
