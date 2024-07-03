@@ -64,7 +64,7 @@ int main() {
     cin >> n;
 
     vector<int> crates(n);
-    for (auto &c : crates) cin >> c;
+    for (int &c : crates) cin >> c;
 
     auto total = accumulate(crates.begin(), crates.end(), 0LL), actions = LLONG_MAX;
     auto divs = divisors(total);
