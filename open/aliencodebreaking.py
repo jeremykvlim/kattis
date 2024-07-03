@@ -13,9 +13,9 @@ def convert(n, radix, digits, power=-1):
 
     if power == -1:
         power = 1
-        while radix ** (power + 1) <= n: power <<= 1
+        while radix**(power + 1) <= n: power <<= 1
 
-    l, r = divmod(n, radix ** power)
+    l, r = divmod(n, radix**power)
     power >>= 1
 
     convert(l, radix, digits, power)
