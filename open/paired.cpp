@@ -12,13 +12,12 @@ int main() {
     unordered_map<int, long long> compress;
     unordered_map<long long, int> count, pos{{0, 0}};
     mt19937_64 rng(random_device{}());
-    uniform_int_distribution<long long> dis;
     int len = 0;
     for (int i = 1, curr = 1; i <= n; i++) {
         int x;
         cin >> x;
 
-        if (!compress[x]) compress[x] = dis(rng);
+        if (!compress[x]) compress[x] = rng();
         arr[i] = compress[x];
         count[arr[i]]++;
 
