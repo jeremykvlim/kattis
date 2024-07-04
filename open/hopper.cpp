@@ -11,123 +11,21 @@ enum State {
     LOOP2 = 4
 };
 
-void jump(int v, int D, vector<vector<tuple<int, int, int, int, bool>>> &adj_list) {
-    int w = v;
-    vector<int> states;
-    while (w) {
-        states.emplace_back(w % 5);
-        w /= 5;
-    }
-    states.resize(max(D + 1, (int) states.size()), UNVISITED);
-
-    vector<int> path, unvisited;
-    gp_hash_table<int, pair<int, int>> loop;
-    for (int i = 0; i < states.size(); i++)
-        if (states[i] == UNVISITED) unvisited.emplace_back(i);
-        else if (states[i] == PATH) path.emplace_back(i);
-        else if (states[i] >= LOOP1) {
-            if (loop.find(states[i]) != loop.end()) loop[states[i]].second = i;
-            else loop[states[i]] = {i, -1};
-        }
-
-    auto hash = [](vector<int> states) {
-        gp_hash_table<int, int> indices;
-        vector<pair<int, int>> matches;
-        for (int i = 0; i < states.size(); i++)
-            if (states[i] >= LOOP1) {
-                if (indices.find(states[i]) != indices.end()) matches.emplace_back(indices[states[i]], i);
-                else indices[states[i]] = i;
-            }
-
-        if (!matches.empty()) {
-            sort(matches.begin(), matches.end());
-            int s = matches.size() + 2;
-            for (auto [i, j] : matches) states[i] = states[j] = s--;
-        }
-
-        int v = 0;
-        for (int i = states.size() - 1; ~i; i--) v = v * 5 + states[i];
-
-        return v;
-    };
-
-    vector<int> temp;
-    for (int i : path)
-        for (int j : unvisited) {
-            temp = states;
-            temp[i] = VISITED;
-            temp[j] = PATH;
-            adj_list[v].emplace_back(hash(temp), 1, min(i, j), max(i, j), false);
-        }
-
-    if (loop.size() < 2)
-        for (int i : unvisited)
-            for (int j : unvisited) {
-                if (i == j) continue;
-
-                for (int s : {LOOP1, LOOP2})
-                    if (loop.find(s) == loop.end()) {
-                        temp = states;
-                        temp[i] = temp[j] = s;
-                        adj_list[v].emplace_back(hash(temp), 2, i, j, false);
-                        break;
-                    }
-            }
-    else
-        for (auto [s1, p1] : loop)
-            for (auto [s2, p2] : loop) {
-                if (s1 == s2) continue;
-
-                for (auto [i1, j1] : {p1, {p1.second, p1.first}})
-                    for (auto [i2, j2] : {p2, {p2.second, p2.first}}) {
-                        temp = states;
-                        temp[i1] = temp[i2] = VISITED;
-                        temp[j1] = temp[j2] = s1;
-                        adj_list[v].emplace_back(hash(temp), 0, min(i1, i2), max(i1, i2), false);
-                    }
-            }
-
-    for (int i : path)
-        for (auto [s, p] : loop)
-            for (auto [j, k] : {p, {p.second, p.first}}) {
-                temp = states;
-                temp[i] = temp[j] = VISITED;
-                temp[k] = PATH;
-                adj_list[v].emplace_back(hash(temp), 0, min(i, j), max(i, j), false);
-            }
-
-    if (path.size() < 2)
-        for (int i : unvisited) {
-            temp = states;
-            temp[i] = PATH;
-            adj_list[v].emplace_back(hash(temp), 1, -1, -1, false);
-        }
-    else if (path.size() == 2) {
-        temp = states;
-        temp[path[0]] = temp[path[1]] = VISITED;
-
-        int u = hash(temp);
-        while (u) {
-            if (u % 5 > 1) goto next;
-            u /= 5;
-        }
-
-        adj_list[v].emplace_back(u, 0, path[0], path[1], true);
+struct Hash {
+    static uint64_t h(uint64_t key) {
+        auto hash = key + 0x9e3779b97f4a7c15;
+        hash = (hash ^ (hash >> 30)) * 0xbf58476d1ce4e5b9;
+        hash = (hash ^ (hash >> 27)) * 0x94d049bb133111eb;
+        hash = hash ^ (hash >> 31);
+        return hash;
     }
 
-    next:;
-    for (int i : unvisited)
-        for (auto [s, p] : loop)
-            for (int j : {p.first, p.second}) {
-                temp = states;
-                temp[i] = s;
-                temp[j] = VISITED;
-                adj_list[v].emplace_back(hash(temp), 1, min(i, j), max(i, j), false);
-            }
-
-    sort(adj_list[v].begin(), adj_list[v].end());
-    adj_list[v].erase(unique(adj_list[v].begin(), adj_list[v].end()), adj_list[v].end());
-}
+    size_t operator()(const vector<int> &v) const {
+        auto key = 0ULL;
+        for (int e : v) key ^= e + 0x9e3779b9 + (key << 6) + (key >> 2);
+        return h(key);
+    }
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -141,6 +39,126 @@ int main() {
 
     D = min(D, n - 1);
     vector<vector<tuple<int, int, int, int, bool>>> adj_list(1e6);
+    gp_hash_table<vector<int>, int, Hash> cache;
+    auto jump = [&](int v) -> void {
+        int w = v;
+        vector<int> states;
+        while (w) {
+            states.emplace_back(w % 5);
+            w /= 5;
+        }
+        states.resize(max(D + 1, (int) states.size()), UNVISITED);
+
+        vector<int> path, unvisited;
+        gp_hash_table<int, pair<int, int>> loop;
+        for (int i = 0; i < states.size(); i++)
+            if (states[i] == UNVISITED) unvisited.emplace_back(i);
+            else if (states[i] == PATH) path.emplace_back(i);
+            else if (states[i] >= LOOP1) {
+                if (loop.find(states[i]) != loop.end()) loop[states[i]].second = i;
+                else loop[states[i]] = {i, -1};
+            }
+
+        auto encode = [&](vector<int> states) {
+            if (cache.find(states) != cache.end()) return cache[states];
+            
+            gp_hash_table<int, int> indices;
+            vector<pair<int, int>> matches;
+            for (int i = 0; i < states.size(); i++)
+                if (states[i] >= LOOP1) {
+                    if (indices.find(states[i]) != indices.end()) matches.emplace_back(indices[states[i]], i);
+                    else indices[states[i]] = i;
+                }
+
+            if (!matches.empty()) {
+                sort(matches.begin(), matches.end());
+                int s = matches.size() + 2;
+                for (auto [i, j] : matches) states[i] = states[j] = s--;
+            }
+
+            int v = 0;
+            for (int i = states.size() - 1; ~i; i--) v = v * 5 + states[i];
+            return cache[states] = v;
+        };
+
+        vector<int> temp;
+        for (int i : path)
+            for (int j : unvisited) {
+                temp = states;
+                temp[i] = VISITED;
+                temp[j] = PATH;
+                adj_list[v].emplace_back(encode(temp), 1, min(i, j), max(i, j), false);
+            }
+
+        if (loop.size() < 2)
+            for (int i : unvisited)
+                for (int j : unvisited) {
+                    if (i == j) continue;
+
+                    for (int s : {LOOP1, LOOP2})
+                        if (loop.find(s) == loop.end()) {
+                            temp = states;
+                            temp[i] = temp[j] = s;
+                            adj_list[v].emplace_back(encode(temp), 2, i, j, false);
+                            break;
+                        }
+                }
+        else
+            for (auto [s1, p1] : loop)
+                for (auto [s2, p2] : loop) {
+                    if (s1 == s2) continue;
+
+                    for (auto [i1, j1] : {p1, {p1.second, p1.first}})
+                        for (auto [i2, j2] : {p2, {p2.second, p2.first}}) {
+                            temp = states;
+                            temp[i1] = temp[i2] = VISITED;
+                            temp[j1] = temp[j2] = s1;
+                            adj_list[v].emplace_back(encode(temp), 0, min(i1, i2), max(i1, i2), false);
+                        }
+                }
+
+        for (int i : path)
+            for (auto [s, p] : loop)
+                for (auto [j, k] : {p, {p.second, p.first}}) {
+                    temp = states;
+                    temp[i] = temp[j] = VISITED;
+                    temp[k] = PATH;
+                    adj_list[v].emplace_back(encode(temp), 0, min(i, j), max(i, j), false);
+                }
+
+        if (path.size() < 2)
+            for (int i : unvisited) {
+                temp = states;
+                temp[i] = PATH;
+                adj_list[v].emplace_back(encode(temp), 1, -1, -1, false);
+            }
+        else if (path.size() == 2) {
+            temp = states;
+            temp[path[0]] = temp[path[1]] = VISITED;
+
+            int u = encode(temp);
+            while (u) {
+                if (u % 5 > 1) goto next;
+                u /= 5;
+            }
+
+            adj_list[v].emplace_back(u, 0, path[0], path[1], true);
+        }
+
+        next:;
+        for (int i : unvisited)
+            for (auto [s, p] : loop)
+                for (int j : {p.first, p.second}) {
+                    temp = states;
+                    temp[i] = s;
+                    temp[j] = VISITED;
+                    adj_list[v].emplace_back(encode(temp), 1, min(i, j), max(i, j), false);
+                }
+
+        sort(adj_list[v].begin(), adj_list[v].end());
+        adj_list[v].erase(unique(adj_list[v].begin(), adj_list[v].end()), adj_list[v].end());
+    };
+
     vector<bool> visited(1e6, false);
     vector<int> visits;
     queue<int> q;
@@ -150,7 +168,7 @@ int main() {
         q.pop();
 
         visits.emplace_back(v);
-        jump(v, D, adj_list);
+        jump(v);
         for (auto [u, jumps, src, dest, end] : adj_list[v])
             if (!visited[u]) {
                 visited[u] = true;
@@ -166,7 +184,7 @@ int main() {
     }
 
     vector<vector<int>> dp(2, vector<int>(1e6, 0));
-    int len = INT_MIN;
+    int len = -1;
     for (int i = 0; i + D < n; i++) {
         q.emplace(0);
         for (int v : visits) {
