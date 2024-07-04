@@ -6,8 +6,9 @@ using namespace __gnu_pbds;
 enum State {
     UNVISITED = 0,
     VISITED = 1,
-    ONPATH = 2,
-    LOOP = 3
+    PATH = 2,
+    LOOP1 = 3,
+    LOOP2 = 4
 };
 
 void jump(int v, int D, vector<vector<tuple<int, int, int, int, bool>>> &adj_list) {
@@ -17,14 +18,14 @@ void jump(int v, int D, vector<vector<tuple<int, int, int, int, bool>>> &adj_lis
         states.emplace_back(w % 5);
         w /= 5;
     }
-    while (states.size() <= D) states.emplace_back(UNVISITED);
+    states.resize(max(D + 1, (int) states.size()), UNVISITED);
 
     vector<int> path, unvisited;
     gp_hash_table<int, pair<int, int>> loop;
     for (int i = 0; i < states.size(); i++)
         if (states[i] == UNVISITED) unvisited.emplace_back(i);
-        else if (states[i] == ONPATH) path.emplace_back(i);
-        else if (states[i] >= LOOP) {
+        else if (states[i] == PATH) path.emplace_back(i);
+        else if (states[i] >= LOOP1) {
             if (loop.find(states[i]) != loop.end()) loop[states[i]].second = i;
             else loop[states[i]] = {i, -1};
         }
@@ -33,7 +34,7 @@ void jump(int v, int D, vector<vector<tuple<int, int, int, int, bool>>> &adj_lis
         gp_hash_table<int, int> indices;
         vector<pair<int, int>> matches;
         for (int i = 0; i < states.size(); i++)
-            if (states[i] >= LOOP) {
+            if (states[i] >= LOOP1) {
                 if (indices.find(states[i]) != indices.end()) matches.emplace_back(indices[states[i]], i);
                 else indices[states[i]] = i;
             }
@@ -44,9 +45,10 @@ void jump(int v, int D, vector<vector<tuple<int, int, int, int, bool>>> &adj_lis
             for (auto [i, j] : matches) states[i] = states[j] = s--;
         }
 
-        int h = 0;
-        for (int i = states.size() - 1; ~i; i--) h = h * 5 + states[i];
-        return h;
+        int v = 0;
+        for (int i = states.size() - 1; ~i; i--) v = v * 5 + states[i];
+
+        return v;
     };
 
     vector<int> temp;
@@ -54,16 +56,16 @@ void jump(int v, int D, vector<vector<tuple<int, int, int, int, bool>>> &adj_lis
         for (int j : unvisited) {
             temp = states;
             temp[i] = VISITED;
-            temp[j] = ONPATH;
+            temp[j] = PATH;
             adj_list[v].emplace_back(hash(temp), 1, min(i, j), max(i, j), false);
         }
 
     if (loop.size() < 2)
-        for (int k = 0; k < unvisited.size(); k++) {
-            int i = unvisited[k];
-            for (int l = k + 1; l < unvisited.size(); l++) {
-                int j = unvisited[l];
-                for (int s = LOOP; s < 5; ++s)
+        for (int i : unvisited)
+            for (int j : unvisited) {
+                if (i == j) continue;
+
+                for (int s : {LOOP1, LOOP2})
                     if (loop.find(s) == loop.end()) {
                         temp = states;
                         temp[i] = temp[j] = s;
@@ -71,64 +73,52 @@ void jump(int v, int D, vector<vector<tuple<int, int, int, int, bool>>> &adj_lis
                         break;
                     }
             }
-        }
+    else
+        for (auto [s1, p1] : loop)
+            for (auto [s2, p2] : loop) {
+                if (s1 == s2) continue;
 
-    for (auto [s1, p1] : loop)
-        for (auto [s2, p2] : loop) {
-            if (s1 == s2) continue;
-            for (int k = 0; k < 2; k++)
-                for (int l = 0; l < 2; l++) {
-                    auto [i1, j1] = !k ? p1 : make_pair(p1.second, p1.first);
-                    auto [i2, j2] = !l ? p2 : make_pair(p2.second, p2.first);
-
-                    temp = states;
-                    temp[i1] = temp[i2] = VISITED;
-                    temp[j1] = temp[j2] = s1;
-                    adj_list[v].emplace_back(hash(temp), 0, min(i1, i2), max(i1, i2), false);
-                }
-        }
+                for (auto [i1, j1] : {p1, {p1.second, p1.first}})
+                    for (auto [i2, j2] : {p2, {p2.second, p2.first}}) {
+                        temp = states;
+                        temp[i1] = temp[i2] = VISITED;
+                        temp[j1] = temp[j2] = s1;
+                        adj_list[v].emplace_back(hash(temp), 0, min(i1, i2), max(i1, i2), false);
+                    }
+            }
 
     for (int i : path)
         for (auto [s, p] : loop)
-            for (int l = 0; l < 2; l++) {
-                auto [j, k] = !l ? p : make_pair(p.second, p.first);
-
+            for (auto [j, k] : {p, {p.second, p.first}}) {
                 temp = states;
                 temp[i] = temp[j] = VISITED;
-                temp[k] = ONPATH;
+                temp[k] = PATH;
                 adj_list[v].emplace_back(hash(temp), 0, min(i, j), max(i, j), false);
             }
 
     if (path.size() < 2)
         for (int i : unvisited) {
             temp = states;
-            temp[i] = ONPATH;
+            temp[i] = PATH;
             adj_list[v].emplace_back(hash(temp), 1, -1, -1, false);
         }
-
-    if (path.size() == 2) {
+    else if (path.size() == 2) {
         temp = states;
         temp[path[0]] = temp[path[1]] = VISITED;
 
-        bool end = true;
-        int temp1 = hash(temp);
-        while (temp1) {
-            if (temp1 % 5 > 1) {
-                end = false;
-                break;
-            }
-
-            temp1 /= 5;
+        int u = hash(temp);
+        while (u) {
+            if (u % 5 > 1) goto next;
+            u /= 5;
         }
 
-        if (end) adj_list[v].emplace_back(temp1, 0, path[0], path[1], true);
+        adj_list[v].emplace_back(u, 0, path[0], path[1], true);
     }
 
+    next:;
     for (int i : unvisited)
         for (auto [s, p] : loop)
-            for (int k = 0; k < 2; k++) {
-                int j = !k ? p.first : p.second;
-
+            for (int j : {p.first, p.second}) {
                 temp = states;
                 temp[i] = s;
                 temp[j] = VISITED;
@@ -143,22 +133,24 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n, d, m;
-    cin >> n >> d >> m;
-    d = min(d, n - 1);
+    int n, D, M;
+    cin >> n >> D >> M;
 
     vector<int> arr(n);
     for (int &e : arr) cin >> e;
 
+    D = min(D, n - 1);
     vector<vector<tuple<int, int, int, int, bool>>> adj_list(1e6);
     vector<bool> visited(1e6, false);
+    vector<int> visits;
     queue<int> q;
     q.emplace(0);
     while (!q.empty()) {
         int v = q.front();
         q.pop();
 
-        jump(v, d, adj_list);
+        visits.emplace_back(v);
+        jump(v, D, adj_list);
         for (auto [u, jumps, src, dest, end] : adj_list[v])
             if (!visited[u]) {
                 visited[u] = true;
@@ -166,37 +158,43 @@ int main() {
             }
     }
 
+    while (!visits.empty()) {
+        int v = visits.back();
+        visits.pop_back();
+
+        visited[v] = false;
+    }
+
     vector<vector<int>> dp(2, vector<int>(1e6, 0));
-    vector<int> curr(1e5), prev(1e5);
-    fill(visited.begin(), visited.end(), false);
     int len = INT_MIN;
-    for (int i = 0, c = 0, p = 0; i + d < n; i++) {
-        for (int j = 0; j < c; j++) dp[i & 1][curr[j]] = 0;
-        for (int j = 0; j < p; j++) visited[prev[j]] = false;
-
+    for (int i = 0; i + D < n; i++) {
         q.emplace(0);
-        if (i)
-            for (int j = 0; j < p; j++) {
-                int v = prev[j];
-                if (v % 5 > 1) continue;
+        for (int v : visits) {
+            if (v % 5 > 1) continue;
 
-                int u = v / 5;
-                dp[i & 1][u] = max(dp[i & 1][u], dp[(i + 1) & 1][v]);
+            int u = v / 5;
+            dp[i & 1][u] = max(dp[i & 1][u], dp[(i + 1) & 1][v]);
 
-                if (!visited[u]) {
-                    visited[u] = true;
-                    q.emplace(u);
-                }
+            if (!visited[u]) {
+                visited[u] = true;
+                q.emplace(u);
             }
+        }
 
-        c = 0;
+        while (!visits.empty()) {
+            int v = visits.back();
+            visits.pop_back();
+
+            dp[(i + 1) & 1][v] = 0;
+        }
+
         while (!q.empty()) {
             int v = q.front();
             q.pop();
 
-            curr[c++] = v;
+            visits.emplace_back(v);
             for (auto [u, jumps, src, dest, end] : adj_list[v])
-                if (abs(arr[i + src] - arr[i + dest]) <= m) {
+                if (abs(arr[i + src] - arr[i + dest]) <= M) {
                     if (end) {
                         len = max(len, dp[i & 1][v]);
                         continue;
@@ -210,8 +208,7 @@ int main() {
                 }
         }
 
-        swap(curr, prev);
-        swap(c, p);
+        for (int v : visits) visited[v] = false;
     }
 
     cout << len;
