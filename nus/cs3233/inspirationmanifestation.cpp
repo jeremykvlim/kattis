@@ -2,25 +2,25 @@
 using namespace std;
 
 int manacher(string s) {
-    if (s.size() <= 1) return s.size();
+    int n = s.size();
+    if (n <= 1) return n;
 
-    string t{'#'};
-    for (char c : s) t += c + string("#");
-    t = "$" + t + '^';
+    vector<int> dp(2 * n - 1, 0);
+    int len = 0;
+    for (int k = 0, l = -1, r = -1; k < 2 * n - 1; k++) {
+        int i = (k + 1) >> 1, j = k >> 1, p = i >= r ? 0 : min(r - i, dp[2 * (l + r) - k]);
+        while (j + p + 1 < n && i - p - 1 >= 0 && s[j + p + 1] == s[i - p - 1]) p++;
 
-    int n = t.size();
-    vector<int> dp(n);
-    for(int i = 1, l = 1, r = 1; i < n - 1; i++) {
-        dp[i] = max(0, min(r - i, dp[l + r - i]));
-        while (t[i - dp[i]] == t[i + dp[i]]) dp[i]++;
-
-        if (r < i + dp[i]) {
-            r = i + dp[i];
-            l = i - dp[i];
+        if (r < j + p) {
+            r = j + p;
+            l = i - p;
         }
+
+        dp[k] = p;
+        len = max(len, 2 * dp[k] + !(k & 1));
     }
 
-    return *max_element(dp.begin() + 1, dp.end() - 1) - 1;
+    return len;
 }
 
 int main() {
