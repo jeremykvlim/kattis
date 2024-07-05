@@ -69,10 +69,10 @@ int main() {
             if (p <= 3) cout << "IMPOSSIBLE";
             else {
                 string s(p, 'b');
-                for (int i = 0; s.size() < n; i = (i + 1) & 1) {
-                    for (int j = i; ~j && s.size() < n; j--) s += 'a';
-                    for (int j = i; ~j && s.size() < n; j--) s += 'b';
-                }
+                for (int i = 0; s.size() < n; i = (i + 1) & 1)
+                    for (char c : {'a', 'b'})
+                        for (int j = i; ~j && s.size() < n; j--) s += c;
+
                 cout << s;
             }
             break;
