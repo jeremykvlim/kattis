@@ -1,7 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-pair<long long, long long> bezout(long long a, long long b) {
+template <typename T>
+pair<T, T> bezout(T a, T b) {
     if (!a) return {0, 1};
     auto [x, y] = bezout(b % a, a);
     return {y - (b / a) * x, x};
@@ -24,16 +25,17 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int T;
-    cin >> T;
+    int t;
+    cin >> t;
 
-    while (T--) {
+    while (t--) {
         long long ws, hs, wl, hl, xl, yl;
         cin >> ws >> hs >> wl >> hl >> xl >> yl;
 
         ws -= wl;
         hs -= hl;
-        long long base = ws % hs, b = ((hs - yl) % hs - ((ws - xl) % ws) % hs + hs) % hs, t = congruence(base, b, hs);
-        cout << ((t == -1) ? "Johnny will die waiting\n" : to_string(t * ws + (ws - xl) % ws) + "\n");
+        auto base = ws % hs, b = ((hs - yl) % hs - ((ws - xl) % ws) % hs + hs) % hs, x = congruence(base, b, hs);
+
+        cout << ((x == -1) ? "Johnny will die waiting\n" : to_string(x * ws + (ws - xl) % ws) + "\n");
     }
 }
