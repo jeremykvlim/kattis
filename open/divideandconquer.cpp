@@ -3,7 +3,7 @@ using namespace std;
 
 template <typename T>
 T mul(T x, T y, T mod) {
-    typename conditional<is_integral<T>::value && (sizeof(T) < sizeof(__int128)), __int128, T>::type px = x, py = y, pmod = mod;
+    __int128 px = x, py = y, pmod = mod;
     auto product = px * py - pmod * (long long) (1.L / pmod * px * py);
     return product + pmod * (product < 0) - pmod * (product >= pmod);
 }
