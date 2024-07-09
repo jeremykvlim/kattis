@@ -1,36 +1,24 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-constexpr int MODULO = 1e9;
-
-vector<vector<long long>> I(int size) {
-    vector<vector<long long>> I(size, vector<long long>(size, 0));
-    for (int i = 0; i < size; i++) I[i][i] = 1;
-
-    return I;
+template <typename T>
+T mul(T x, T y, T mod) {
+    long long px = x, py = y, pmod = mod;
+    auto product = px * py - pmod * (long long) (1.L / pmod * px * py);
+    return product + pmod * (product < 0) - pmod * (product >= pmod);
 }
 
-vector<vector<long long>> matmul(vector<vector<long long>> &a, vector<vector<long long>> &b) {
-    int r1 = a.size(), r2 = b.size(), c2 = b[0].size();
+pair<long long, long long> fib(long long n, long long mod = 1) {
+    if (!n) return {0LL, 1LL};
+    else {
+        auto [f1, f2] = fib(n >> 1, mod);
 
-    vector<vector<long long>> c(r1, vector<long long>(c2, 0));
-    for (int i = 0; i < r1; i++)
-        for (int j = 0; j < c2; j++)
-            for (int k = 0; k < r2; k++) c[i][j] = (c[i][j] + (a[i][k] * b[k][j]) % MODULO) % MODULO;
+        auto fib1 = mul(f1, (2 * f2 - f1 + mod) % mod, mod);
+        auto fib2 = (mul(f1, f1, mod) + mul(f2, f2, mod)) % mod;
 
-    return c;
-}
-
-vector<vector<long long>> matpow(vector<vector<long long>> a, long long n) {
-    int size = a.size();
-    auto b = I(size);
-
-    for (; n; n >>= 1) {
-        if (n & 1) b = matmul(a, b);
-        a = matmul(a, a);
+        if (n & 1) return {fib2, (fib1 + fib2) % mod};
+        else return {fib1, fib2};
     }
-
-    return b;
 }
 
 int main() {
@@ -44,7 +32,6 @@ int main() {
         long long k, y;
         cin >> k >> y;
 
-        vector<vector<long long>> a{{1, 1}, {1, 0}};
-        cout << k << " " << matpow(a, y)[0][1] % MODULO << "\n";
+        cout << k << " " << fib(y, 1e9).first << "\n";
     }
 }
