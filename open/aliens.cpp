@@ -1,7 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-pair<__int128, __int128> bezout(__int128 a, __int128 b) {
+template <typename T>
+pair<T, T> bezout(T a, T b) {
     if (!a) return {0, 1};
     auto [x, y] = bezout(b % a, a);
     return {y - (b / a) * x, x};
@@ -39,7 +40,7 @@ int main() {
             };
 
             int pos = -1;
-            for (int i = 0, j = i + len - 1; i < s.size() && j < s.size(); i++, j++) 
+            for (int i = 0, j = i + len - 1; i < s.size() && j < s.size(); i++, j++)
                 if (appearances(((pref[j + 1] - pref[i] + mod) % mod) * inv[i] % mod) >= m) pos = i;
 
             return pos;
