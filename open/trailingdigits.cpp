@@ -1,7 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-pair<long long, long long> bezout(long long a, long long b) {
+template <typename T>
+pair<T, T> bezout(T a, T b) {
     if (!a) return {0, 1};
     auto [x, y] = bezout(b % a, a);
     return {y - (b / a) * x, x};
@@ -29,7 +30,7 @@ int main() {
     string a;
     cin >> b >> d >> a;
 
-    long long l = 0, r = sqrt(INT_MAX), m;
+    int l = 0, r = 1e5, m;
     while (l + 1 < r) {
         m = l + (r - l) / 2;
 
@@ -44,14 +45,14 @@ int main() {
             r = m;
             continue;
         }
-        
+
         if (!x && !d) x = b / __gcd(base, b);
         auto s = to_string(x);
         if (!x) s.clear();
         s += string(m, '0' + d);
-        
-        if (!(s.size() == a.size() ? s <= a : s.size() < a.size())) r = m;
-        else l = m;
+
+        if (s.size() == a.size() ? s <= a : s.size() < a.size()) l = m;
+        else r = m;
     }
 
     cout << l;
