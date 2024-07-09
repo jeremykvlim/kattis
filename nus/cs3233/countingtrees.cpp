@@ -233,15 +233,15 @@ ModInt<T> operator/(U lhs, const ModInt<T> &rhs) {
 }
 
 template <typename U, typename T>
-U & operator<<(U &stream, const ModInt<T> &number) {
-    return stream << number();
+U & operator<<(U &stream, const ModInt<T> &v) {
+    return stream << v();
 }
 
 template <typename U, typename T>
-U & operator>>(U &stream, ModInt<T> &number) {
-    typename common_type<typename ModInt<T> ::Type, long long>::type x;
+U & operator>>(U &stream, ModInt<T> &v) {
+    typename common_type<typename ModInt<T>::T, long long>::type x;
     stream >> x;
-    number.value = ModInt<T> ::normalize(x);
+    v.value = ModInt<T>::normalize(x);
     return stream;
 }
 
