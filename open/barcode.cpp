@@ -188,6 +188,11 @@ bool operator!=(U lhs, const ModInt<T> &rhs) {
 }
 
 template<typename T>
+bool operator>(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+    return lhs.value > rhs.value;
+}
+
+template<typename T>
 bool operator<(const ModInt<T> &lhs, const ModInt<T> &rhs) {
     return lhs.value < rhs.value;
 }
