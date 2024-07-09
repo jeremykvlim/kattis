@@ -1,12 +1,274 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-constexpr int MODULO = 1e9 + 607;
+template<typename T>
+T inverse(T a, T mod) {
+    T u = 0, v = 1;
+    while (a) {
+        T t = mod / a;
+        mod -= t * a;
+        swap(a, mod);
+        u -= t * v;
+        swap(u, v);
+    }
 
-long long C(long long n, long long k, int p, vector<long long> &fact, vector<long long> &fact_inv) {
+    return u;
+}
+
+template <typename T>
+T mul(T x, T y, T mod) {
+    long long px = x, py = y, pmod = mod;
+    auto product = px * py - pmod * (long long) (1.L / pmod * px * py);
+    return product + pmod * (product < 0) - pmod * (product >= pmod);
+}
+
+template <typename T>
+T pow(T base, T exponent, T mod) {
+    T value = 1;
+    while (exponent) {
+        if (exponent & 1) value = mul(value, base, mod);
+        base = mul(base, base, mod);
+        exponent >>= 1;
+    }
+    return value;
+}
+
+bool isprime(long long n) {
+    if (n < 2) return false;
+    if (n % 6 % 4 != 1) return (n | 1) == 3;
+
+    vector<int> bases{2, 325, 9375, 28178, 450775, 9780504, 1795265022};
+    int s = __builtin_ctzll(n - 1);
+    auto d = n >> s;
+    for (int a : bases) {
+        auto p = pow(a % n, d, n);
+        int i = s;
+        while (1 < p && p < n - 1 && a % n && i--) p = mul(p, p, n);
+        if (p != n - 1 && i != s) return false;
+    }
+
+    return true;
+}
+
+constexpr int MODULO = 1e9 + 607;
+const bool PRIME_MOD = MODULO == 998244353 || MODULO == 1e9 + 7 || MODULO == 1e9 + 9 || MODULO == 1e6 + 69 || isprime(MODULO);
+
+template<typename M>
+struct ModInt {
+    using T = typename decay<decltype(M::value)>::type;
+    T value;
+
+    constexpr ModInt() : value() {}
+
+    template<typename U>
+    ModInt(const U &x) {
+        value = normalize(x);
+    }
+
+    template<typename U>
+    static T normalize(const U &x) {
+        T v = x;
+        if (!(-mod() <= x && x < mod())) v = (T) (x % mod());
+        if (v < 0) v += mod();
+        return v;
+    }
+
+    const T & operator()() const {
+        return value;
+    }
+
+    template<typename U>
+    explicit operator U() const {
+        return (U) value;
+    }
+
+    constexpr static T mod() {
+        return M::value;
+    }
+
+    inline auto & operator+=(const ModInt &v) {
+        if ((value += v.value) >= mod()) value -= mod();
+        return *this;
+    }
+
+    inline auto & operator-=(const ModInt &v) {
+        if ((value -= v.value) < 0) value += mod();
+        return *this;
+    }
+
+    template<typename U>
+    inline auto & operator+=(const U &v) {
+        return *this += ModInt(v);
+    }
+
+    template<typename U>
+    inline auto & operator-=(const U &v) {
+        return *this -= ModInt(v);
+    }
+
+    auto & operator++() {
+        return *this += 1;
+    }
+
+    auto & operator--() {
+        return *this -= 1;
+    }
+
+    auto operator++(int) {
+        ModInt v(*this);
+        *this += 1;
+        return v;
+    }
+
+    auto operator--(int) {
+        ModInt v(*this);
+        *this -= 1;
+        return v;
+    }
+
+    auto operator-() const {
+        return ModInt(-value);
+    }
+
+    template<typename U = M>
+    typename enable_if<is_same<typename ModInt<U>::T, int>::value, ModInt>::type &operator*=(const ModInt &v) {
+        value = normalize((long long) value * (long long) v.value);
+        return *this;
+    }
+
+    template<typename U = M>
+    typename enable_if<is_same<typename ModInt<U>::T, long long>::value, ModInt>::type &operator*=(const ModInt &v) {
+        value = normalize(value * v.value - (long long) ((long double) value * v.value / mod()) * mod());
+        return *this;
+    }
+
+    template<typename U = M>
+    typename enable_if<!is_integral<typename ModInt<U>::T>::value, ModInt>::type &operator*=(const ModInt &v) {
+        value = normalize(value * v.value);
+        return *this;
+    }
+
+    auto & operator/=(const ModInt &v) {
+        if (PRIME_MOD) return *this *= ModInt(pow(v.value, mod() - 2, mod()));
+        return *this *= ModInt(inverse(v.value, mod()));
+    }
+};
+
+template<typename T>
+bool operator==(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+    return lhs.value == rhs.value;
+}
+
+template<typename T, typename U>
+bool operator==(const ModInt<T> &lhs, U rhs) {
+    return lhs == ModInt<T>(rhs);
+}
+
+template<typename T, typename U>
+bool operator==(U lhs, const ModInt<T> &rhs) {
+    return ModInt<T>(lhs) == rhs;
+}
+
+template<typename T>
+bool operator!=(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+    return !(lhs == rhs);
+}
+
+template<typename T, typename U>
+bool operator!=(const ModInt<T> &lhs, U rhs) {
+    return !(lhs == rhs);
+}
+
+template<typename T, typename U>
+bool operator!=(U lhs, const ModInt<T> &rhs) {
+    return !(lhs == rhs);
+}
+
+template<typename T>
+bool operator<(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+    return lhs.value < rhs.value;
+}
+
+template<typename T>
+ModInt<T> operator+(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+    return ModInt<T>(lhs) += rhs;
+}
+
+template<typename T, typename U>
+ModInt<T> operator+(const ModInt<T> &lhs, U rhs) {
+    return ModInt<T>(lhs) += rhs;
+}
+
+template<typename T, typename U>
+ModInt<T> operator+(U lhs, const ModInt<T> &rhs) {
+    return ModInt<T>(lhs) += rhs;
+}
+
+template<typename T>
+ModInt<T> operator-(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+    return ModInt<T>(lhs) -= rhs;
+}
+
+template<typename T, typename U>
+ModInt<T> operator-(const ModInt<T> &lhs, U rhs) {
+    return ModInt<T>(lhs) -= rhs;
+}
+
+template<typename T, typename U>
+ModInt<T> operator-(U lhs, const ModInt<T> &rhs) {
+    return ModInt<T>(lhs) -= rhs;
+}
+
+template<typename T>
+ModInt<T> operator*(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+    return ModInt<T>(lhs) *= rhs;
+}
+
+template<typename T, typename U>
+ModInt<T> operator*(const ModInt<T> &lhs, U rhs) {
+    return ModInt<T>(lhs) *= rhs;
+}
+
+template<typename T, typename U>
+ModInt<T> operator*(U lhs, const ModInt<T> &rhs) {
+    return ModInt<T>(lhs) *= rhs;
+}
+
+template<typename T>
+ModInt<T> operator/(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+    return ModInt<T>(lhs) /= rhs;
+}
+
+template<typename T, typename U>
+ModInt<T> operator/(const ModInt<T> &lhs, U rhs) {
+    return ModInt<T>(lhs) /= rhs;
+}
+
+template<typename T, typename U>
+ModInt<T> operator/(U lhs, const ModInt<T> &rhs) {
+    return ModInt<T>(lhs) /= rhs;
+}
+
+template <typename U, typename T>
+U & operator<<(U &stream, const ModInt<T> &v) {
+    return stream << v();
+}
+
+template <typename U, typename T>
+U & operator>>(U &stream, ModInt<T> &v) {
+    typename common_type<typename ModInt<T>::T, long long>::type x;
+    stream >> x;
+    v.value = ModInt<T>::normalize(x);
+    return stream;
+}
+
+using modint = ModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
+
+template<typename T>
+T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
     if (k < 0 || k > n) return 0;
-    if (n >= p || k >= p) return (C(n / p, k / p, p, fact, fact_inv) * C(n % p, k % p, p, fact, fact_inv)) % p;
-    return (fact[n] * fact_inv[k] % p * fact_inv[n - k] % p) % p;
+    if (n >= p || k >= p) return C(n / p, k / p, p, fact, fact_inv) * C(n % p, k % p, p, fact, fact_inv);
+    return fact[n] * fact_inv[k] * fact_inv[n - k];
 }
 
 vector<int> sieve(int n) {
@@ -34,40 +296,34 @@ int main() {
         exit(0);
     }
 
-    vector<vector<vector<long long>>> dp(n + 1, vector<vector<long long>>(k, vector<long long>(k + 1, 0)));
+    vector<vector<vector<modint>>> dp(n + 1, vector<vector<modint>>(k, vector<modint>(k + 1, 0)));
     for (int i = 0; i < k; i++)
-        for (int j = i + 1; j <= k; j++) dp[n][i][j] = 1;
+        for (int j = i + 1; j <= k; j++) dp[n][i][j]++;
 
     for (int h = n - 1; h; h--)
         for (int i = 0; i < k - 1; i++)
             for (int j = i + 1; j < k; j++) {
                 if (i) dp[h][i][j] = dp[h + 1][i - 1][j - 1] + (h + i >= n ? 1 : dp[h + i][j - i][k - i]);
                 else if (h < n) dp[h][i][j] += dp[h + 1][j - 1][k - 1] + (h + 1 >= k ? 0 : dp[h + 1][0][j - 1]);
-
-                dp[h][i][j] %= MODULO;
             }
 
-    auto count = 0LL;
-    for (int i = 1; i < k; i++) count = (count + dp[i][0][k - 1]) % MODULO;
+    modint count = 0;
+    for (int i = 1; i < k; i++) count += dp[i][0][k - 1];
 
-    vector<long long> fact(k + 1, 1), fact_inv(k + 1, 1);
-    auto prepare = [&](vector<long long> &fact, vector<long long> &fact_inv, int mod) {
-        vector<long long> inv(k + 1, 1);
+    vector<modint> fact(k + 1, 1), fact_inv(k + 1, 1);
+    auto prepare = [&]() {
+        auto inv = fact;
 
         for (int i = 1; i <= k; i++) {
-            if (i > 1) inv[i] = ((mod - mod / i) * inv[mod % i]) % mod;
-            fact[i] = (i * fact[i - 1]) % mod;
-            fact_inv[i] = (inv[i] * fact_inv[i - 1]) % mod;
+            if (i > 1) inv[i] = (MODULO - MODULO / i) * inv[MODULO % i];
+            fact[i] = i * fact[i - 1];
+            fact_inv[i] = inv[i] * fact_inv[i - 1];
         }
     };
+    prepare();
 
-    prepare(fact, fact_inv, MODULO);
-
-    auto primes = sieve(k);
-    for (int p : primes) {
-        if (p < 5) continue;
-        count = (count + C(k, p, MODULO, fact, fact_inv)) % MODULO;
-    }
+    for (int p : sieve(k))
+        if (p >= 5) count += C(k, p, MODULO, fact, fact_inv);
 
     cout << count;
 }
