@@ -89,47 +89,47 @@ struct ModInt {
         return M::value;
     }
 
-    ModInt &operator+=(const ModInt &v) {
+    auto & operator+=(const ModInt &v) {
         if ((value += v.value) >= mod()) value -= mod();
         return *this;
     }
 
-    ModInt &operator-=(const ModInt &v) {
+    auto & operator-=(const ModInt &v) {
         if ((value -= v.value) < 0) value += mod();
         return *this;
     }
 
     template<typename U>
-    ModInt &operator+=(const U &v) {
+    auto & operator+=(const U &v) {
         return *this += ModInt(v);
     }
 
     template<typename U>
-    ModInt &operator-=(const U &v) {
+    auto & operator-=(const U &v) {
         return *this -= ModInt(v);
     }
 
-    ModInt &operator++() {
+    auto & operator++() {
         return *this += 1;
     }
 
-    ModInt &operator--() {
+    auto & operator--() {
         return *this -= 1;
     }
 
-    ModInt operator++(int) {
+    auto operator++(int) {
         ModInt v(*this);
         *this += 1;
         return v;
     }
 
-    ModInt operator--(int) {
+    auto operator--(int) {
         ModInt v(*this);
         *this -= 1;
         return v;
     }
 
-    ModInt operator-() const {
+    auto operator-() const {
         return ModInt(-value);
     }
 
@@ -151,7 +151,7 @@ struct ModInt {
         return *this;
     }
 
-    ModInt &operator/=(const ModInt &v) {
+    auto & operator/=(const ModInt &v) {
         if (PRIME_MOD) return *this *= ModInt(pow(v.value, mod() - 2, mod()));
         return *this *= ModInt(inverse(v.value, mod()));
     }
@@ -252,12 +252,12 @@ struct ModInt {
     }
 
     template<typename U, typename T>
-    friend U &operator<<(U &stream, const ModInt<T> &number) {
+    friend U & operator<<(U &stream, const ModInt<T> &number) {
         return stream << number();
     }
 
     template<typename U, typename T>
-    friend U &operator>>(U &stream, ModInt<T> &number) {
+    friend U & operator>>(U &stream, ModInt<T> &number) {
         typename common_type<typename ModInt<T>::T, long long>::type x;
         stream >> x;
         number.value = ModInt<T>::normalize(x);
