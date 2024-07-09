@@ -1,34 +1,53 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-vector<vector<unsigned>> I(int size) {
-    vector<vector<unsigned>> I(size, vector<unsigned>(size, 0));
-    for (int i = 0; i < size; i++) I[i][i] = 1;
+template <typename T>
+struct Matrix {
+    int r, c;
+    vector<vector<T>> mat;
+
+    Matrix(int n) : Matrix(n, n) {}
+    Matrix(int row, int col, int v = 0) : r(row), c(col), mat(row, vector<T>(col, v)) {}
+
+    friend auto operator *(Matrix<T> &A, Matrix<T> &B) {
+        int r1 = A.r, r2 = B.r, c2 = B.c;
+
+        Matrix<T> C(r1, c2);
+        for (int i = 0; i < r1; i++)
+            for (int j = 0; j < c2; j++)
+                for (int k = 0; k < r2; k++) C[i][j] += A[i][k] * B[k][j];
+
+        return C;
+    }
+
+    friend auto operator *=(Matrix<T> &A, Matrix<T> &B) {
+        return A = A * B;
+    }
+
+    auto & operator[](int i) {
+        return mat[i];
+    }
+};
+
+template <typename T>
+Matrix<T> I(int n) {
+    Matrix<T> I(n);
+    for (int i = 0; i < n; i++) I[i][i] = 1;
 
     return I;
 }
 
-vector<vector<unsigned>> matmul(vector<vector<unsigned>> &a, vector<vector<unsigned>> &b) {
-    int r1 = a.size(), r2 = b.size(), c2 = b[0].size();
+template <typename T, typename U>
+Matrix<T> matpow(Matrix<T> A, U exponent) {
+    int n = A.r;
+    auto B = I<T>(n);
 
-    vector<vector<unsigned>> c(r1, vector<unsigned>(c2, 0));
-    for (int i = 0; i < r1; i++)
-        for (int j = 0; j < c2; j++)
-            for (int k = 0; k < r2; k++) c[i][j] += a[i][k] * b[k][j];
-
-    return c;
-}
-
-vector<vector<unsigned>> matpow(vector<vector<unsigned>> a, unsigned n) {
-    int size = a.size();
-    auto b = I(size);
-
-    for (; n; n >>= 1) {
-        if (n & 1) b = matmul(a, b);
-        a = matmul(a, a);
+    while (exponent) {
+        if (exponent & 1) B = A * B;
+        A = A * A;
+        exponent >>= 1;
     }
-
-    return b;
+    return B;
 }
 
 int main() {
@@ -38,12 +57,13 @@ int main() {
     int n, k;
     cin >> n >> k;
 
-    vector<vector<unsigned>> r(33, vector<unsigned>(33, 0));
+    Matrix<unsigned> r(33);
     for (int i = 0; i < k; i++) cin >> r[0][i];
     r[0][32] = 1;
 
-    stack<pair<vector<vector<unsigned>>, long long>> st;
-    st.emplace(I(33), 1);
+    stack<pair<Matrix<unsigned>, unsigned>> st;
+    auto temp = I<unsigned>(33);
+    st.emplace(temp, 1);
     while (n--) {
         string s;
         cin >> s;
@@ -53,58 +73,58 @@ int main() {
             char _;
             cin >> _ >> x >> _ >> _ >> y >> _ >> _ >> z;
 
-            auto temp = I(33);
+            temp = I<unsigned>(33);
             temp[x][x]--;
             temp[y][x]++;
             temp[z][x]++;
 
-            st.top().first = matmul(st.top().first, temp);
+            st.top().first *= temp;
         } else if (s == "addi") {
             int x, y;
             unsigned c;
             char _;
             cin >> _ >> x >> _ >> _ >> y >> _ >> c;
 
-            auto temp = I(33);
+            temp = I<unsigned>(33);
             temp[x][x]--;
             temp[y][x]++;
             temp[32][x] += c;
 
-            st.top().first = matmul(st.top().first, temp);
+            st.top().first *= temp;
         } else if (s == "move") {
             int x, y;
             char _;
             cin >> _ >> x >> _ >> _ >> y;
 
-            auto temp = I(33);
+            temp = I<unsigned>(33);
             temp[x][x]--;
             temp[y][x]++;
 
-            st.top().first = matmul(st.top().first, temp);
+            st.top().first *= temp;
         } else if (s == "li") {
             int x;
             unsigned c;
             char _;
             cin >> _ >> x >> _ >> c;
 
-            auto temp = I(33);
+            temp = I<unsigned>(33);
             temp[x][x]--;
             temp[32][x] += c;
 
-            st.top().first = matmul(st.top().first, temp);
+            st.top().first *= temp;
         } else if (s == "for") {
             unsigned c;
             cin >> c;
 
-            st.emplace(I(33), c);
+            st.emplace(I<unsigned>(33), c);
         } else {
             auto temp2 = matpow(st.top().first, st.top().second);
 
             st.pop();
-            st.top().first = matmul(st.top().first, temp2);
+            st.top().first *= temp2;
         }
     }
 
-    r = matmul(r, st.top().first);
+    r *= st.top().first;
     for (int i = 0; i < k; i++) cout << r[0][i] << " ";
 }
