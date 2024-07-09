@@ -347,9 +347,9 @@ struct Matrix {
 };
 
 template <typename T>
-Matrix<T> I(int size) {
-    Matrix<T> I(size);
-    for (int i = 0; i < size; i++) I[i][i] = 1;
+Matrix<T> I(int n) {
+    Matrix<T> I(n);
+    for (int i = 0; i < n; i++) I[i][i] = 1;
 
     return I;
 }
