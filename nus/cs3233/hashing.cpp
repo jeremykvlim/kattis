@@ -1,7 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-pair<__int128, __int128> bezout(__int128 a, __int128 b) {
+template <typename T>
+pair<T, T> bezout(T a, T b) {
     if (!a) return {0, 1};
     auto [x, y] = bezout(b % a, a);
     return {y - (b / a) * x, x};
