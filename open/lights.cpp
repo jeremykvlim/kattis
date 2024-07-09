@@ -86,23 +86,23 @@ struct ModInt {
         return M::value;
     }
 
-    auto & operator+=(const ModInt &v) {
+    inline auto & operator+=(const ModInt &v) {
         if ((value += v.value) >= mod()) value -= mod();
         return *this;
     }
 
-    auto & operator-=(const ModInt &v) {
+    inline auto & operator-=(const ModInt &v) {
         if ((value -= v.value) < 0) value += mod();
         return *this;
     }
 
     template<typename U>
-    auto & operator+=(const U &v) {
+    inline auto & operator+=(const U &v) {
         return *this += ModInt(v);
     }
 
     template<typename U>
-    auto & operator-=(const U &v) {
+    inline auto & operator-=(const U &v) {
         return *this -= ModInt(v);
     }
 
@@ -152,115 +152,115 @@ struct ModInt {
         if (PRIME_MOD) return *this *= ModInt(pow(v.value, mod() - 2, mod()));
         return *this *= ModInt(inverse(v.value, mod()));
     }
-
-    template<typename U>
-    friend bool operator==(const ModInt<U> &lhs, const ModInt<U> &rhs) {
-        return lhs.value == rhs.value;
-    }
-
-    template<typename T, typename U>
-    friend bool operator==(const ModInt<T> &lhs, U rhs) {
-        return lhs == ModInt<T>(rhs);
-    }
-
-    template<typename T, typename U>
-    friend bool operator==(U lhs, const ModInt<T> &rhs) {
-        return ModInt<T>(lhs) == rhs;
-    }
-
-    template<typename T>
-    friend bool operator!=(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-        return !(lhs == rhs);
-    }
-
-    template<typename T, typename U>
-    friend bool operator!=(const ModInt<T> &lhs, U rhs) {
-        return !(lhs == rhs);
-    }
-
-    template<typename T, typename U>
-    friend bool operator!=(U lhs, const ModInt<T> &rhs) {
-        return !(lhs == rhs);
-    }
-
-    template<typename T>
-    friend bool operator<(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-        return lhs.value < rhs.value;
-    }
-
-    template<typename T>
-    friend ModInt<T> operator+(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-        return ModInt<T>(lhs) += rhs;
-    }
-
-    template<typename T, typename U>
-    friend ModInt<T> operator+(const ModInt<T> &lhs, U rhs) {
-        return ModInt<T>(lhs) += rhs;
-    }
-
-    template<typename T, typename U>
-    friend ModInt<T> operator+(U lhs, const ModInt<T> &rhs) {
-        return ModInt<T>(lhs) += rhs;
-    }
-
-    template<typename T>
-    friend ModInt<T> operator-(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-        return ModInt<T>(lhs) -= rhs;
-    }
-
-    template<typename T, typename U>
-    friend ModInt<T> operator-(const ModInt<T> &lhs, U rhs) {
-        return ModInt<T>(lhs) -= rhs;
-    }
-
-    template<typename T, typename U>
-    friend ModInt<T> operator-(U lhs, const ModInt<T> &rhs) {
-        return ModInt<T>(lhs) -= rhs;
-    }
-
-    template<typename T>
-    friend ModInt<T> operator*(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-        return ModInt<T>(lhs) *= rhs;
-    }
-
-    template<typename T, typename U>
-    friend ModInt<T> operator*(const ModInt<T> &lhs, U rhs) {
-        return ModInt<T>(lhs) *= rhs;
-    }
-
-    template<typename T, typename U>
-    friend ModInt<T> operator*(U lhs, const ModInt<T> &rhs) {
-        return ModInt<T>(lhs) *= rhs;
-    }
-
-    template<typename T>
-    friend ModInt<T> operator/(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-        return ModInt<T>(lhs) /= rhs;
-    }
-
-    template<typename T, typename U>
-    friend ModInt<T> operator/(const ModInt<T> &lhs, U rhs) {
-        return ModInt<T>(lhs) /= rhs;
-    }
-
-    template<typename T, typename U>
-    friend ModInt<T> operator/(U lhs, const ModInt<T> &rhs) {
-        return ModInt<T>(lhs) /= rhs;
-    }
-
-    template<typename U, typename T>
-    friend U & operator<<(U &stream, const ModInt<T> &number) {
-        return stream << number();
-    }
-
-    template<typename U, typename T>
-    friend U & operator>>(U &stream, ModInt<T> &number) {
-        typename common_type<typename ModInt<T>::T, long long>::type x;
-        stream >> x;
-        number.value = ModInt<T>::normalize(x);
-        return stream;
-    }
 };
+
+template<typename T>
+bool operator==(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+    return lhs.value == rhs.value;
+}
+
+template<typename T, typename U>
+bool operator==(const ModInt<T> &lhs, U rhs) {
+    return lhs == ModInt<T>(rhs);
+}
+
+template<typename T, typename U>
+bool operator==(U lhs, const ModInt<T> &rhs) {
+    return ModInt<T>(lhs) == rhs;
+}
+
+template<typename T>
+bool operator!=(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+    return !(lhs == rhs);
+}
+
+template<typename T, typename U>
+bool operator!=(const ModInt<T> &lhs, U rhs) {
+    return !(lhs == rhs);
+}
+
+template<typename T, typename U>
+bool operator!=(U lhs, const ModInt<T> &rhs) {
+    return !(lhs == rhs);
+}
+
+template<typename T>
+bool operator<(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+    return lhs.value < rhs.value;
+}
+
+template<typename T>
+ModInt<T> operator+(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+    return ModInt<T>(lhs) += rhs;
+}
+
+template<typename T, typename U>
+ModInt<T> operator+(const ModInt<T> &lhs, U rhs) {
+    return ModInt<T>(lhs) += rhs;
+}
+
+template<typename T, typename U>
+ModInt<T> operator+(U lhs, const ModInt<T> &rhs) {
+    return ModInt<T>(lhs) += rhs;
+}
+
+template<typename T>
+ModInt<T> operator-(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+    return ModInt<T>(lhs) -= rhs;
+}
+
+template<typename T, typename U>
+ModInt<T> operator-(const ModInt<T> &lhs, U rhs) {
+    return ModInt<T>(lhs) -= rhs;
+}
+
+template<typename T, typename U>
+ModInt<T> operator-(U lhs, const ModInt<T> &rhs) {
+    return ModInt<T>(lhs) -= rhs;
+}
+
+template<typename T>
+ModInt<T> operator*(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+    return ModInt<T>(lhs) *= rhs;
+}
+
+template<typename T, typename U>
+ModInt<T> operator*(const ModInt<T> &lhs, U rhs) {
+    return ModInt<T>(lhs) *= rhs;
+}
+
+template<typename T, typename U>
+ModInt<T> operator*(U lhs, const ModInt<T> &rhs) {
+    return ModInt<T>(lhs) *= rhs;
+}
+
+template<typename T>
+ModInt<T> operator/(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+    return ModInt<T>(lhs) /= rhs;
+}
+
+template<typename T, typename U>
+ModInt<T> operator/(const ModInt<T> &lhs, U rhs) {
+    return ModInt<T>(lhs) /= rhs;
+}
+
+template<typename T, typename U>
+ModInt<T> operator/(U lhs, const ModInt<T> &rhs) {
+    return ModInt<T>(lhs) /= rhs;
+}
+
+template <typename U, typename T>
+U & operator<<(U &stream, const ModInt<T> &v) {
+    return stream << v();
+}
+
+template <typename U, typename T>
+U & operator>>(U &stream, ModInt<T> &v) {
+    typename common_type<typename ModInt<T>::T, long long>::type x;
+    stream >> x;
+    v.value = ModInt<T>::normalize(x);
+    return stream;
+}
 
 using modint = ModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
