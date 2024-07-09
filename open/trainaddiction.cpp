@@ -310,7 +310,7 @@ Matrix<T> matpow(Matrix<T> A, int exponent) {
         A = A * A;
         exponent >>= 1;
     }
-    return b;
+    return B;
 }
 
 int main() {
