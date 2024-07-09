@@ -300,8 +300,8 @@ Matrix<T> I(int n) {
     return I;
 }
 
-template <typename T>
-Matrix<T> matpow(Matrix<T> A, int exponent) {
+template <typename T, typename U>
+Matrix<T> matpow(Matrix<T> A, U exponent) {
     int n = A.r;
     auto B = I<T>(n);
 
