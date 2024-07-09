@@ -293,23 +293,23 @@ struct Matrix {
 };
 
 template <typename T>
-Matrix<T> I(int size) {
-    Matrix<T> I(size);
-    for (int i = 0; i < size; i++) I[i][i] = 1;
+Matrix<T> I(int n) {
+    Matrix<T> I(n);
+    for (int i = 0; i < n; i++) I[i][i] = 1;
 
     return I;
 }
 
 template <typename T>
-Matrix<T> matpow(Matrix<T> a, int exponent) {
-    int size = a.r;
-    auto b = I<T>(size);
+Matrix<T> matpow(Matrix<T> A, int exponent) {
+    int n = A.r;
+    auto B = I<T>(n);
 
-    for (; exponent; exponent >>= 1) {
-        if (exponent & 1) b = a * b;
-        a = a * a;
+    while (exponent) {
+        if (exponent & 1) B = A * B;
+        A = A * A;
+        exponent >>= 1;
     }
-
     return b;
 }
 
