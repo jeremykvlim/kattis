@@ -29,7 +29,8 @@ void fft(vector<complex<double>> &a, int sign = 1) {
         for (auto &x : a) x /= n;
 }
 
-vector<int> convolve(vector<int> &a, vector<int> &b) {
+template <typename T>
+vector<T> convolve(vector<T> &a, vector<T> &b) {
     int n = 1;
     while (n < a.size() + b.size() - 1) n <<= 1;
 
@@ -42,8 +43,8 @@ vector<int> convolve(vector<int> &a, vector<int> &b) {
     for (int i = 0; i < n; i++) dft_c[i] = dft_a[i] * dft_b[i];
     fft(dft_c, -1);
 
-    vector<int> c(n);
-    for (int i = 0; i < n; i++) c[i] = round(dft_c[i].real());
+    vector<T> c(n);
+    for (int i = 0; i < n; i++) c[i] = llround(dft_c[i].real());
     c.resize(a.size() + b.size() - 1);
 
     return c;
