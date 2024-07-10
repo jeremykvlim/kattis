@@ -9,7 +9,7 @@ struct Matrix {
     Matrix(int n) : Matrix(n, n) {}
     Matrix(int row, int col, int v = 0) : r(row), c(col), mat(row, vector<T>(col, v)) {}
 
-    friend auto operator *(Matrix<T> &A, Matrix<T> &B) {
+    friend auto operator*(Matrix<T> &A, Matrix<T> &B) {
         int r1 = A.r, r2 = B.r, c2 = B.c;
 
         Matrix<T> C(r1, c2);
@@ -20,7 +20,7 @@ struct Matrix {
         return C;
     }
 
-    friend auto operator *(Matrix<T> &A, vector<T> &v) {
+    friend auto operator*(Matrix<T> &A, vector<T> &v) {
         int n = A.r, m = v.size();
 
         vector<T> u(n, 0);
@@ -30,7 +30,7 @@ struct Matrix {
         return u;
     }
 
-    friend auto operator *=(Matrix<T> &A, Matrix<T> &B) {
+    friend auto operator*=(Matrix<T> &A, Matrix<T> &B) {
         return A = A * B;
     }
 
