@@ -20,27 +20,32 @@ struct Hash {
     }
 };
 
-long long mul(long long x, long long y, long long mod) {
-    auto product = x * y - mod * (long long) (1.L / mod * x * y);
-    return product + mod * (product < 0) - mod * (product >= mod);
+template <typename T>
+T mul(T x, T y, T mod) {
+    __int128 px = x, py = y, pmod = mod;
+    auto product = px * py - pmod * (long long) (1.L / pmod * px * py);
+    return product + pmod * (product < 0) - pmod * (product >= pmod);
 }
 
-long long pow(long long base, long long exponent, long long mod) {
-    auto value = 1LL;
-    for (; exponent; exponent >>= 1) {
+template <typename T>
+T pow(T base, T exponent, T mod) {
+    T value = 1;
+    while (exponent) {
         if (exponent & 1) value = mul(value, base, mod);
         base = mul(base, base, mod);
+        exponent >>= 1;
     }
-
     return value;
 }
 
-long long lcm(long long a, long long b) {
+template <typename T>
+T lcm(T a, T b) {
     return (a / __gcd(a, b)) * b;
 }
 
-pair<long long, long long> fib(long long n, long long mod = 1) {
-    if (!n) return {0LL, 1LL};
+template <typename T>
+pair<T, T> fib(long long n, T mod = 1) {
+    if (!n) return {0, 1};
     else {
         auto [f1, f2] = fib(n >> 1, mod);
 
@@ -148,8 +153,8 @@ int pisano_period(int p, vector<int> &spf, gp_hash_table<int, int, Hash> &cache)
         vector<int> divs;
         divisors(pfs, divs);
         sort(divs.begin(), divs.end());
-        for (auto d : divs)
-            if (fib(d, p) == make_pair(0LL, 1LL)) return d;
+        for (int d : divs)
+            if (fib(d, p) == make_pair(0, 1)) return d;
     };
 
     int pisano = 1;
@@ -193,44 +198,47 @@ int main() {
         int p;
         cin >> n >> k >> p;
 
-        auto g = [&](auto &&self, long long n, long long k, int p) -> long long {
-            if (k == 1) return (fixed_point % p) ? fib(n, p).first : F[n] % p;
+        auto g = [&](auto &&self, auto n, auto k, int p) -> long long {
+            if (k == 1) return (n >= fixed_point || fixed_point % p) ? fib(n, p).first : F[n] % p;
 
             int pisano = pisano_period(p, spf, cache);
-            if (p != pisano) return (fixed_point % p) ? fib(self(self, n, k - 1, pisano), p).first : F[self(self, n, k - 1, pisano)] % p;
+            if (p != pisano) {
+                n = self(self, n, k - 1, pisano);
+                return (n >= fixed_point || fixed_point % p) ? fib(n, p).first : F[n] % p;
+            }
 
-            int curr = n % p;
-            vector<long long> seq{curr};
-            seq_indices[curr] = 0;
-            visited[curr] = t;
+            n %= p;
+            vector<long long> seq{n};
+            seq_indices[n] = 0;
+            visited[n] = t;
             for (auto i = 1LL; i <= k; i++) {
-                curr = (fixed_point % p) ? fib(curr, p).first : F[curr] % p;
+                n = (n >= fixed_point || fixed_point % p) ? fib(n, p).first : F[n] % p;
 
-                if (cycle_members[p].find(curr) != cycle_members[p].end()) {
-                    auto [cycle_index, curr_index] = cycle_members[p][curr];
+                if (cycle_members[p].find(n) != cycle_members[p].end()) {
+                    auto [cycle_index, n_index] = cycle_members[p][n];
                     int len = cycles[p][cycle_index].size();
                     i += (k - i) / len * len;
-                    return cycles[p][cycle_index][(k - i + curr_index) % len];
+                    return cycles[p][cycle_index][(k - i + n_index) % len];
                 }
 
-                if (visited[curr] == t) {
-                    int len = i - seq_indices[curr];
+                if (visited[n] == t) {
+                    int len = i - seq_indices[n];
                     vector<long long> cycle(len);
                     for (int j = 0; j < len; j++) {
-                        cycle[j] = seq[j + seq_indices[curr]];
-                        cycle_members[p][seq[j + seq_indices[curr]]] = {cycles[p].size(), j};
+                        cycle[j] = seq[j + seq_indices[n]];
+                        cycle_members[p][seq[j + seq_indices[n]]] = {cycles[p].size(), j};
                     }
                     cycles[p].emplace_back(cycle);
                     i += (k - i) / len * len;
-                    return seq[k - i + seq_indices[curr]];
+                    return seq[k - i + seq_indices[n]];
                 }
 
-                seq.emplace_back(curr);
-                seq_indices[curr] = i;
-                visited[curr] = t;
+                seq.emplace_back(n);
+                seq_indices[n] = i;
+                visited[n] = t;
             }
-            
-            return curr;
+
+            return n;
         };
 
         cout << g(g, n, k, p) << "\n";
