@@ -48,8 +48,9 @@ struct Matrix {
     }
 };
 
-double norm(vector<double> &v, int n) {
-    return sqrt(inner_product(v.begin(), v.begin() + n, v.begin(), 0.0));
+template <typename T>
+T norm(vector<T> &v, int n) {
+    return sqrt(inner_product(v.begin(), v.begin() + n, v.begin(), (T) 0));
 }
 
 template <typename T>
