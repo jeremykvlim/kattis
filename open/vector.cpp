@@ -69,12 +69,14 @@ pair<Matrix<T>, Matrix<T>> QR_decomposition(Matrix<T> &A) {
     vector<T> curr(n), v(n), u(max(n, m));
     for (int i = 0; i < min(n - 1, m); i++) {
         for (int j = 0; j < n - i; j++) curr[j] = R[j + i][i];
+        
         fill(v.begin(), v.end(), 0);
         v[0] = norm(curr, n - i);
         for (int j = 0; j < n; j++) v[j] = curr[j] - v[j];
-        auto temp = norm(v, n - i);
+        
+        T temp = norm(v, n - i);
         if (fabs(temp) > 1e-9)
-            for (auto &vi : v) vi /= temp;
+            for (T &vi : v) vi /= temp;
 
         auto reflect = [&](Matrix<T> &P, bool left) {
             fill(u.begin(), u.end(), 0);
