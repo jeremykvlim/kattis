@@ -28,7 +28,7 @@ struct Matrix {
         return mat[i];
     }
 
-    void emplace_back(vector<T> &row) {
+    void add(vector<T> &row) {
         mat.emplace_back(row);
         r++;
     }
@@ -96,7 +96,7 @@ int main() {
                 vector<double> row(y + (y + 1) * c + 1);
                 row[i + j * y] = 1;
                 row.back() = log(p[i][j]);
-                A.emplace_back(row);
+                A.add(row);
             }
         }
 
@@ -105,7 +105,7 @@ int main() {
             vector<double> row(y + (y + 1) * c + 1);
             row[i + (y + 1) * c] = 1;
             row.back() = log(r[i]);
-            A.emplace_back(row);
+            A.add(row);
         }
 
     auto price = rref(A);
