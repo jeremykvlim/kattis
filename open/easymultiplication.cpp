@@ -17,6 +17,10 @@ int main() {
             continue;
         }
 
+        auto next = [&](int i, bool odd) {
+            return (2 * i + odd) % m;
+        };
+
         vector<pair<int, int>> dist(m, {INT_MAX, INT_MAX});
         vector<vector<int>> adj_list(m), transpose(m);
         priority_queue<pair<pair<int, int>, pair<int, int>>, vector<pair<pair<int, int>, pair<int, int>>>, greater<>> pq;
@@ -34,8 +38,8 @@ int main() {
             if (dist[v] == d) continue;
 
             auto [add, all] = dist[v] = d;
-            if (dist[(2 * v) % m] > make_pair(add, all + 1)) pq.push({{add, all + 1}, {(2 * v) % m, v}});
-            if (dist[(2 * v + 1) % m] > make_pair(add + 1, all + 1)) pq.push({{add + 1, all + 1}, {(2 * v + 1) % m, v}});
+            if (dist[next(v, false)] > make_pair(add, all + 1)) pq.push({{add, all + 1}, {next(v, false), v}});
+            if (dist[next(v, true)] > make_pair(add + 1, all + 1)) pq.push({{add + 1, all + 1}, {next(v, true), v}});
         }
 
         vector<bool> visited(m + 1, false);
@@ -56,9 +60,9 @@ int main() {
         stack<int> indices;
         indices.emplace(dist[0].second);
         for (int i = dist[0].second - 1, v = 1; ~i; i--)
-            if (find(transpose[v].begin(), transpose[v].end(), (2 * v) % m) != transpose[v].end() && visited[(2 * v) % m]) v = (2 * v) % m;
+            if (find(transpose[v].begin(), transpose[v].end(), next(v, false)) != transpose[v].end() && visited[next(v, false)]) v = next(v, false);
             else {
-                v = (2 * v + 1) % m;
+                v = next(v, true);
                 indices.emplace(i);
             }
 
