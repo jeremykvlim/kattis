@@ -1,8 +1,37 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void rref(vector<vector<long double>> &matrix) {
-    int n = matrix.size(), m = matrix[0].size();
+template <typename T>
+struct Matrix {
+    int r, c;
+    vector<vector<T>> mat;
+
+    Matrix(int n) : Matrix(n, n) {}
+    Matrix(int row, int col, int v = 0) : r(row), c(col), mat(row, vector<T>(col, v)) {}
+
+    friend auto operator *(Matrix<T> &A, Matrix<T> &B) {
+        int r1 = A.r, r2 = B.r, c2 = B.c;
+
+        Matrix<T> C(r1, c2);
+        for (int i = 0; i < r1; i++)
+            for (int j = 0; j < c2; j++)
+                for (int k = 0; k < r2; k++) C[i][j] += A[i][k] * B[k][j];
+
+        return C;
+    }
+
+    friend auto operator *=(Matrix<T> &A, Matrix<T> &B) {
+        return A = A * B;
+    }
+
+    auto & operator[](int i) {
+        return mat[i];
+    }
+};
+
+template <typename T>
+void rref(Matrix<T> &matrix) {
+    int n = matrix.r, m = matrix.c;
 
     int rank = 0;
     for (int c = 0; c < m && rank < n; c++) {
@@ -75,7 +104,7 @@ int main() {
         for (int j = m; ~j; j--)
             if (visited[i][j]) indices[i][j] = count++;
 
-    vector<vector<long double>> prob(count, vector<long double>(count + 1, 0));
+    Matrix<long double> prob(count, count + 1);
     for (int i = 0; i <= n; i++)
         for (int j = 0; j <= m; j++) {
             if (indices[i][j] == -1) continue;
