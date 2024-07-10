@@ -196,7 +196,7 @@ int main() {
         auto g = [&](auto &&self, long long n, long long k, int p) -> long long {
             if (k == 1) return (fixed_point % p) ? fib(n, p).first : F[n] % p;
 
-            auto pisano = pisano_period(p, spf, cache);
+            int pisano = pisano_period(p, spf, cache);
             if (p != pisano) return (fixed_point % p) ? fib(self(self, n, k - 1, pisano), p).first : F[self(self, n, k - 1, pisano)] % p;
 
             int curr = n % p;
