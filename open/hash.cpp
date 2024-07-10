@@ -1,29 +1,21 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void f(int state, int size, vector<int> &count, int mod, long long &words, long long multiplier = 33, bool second = false) {
-    if (size)
-        for (int ord = 1; ord <= 26; ord++)
-            f((second ? ((state ^ ord) * multiplier) & mod : (state * multiplier) ^ ord) & mod,
-              size - 1, count, mod, words, multiplier, second);
-    else {
-        if (second) words += count[state];
-        else count[state]++;
-    }
+template <typename T>
+T mul(T x, T y, T mod) {
+    long long px = x, py = y, pmod = mod;
+    auto product = px * py - pmod * (long long) (1.L / pmod * px * py);
+    return product + pmod * (product < 0) - pmod * (product >= pmod);
 }
 
-long long mul(long long x, long long y, long long mod) {
-    auto product = x * y - mod * (long long) (1.L / mod * x * y);
-    return product + mod * (product < 0) - mod * (product >= mod);
-}
-
-long long pow(long long base, long long exponent, long long mod) {
-    auto value = 1LL;
-    for (; exponent; exponent >>= 1) {
+template <typename T>
+T pow(T base, T exponent, T mod) {
+    T value = 1;
+    while (exponent) {
         if (exponent & 1) value = mul(value, base, mod);
         base = mul(base, base, mod);
+        exponent >>= 1;
     }
-
     return value;
 }
 
@@ -36,9 +28,19 @@ int main() {
 
     int mod = 1 << m;
     vector<int> count(mod);
-    auto x = pow(33, (mod >> 1) - 1, mod), words = 0LL;
+    int x = pow(33, (mod >> 1) - 1, mod), words = 0;
 
-    f(0, n / 2, count, mod - 1, words);
-    f(k, n - n / 2, count, mod - 1, words, x, true);
+    auto f = [&](auto &&self, int state, int size, int mul = 33, bool reverse = false) -> void {
+        if (size)
+            for (int ord = 1; ord <= 26; ord++)
+                self(self, (reverse ? (state ^ ord) * mul : (state * mul) ^ ord) & (mod - 1), size - 1, mul, reverse);
+        else {
+            if (reverse) words += count[state];
+            else count[state]++;
+        }
+    };
+
+    f(f, 0, n / 2);
+    f(f, k, n - n / 2, x, true);
     cout << words;
 }
