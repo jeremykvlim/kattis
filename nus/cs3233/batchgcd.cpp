@@ -1,18 +1,21 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-long long mul(long long x, long long y, long long mod) {
-    auto product = x * y - mod * (long long) (1.L / mod * x * y);
-    return product + mod * (product < 0) - mod * (product >= mod);
+template <typename T>
+T mul(T x, T y, T mod) {
+    long long px = x, py = y, pmod = mod;
+    auto product = px * py - pmod * (long long) (1.L / pmod * px * py);
+    return product + pmod * (product < 0) - pmod * (product >= pmod);
 }
 
-long long pow(long long base, long long exponent, long long mod) {
-    auto value = 1LL;
-    for (; exponent; exponent >>= 1) {
+template <typename T>
+T pow(T base, T exponent, T mod) {
+    T value = 1;
+    while (exponent) {
         if (exponent & 1) value = mul(value, base, mod);
         base = mul(base, base, mod);
+        exponent >>= 1;
     }
-
     return value;
 }
 
