@@ -9,7 +9,7 @@ int main() {
     cin >> n;
 
     vector<vector<int>> freq(n, vector<int>(26, 0));
-    for (int i = 0; i < n; ++i) {
+    for (int i = 0; i < n; i++) {
         string s;
         cin >> s;
 
