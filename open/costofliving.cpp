@@ -1,8 +1,42 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-vector<double> rref(vector<vector<double>> &matrix) {
-    int n = matrix.size(), m = matrix[0].size();
+template <typename T>
+struct Matrix {
+    int r, c;
+    vector<vector<T>> mat;
+
+    Matrix(int n) : Matrix(n, n) {}
+    Matrix(int row, int col, int v = 0) : r(row), c(col), mat(row, vector<T>(col, v)) {}
+
+    friend auto operator *(Matrix<T> &A, Matrix<T> &B) {
+        int r1 = A.r, r2 = B.r, c2 = B.c;
+
+        Matrix<T> C(r1, c2);
+        for (int i = 0; i < r1; i++)
+            for (int j = 0; j < c2; j++)
+                for (int k = 0; k < r2; k++) C[i][j] += A[i][k] * B[k][j];
+
+        return C;
+    }
+
+    friend auto operator *=(Matrix<T> &A, Matrix<T> &B) {
+        return A = A * B;
+    }
+
+    auto & operator[](int i) {
+        return mat[i];
+    }
+
+    void emplace_back(vector<T> &row) {
+        mat.emplace_back(row);
+        r++;
+    }
+};
+
+template <typename T>
+vector<T> rref(Matrix<T> &matrix) {
+    int n = matrix.r, m = matrix.c;
 
     int rank = 0;
     for (int c = 0; c < m && rank < n; c++) {
@@ -25,10 +59,10 @@ vector<double> rref(vector<vector<double>> &matrix) {
         rank++;
     }
 
-    vector<double> solution(m - 1, -1);
+    vector<T> solution(m - 1, -1);
     for (int i = 0; i < n; i++) {
         int l = find_if(matrix[i].begin(), matrix[i].end(), [](auto value) {return fabs(value) > 1e-9;}) - matrix[i].begin(),
-            r = find_if(matrix[i].rbegin() + 1, matrix[i].rend(), [](auto value) {return fabs(value) > 1e-9;}) - matrix[i].rbegin();
+                r = find_if(matrix[i].rbegin() + 1, matrix[i].rend(), [](auto value) {return fabs(value) > 1e-9;}) - matrix[i].rbegin();
 
         if (l + 1 == m - r) solution[l] = exp(matrix[i][m - 1]);
     }
@@ -50,7 +84,7 @@ int main() {
     for (auto &row : p)
         for (auto &pi : row) cin >> pi;
 
-    vector<vector<double>> A((y - 1) * c, vector<double>(y + (y + 1) * c + 1));
+    Matrix<double> A((y - 1) * c, y + (y + 1) * c + 1);
     for (int i = 0; i < y; i++)
         for (int j = 0; j < c; j++) {
             if (i < y - 1) {
