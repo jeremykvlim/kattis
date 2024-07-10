@@ -32,7 +32,7 @@ void fft(vector<complex<double>> &a, int sign = 1) {
 }
 
 template <typename T>
-vector<long long> convolve(vector<T> &a, vector<T> &b) {
+vector<T> convolve(vector<T> &a, vector<T> &b) {
     int n = 1;
     while (n < a.size() + b.size() - 1) n <<= 1;
 
