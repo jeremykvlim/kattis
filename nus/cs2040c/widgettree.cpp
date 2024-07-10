@@ -327,7 +327,7 @@ int main() {
     }
 
     vector<long long> cost(n, -1);
-    auto maintain = [&](auto &&self, int v = 0) {
+    auto size = [&](auto &&self, int v = 0) {
         if (cost[v] != -1) return cost[v];
 
         modint c = 1;
@@ -335,7 +335,7 @@ int main() {
         return cost[v] = c.value;
     };
 
-    cout << maintain(maintain) << "\n";
+    cout << size(size) << "\n";
 
     while (q--) {
         int x;
@@ -356,7 +356,7 @@ int main() {
 
             if (y.count(v)) {
                 extra[v] = true;
-                return maintain(maintain, v);
+                return size(size, v);
             }
 
             modint c = 0;
