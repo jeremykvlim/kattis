@@ -50,10 +50,15 @@ bool isprime(long long n) {
     return true;
 }
 
+template <typename T>
 struct MODULO {
-    static int value;
+    static T value;
 };
-int MODULO::value, &m = MODULO::value;
+
+template <typename T>
+T MODULO<T>::value;
+
+auto &m = MODULO<int>::value;
 bool PRIME_MOD;
 
 template<typename M>
@@ -270,7 +275,7 @@ U & operator>>(U &stream, ModInt<T> &v) {
     return stream;
 }
 
-using modint = ModInt<MODULO>;
+using modint = ModInt<MODULO<int>>;
 
 template<typename T>
 T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
