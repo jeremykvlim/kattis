@@ -1,18 +1,21 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-long long mul(long long x, long long y, long long mod) {
-    auto product = x * y - mod * (long long) (1.L / mod * x * y);
-    return product + mod * (product < 0) - mod * (product >= mod);
+template <typename T>
+T mul(T x, T y, T mod) {
+    long long px = x, py = y, pmod = mod;
+    auto product = px * py - pmod * (long long) (1.L / pmod * px * py);
+    return product + pmod * (product < 0) - pmod * (product >= pmod);
 }
 
-long long pow(long long base, long long exponent, long long mod) {
-    auto value = 1LL;
-    for (; exponent; exponent >>= 1) {
+template <typename T>
+T pow(T base, T exponent, T mod) {
+    T value = 1;
+    while (exponent) {
         if (exponent & 1) value = mul(value, base, mod);
         base = mul(base, base, mod);
+        exponent >>= 1;
     }
-
     return value;
 }
 
@@ -30,14 +33,16 @@ int main() {
         while (floor[i] <= a[i]) floor[i] *= 10;
     }
 
-    set<long long> codes;
-    for (auto p2 = 1LL; p2 <= 1e4; p2 *= 2)
-        for (auto p5 = 1LL; p2 * p5 <= 1e8; p5 *= 5) {
-            if (p2 * p5 > 1) codes.emplace(p2 * p5);
-            codes.emplace(p2 * p5 + 1);
+    vector<int> codes;
+    for (int p2 = 1; p2 <= 1e4; p2 *= 2)
+        for (int p5 = 1; p2 * p5 <= 1e8; p5 *= 5) {
+            if (p2 * p5 > 1) codes.emplace_back(p2 * p5);
+            codes.emplace_back(p2 * p5 + 1);
         }
+    sort(codes.begin(), codes.end());
+    codes.erase(unique(codes.begin(), codes.end()), codes.end());
 
-    for (auto c : codes) {
+    for (int c : codes) {
         for (int i = 0; i < n; i++)
             if (pow(a[i], c, floor[i]) != a[i]) goto next;
 
