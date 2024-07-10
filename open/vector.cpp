@@ -1,42 +1,71 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-vector<double> matvecmul(vector<vector<double>> &a, vector<double> &v) {
-    int r = a.size(), c = v.size();
+template <typename T>
+struct Matrix {
+    int r, c;
+    vector<vector<T>> mat;
 
-    vector<double> u(r, 0);
-    for (int i = 0; i < r; i++)
-        for (int j = 0; j < c; j++) u[i] += a[i][j] * v[j];
+    Matrix(int n) : Matrix(n, n) {}
+    Matrix(int row, int col, int v = 0) : r(row), c(col), mat(row, vector<T>(col, v)) {}
 
-    return u;
-}
+    friend auto operator *(Matrix<T> &A, Matrix<T> &B) {
+        int r1 = A.r, r2 = B.r, c2 = B.c;
 
-vector<vector<double>> transpose(vector<vector<double>> &a) {
-    int n = a.size(), m = a[0].size();
-    vector<vector<double>> a_T(m, vector<double>(n));
+        Matrix<T> C(r1, c2);
+        for (int i = 0; i < r1; i++)
+            for (int j = 0; j < c2; j++)
+                for (int k = 0; k < r2; k++) C[i][j] += A[i][k] * B[k][j];
 
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < m; j++) a_T[j][i] = a[i][j];
+        return C;
+    }
 
-    return a_T;
-}
+    friend auto operator *(Matrix<T> &A, vector<T> &v) {
+        int n = A.r, m = v.size();
+
+        vector<T> u(n, 0);
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < m; j++) u[i] += A[i][j] * v[j];
+
+        return u;
+    }
+
+    friend auto operator *=(Matrix<T> &A, Matrix<T> &B) {
+        return A = A * B;
+    }
+
+    auto & operator[](int i) {
+        return mat[i];
+    }
+
+    Matrix<T> transpose() {
+        Matrix<T> mat_T(c, r);
+
+        for (int i = 0; i < r; i++)
+            for (int j = 0; j < c; j++) mat_T[j][i] = mat[i][j];
+
+        return mat_T;
+    }
+};
 
 double norm(vector<double> &v, int n) {
     return sqrt(inner_product(v.begin(), v.begin() + n, v.begin(), 0.0));
 }
 
-vector<vector<double>> I(int size) {
-    vector<vector<double>> I(size, vector<double>(size, 0));
-    for (int i = 0; i < size; i++) I[i][i] = 1;
+template <typename T>
+Matrix<T> I(int n) {
+    Matrix<T> I(n);
+    for (int i = 0; i < n; i++) I[i][i] = 1;
 
     return I;
 }
 
-pair<vector<vector<double>>, vector<vector<double>>> QR_decomposition(vector<vector<double>> &a) {
-    int n = a.size(), m = a[0].size();
+template <typename T>
+pair<Matrix<T>, Matrix<T>> QR_decomposition(Matrix<T> &A) {
+    int n = A.r, m = A.c;
 
-    auto Q = I(n), R = a;
-    vector<double> curr(n), v(n), u(max(n, m));
+    auto Q = I<T>(n), R = A;
+    vector<T> curr(n), v(n), u(max(n, m));
     for (int i = 0; i < min(n - 1, m); i++) {
         for (int j = 0; j < n - i; j++) curr[j] = R[j + i][i];
         fill(v.begin(), v.end(), 0);
@@ -46,7 +75,7 @@ pair<vector<vector<double>>, vector<vector<double>>> QR_decomposition(vector<vec
         if (fabs(temp) > 1e-9)
             for (auto &vi : v) vi /= temp;
 
-        auto reflect = [&](vector<vector<double>> &P, bool left) {
+        auto reflect = [&](Matrix<T> &P, bool left) {
             fill(u.begin(), u.end(), 0);
             for (int j = 0; j < (left ? n : m); j++)
                 for (int k = i; k < n; k++)
@@ -84,7 +113,7 @@ int main() {
             }
 
         cin >> e[i];
-        
+
         e[i] *= e[i];
     }
 
@@ -94,20 +123,25 @@ int main() {
         exit(0);
     }
 
-    vector<vector<double>> a(d, vector<double>(n - 1));
+    Matrix<double> A(d, n - 1);
     for (int i = 0; i < n - 1; i++)
-        for (int j = 0; j < d; j++) a[j][i] = 2 * results[i][j];
+        for (int j = 0; j < d; j++) A[j][i] = 2 * results[i][j];
 
-    auto [Q, R] = QR_decomposition(a);
-    auto R_T = transpose(R);
+    auto [Q, R] = QR_decomposition(A);
+    auto R_T = R.transpose();
     vector<double> b(n - 1, e[0]), y(d, 0);
     for (int i = 0; i < n - 1; i++) b[i] += pow(norm(results[i], d), 2) - e[i + 1];
-    for (int i = 0; i < n - 1; i++) {
-        if (fabs(R_T[i][i]) > 1e-9) y[i] = b[i] / R_T[i][i];
-        for (int j = i + 1; j < n - 1; j++) b[j] -= R_T[j][i] * y[i];
-    }
-    y[d - 1] += sqrt(max(0.0, e[0] - pow(norm(y, d), 2)));
 
-    auto x = matvecmul(Q, y);
+    auto forward_substitution = [&]() {
+        for (int i = 0; i < n - 1; i++) {
+            y[i] = b[i];
+            for (int j = 0; j < i; j++) y[i] -= R_T[i][j] * y[j];
+            if (fabs(R_T[i][i]) > 1e-9) y[i] /= R_T[i][i];
+        }
+    };
+    forward_substitution();
+
+    y[d - 1] += sqrt(max(0.0, e[0] - pow(norm(y, d), 2)));
+    auto x = Q * y;
     for (int i = 0; i < d; i++) cout << fixed << setprecision(5) << x[i] + base[i] << " ";
 }
