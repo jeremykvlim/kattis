@@ -8,8 +8,9 @@ T mul(T x, T y, T mod) {
     return product + pmod * (product < 0) - pmod * (product >= pmod);
 }
 
-pair<long long, long long> fib(long long n, long long mod = 1) {
-    if (!n) return {0LL, 1LL};
+template <typename T>
+pair<T, T> fib(long long n, T mod = 1) {
+    if (!n) return {0, 1};
     else {
         auto [f1, f2] = fib(n >> 1, mod);
 
@@ -32,6 +33,6 @@ int main() {
         long long k, y;
         cin >> k >> y;
 
-        cout << k << " " << fib(y, 1e9).first << "\n";
+        cout << k << " " << fib(y, (int) 1e9).first << "\n";
     }
 }
