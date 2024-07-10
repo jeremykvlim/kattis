@@ -22,7 +22,7 @@ struct Hash {
 
 template <typename T>
 T mul(T x, T y, T mod) {
-    __int128 px = x, py = y, pmod = mod;
+    long long px = x, py = y, pmod = mod;
     auto product = px * py - pmod * (long long) (1.L / pmod * px * py);
     return product + pmod * (product < 0) - pmod * (product >= pmod);
 }
