@@ -6,12 +6,11 @@ void radix_sort(I l, I r) {
     if (l == r) return;
 
     using T = typename iterator_traits<I>::value_type;
-    T biggest = *max_element(l, r);
     int radix = 1 << 16;
 
     vector<int> count(radix);
     vector<T> temp(distance(l, r));
-    for (int i = 0; i <= (__lg(biggest) / __lg(radix)); i++) {
+    for (int i = 0; i <= (__lg(*max_element(l, r)) / __lg(radix)); i++) {
         fill(count.begin(), count.end(), 0);
         for (auto it = l; it < r; it++) count[(*it >> (i * 16)) & (radix - 1)]++;
         for (int j = 1; j < radix; j++) count[j] += count[j - 1];
