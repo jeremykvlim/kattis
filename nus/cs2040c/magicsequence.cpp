@@ -29,7 +29,7 @@ int main() {
 
     vector<long long> s;
     while (tc--) {
-        long long n, a, b, c, x, y;
+        int n, a, b, c, x, y;
         cin >> n >> a >> b >> c >> x >> y;
 
         s.resize(n);
@@ -37,8 +37,8 @@ int main() {
         for (int i = 1; i < n; i++) s[i] = (s[i - 1] * b + a) % c;
         radix_sort(s.begin(), s.end());
 
-        auto v = 0LL;
-        for (auto r : s) v = (v * x + r) % y;
+        int v = 0;
+        for (auto r : s) v = ((long long) v * x + r) % y;
         cout << v << "\n";
     }
 }
