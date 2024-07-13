@@ -27,11 +27,12 @@ int main() {
     int tc;
     cin >> tc;
 
+    vector<long long> s;
     while (tc--) {
         long long n, a, b, c, x, y;
         cin >> n >> a >> b >> c >> x >> y;
 
-        vector<long long> s(n);
+        s.resize(n);
         s[0] = a;
         for (int i = 1; i < n; i++) s[i] = (s[i - 1] * b + a) % c;
         radix_sort(s.begin(), s.end());
