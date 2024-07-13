@@ -11,7 +11,7 @@ void radix_sort(I l, I r) {
 
     vector<int> count(radix);
     vector<T> temp(distance(l, r));
-    for (int i = 0; i < (__lg(biggest) / __lg(radix)) + 1; i++) {
+    for (int i = 0; i <= (__lg(biggest) / __lg(radix)); i++) {
         fill(count.begin(), count.end(), 0);
         for (auto it = l; it < r; it++) count[(*it >> (i * 16)) & (radix - 1)]++;
         for (int j = 1; j < radix; j++) count[j] += count[j - 1];
