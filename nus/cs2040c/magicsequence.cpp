@@ -1,18 +1,22 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void radix_sort(vector<long long> &s) {
-    auto biggest = *max_element(s.begin(), s.end());
-    int radix = 1 << 16, msd = ceil((log(biggest)) / (log(radix)));
+template <typename I>
+void radix_sort(I begin, I end) {
+    if (begin == end) return;
+
+    using T = typename iterator_traits<I>::value_type;
+    T biggest = *max_element(begin, end);
+    int radix = 1 << 16;
 
     vector<int> count(radix);
-    vector<long long> temp(s.size());
-    for (int d = 0; d < msd; d++) {
+    vector<T> temp(distance(begin, end));
+    for (int i = 0; i < (__lg(biggest) / __lg(radix)) + 1; i++) {
         fill(count.begin(), count.end(), 0);
-        for (auto si : s) count[(si >> (d * 16)) & (radix - 1)]++;
-        for (int i = 1; i < radix; i++) count[i] += count[i - 1];
-        for (int i = temp.size() - 1; ~i; i--) temp[--count[(s[i] >> (d * 16)) & (radix - 1)]] = s[i];
-        copy(temp.begin(), temp.end(), s.begin());
+        for (auto it = begin; it < end; it++) count[(*it >> (i * 16)) & (radix - 1)]++;
+        for (int j = 1; j < radix; j++) count[j] += count[j - 1];
+        for (auto it = end - 1; it >= begin; it--) temp[--count[(*it >> (i * 16)) & (radix - 1)]] = *it;
+        copy(temp.begin(), temp.end(), begin);
     }
 }
 
@@ -30,7 +34,7 @@ int main() {
         vector<long long> s(n);
         s[0] = a;
         for (int i = 1; i < n; i++) s[i] = (s[i - 1] * b + a) % c;
-        radix_sort(s);
+        radix_sort(s.begin(), s.end());
 
         auto v = 0LL;
         for (auto r : s) v = (v * x + r) % y;
