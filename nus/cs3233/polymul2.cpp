@@ -62,7 +62,7 @@ int main() {
         cin >> degree;
 
         vector<int> poly(degree + 1);
-        for (int &a :poly) cin >> a;
+        for (int &a : poly) cin >> a;
 
         return poly;
     };
