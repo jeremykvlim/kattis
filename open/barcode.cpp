@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template<typename T>
+template <typename T>
 T inverse(T a, T mod) {
     T u = 0, v = 1;
     while (a) {
@@ -33,7 +33,7 @@ T pow(T base, T exponent, T mod) {
     return value;
 }
 
-bool isprime(long long n) {
+bool isprime(unsigned long long n) {
     if (n < 2) return false;
     if (n % 6 % 4 != 1) return (n | 1) == 3;
 
@@ -58,36 +58,44 @@ struct MODULO {
 template <typename T>
 T MODULO<T>::value;
 
-auto &m = MODULO<int>::value;
+auto &m = MODULO<unsigned int>::value;
 bool PRIME_MOD;
 
-template<typename M>
+template <typename M>
 struct ModInt {
     using T = typename decay<decltype(M::value)>::type;
+    using U = typename conditional<is_same<T, unsigned int>::value, unsigned long long, typename conditional<is_same<T, unsigned long long>::value, __uint128_t, void>::type>::type;
+    using I = typename conditional<is_same<T, unsigned int>::value, int, typename conditional<is_same<T, unsigned long long>::value, long long, void>::type>::type;
+
     T value;
+    static pair<T, U> r;
+    static constexpr int bit_length = sizeof(T) * 8;
+
+    static void init() {
+        r = {mod(), - (U) mod() % mod()};
+        while (mod() * r.first != 1) r.first *= 2ULL - mod() * r.first;
+    }
 
     constexpr ModInt() : value() {}
 
-    template<typename U>
     ModInt(const U &x) {
-        value = normalize(x);
+        value = reduce((U) x * r.second);
     }
 
-    template<typename U>
-    static T normalize(const U &x) {
-        T v = x;
-        if (!(-mod() <= x && x < mod())) v = (T) (x % mod());
-        if (v < 0) v += mod();
+    static T reduce(const U &x) {
+        T q = (U) x * r.first, v = (x >> bit_length) + mod() - (((U) q * mod()) >> bit_length);
+        if (v >= mod()) v -= mod();
         return v;
     }
 
-    const T & operator()() const {
-        return value;
+    T operator()() const {
+        auto v = reduce((U) value);
+        return v;
     }
 
-    template<typename U>
-    explicit operator U() const {
-        return (U) value;
+    template <typename V>
+    explicit operator V() const {
+        return (V) value;
     }
 
     constexpr static T mod() {
@@ -95,23 +103,23 @@ struct ModInt {
     }
 
     inline auto & operator+=(const ModInt &v) {
-        if ((value += v.value) >= mod()) value -= mod();
+        if ((I) (value += v.value) >= mod()) value -= mod();
         return *this;
     }
 
     inline auto & operator-=(const ModInt &v) {
-        if ((value -= v.value) < 0) value += mod();
+        if ((I) (value -= v.value) < 0) value += mod();
         return *this;
     }
 
-    template<typename U>
+    template <typename U>
     inline auto & operator+=(const U &v) {
-        return *this += ModInt(v);
+        return *this += (ModInt) v;
     }
 
-    template<typename U>
+    template <typename U>
     inline auto & operator-=(const U &v) {
-        return *this -= ModInt(v);
+        return *this -= (ModInt) v;
     }
 
     auto & operator++() {
@@ -123,141 +131,149 @@ struct ModInt {
     }
 
     auto operator++(int) {
-        ModInt v(*this);
-        *this += 1;
-        return v;
+        return *this += 1;
     }
 
     auto operator--(int) {
-        ModInt v(*this);
-        *this -= 1;
-        return v;
+        return *this -= 1;
     }
 
     auto operator-() const {
-        return ModInt(-value);
+        return (ModInt) -value;
     }
 
-    template<typename U = M>
-    typename enable_if<is_same<typename ModInt<U>::T, int>::value, ModInt>::type &operator*=(const ModInt &v) {
-        value = normalize((long long) value * (long long) v.value);
+    template <typename V = M>
+    typename enable_if<is_same<typename ModInt<V>::T, int>::value, ModInt>::type & operator*=(const ModInt &v) {
+        value = reduce((long long) value * v.value);
         return *this;
     }
 
-    template<typename U = M>
-    typename enable_if<is_same<typename ModInt<U>::T, long long>::value, ModInt>::type &operator*=(const ModInt &v) {
-        value = normalize(value * v.value - (long long) ((long double) value * v.value / mod()) * mod());
+    template <typename V = M>
+    typename enable_if<is_same<typename ModInt<V>::T, unsigned int>::value, ModInt>::type & operator*=(const ModInt &v) {
+        value = reduce((unsigned long long) value * v.value);
         return *this;
     }
 
-    template<typename U = M>
-    typename enable_if<!is_integral<typename ModInt<U>::T>::value, ModInt>::type &operator*=(const ModInt &v) {
-        value = normalize(value * v.value);
+    template <typename V = M>
+    typename enable_if<is_same<typename ModInt<V>::T, long long>::value, ModInt>::type & operator*=(const ModInt &v) {
+        value = reduce((__int128) value * v.value);
+        return *this;
+    }
+
+    template <typename V = M>
+    typename enable_if<is_same<typename ModInt<V>::T, unsigned long long>::value, ModInt>::type & operator*=(const ModInt &v) {
+        value = reduce((__uint128_t) value * v.value);
+        return *this;
+    }
+
+    template <typename V = M>
+    typename enable_if<!is_integral<typename ModInt<V>::T>::value, ModInt>::type & operator*=(const ModInt &v) {
+        value = reduce(value * v.value);
         return *this;
     }
 
     auto & operator/=(const ModInt &v) {
-        if (PRIME_MOD) return *this *= ModInt(pow(v.value, mod() - 2, mod()));
-        return *this *= ModInt(inverse(v.value, mod()));
+        if (PRIME_MOD) return *this *= (ModInt) pow(v.value, mod() - 2, mod());
+        return *this *= (ModInt) inverse(v.value, mod());
     }
 };
 
-template<typename T>
+template <typename T>
 bool operator==(const ModInt<T> &lhs, const ModInt<T> &rhs) {
     return lhs.value == rhs.value;
 }
 
-template<typename T, typename U>
+template <typename T, typename U>
 bool operator==(const ModInt<T> &lhs, U rhs) {
     return lhs == ModInt<T>(rhs);
 }
 
-template<typename T, typename U>
+template <typename T, typename U>
 bool operator==(U lhs, const ModInt<T> &rhs) {
     return ModInt<T>(lhs) == rhs;
 }
 
-template<typename T>
+template <typename T>
 bool operator!=(const ModInt<T> &lhs, const ModInt<T> &rhs) {
     return !(lhs == rhs);
 }
 
-template<typename T, typename U>
+template <typename T, typename U>
 bool operator!=(const ModInt<T> &lhs, U rhs) {
     return !(lhs == rhs);
 }
 
-template<typename T, typename U>
+template <typename T, typename U>
 bool operator!=(U lhs, const ModInt<T> &rhs) {
     return !(lhs == rhs);
 }
 
-template<typename T>
+template <typename T>
 bool operator>(const ModInt<T> &lhs, const ModInt<T> &rhs) {
     return lhs.value > rhs.value;
 }
 
-template<typename T>
+template <typename T>
 bool operator<(const ModInt<T> &lhs, const ModInt<T> &rhs) {
     return lhs.value < rhs.value;
 }
 
-template<typename T>
+template <typename T>
 ModInt<T> operator+(const ModInt<T> &lhs, const ModInt<T> &rhs) {
     return ModInt<T>(lhs) += rhs;
 }
 
-template<typename T, typename U>
+template <typename T, typename U>
 ModInt<T> operator+(const ModInt<T> &lhs, U rhs) {
     return ModInt<T>(lhs) += rhs;
 }
 
-template<typename T, typename U>
+template <typename T, typename U>
 ModInt<T> operator+(U lhs, const ModInt<T> &rhs) {
     return ModInt<T>(lhs) += rhs;
 }
 
-template<typename T>
+template <typename T>
 ModInt<T> operator-(const ModInt<T> &lhs, const ModInt<T> &rhs) {
     return ModInt<T>(lhs) -= rhs;
 }
 
-template<typename T, typename U>
+template <typename T, typename U>
 ModInt<T> operator-(const ModInt<T> &lhs, U rhs) {
     return ModInt<T>(lhs) -= rhs;
 }
 
-template<typename T, typename U>
+template <typename T, typename U>
 ModInt<T> operator-(U lhs, const ModInt<T> &rhs) {
     return ModInt<T>(lhs) -= rhs;
 }
 
-template<typename T>
+template <typename T>
 ModInt<T> operator*(const ModInt<T> &lhs, const ModInt<T> &rhs) {
     return ModInt<T>(lhs) *= rhs;
 }
 
-template<typename T, typename U>
+template <typename T, typename U>
 ModInt<T> operator*(const ModInt<T> &lhs, U rhs) {
     return ModInt<T>(lhs) *= rhs;
 }
 
-template<typename T, typename U>
+template <typename T, typename U>
 ModInt<T> operator*(U lhs, const ModInt<T> &rhs) {
     return ModInt<T>(lhs) *= rhs;
 }
 
-template<typename T>
+template <typename T>
 ModInt<T> operator/(const ModInt<T> &lhs, const ModInt<T> &rhs) {
     return ModInt<T>(lhs) /= rhs;
 }
 
-template<typename T, typename U>
+template <typename T, typename U>
 ModInt<T> operator/(const ModInt<T> &lhs, U rhs) {
     return ModInt<T>(lhs) /= rhs;
 }
 
-template<typename T, typename U>
+template <typename T, typename U>
 ModInt<T> operator/(U lhs, const ModInt<T> &rhs) {
     return ModInt<T>(lhs) /= rhs;
 }
@@ -271,11 +287,13 @@ template <typename U, typename T>
 U & operator>>(U &stream, ModInt<T> &v) {
     typename common_type<typename ModInt<T>::T, long long>::type x;
     stream >> x;
-    v.value = ModInt<T>::normalize(x);
+    v.value = ModInt<T>::reduce(x);
     return stream;
 }
 
-using modint = ModInt<MODULO<int>>;
+template <typename M>
+pair<typename ModInt<M>::T, typename ModInt<M>::U> ModInt<M>::r;
+using modint = ModInt<MODULO<unsigned int>>;
 
 template<typename T>
 T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
@@ -309,6 +327,7 @@ int main() {
         int n;
         cin >> n >> m;
         PRIME_MOD = isprime(m);
+        modint::init();
 
         vector<modint> fact(n + 1, 1), fact_inv(n / 2 + 1, 1);
         auto prepare = [&]() {
