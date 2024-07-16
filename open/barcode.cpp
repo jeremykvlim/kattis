@@ -52,6 +52,7 @@ struct MontgomeryModInt {
     using T = typename decay<decltype(M::value)>::type;
     using U = typename conditional<is_same<T, unsigned int>::value, unsigned long long, typename conditional<is_same<T, unsigned long long>::value, __uint128_t, void>::type>::type;
     using I = typename conditional<is_same<T, unsigned int>::value, int, typename conditional<is_same<T, unsigned long long>::value, long long, void>::type>::type;
+    using J = typename conditional<is_same<T, unsigned int>::value, long long, typename conditional<is_same<T, unsigned long long>::value, __int128, void>::type>::type;
 
     T value;
     static pair<T, U> r;
@@ -59,12 +60,12 @@ struct MontgomeryModInt {
 
     static void init() {
         r = {mod(), - (U) mod() % mod()};
-        while (mod() * r.first != 1) r.first *= 2ULL - mod() * r.first;
+        while (mod() * r.first != 1) r.first *= (T) 2 - mod() * r.first;
     }
 
     constexpr MontgomeryModInt() : value() {}
 
-    MontgomeryModInt(const U &x) {
+    MontgomeryModInt(const J &x) {
         value = reduce((U) x * r.second);
     }
 
