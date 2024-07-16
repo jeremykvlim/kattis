@@ -297,7 +297,7 @@ template <typename M>
 pair<typename MontgomeryModInt<M>::T, typename MontgomeryModInt<M>::U> MontgomeryModInt<M>::r;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
-template<typename T>
+template <typename T>
 pair<T, T> bezout(T a, T b) {
     if (!a) return {0, 1};
     auto [x, y] = bezout(b % a, a);
