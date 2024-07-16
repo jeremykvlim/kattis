@@ -297,7 +297,7 @@ template <typename U, typename T>
 U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     typename common_type<typename MontgomeryModInt<T>::T, long long>::type x;
     stream >> x;
-    v.value = MontgomeryModInt<T>::reduce(x);
+    v = MontgomeryModInt<T>(x);
     return stream;
 }
 
