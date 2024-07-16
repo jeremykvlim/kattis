@@ -51,7 +51,7 @@ bool isprime(unsigned long long n) {
 }
 
 constexpr unsigned long long MODULO = 2524775926340780033;
-const bool PRIME_MOD = true;
+const bool PRIME_MOD = MODULO == 998244353 || MODULO == 1e9 + 7 || MODULO == 1e9 + 9 || MODULO == 1e6 + 69 || MODULO == 2524775926340780033 || isprime(MODULO);
 
 template <typename M>
 struct ModInt {
