@@ -296,14 +296,14 @@ template <typename M>
 pair<typename MontgomeryModInt<M>::T, typename MontgomeryModInt<M>::U> MontgomeryModInt<M>::r;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
-template<typename T>
+template <typename T>
 T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
     if (k < 0 || k > n) return 0;
     if (n >= p || k >= p) return C(n / p, k / p, p, fact, fact_inv) * C(n % p, k % p, p, fact, fact_inv);
     return fact[n] * fact_inv[k] * fact_inv[n - k];
 }
 
-template<typename T>
+template <typename T>
 T C(int n, int k1, int k2, int k3, int p, vector<T> &fact, vector<T> &fact_inv) {
     if (k1 < 0 || k1 > n || k2 < 0 || k2 > n || k3 < 0 || k3 > n) return 0;
     if (n >= p || k1 >= p || k2 >= p || k3 >= p) return C(n / p, k1 / p, k2 / p, k3 / p, p, fact, fact_inv) * C(n % p, k1 % p, k2 % p, k3 % p, p, fact, fact_inv);
