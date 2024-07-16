@@ -1,8 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-constexpr int OFFSET = 5e4;
-
 template <typename T>
 T inverse(T a, T mod) {
     T u = 0, v = 1;
@@ -305,8 +303,6 @@ vector<modint> convolve(vector<T> a, vector<T> b) {
     }
 
     auto ntt = [&](vector<modint> &v, modint omega) {
-        int n = v.size();
-
         for (int i = 0; i < n; i++)
             if (i < reverse[i]) swap(v[i], v[reverse[i]]);
 
@@ -332,6 +328,8 @@ vector<modint> convolve(vector<T> a, vector<T> b) {
     c.resize(a.size() + b.size() - 1);
     return c;
 }
+
+constexpr int OFFSET = 5e4;
 
 int main() {
     ios::sync_with_stdio(false);
