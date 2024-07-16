@@ -68,8 +68,7 @@ struct MontgomeryModInt {
     }
 
     T operator()() const {
-        auto v = reduce((U) value);
-        return v;
+        return reduce((U) value);
     }
 
     template <typename V>
@@ -212,12 +211,22 @@ bool operator!=(U lhs, const MontgomeryModInt<T> &rhs) {
 
 template <typename T>
 bool operator>(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs.value > rhs.value;
+    return lhs() > rhs();
 }
 
 template <typename T>
 bool operator<(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs.value < rhs.value;
+    return lhs() < rhs();
+}
+
+template <typename T>
+bool operator>=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return lhs > rhs || lhs == rhs;
+}
+
+template <typename T>
+bool operator<=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return lhs < rhs || lhs == rhs;
 }
 
 template <typename T>
