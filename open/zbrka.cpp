@@ -2,20 +2,6 @@
 using namespace std;
 
 template <typename T>
-T inverse(T a, T mod) {
-    T u = 0, v = 1;
-    while (a) {
-        T t = mod / a;
-        mod -= t * a;
-        swap(a, mod);
-        u -= t * v;
-        swap(u, v);
-    }
-
-    return u;
-}
-
-template <typename T>
 T mul(T x, T y, T mod) {
     long long px = x, py = y, pmod = mod;
     auto product = px * py - pmod * (long long) (1.L / pmod * px * py);
@@ -166,8 +152,31 @@ struct ModInt {
     }
 
     auto & operator/=(const ModInt &v) {
-        if (PRIME_MOD) return *this *= (ModInt) pow(v.value, mod() - 2, mod());
-        return *this *= (ModInt) inverse(v.value, mod());
+        return *this *= inv(v);
+    }
+
+    ModInt inv(const ModInt &v) {
+       if (PRIME_MOD) {
+           ModInt inv = 1, base = v;
+           T n = mod() - 2;
+           while (n) {
+               if (n & 1) inv *= base;
+               base *= base;
+               n >>= 1;
+           }
+           return inv;
+       }
+
+        T x = 0, y = 1, a = v.value, m = mod();
+        while (a) {
+            T t = m / a;
+            m -= t * a;
+            swap(a, m);
+            x -= t * y;
+            swap(x, y);
+        }
+
+        return (ModInt) x;
     }
 };
 
