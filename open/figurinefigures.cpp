@@ -303,8 +303,6 @@ vector<modint> convolve(vector<T> a, vector<T> b) {
     }
 
     auto ntt = [&](vector<modint> &v, modint omega) {
-        int n = v.size();
-
         for (int i = 0; i < n; i++)
             if (i < reverse[i]) swap(v[i], v[reverse[i]]);
 
