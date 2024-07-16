@@ -45,7 +45,7 @@ template <typename T>
 T MODULO<T>::value;
 
 auto &m = MODULO<unsigned int>::value;
-bool PRIME_MOD;
+bool PRIME_MOD = true;
 
 template <typename M>
 struct MontgomeryModInt {
@@ -324,7 +324,6 @@ int main() {
     while (t--) {
         int k;
         cin >> k >> m;
-        PRIME_MOD = isprime(m);
         modint::init();
 
         vector<modint> p(k);
