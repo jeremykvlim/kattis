@@ -354,7 +354,7 @@ template <typename M>
 pair<typename MontgomeryModInt<M>::T, typename MontgomeryModInt<M>::U> MontgomeryModInt<M>::r;
 using modint = MontgomeryModInt<MODULO<unsigned int>>;
 
-template<typename T>
+template <typename T>
 T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
     if (k < 0 || k > n) return 0;
     if (n >= p || k >= p) return C(n / p, k / p, p, fact, fact_inv) * C(n % p, k % p, p, fact, fact_inv);
