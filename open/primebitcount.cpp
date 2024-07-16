@@ -68,8 +68,7 @@ struct MontgomeryModInt {
     }
 
     T operator()() const {
-        auto v = reduce((U) value);
-        return v;
+        return reduce((U) value);
     }
 
     template <typename V>
@@ -212,12 +211,62 @@ bool operator!=(U lhs, const MontgomeryModInt<T> &rhs) {
 
 template <typename T>
 bool operator>(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs.value > rhs.value;
+    return lhs() > rhs();
+}
+
+template <typename T, typename U>
+bool operator>(const MontgomeryModInt<T> &lhs, U &rhs) {
+    return lhs() > rhs;
+}
+
+template <typename T, typename U>
+bool operator>(U &lhs, const MontgomeryModInt<T> &rhs) {
+    return lhs > rhs();
 }
 
 template <typename T>
 bool operator<(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs.value < rhs.value;
+    return lhs() < rhs();
+}
+
+template <typename T, typename U>
+bool operator<(const MontgomeryModInt<T> &lhs, U &rhs) {
+    return lhs() < rhs;
+}
+
+template <typename T, typename U>
+bool operator<(U &lhs, const MontgomeryModInt<T> &rhs) {
+    return lhs < rhs();
+}
+
+template <typename T>
+bool operator>=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return lhs > rhs || lhs == rhs;
+}
+
+template <typename T, typename U>
+bool operator>=(const MontgomeryModInt<T> &lhs, U &rhs) {
+    return lhs() > rhs || lhs() == rhs;
+}
+
+template <typename T, typename U>
+bool operator>=(U &lhs, const MontgomeryModInt<T> &rhs) {
+    return lhs > rhs() || lhs == rhs();
+}
+
+template <typename T>
+bool operator<=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return lhs < rhs || lhs == rhs;
+}
+
+template <typename T, typename U>
+bool operator<=(const MontgomeryModInt<T> &lhs, U &rhs) {
+    return lhs() < rhs || lhs() == rhs;
+}
+
+template <typename T, typename U>
+bool operator<=(U &lhs, const MontgomeryModInt<T> &rhs) {
+    return lhs < rhs() || lhs == rhs();
 }
 
 template <typename T>
@@ -297,7 +346,7 @@ template <typename M>
 pair<typename MontgomeryModInt<M>::T, typename MontgomeryModInt<M>::U> MontgomeryModInt<M>::r;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
-template<typename T>
+template <typename T>
 T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
     if (k < 0 || k > n) return 0;
     if (n >= p || k >= p) return C(n / p, k / p, p, fact, fact_inv) * C(n % p, k % p, p, fact, fact_inv);
