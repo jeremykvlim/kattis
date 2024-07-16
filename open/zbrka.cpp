@@ -52,7 +52,7 @@ struct MontgomeryModInt {
 
     static void init() {
         r = {mod(), - (U) mod() % mod()};
-        while (mod() * r.first != 1) r.first *= 2ULL - mod() * r.first;
+        while (mod() * r.first != 1) r.first *= (T) 2 - mod() * r.first;
     }
 
     constexpr MontgomeryModInt() : value() {}
