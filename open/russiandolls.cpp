@@ -14,8 +14,8 @@ int main() {
         vector<vector<vector<bool>>> dp(2 * n + 1, vector<vector<bool>>(2 * n + 1, vector<bool>(2 * n + 1, false)));
         auto arrange = [&](auto &&self, bool first, int count = 0, int i = 0, int j = 0) -> bool {
             int k = max(i, j);
-            if (2 * count >= d.size() || 2 * (k - count) >= d.size() || dp[i][j][count]) return false;
-            if (k++ == d.size() - 1) return true;
+            if (count > n || k - count > n || dp[i][j][count]) return false;
+            if (k++ == 2 * n) return true;
 
             auto valid = [&](int l) {
                 return d[k][0] - 2 * d[k][2] >= d[l][0] && d[k][1] - 2 * d[k][2] >= d[l][1];
