@@ -18,7 +18,7 @@ int main() {
     }
 
     vector<bool> visited1(n + 1, false), visited2(n + 1, false);
-    visited1[1] = visited2[2] =  true;
+    visited1[1] = visited2[2] = true;
     queue<int> q;
     q.emplace(1);
     while (!q.empty()) {
