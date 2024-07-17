@@ -299,11 +299,13 @@ constexpr unsigned long long MODULO = 2524775926340780033;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
 template <typename T>
-vector<modint> convolve(vector<T> a, vector<T> b) {
+vector<T> convolve(vector<T> a, vector<T> b) {
     int n = 1;
     while (n < a.size() + b.size() - 1) n <<= 1;
-    a.resize(n);
-    b.resize(n);
+
+    vector<modint> ntt_a(n), ntt_b(n);
+    for (int i = 0; i < a.size(); i++) ntt_a[i] = a[i];
+    for (int i = 0; i < b.size(); i++) ntt_b[i] = b[i];
 
     modint n_mod = n;
     auto w = pow(3ULL, (MODULO - 1) / n, MODULO), w_inv = pow(w, MODULO - 2, MODULO), n_inv = pow(n_mod.value, MODULO - 2, MODULO);
@@ -328,13 +330,19 @@ vector<modint> convolve(vector<T> a, vector<T> b) {
                     v[j] += t;
                 }
     };
-    ntt(a, w);
-    ntt(b, w);
+    ntt(ntt_a, w);
+    ntt(ntt_b, w);
 
-    vector<modint> c(n);
-    for (int i = 0; i < n; i++) c[i] = a[i] * b[i];
-    ntt(c, w_inv);
-    for (auto &ci : c) ci *= n_inv;
+    vector<modint> ntt_c(n);
+    for (int i = 0; i < n; i++) ntt_c[i] = ntt_a[i] * ntt_b[i];
+    ntt(ntt_c, w_inv);
+
+    vector<T> c(n);
+    for (int i = 0; i < n; i++) {
+        ntt_c[i] *= n_inv;
+
+        c[i] = ntt_c[i].value;
+    }
 
     c.resize(a.size() + b.size() - 1);
     return c;
@@ -349,7 +357,7 @@ int main() {
     int n;
     cin >> n;
 
-    vector<modint> count(60001, 0);
+    vector<int> count(60001, 0);
     auto total = 0LL;
     int smallest = 1e5, biggest = 0;
     for (int i = 0; i < n; i++) {
@@ -363,8 +371,8 @@ int main() {
     }
 
     auto c = convolve(count, count);
-    for (auto &e : c) e = e.value ? 1 : 0;
+    for (int &e : c) e = e ? 1 : 0;
     c = convolve(c, c);
 
-    cout << fixed << setprecision(4) << 4 * biggest << " " << 4 * smallest << " " << count_if(c.begin(), c.end(), [](auto e) {return e.value;}) << " " << 4 * (double) total / n;
+    cout << fixed << setprecision(4) << 4 * biggest << " " << 4 * smallest << " " << count_if(c.begin(), c.end(), [](auto e) {return e;}) << " " << 4 * (double) total / n;
 }
