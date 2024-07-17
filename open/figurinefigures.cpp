@@ -340,7 +340,6 @@ vector<T> convolve(vector<T> a, vector<T> b) {
     vector<T> c(n);
     for (int i = 0; i < n; i++) {
         ntt_c[i] *= n_inv;
-
         c[i] = ntt_c[i].value;
     }
 
