@@ -299,11 +299,13 @@ constexpr unsigned long long MODULO = 2524775926340780033;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
 template <typename T>
-vector<modint> convolve(vector<T> a, vector<T> b) {
+vector<T> convolve(vector<T> a, vector<T> b) {
     int n = 1;
     while (n < a.size() + b.size() - 1) n <<= 1;
-    a.resize(n);
-    b.resize(n);
+
+    vector<modint> ntt_a(n), ntt_b(n);
+    for (int i = 0; i < a.size(); i++) ntt_a[i] = a[i];
+    for (int i = 0; i < b.size(); i++) ntt_b[i] = b[i];
 
     modint n_mod = n;
     auto w = pow(3ULL, (MODULO - 1) / n, MODULO), w_inv = pow(w, MODULO - 2, MODULO), n_inv = pow(n_mod.value, MODULO - 2, MODULO);
@@ -328,13 +330,19 @@ vector<modint> convolve(vector<T> a, vector<T> b) {
                     v[j] += t;
                 }
     };
-    ntt(a, w);
-    ntt(b, w);
+    ntt(ntt_a, w);
+    ntt(ntt_b, w);
 
-    vector<modint> c(n);
-    for (int i = 0; i < n; i++) c[i] = a[i] * b[i];
-    ntt(c, w_inv);
-    for (auto &ci : c) ci *= n_inv;
+    vector<modint> ntt_c(n);
+    for (int i = 0; i < n; i++) ntt_c[i] = ntt_a[i] * ntt_b[i];
+    ntt(ntt_c, w_inv);
+
+    vector<T> c(n);
+    for (int i = 0; i < n; i++) {
+        ntt_c[i] *= n_inv;
+
+        c[i] = ntt_c[i].value;
+    }
 
     c.resize(a.size() + b.size() - 1);
     return c;
@@ -352,21 +360,19 @@ int main() {
     cin >> n;
 
     vector<int> a(n);
-    vector<modint> count(4 * OFFSET);
-    auto extra = 0;
+    vector<long long> count(4 * OFFSET, 0);
     for (int &ai : a) {
         cin >> ai;
 
-        if (!ai) extra++;
         count[ai += OFFSET]++;
     }
 
     auto c = convolve(count, count);
-    for (int ai : a) c[2 * ai].value--;
+    for (int ai : a) c[2 * ai]--;
 
-    auto ways = 0ULL;
-    for (int ai : a) ways += c[ai + OFFSET].value;
-    ways -= 2LL * extra * (n - 1);
+    auto ways = 0LL;
+    for (int ai : a) ways += c[ai + OFFSET];
+    ways -= 2LL * count[OFFSET] * (n - 1);
 
     cout << ways;
 }
