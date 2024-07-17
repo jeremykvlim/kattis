@@ -66,8 +66,11 @@ int main() {
         count--;
         for (int u : adj_list[v])
             if (visited1[u]) {
-                if (dp[u] + dp[v] >= 1e9) zero = true;
-                dp[u] = (dp[u] + dp[v]) % (int) 1e9;
+                dp[u] += dp[v];
+                if (dp[u] >= 1e9) {
+                    zero = true;
+                    dp[u] %= (int) 1e9;
+                }
                 if (!--indegree[u]) q.emplace(u);
             }
     }
