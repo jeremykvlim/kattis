@@ -36,9 +36,6 @@ bool isprime(unsigned long long n) {
     return true;
 }
 
-constexpr unsigned long long MODULO = 1e9 + 7;
-const bool PRIME_MOD = MODULO == 998244353 || MODULO == 1e9 + 7 || MODULO == 1e9 + 9 || MODULO == 1e6 + 69 || MODULO == 2524775926340780033 || isprime(MODULO);
-
 template <typename M>
 struct MontgomeryModInt {
     using T = typename decay<decltype(M::value)>::type;
@@ -48,9 +45,11 @@ struct MontgomeryModInt {
 
     T value;
     static pair<T, U> r;
+    static bool prime_mod;
     static constexpr int bit_length = sizeof(T) * 8;
 
     static void init() {
+        prime_mod = mod() == 998244353 || mod() == (unsigned long long) 1e9 + 7 || mod() == (unsigned long long) 1e9 + 9 || mod() == (unsigned long long) 1e6 + 69 || mod() == 2524775926340780033 || isprime(mod());
         r = {mod(), - (U) mod() % mod()};
         while (mod() * r.first != 1) r.first *= (T) 2 - mod() * r.first;
     }
@@ -121,20 +120,8 @@ struct MontgomeryModInt {
     }
 
     template <typename V = M>
-    typename enable_if<is_same<typename MontgomeryModInt<V>::T, int>::value, MontgomeryModInt>::type & operator*=(const MontgomeryModInt &v) {
-        value = reduce((long long) value * v.value);
-        return *this;
-    }
-
-    template <typename V = M>
     typename enable_if<is_same<typename MontgomeryModInt<V>::T, unsigned int>::value, MontgomeryModInt>::type & operator*=(const MontgomeryModInt &v) {
         value = reduce((unsigned long long) value * v.value);
-        return *this;
-    }
-
-    template <typename V = M>
-    typename enable_if<is_same<typename MontgomeryModInt<V>::T, long long>::value, MontgomeryModInt>::type & operator*=(const MontgomeryModInt &v) {
-        value = reduce((__int128) value * v.value);
         return *this;
     }
 
@@ -155,7 +142,7 @@ struct MontgomeryModInt {
     }
 
     MontgomeryModInt inv(const MontgomeryModInt &v) {
-        if (PRIME_MOD) {
+        if (prime_mod) {
             MontgomeryModInt inv = 1, base = v;
             T n = mod() - 2;
             while (n) {
@@ -304,6 +291,11 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 
 template <typename M>
 pair<typename MontgomeryModInt<M>::T, typename MontgomeryModInt<M>::U> MontgomeryModInt<M>::r;
+
+template <typename M>
+bool MontgomeryModInt<M>::prime_mod;
+
+constexpr unsigned long long MODULO = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
 template <typename T>
