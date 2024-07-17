@@ -308,7 +308,7 @@ vector<T> convolve(vector<T> a, vector<T> b) {
     for (int i = 0; i < b.size(); i++) ntt_b[i] = b[i];
 
     modint n_mod = n;
-    auto w = pow(3ULL, (MODULO - 1) / n, MODULO), w_inv = pow(w, MODULO - 2, MODULO), n_inv = pow(n_mod.value, MODULO - 2, MODULO);
+    auto w = pow(3ULL, (MODULO - 1) / n, MODULO), w_inv = pow(w, MODULO - 2, MODULO), n_inv = pow(n_mod(), MODULO - 2, MODULO);
     vector<int> reverse(n, 0);
     for (int i = 1, j = __lg(n) - 1, k = -1; i < n; i++) {
         if (!(i & (i - 1))) k++;
@@ -337,14 +337,8 @@ vector<T> convolve(vector<T> a, vector<T> b) {
     for (int i = 0; i < n; i++) ntt_c[i] = ntt_a[i] * ntt_b[i];
     ntt(ntt_c, w_inv);
 
-    vector<T> c(n);
-    for (int i = 0; i < n; i++) {
-        ntt_c[i] *= n_inv;
-
-        c[i] = ntt_c[i].value;
-    }
-
-    c.resize(a.size() + b.size() - 1);
+    vector<T> c(a.size() + b.size() - 1);
+    for (int i = 0; i < c.size(); i++) c[i] = (ntt_c[i] * n_inv)();
     return c;
 }
 
