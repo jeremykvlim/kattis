@@ -63,8 +63,7 @@ struct BarrettModInt {
     static I normalize(const V &x) {
         I v = x;
         if (!(-mod() <= x && x < mod())) v = (I) (x % mod());
-        if (v < 0) v += mod();
-        return v;
+        return v < 0 ? v + mod() : v;
     }
 
     static I reduce(J v) {
