@@ -39,7 +39,7 @@ bool isprime(unsigned long long n) {
 template <typename M>
 struct MontgomeryModInt {
     using T = typename decay<decltype(M::value)>::type;
-    using U = typename conditional<is_same<T, unsigned int>::value, unsigned long long, typename conditional<is_same<T, unsigned long long>::value, __uint128_t, void>::type>::type;
+    using U = typename conditional<is_same<T, unsigned int>::value, unsigned long long, typename conditional<is_same<T, unsigned long long>::value, unsigned __int128, void>::type>::type;
     using I = typename conditional<is_same<T, unsigned int>::value, int, typename conditional<is_same<T, unsigned long long>::value, long long, void>::type>::type;
     using J = typename conditional<is_same<T, unsigned int>::value, long long, typename conditional<is_same<T, unsigned long long>::value, __int128, void>::type>::type;
 
@@ -62,8 +62,7 @@ struct MontgomeryModInt {
 
     static T reduce(const U &x) {
         T q = (U) x * r.first, v = (x >> bit_length) + mod() - (((U) q * mod()) >> bit_length);
-        if (v >= mod()) v -= mod();
-        return v;
+        return v >= mod() ? v - mod() : v;
     }
 
     T operator()() const {
