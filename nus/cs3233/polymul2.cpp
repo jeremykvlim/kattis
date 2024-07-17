@@ -391,7 +391,7 @@ int main() {
 
         auto x = convolve(_1_3, _2_3), y = convolve(poly3, _1_2_3);
         cout << deg1 + deg2 - 2 << "\n";
-        for (int i = 0; i < deg1 + deg2 - 1; i++) cout << (long long) x[i] - (long long) y[i] << " ";
+        for (int i = 0; i < deg1 + deg2 - 1; i++) cout << x[i] - y[i] << " ";
         cout << "\n";
     }
 }
