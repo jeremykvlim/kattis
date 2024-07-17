@@ -299,11 +299,13 @@ constexpr unsigned long long MODULO = 2524775926340780033;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
 template <typename T>
-vector<modint> convolve(vector<T> a, vector<T> b) {
+vector<T> convolve(vector<T> a, vector<T> b) {
     int n = 1;
     while (n < a.size() + b.size() - 1) n <<= 1;
-    a.resize(n);
-    b.resize(n);
+
+    vector<modint> ntt_a(n), ntt_b(n);
+    for (int i = 0; i < a.size(); i++) ntt_a[i] = a[i];
+    for (int i = 0; i < b.size(); i++) ntt_b[i] = b[i];
 
     modint n_mod = n;
     auto w = pow(3ULL, (MODULO - 1) / n, MODULO), w_inv = pow(w, MODULO - 2, MODULO), n_inv = pow(n_mod.value, MODULO - 2, MODULO);
@@ -328,13 +330,19 @@ vector<modint> convolve(vector<T> a, vector<T> b) {
                     v[j] += t;
                 }
     };
-    ntt(a, w);
-    ntt(b, w);
+    ntt(ntt_a, w);
+    ntt(ntt_b, w);
 
-    vector<modint> c(n);
-    for (int i = 0; i < n; i++) c[i] = a[i] * b[i];
-    ntt(c, w_inv);
-    for (auto &ci : c) ci *= n_inv;
+    vector<modint> ntt_c(n);
+    for (int i = 0; i < n; i++) ntt_c[i] = ntt_a[i] * ntt_b[i];
+    ntt(ntt_c, w_inv);
+
+    vector<T> c(n);
+    for (int i = 0; i < n; i++) {
+        ntt_c[i] *= n_inv;
+
+        c[i] = ntt_c[i].value;
+    }
 
     c.resize(a.size() + b.size() - 1);
     return c;
@@ -363,13 +371,13 @@ int main() {
         auto [deg1, poly1] = read();
         auto [deg2, poly2] = read();
         int deg3 = max(deg1, deg2);
-        vector<modint> poly3(deg3);
+        vector<int> poly3(deg3);
         for (int i = 0; i < deg3; i++)
             if (i < deg1 && i < deg2) poly3[i] = max({0, -poly1[i], -poly2[i], -poly1[i] - poly2[i]});
             else if (i < deg1) poly3[i] = max(0, -poly1[i]);
             else poly3[i] = max(0, -poly2[i]);
 
-        vector<modint> _1_3 = poly3, _2_3 = poly3, _1_2_3 = poly3;
+        vector<int> _1_3 = poly3, _2_3 = poly3, _1_2_3 = poly3;
         for (int i = 0; i < deg3; i++) {
             if (i < deg1) {
                 _1_3[i] += poly1[i];
