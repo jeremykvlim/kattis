@@ -19,7 +19,7 @@ T pow(T base, T exponent, T mod) {
     return value;
 }
 
-bool isprime(unsigned long long n) {
+bool isprime(long long n) {
     if (n < 2) return false;
     if (n % 6 % 4 != 1) return (n | 1) == 3;
 
@@ -36,47 +36,44 @@ bool isprime(unsigned long long n) {
     return true;
 }
 
-template <typename T>
-struct MODULO {
-    static T value;
-};
-
-template <typename T>
-T MODULO<T>::value;
-
-auto &m = MODULO<unsigned int>::value;
-bool PRIME_MOD;
-
 template <typename M>
-struct MontgomeryModInt {
-    using T = typename decay<decltype(M::value)>::type;
-    using U = typename conditional<is_same<T, unsigned int>::value, unsigned long long, typename conditional<is_same<T, unsigned long long>::value, __uint128_t, void>::type>::type;
-    using I = typename conditional<is_same<T, unsigned int>::value, int, typename conditional<is_same<T, unsigned long long>::value, long long, void>::type>::type;
-    using J = typename conditional<is_same<T, unsigned int>::value, long long, typename conditional<is_same<T, unsigned long long>::value, __int128, void>::type>::type;
+struct BarrettModInt {
+    using I = unsigned int;
+    using J = unsigned long long;
+    using K = unsigned __int128;
 
-    T value;
-    static pair<T, U> r;
-    static constexpr int bit_length = sizeof(T) * 8;
+    I value;
+    static bool prime_mod;
+    static J inv_mod;
+    static constexpr int bit_length = sizeof(J) * 8;
 
     static void init() {
-        r = {mod(), - (U) mod() % mod()};
-        while (mod() * r.first != 1) r.first *= (T) 2 - mod() * r.first;
+        prime_mod = mod() == 998244353 || mod() == 1e9 + 7 || mod() == 1e9 + 9 || mod() == 1e6 + 69 || isprime(mod());
+        inv_mod = (J) -1 / mod() + 1;
     }
 
-    constexpr MontgomeryModInt() : value() {}
+    constexpr BarrettModInt() : value() {}
 
-    MontgomeryModInt(const J &x) {
-        value = reduce((U) x * r.second);
+    template <typename V>
+    BarrettModInt(const V &x) {
+        value = normalize(x);
     }
 
-    static T reduce(const U &x) {
-        T q = (U) x * r.first, v = (x >> bit_length) + mod() - (((U) q * mod()) >> bit_length);
-        if (v >= mod()) v -= mod();
+    template <typename V>
+    static I normalize(const V &x) {
+        I v = x;
+        if (!(-mod() <= x && x < mod())) v = (I) (x % mod());
+        if (v < 0) v += mod();
         return v;
     }
 
-    T operator()() const {
-        return reduce((U) value);
+    static I reduce(J v) {
+        v -= (J) (((K) v * inv_mod) >> bit_length) * mod();
+        return v >= mod() ? v + mod() : v;
+    }
+
+    const I & operator()() const {
+        return value;
     }
 
     template <typename V>
@@ -84,28 +81,28 @@ struct MontgomeryModInt {
         return (V) value;
     }
 
-    constexpr static T mod() {
+    constexpr static I mod() {
         return M::value;
     }
 
-    inline auto & operator+=(const MontgomeryModInt &v) {
-        if ((I) (value += v.value) >= mod()) value -= mod();
+    inline auto & operator+=(const BarrettModInt &v) {
+        if ((int) (value += v.value) >= mod()) value -= mod();
         return *this;
     }
 
-    inline auto & operator-=(const MontgomeryModInt &v) {
-        if ((I) (value -= v.value) < 0) value += mod();
+    inline auto & operator-=(const BarrettModInt &v) {
+        if ((int) (value -= v.value) < 0) value += mod();
         return *this;
     }
 
-    template <typename U>
-    inline auto & operator+=(const U &v) {
-        return *this += (MontgomeryModInt) v;
+    template <typename V>
+    inline auto & operator+=(const V &v) {
+        return *this += BarrettModInt(v);
     }
 
-    template <typename U>
-    inline auto & operator-=(const U &v) {
-        return *this -= (MontgomeryModInt) v;
+    template <typename V>
+    inline auto & operator-=(const V &v) {
+        return *this -= BarrettModInt(v);
     }
 
     auto & operator++() {
@@ -117,55 +114,41 @@ struct MontgomeryModInt {
     }
 
     auto operator++(int) {
-        return *this += 1;
+        BarrettModInt v(*this);
+        *this += 1;
+        return v;
     }
 
     auto operator--(int) {
-        return *this -= 1;
+        BarrettModInt v(*this);
+        *this -= 1;
+        return v;
     }
 
     auto operator-() const {
-        return (MontgomeryModInt) -value;
+        return BarrettModInt(-value);
     }
 
     template <typename V = M>
-    typename enable_if<is_same<typename MontgomeryModInt<V>::T, int>::value, MontgomeryModInt>::type & operator*=(const MontgomeryModInt &v) {
-        value = reduce((long long) value * v.value);
+    typename enable_if<is_same<typename BarrettModInt<V>::I, unsigned int>::value, BarrettModInt>::type & operator*=(const BarrettModInt &v) {
+        value = reduce((J) value * v.value);
         return *this;
     }
 
     template <typename V = M>
-    typename enable_if<is_same<typename MontgomeryModInt<V>::T, unsigned int>::value, MontgomeryModInt>::type & operator*=(const MontgomeryModInt &v) {
-        value = reduce((unsigned long long) value * v.value);
-        return *this;
-    }
-
-    template <typename V = M>
-    typename enable_if<is_same<typename MontgomeryModInt<V>::T, long long>::value, MontgomeryModInt>::type & operator*=(const MontgomeryModInt &v) {
-        value = reduce((__int128) value * v.value);
-        return *this;
-    }
-
-    template <typename V = M>
-    typename enable_if<is_same<typename MontgomeryModInt<V>::T, unsigned long long>::value, MontgomeryModInt>::type & operator*=(const MontgomeryModInt &v) {
-        value = reduce((__uint128_t) value * v.value);
-        return *this;
-    }
-
-    template <typename V = M>
-    typename enable_if<!is_integral<typename MontgomeryModInt<V>::T>::value, MontgomeryModInt>::type & operator*=(const MontgomeryModInt &v) {
+    typename enable_if<!is_integral<typename BarrettModInt<V>::I>::value, BarrettModInt>::type & operator*=(const BarrettModInt &v) {
         value = reduce(value * v.value);
         return *this;
     }
 
-    auto & operator/=(const MontgomeryModInt &v) {
-        return *this *= inverse(v);
+    auto & operator/=(const BarrettModInt &v) {
+        return *this *= inv(v);
     }
 
-    MontgomeryModInt inverse(const MontgomeryModInt &v) {
-        if (PRIME_MOD) {
-            MontgomeryModInt inv = 1, base = v;
-            T n = mod() - 2;
+    BarrettModInt inv(const BarrettModInt &v) {
+        if (prime_mod) {
+            BarrettModInt inv = 1, base = v;
+            I n = mod() - 2;
             while (n) {
                 if (n & 1) inv *= base;
                 base *= base;
@@ -174,187 +157,150 @@ struct MontgomeryModInt {
             return inv;
         }
 
-        T x = 0, y = 1, a = v.value, m = mod();
+        I x = 0, y = 1, a = v.value, m = mod();
         while (a) {
-            T t = m / a;
+            I t = m / a;
             m -= t * a;
             swap(a, m);
             x -= t * y;
             swap(x, y);
         }
 
-        return (MontgomeryModInt) x;
+        return (BarrettModInt) x;
     }
 };
 
 template <typename T>
-bool operator==(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+bool operator==(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
     return lhs.value == rhs.value;
 }
 
 template <typename T, typename U>
-bool operator==(const MontgomeryModInt<T> &lhs, U rhs) {
-    return lhs == MontgomeryModInt<T>(rhs);
+bool operator==(const BarrettModInt<T> &lhs, U rhs) {
+    return lhs == BarrettModInt<T>(rhs);
 }
 
 template <typename T, typename U>
-bool operator==(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) == rhs;
+bool operator==(U lhs, const BarrettModInt<T> &rhs) {
+    return BarrettModInt<T>(lhs) == rhs;
 }
 
 template <typename T>
-bool operator!=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+bool operator!=(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
     return !(lhs == rhs);
 }
 
 template <typename T, typename U>
-bool operator!=(const MontgomeryModInt<T> &lhs, U rhs) {
+bool operator!=(const BarrettModInt<T> &lhs, U rhs) {
     return !(lhs == rhs);
 }
 
 template <typename T, typename U>
-bool operator!=(U lhs, const MontgomeryModInt<T> &rhs) {
+bool operator!=(U lhs, const BarrettModInt<T> &rhs) {
     return !(lhs == rhs);
 }
 
 template <typename T>
-bool operator>(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs() > rhs();
-}
-
-template <typename T, typename U>
-bool operator>(const MontgomeryModInt<T> &lhs, U &rhs) {
-    return lhs() > rhs;
-}
-
-template <typename T, typename U>
-bool operator>(U &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs > rhs();
+bool operator>(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
+    return lhs.value > rhs.value;
 }
 
 template <typename T>
-bool operator<(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs() < rhs();
-}
-
-template <typename T, typename U>
-bool operator<(const MontgomeryModInt<T> &lhs, U &rhs) {
-    return lhs() < rhs;
-}
-
-template <typename T, typename U>
-bool operator<(U &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs < rhs();
+bool operator<(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
+    return lhs.value < rhs.value;
 }
 
 template <typename T>
-bool operator>=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs > rhs || lhs == rhs;
+BarrettModInt<T> operator+(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
+    return BarrettModInt<T>(lhs) += rhs;
 }
 
 template <typename T, typename U>
-bool operator>=(const MontgomeryModInt<T> &lhs, U &rhs) {
-    return lhs() > rhs || lhs() == rhs;
+BarrettModInt<T> operator+(const BarrettModInt<T> &lhs, U rhs) {
+    return BarrettModInt<T>(lhs) += rhs;
 }
 
 template <typename T, typename U>
-bool operator>=(U &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs > rhs() || lhs == rhs();
+BarrettModInt<T> operator+(U lhs, const BarrettModInt<T> &rhs) {
+    return BarrettModInt<T>(lhs) += rhs;
 }
 
 template <typename T>
-bool operator<=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs < rhs || lhs == rhs;
+BarrettModInt<T> operator-(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
+    return BarrettModInt<T>(lhs) -= rhs;
 }
 
 template <typename T, typename U>
-bool operator<=(const MontgomeryModInt<T> &lhs, U &rhs) {
-    return lhs() < rhs || lhs() == rhs;
+BarrettModInt<T> operator-(const BarrettModInt<T> &lhs, U rhs) {
+    return BarrettModInt<T>(lhs) -= rhs;
 }
 
 template <typename T, typename U>
-bool operator<=(U &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs < rhs() || lhs == rhs();
+BarrettModInt<T> operator-(U lhs, const BarrettModInt<T> &rhs) {
+    return BarrettModInt<T>(lhs) -= rhs;
 }
 
 template <typename T>
-MontgomeryModInt<T> operator+(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) += rhs;
+BarrettModInt<T> operator*(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
+    return BarrettModInt<T>(lhs) *= rhs;
 }
 
 template <typename T, typename U>
-MontgomeryModInt<T> operator+(const MontgomeryModInt<T> &lhs, U rhs) {
-    return MontgomeryModInt<T>(lhs) += rhs;
+BarrettModInt<T> operator*(const BarrettModInt<T> &lhs, U rhs) {
+    return BarrettModInt<T>(lhs) *= rhs;
 }
 
 template <typename T, typename U>
-MontgomeryModInt<T> operator+(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) += rhs;
+BarrettModInt<T> operator*(U lhs, const BarrettModInt<T> &rhs) {
+    return BarrettModInt<T>(lhs) *= rhs;
 }
 
 template <typename T>
-MontgomeryModInt<T> operator-(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) -= rhs;
+BarrettModInt<T> operator/(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
+    return BarrettModInt<T>(lhs) /= rhs;
 }
 
 template <typename T, typename U>
-MontgomeryModInt<T> operator-(const MontgomeryModInt<T> &lhs, U rhs) {
-    return MontgomeryModInt<T>(lhs) -= rhs;
+BarrettModInt<T> operator/(const BarrettModInt<T> &lhs, U rhs) {
+    return BarrettModInt<T>(lhs) /= rhs;
 }
 
 template <typename T, typename U>
-MontgomeryModInt<T> operator-(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) -= rhs;
-}
-
-template <typename T>
-MontgomeryModInt<T> operator*(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) *= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator*(const MontgomeryModInt<T> &lhs, U rhs) {
-    return MontgomeryModInt<T>(lhs) *= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator*(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) *= rhs;
-}
-
-template <typename T>
-MontgomeryModInt<T> operator/(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator/(const MontgomeryModInt<T> &lhs, U rhs) {
-    return MontgomeryModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator/(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) /= rhs;
+BarrettModInt<T> operator/(U lhs, const BarrettModInt<T> &rhs) {
+    return BarrettModInt<T>(lhs) /= rhs;
 }
 
 template <typename U, typename T>
-U & operator<<(U &stream, const MontgomeryModInt<T> &v) {
+U & operator<<(U &stream, const BarrettModInt<T> &v) {
     return stream << v();
 }
 
 template <typename U, typename T>
-U & operator>>(U &stream, MontgomeryModInt<T> &v) {
-    typename common_type<typename MontgomeryModInt<T>::T, long long>::type x;
+U & operator>>(U &stream, BarrettModInt<T> &v) {
+    typename common_type<typename BarrettModInt<T>::I, long long>::type x;
     stream >> x;
-    v = MontgomeryModInt<T>(x);
+    v.value = BarrettModInt<T>::normalize(x);
     return stream;
 }
 
 template <typename M>
-pair<typename MontgomeryModInt<M>::T, typename MontgomeryModInt<M>::U> MontgomeryModInt<M>::r;
-using modint = MontgomeryModInt<MODULO<unsigned int>>;
+bool BarrettModInt<M>::prime_mod;
+
+template <typename M>
+unsigned long long BarrettModInt<M>::inv_mod;
 
 template <typename T>
+struct MODULO {
+    static T value;
+};
+
+template <typename T>
+T MODULO<T>::value;
+
+auto &m = MODULO<unsigned int>::value;
+using modint = BarrettModInt<MODULO<unsigned int>>;
+
+template<typename T>
 T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
     if (k < 0 || k > n) return 0;
     if (n >= p || k >= p) return C(n / p, k / p, p, fact, fact_inv) * C(n % p, k % p, p, fact, fact_inv);
@@ -385,7 +331,7 @@ int main() {
     while (t--) {
         int n;
         cin >> n >> m;
-        PRIME_MOD = isprime(m);
+
         modint::init();
 
         vector<modint> fact(n + 1, 1), fact_inv(n / 2 + 1, 1);
