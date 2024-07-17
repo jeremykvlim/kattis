@@ -1,35 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct Type {
-    bool x = true, plus = true, minus = true;
-    int colour = -1;
-    vector<Type*> neutral;
-
-    bool bipartite() {
-        for (Type *n : neutral) {
-            if (n->colour == -1) {
-                n->colour = colour ^ 1;
-                if (!n->bipartite()) return false;
-            }
-            if (colour == n->colour) return false;
-        }
-        return true;
-    }
-
-    void unplus() {
-        plus = false;
-        for (Type *n : neutral)
-            if (n->minus) n->unminus();
-    }
-
-    void unminus() {
-        minus = false;
-        for (Type *n : neutral)
-            if (n->plus) n->unplus();
-    }
-};
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -37,40 +8,63 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<Type> types(n);
+    vector<array<bool, 3>> types(n, {true, true, true});
+    vector<vector<int>> adj_list(n);
     while (m--) {
         int i, j;
         char c;
         cin >> i >> j >> c;
 
-        if (c != 'x') types[i - 1].x = types[j - 1].x = false;
+        if (c != 'x') types[i - 1][0] = types[j - 1][0] = false;
 
-        if (c == '-') types[i - 1].plus = types[j - 1].plus = false;
-        else if (c == '+') types[i - 1].minus = types[j - 1].minus = false;
+        if (c == '-') types[i - 1][1] = types[j - 1][1] = false;
+        else if (c == '+') types[i - 1][2] = types[j - 1][2] = false;
         else if (c == '=') {
-            types[i - 1].neutral.emplace_back(&types[j - 1]);
-            types[j - 1].neutral.emplace_back(&types[i - 1]);
+            adj_list[i - 1].emplace_back(j - 1);
+            adj_list[j - 1].emplace_back(i - 1);
         }
     }
 
-    for (Type &i : types) {
-        if (i.x) continue;
+    auto dfs = [&](auto &&self, int i, bool plus) -> void {
+        types[i][plus ? 1 : 2] = false;
+        for (int j : adj_list[i])
+            if (types[j][plus ? 2 : 1]) self(self, j, !plus);
+    };
 
-        if (!i.plus) i.unplus();
-        if (!i.minus) i.unminus();
-        if (i.colour == -1) {
-            i.colour = 0;
-            if (!i.bipartite()) {
-                i.unplus();
-                i.unminus();
+    vector<int> colour(n, -1);
+    auto bipartite = [&](auto &&self, int i) -> bool {
+        for (int j : adj_list[i]) {
+            if (colour[j] == -1) {
+                colour[j] = colour[i] ^ 1;
+                if (!self(self, j)) return false;
+            }
+            if (colour[i] == colour[j]) return false;
+        }
+
+        return true;
+    };
+
+    for (int i = 0; i < n; i++) {
+        auto [x, plus, minus] = types[i];
+        if (x) continue;
+
+        if (!plus) dfs(dfs, i, true);
+        if (!minus) dfs(dfs, i, false);
+
+        if (colour[i] == -1) {
+            colour[i] = 0;
+
+            if (!bipartite(bipartite, i)) {
+                dfs(dfs, i, true);
+                dfs(dfs, i, false);
             }
         }
     }
 
-    for (Type &i : types) {
-        if (i.x) cout << 'x';
-        else if (!i.plus && i.minus) cout << '-';
-        else if (i.plus && !i.minus) cout << '+';
-        else cout << '=';
+    for (auto [x, plus, minus] : types) {
+        if (x) cout << 'x';
+        else if (plus && minus || !plus && !minus) cout << '=';
+        else if (plus) cout << '+';
+        else cout << '-';
     }
 }
