@@ -11,13 +11,13 @@ int main() {
     vector<pair<int, int>> junctions(n - 1);
     for (auto &[u, v] : junctions) {
         cin >> u >> v;
-        
+
         if (u > v) swap(u, v);
     }
     sort(junctions.begin(), junctions.end());
     junctions.erase(unique(junctions.begin(), junctions.end()), junctions.end());
-    
-    vector<int> count(n + 1, 0), prev(n + 1);
+
+    vector<int> count(n + 1, 0);
     for (auto [u, v] : junctions) {
         count[u]++;
         count[v]++;
@@ -29,13 +29,14 @@ int main() {
         else connected[v].emplace_back(u);
     }
 
+    vector<int> visited(n + 1)
     auto total = 0LL, optimal = 0LL;
     for (int i = 1; i <= n; i++) {
         if (count[i]) total += (long long) count[i] * (count[i] - 1);
-        for (int j : connected[i]) prev[j] = i;
+        for (int j : connected[i]) visited[j] = i;
         for (int j : connected[i])
             for (int k : connected[j])
-                if (prev[k] == i) optimal++;
+                if (visited[k] == i) optimal++;
     }
 
     cout << total - 6 * optimal;
