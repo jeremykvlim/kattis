@@ -12,8 +12,8 @@ int main() {
     for (auto &c : components) {
         int x, y;
         char r;
-
         cin >> x >> y >> r;
+        
         c = {2 * x + y, -2 * x + y, r};
     }
     sort(components.begin(), components.end());
