@@ -298,28 +298,31 @@ constexpr unsigned long long MODULO = 2524775926340780033;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
 template <typename T>
-vector<T> convolve(vector<T> a, vector<T> b) {
+vector<T> convolve(const vector<T> &a, const vector<T> &b) {
     int n = 1;
     while (n < a.size() + b.size() - 1) n <<= 1;
 
-    vector<modint> ntt_a(n), ntt_b(n);
-    for (int i = 0; i < a.size(); i++) ntt_a[i] = a[i];
-    for (int i = 0; i < b.size(); i++) ntt_b[i] = b[i];
-
-    modint n_mod = n;
-    auto w = pow(3ULL, (MODULO - 1) / n, MODULO), w_inv = pow(w, MODULO - 2, MODULO), n_inv = pow(n_mod(), MODULO - 2, MODULO);
     vector<int> reverse(n, 0);
     for (int i = 1, j = __lg(n) - 1, k = -1; i < n; i++) {
         if (!(i & (i - 1))) k++;
         reverse[i] = reverse[i ^ (1 << k)] | (1 << (j - k));
     }
 
-    auto ntt = [&](vector<modint> &v, modint omega) {
+    vector<modint> twiddles(n >> 1);
+    auto prepare = [&](modint omega) {
+        twiddles[0] = 1;
+        for (int i = 1; i < n >> 1; i++) twiddles[i] = twiddles[i - 1] * omega;
+    };
+
+    auto primitive_root = []() {
+        if (MODULO == 9223372036737335297 || MODULO == 2524775926340780033 || MODULO == 998244353 || MODULO == 167772161) return 3ULL;
+        if (MODULO == 754974721) return 11ULL;
+    };
+    auto w = (modint) pow(primitive_root(), (MODULO - 1) / n, MODULO), w_inv = (modint) 1 / w;
+    
+    auto ntt = [&](vector<modint> &v) {
         for (int i = 0; i < n; i++)
             if (i < reverse[i]) swap(v[i], v[reverse[i]]);
-
-        vector<modint> twiddles(n >> 1, 1);
-        for (int i = 1; i < (n >> 1); i++) twiddles[i] = twiddles[i - 1] * omega;
 
         for (int i = 0; i < __lg(n); i++)
             for (int j = 0; j < n; j++)
@@ -329,13 +332,19 @@ vector<T> convolve(vector<T> a, vector<T> b) {
                     v[j] += t;
                 }
     };
-    ntt(ntt_a, w);
-    ntt(ntt_b, w);
+    vector<modint> ntt_a(n), ntt_b(n);
+    for (int i = 0; i < a.size(); i++) ntt_a[i] = a[i];
+    for (int i = 0; i < b.size(); i++) ntt_b[i] = b[i];
+    prepare(w);
+    ntt(ntt_a);
+    ntt(ntt_b);
 
     vector<modint> ntt_c(n);
     for (int i = 0; i < n; i++) ntt_c[i] = ntt_a[i] * ntt_b[i];
-    ntt(ntt_c, w_inv);
+    prepare(w_inv);
+    ntt(ntt_c);
 
+    auto n_inv = (modint) 1 / n;
     vector<T> c(a.size() + b.size() - 1);
     for (int i = 0; i < c.size(); i++) c[i] = (ntt_c[i] * n_inv)();
     return c;
