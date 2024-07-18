@@ -7,15 +7,7 @@ struct Point {
 
     Point() {}
     Point(T x, T y) : x(x), y(y) {}
-
-    auto operator<(Point<T> &p) const {
-        return x != p.x ? x < p.x : y < p.y;
-    }
-
-    auto operator==(Point<T> &p) const {
-        return x == p.x && y == p.y;
-    }
-
+    
     Point operator-(Point<T> &p) const {
         return {x - p.x, y - p.y};
     }
@@ -32,17 +24,9 @@ double cross(Point<T> a, Point<T> b, Point<T> c) {
 }
 
 template <typename T>
-deque<Point<T>> half_hull(vector<Point<T>> &points) {
-    sort(points.begin(), points.end());
-    points.erase(unique(points.begin(), points.end()), points.end());
-
-    deque<Point<T>> convex_hull;
-    for (auto p : points) {
-        while (convex_hull.size() > 1 && cross(convex_hull[1], convex_hull[0], p) > 0) convex_hull.pop_front();
-        convex_hull.emplace_front(p);
-    }
-    reverse(convex_hull.begin(), convex_hull.end());
-    return convex_hull;
+void add(deque<Point<T>> &trick_hull, Point<T> p) {
+    while (trick_hull.size() > 1 && cross(trick_hull[1], trick_hull[0], p) > 0) trick_hull.pop_front();
+    trick_hull.emplace_front(p);
 }
 
 int main() {
@@ -64,10 +48,13 @@ int main() {
     read(e, r);
     read(n, c);
 
-    auto east = half_hull(e), north = half_hull(n);
+    deque<Point<long long>> east, north;
+    for (auto p : e) add(east, p);
+    for (auto p : n) add(north, p);
+
     vector<pair<Point<long long>, char>> route;
-    for (int i = 1; i < east.size(); i++) route.emplace_back(east[i] - east[i - 1], 'N');
-    for (int i = 1; i < north.size(); i++) route.emplace_back(north[i] - north[i - 1], 'E');
+    for (int i = east.size() - 1; i; i--) route.emplace_back(east[i - 1] - east[i], 'N');
+    for (int i = north.size() - 1; i; i--) route.emplace_back(north[i - 1] - north[i], 'E');
     sort(route.begin(), route.end(), [&](auto p1, auto p2) {return cross(p1.first, p2.first) > 0;});
 
     for (auto [point, direction] : route)
