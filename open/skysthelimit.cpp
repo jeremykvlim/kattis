@@ -23,15 +23,9 @@ double cross(Point<T> a, Point<T> b, Point<T> c) {
 }
 
 template <typename T>
-deque<Point<T>> half_hull(vector<Point<T>> &points) {
-    deque<Point<T>> convex_hull;
-    for (auto p : points) {
-        while (convex_hull.size() > 1 && cross(convex_hull[1], p, convex_hull[0]) > 0) convex_hull.pop_front();
-        convex_hull.emplace_front(p);
-    }
-    
-    reverse(convex_hull.begin(), convex_hull.end());
-    return convex_hull;
+void add(deque<Point<T>> &trick_hull, Point<T> p) {
+    while (trick_hull.size() > 1 && cross(trick_hull[1], p, trick_hull[0]) > 0) trick_hull.pop_front();
+    trick_hull.emplace_front(p);
 }
 
 int main() {
@@ -53,9 +47,10 @@ int main() {
         points[i] = {(double) i, houses[i]};
     }
 
-    auto convex_hull = half_hull(points);
-    for (int i = 0; i < convex_hull.size() - 1; i++) {
-        int l = convex_hull[i].x, r = convex_hull[i + 1].x;
+    deque<Point<double>> trick_hull;
+    for (auto p : points) add(trick_hull, p);
+    for (int i = trick_hull.size() - 1; i; i--) {
+        int l = trick_hull[i].x, r = trick_hull[i - 1].x;
 
         for (int j = l; j < r; j++) houses[j] = (houses[l] * (r - j) + houses[r] * (j - l)) / (r - l);
     }
