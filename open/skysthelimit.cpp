@@ -7,14 +7,6 @@ struct Point {
 
     Point() {}
     Point(T x, T y) : x(x), y(y) {}
-
-    auto operator<(Point<T> &p) const {
-        return x != p.x ? x < p.x : y < p.y;
-    }
-
-    auto operator==(Point<T> &p) const {
-        return x == p.x && y == p.y;
-    }
 };
 
 template <typename T>
