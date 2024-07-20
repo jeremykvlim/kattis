@@ -5,7 +5,7 @@ struct SegmentTree {
     struct Segment {
         int min1, min2, max1, max2;
 
-        Segment(): min1(INT_MAX), min2(INT_MAX), max1(INT_MIN), max2(INT_MIN) {}
+        Segment() : min1(INT_MAX), min2(INT_MAX), max1(INT_MIN), max2(INT_MIN) {}
 
         auto & operator=(int v) {
             min1 = max1 = v;
