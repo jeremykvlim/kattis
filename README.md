@@ -1,6 +1,6 @@
 # kattis
 
-My solutions for Kattis problems, not all of them have been archived here yet because I haven't bothered scraping through all my submissions from 2022 till now. Solutions are named `"problemname".<languagefilename>`. To find the problem statement, please go to:
+My solutions for Kattis problems. Not all of them have been archived here yet because I haven't bothered scraping through all my submissions from 2022 till now. Solutions are named `"problemname".<languagefilename>`. To find the problem statement, please go to:
 
 `https://nus.kattis.com/problems/"problemname"` or `https://open.kattis.com/problems/"problemname"`
 
@@ -30,4 +30,4 @@ My code isn't particularly optimized. I do try to come up with efficient solutio
 
 Occasionally when I learn new techniques, I do revisit some old solutions of mine to see if I can improve them, so I do update my old code (provided I do remember that problem). 
 
-If you have any questions about a particular solution, please contact me at j_lim@u.nus.edu.
+Many of these solutions were implemented after reading the editorials, and I suggest you to do the same if you find yourself stuck. If you have any questions about a particular solution, please contact me at j_lim@u.nus.edu.
