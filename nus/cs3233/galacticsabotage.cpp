@@ -5,7 +5,7 @@ struct SegmentTree {
     struct Segment {
         int value, freq;
 
-        Segment(): value(INT_MAX), freq(1) {}
+        Segment() : value(INT_MAX), freq(1) {}
 
         auto & operator=(int v) {
             value = v;
