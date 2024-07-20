@@ -54,7 +54,7 @@ int main() {
     int R = -1, C = -1;
     auto run = [&](auto &&self, Program &curr, int mask = 0, long long reps = 1) {
         if (curr.loop.empty()) {
-            if (mask >> curr.index & 1) C = -1;
+            if ((mask >> curr.index) & 1) C = -1;
             else R = C = curr.index;
             return;
         }
