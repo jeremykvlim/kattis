@@ -18,7 +18,7 @@ struct EerTree {
                                                        next(n + 2), a(alpha), i(1), size(2), last(0) {
         link[0] = 1;
         len[1] = -1;
-        add(str);
+        build(str);
     }
 
     int suff_link(int v) {
@@ -33,7 +33,7 @@ struct EerTree {
         return 0;
     }
 
-    void add(string &str) {
+    void build(string &str) {
         for (char ch : str) {
             int c = ch - a;
             s[i++] = c;
