@@ -30,7 +30,7 @@ int main() {
         if (__builtin_popcount(i) == 1) continue;
 
         dp2[i] = INT_MAX;
-        for (int j = i ^ (1 << (31 - __builtin_clz(i))); j; j = i & (j - 1))
+        for (int j = i ^ (1 << __lg(i)); j; j = i & (j - 1))
             dp2[i] = min(dp2[i], dp2[j] + dp2[j ^ i] + dp1[j] + dp1[j ^ i] - 2 * dp1[i]);
     }
 
