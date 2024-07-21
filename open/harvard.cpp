@@ -80,7 +80,7 @@ int main() {
 
     auto least = LLONG_MAX;
     int size = 1 << v, banks = min(b - 1, v / (s / 2 + 1)) - 1;
-    vector<long long> dp1(size), dp2(size);
+    vector<long long> dp1(size, 0), dp2(size, 0);
     for (int mask = 0; mask < size; mask++)
         if (__builtin_popcount(mask) == s) {
             for (auto &row : count) fill(row.begin(), row.end(), 0);
