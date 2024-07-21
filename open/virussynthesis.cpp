@@ -10,15 +10,15 @@ struct EerTree {
     };
 
     ascii a;
-    vector<deque<int>> next;
-    vector<int> s, len, parent, link, half;
-    int i, size, last;
+    vector<deque<int>> adj_list;
+    vector<int> s, len, prev, link, half;
+    int i, size, curr;
 
-    EerTree(string &str, int n, ascii alpha = LOWER) : s(n + 2, -1), len(n + 2, 0), parent(n + 2, 0), link(n + 2, 0), half(n + 2, 0),
-                                                       next(n + 2), a(alpha), i(1), size(2), last(0) {
+    EerTree(string &str, int n, ascii alpha = LOWER) : s(n + 2, -1), len(n + 2, 0), prev(n + 2, 0), link(n + 2, 0), half(n + 2, 0),
+                                                       adj_list(n + 2), a(alpha), i(1), size(2), curr(0) {
         link[0] = 1;
         len[1] = -1;
-        build(str);
+        add(str);
     }
 
     int suff_link(int v) {
@@ -26,30 +26,31 @@ struct EerTree {
         return v;
     }
 
-    int get(int v, int c) const {
-        for (int ch : next[v])
-            if ((char) ch == c) return ch >> 8;
-
-        return 0;
-    }
-
-    void build(string &str) {
+    void add(string &str) {
         for (char ch : str) {
             int c = ch - a;
             s[i++] = c;
-            last = suff_link(last);
-            if(!get(last, c)) {
-                int u = get(suff_link(link[last]), c);
-                link[size] = u;
-                parent[size] = last;
-                len[size] = len[last] + 2;
-                next[last].emplace_front((size << 8) | c);
+            curr = suff_link(curr);
 
-                int h = get(suff_link(half[last]), c);
+            auto next = [&](int v) {
+                for (int u : adj_list[v])
+                    if ((char) u == c) return u >> 8;
+
+                return 0;
+            };
+
+            if(!next(curr)) {
+                int u = next(suff_link(link[curr]));
+                link[size] = u;
+                prev[size] = curr;
+                len[size] = len[curr] + 2;
+                adj_list[curr].emplace_front((size << 8) | c);
+
+                int h = next(suff_link(half[curr]));
                 while (2 * len[h] > len[size]) h = link[h];
                 half[size++] = h;
             }
-            last = get(last, c);
+            curr = next(curr);
         }
     }
 };
@@ -72,8 +73,8 @@ int main() {
         dp.resize(et.size, 1e9);
         for (int i = 2; i < et.size; i++) {
             dp[i] = min({et.len[i], dp[et.link[i]] + et.len[i] - et.len[et.link[i]],
-                        (et.len[i] & 1) ? dp[et.parent[i]] + 2
-                                        : min(et.parent[i] ? dp[et.parent[i]] + 1 : 2, dp[et.half[i]] + 1 + et.len[i] / 2 - et.len[et.half[i]])});
+                        (et.len[i] & 1) ? dp[et.prev[i]] + 2
+                                        : min(et.prev[i] ? dp[et.prev[i]] + 1 : 2, dp[et.half[i]] + 1 + et.len[i] / 2 - et.len[et.half[i]])});
 
             n = min(n, et.i - et.len[i] + dp[i] - 1);
         }
