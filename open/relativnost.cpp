@@ -334,7 +334,7 @@ int main() {
     cin >> q;
 
     while (q--) {
-        int p, bp, ap;
+        int p, ap, bp;
         cin >> p >> ap >> bp;
 
         if (b[p]) {
