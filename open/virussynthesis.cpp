@@ -10,7 +10,7 @@ struct EerTree {
     };
 
     ascii a;
-    vector<deque<int>> adj_list;
+    vector<vector<int>> adj_list;
     vector<int> s, len, prev, link, half;
     int i, size, curr;
 
@@ -44,7 +44,7 @@ struct EerTree {
                 link[size] = u;
                 prev[size] = curr;
                 len[size] = len[curr] + 2;
-                adj_list[curr].emplace_front((size << 8) | c);
+                adj_list[curr].emplace_back((size << 8) | c);
 
                 int h = next(suff_link(half[curr]));
                 while (2 * len[h] > len[size]) h = link[h];
