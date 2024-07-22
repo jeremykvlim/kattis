@@ -7,7 +7,7 @@ int main() {
 
     int n;
     while (cin >> n && n) {
-        cin.ignore(1);
+        cin.ignore();
         
         vector<int> indices(n);
         for (int i = 0; i < n; i++) {
