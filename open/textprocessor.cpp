@@ -133,12 +133,10 @@ struct SuffixTree {
     }
 
     SuffixTree(string &s, int n) : s(s),
-                            trie(2 * n + 1),
-                            l(2 * n + 1, 0),
-                            r(2 * n + 1, n),
-                            link(2 * n + 1, 0),
-                            parent(2 * n + 1, 0),
-                            node(0), pos(0), size(2), index(0), leaves(0), count(0) {
+                                   trie(2 * n + 1),
+                                   l(2 * n + 1, 0), r(2 * n + 1, n),
+                                   link(2 * n + 1, 0), parent(2 * n + 1, 0),
+                                   node(0), pos(0), size(2), index(0), leaves(0), count(0) {
         fill(trie[1].next.begin(), trie[1].next.end(), 0);
         link[0] = 1;
         l[0] = l[1] = -1;
