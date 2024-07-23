@@ -45,26 +45,24 @@ struct SegmentTree {
         vector<double> poly;
         int offset;
 
-        Segment() : poly{1}, offset(0) {}
+        Segment() : poly{1, 0}, offset(0) {}
 
         bool operator==(const Segment &seg) const {
             return poly == seg.poly && offset == seg.offset;
         }
 
         auto & operator=(double v) {
-            if (v == 0) poly = {1};
-            else poly = {1 - v, v};
-
+            poly = {1 - v, v};
             return *this;
         }
 
         auto operator+=(const Segment &seg) {
-            auto c = convolve(poly, seg.poly);
+            auto p = convolve(poly, seg.poly);
 
-            int l = find_if(c.begin(), c.end(), [](auto value) {return value > 1e-11;}) - c.begin(),
-                r = find_if(c.rbegin(), c.rend(), [](auto value) {return value > 1e-11;}) - c.rbegin();
+            int l = find_if(p.begin(), p.end(), [](auto value) {return value > 1e-11;}) - p.begin(),
+                r = find_if(p.rbegin(), p.rend(), [](auto value) {return value > 1e-11;}) - p.rbegin();
 
-            poly = {c.begin() + l, c.end() - r};
+            poly = {p.begin() + l, p.end() - r};
             offset += seg.offset + l;
             return *this;
         }
