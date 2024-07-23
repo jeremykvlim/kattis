@@ -5,8 +5,8 @@ vector<double> convolve(const vector<double> &a, const vector<double> &b) {
     int n = 1;
     while (n < a.size() + b.size() - 1) n <<= 1;
 
-    vector<int> reverse(n, 0);
-    for (int i = 0; i < n; i++) reverse[i] = (reverse[i / 2] | (i & 1) << __lg(n)) >> 1;
+    vector<int> rev(n, 0);
+    for (int i = 0; i < n; i++) rev[i] = (rev[i / 2] | (i & 1) << __lg(n)) >> 1;
 
     vector<complex<double>> twiddles(n, 1);
     for (int k = 2; k < n; k <<= 1) {
@@ -16,7 +16,7 @@ vector<double> convolve(const vector<double> &a, const vector<double> &b) {
 
     auto fft = [&](vector<complex<double>> &v) {
         for (int i = 0; i < n; i++)
-            if (i < reverse[i]) swap(v[i], v[reverse[i]]);
+            if (i < rev[i]) swap(v[i], v[rev[i]]);
 
         for (int k = 1; k < n; k <<= 1)
             for (int i = 0; i < n; i += k << 1)
@@ -26,17 +26,17 @@ vector<double> convolve(const vector<double> &a, const vector<double> &b) {
                     v[i + j] += t;
                 }
     };
-    vector<complex<double>> dft_in(n), dft_out(n);
-    for (int i = 0; i < a.size(); i++) dft_in[i].real(a[i]);
-    for (int i = 0; i < b.size(); i++) dft_in[i].imag(b[i]);
-    fft(dft_in);
-    for (auto &da : dft_in) da *= da;
+    vector<complex<double>> dft(n);
+    for (int i = 0; i < a.size(); i++) dft[i].real(a[i]);
+    for (int i = 0; i < b.size(); i++) dft[i].imag(b[i]);
+    fft(dft);
 
-    for (int i = 0; i < n; i++) dft_out[i] = dft_in[-i & (n - 1)] - conj(dft_in[i]);
-    fft(dft_out);
+    for (auto &d : dft) d *= d;
+    fft(dft);
+    reverse(dft.begin() + 1, dft.end());
 
     vector<double> c(a.size() + b.size() - 1);
-    for (int i = 0; i < c.size(); i++) c[i] = dft_out[i].imag() / (n << 2);
+    for (int i = 0; i < c.size(); i++) c[i] = 0.5 * dft[i].imag() / n;
     return c;
 }
 
@@ -58,7 +58,7 @@ struct SegmentTree {
             auto c = convolve(poly, seg.poly);
 
             int l = find_if(c.begin(), c.end(), [](auto value) {return value > 1e-11;}) - c.begin(),
-                r = find_if(c.rbegin(), c.rend(), [](auto value) {return value > 1e-11;}) - c.rbegin();
+                    r = find_if(c.rbegin(), c.rend(), [](auto value) {return value > 1e-11;}) - c.rbegin();
 
             poly = {c.begin() + l, c.end() - r};
             offset += seg.offset + l;
