@@ -303,7 +303,7 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
     while (n < a.size() + b.size() - 1) n <<= 1;
 
     vector<int> rev(n, 0);
-    for (int i = 0; i < n; i++) rev[i] = (rev[i / 2] | (i & 1) << __lg(n)) >> 1;
+    for (int i = 0; i < n; i++) rev[i] = (rev[i >> 1] | (i & 1) << __lg(n)) >> 1;
 
     auto primitive_root = []() {
         if (MODULO == 9223372036737335297 || MODULO == 2524775926340780033 || MODULO == 998244353 || MODULO == 167772161) return 3ULL;
