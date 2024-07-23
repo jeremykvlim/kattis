@@ -6,7 +6,7 @@ vector<double> convolve(const vector<double> &a, const vector<double> &b) {
     while (n < a.size() + b.size() - 1) n <<= 1;
 
     vector<int> rev(n, 0);
-    for (int i = 0; i < n; i++) rev[i] = (rev[i / 2] | (i & 1) << __lg(n)) >> 1;
+    for (int i = 0; i < n; i++) rev[i] = (rev[i >> 1] | (i & 1) << __lg(n)) >> 1;
 
     vector<complex<double>> twiddles(n, 1);
     for (int k = 2; k < n; k <<= 1) {
