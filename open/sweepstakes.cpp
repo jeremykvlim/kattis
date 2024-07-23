@@ -66,8 +66,8 @@ struct SegmentTree {
         }
 
         friend auto operator+(Segment sl, Segment sr) {
-            if (sl.poly.size() == 1 && sl.poly[0] == 1) return sr;
-            if (sr.poly.size() == 1 && sr.poly[0] == 1) return sl;
+            if (sl.poly == vector<double>{1}) return sr;
+            if (sr.poly == vector<double>{1}) return sl;
             return sl += sr;
         }
     };
@@ -96,8 +96,8 @@ struct SegmentTree {
         return query(v << 1, indices, li, mi, l, m) + query(v << 1 | 1, indices, mi, ri, m + 1, r);
     }
 
-    Segment query(vector<int> &indices, int li, int ri) {
-        return query(1, indices, li, ri, 1, n);
+    Segment query(vector<int> &indices) {
+        return query(1, indices, 0, indices.size(), 1, n);
     }
 
     auto & operator[](int i) {
@@ -153,7 +153,7 @@ int main() {
             for (int j = 0; j < s - i; j += i << 1) dp[j] = convolve(dp[j], dp[i + j]);
 
         sort(indices.begin(), indices.end());
-        auto seg = st.query(indices, 0, s);
+        auto seg = st.query(indices);
         for (int i = 0; i <= s; i++) {
             if (!(0 <= t - i - seg.offset && t - i - seg.offset < seg.poly.size())) {
                 cout << "0 ";
