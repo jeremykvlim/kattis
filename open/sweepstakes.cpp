@@ -58,7 +58,7 @@ struct SegmentTree {
             auto c = convolve(poly, seg.poly);
 
             int l = find_if(c.begin(), c.end(), [](auto value) {return value > 1e-11;}) - c.begin(),
-                    r = find_if(c.rbegin(), c.rend(), [](auto value) {return value > 1e-11;}) - c.rbegin();
+                r = find_if(c.rbegin(), c.rend(), [](auto value) {return value > 1e-11;}) - c.rbegin();
 
             poly = {c.begin() + l, c.end() - r};
             offset += seg.offset + l;
