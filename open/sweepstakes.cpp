@@ -35,8 +35,8 @@ vector<double> convolve(const vector<double> &a, const vector<double> &b) {
     fft(dft);
     reverse(dft.begin() + 1, dft.end());
 
-    vector<double> c(a.size() + b.size() - 1);
-    for (int i = 0; i < c.size(); i++) c[i] = 0.5 * dft[i].imag() / n;
+    vector<double> c(a.size() + b.size() - 1, 0.5);
+    for (int i = 0; i < c.size(); i++) c[i] *= dft[i].imag() / n;
     return c;
 }
 
