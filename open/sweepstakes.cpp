@@ -47,6 +47,10 @@ struct SegmentTree {
 
         Segment() : poly{1}, offset(0) {}
 
+        bool operator==(const Segment &seg) const {
+            return poly == seg.poly && offset == seg.offset;
+        }
+
         auto & operator=(double v) {
             if (v == 0) poly = {1};
             else poly = {1 - v, v};
@@ -54,7 +58,7 @@ struct SegmentTree {
             return *this;
         }
 
-        auto operator+=(Segment seg) {
+        auto operator+=(const Segment &seg) {
             auto c = convolve(poly, seg.poly);
 
             int l = find_if(c.begin(), c.end(), [](auto value) {return value > 1e-11;}) - c.begin(),
@@ -66,8 +70,8 @@ struct SegmentTree {
         }
 
         friend auto operator+(Segment sl, Segment sr) {
-            if (sl.poly == vector<double>{1}) return sr;
-            if (sr.poly == vector<double>{1}) return sl;
+            if (sl == Segment()) return sr;
+            if (sr == Segment()) return sl;
             return sl += sr;
         }
     };
