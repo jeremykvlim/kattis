@@ -21,7 +21,7 @@ int main() {
         for (int j = i; j < T; j++) {
             int s = max(r[i], r[j]);
             auto t = sqrt(c * d * 60 * d * 60 / s);
-            if (t < (j - i) || t > (j - i + 1)) t = j - i + 1;
+            if (t < j - i || t > j - i + 1) t = j - i + 1;
             least = min(c * d * 60 * d * 60 / t + pref[j + 1] - pref[i] - s * (j - i + 1 - t), least);
         }
 
