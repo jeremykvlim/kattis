@@ -2,9 +2,7 @@
 using namespace std;
 
 vector<double> convolve(const vector<double> &a, const vector<double> &b) {
-    int n = 1;
-    while (n < a.size() + b.size() - 1) n <<= 1;
-
+    int n = bit_ceil(a.size() + b.size() - 1);
     vector<int> rev(n, 0);
     for (int i = 0; i < n; i++) rev[i] = (rev[i >> 1] | (i & 1) << __lg(n)) >> 1;
 
