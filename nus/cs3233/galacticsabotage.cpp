@@ -62,7 +62,7 @@ struct SegmentTree {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
-    void modify(int l, int r, int value) {
+    void modify(int l, int r, int v) {
         push(l + n);
         push(r + n - 1);
         bool cl = false, cr = false;
@@ -71,11 +71,11 @@ struct SegmentTree {
             if (cr) pull(r);
             if (l & 1) {
                 cl = true;
-                apply(l++, value);
+                apply(l++, v);
             }
             if (r & 1) {
                 cr = true;
-                apply(--r, value);
+                apply(--r, v);
             }
         }
 
