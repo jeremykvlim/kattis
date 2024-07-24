@@ -105,9 +105,8 @@ struct SegmentTree {
     }
 
     SegmentTree(int n, vector<double> &a) : n(n), ST(2 * n) {
-        int bit_ceil = 1;
-        while (bit_ceil < n) bit_ceil <<= 1;
-        for (int i = 0; i < a.size(); i++) ST[(i + bit_ceil) % n + n] = a[i];
+        int m = bit_ceil(a.size());
+        for (int i = 0; i < a.size(); i++) ST[(i + m) % n + n] = a[i];
         build();
     }
 };
