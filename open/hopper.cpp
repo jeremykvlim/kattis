@@ -191,7 +191,7 @@ int main() {
             if (v % 5 > 1) continue;
 
             int u = v / 5;
-            dp[i & 1][u] = max(dp[i & 1][u], dp[(i + 1) & 1][v]);
+            dp[i & 1][u] = max(dp[i & 1][u], dp[(i & 1) ^ 1][v]);
 
             if (!visited[u]) {
                 visited[u] = true;
@@ -203,7 +203,7 @@ int main() {
             int v = visits.back();
             visits.pop_back();
 
-            dp[(i + 1) & 1][v] = 0;
+            dp[(i & 1) ^ 1][v] = 0;
         }
 
         while (!q.empty()) {
