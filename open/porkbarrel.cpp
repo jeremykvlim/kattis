@@ -218,7 +218,7 @@ int main() {
         PersistentSegmentTree pst(1, m);
         for (int i = 1; i <= m; i++) {
             auto [xi, yi, wi] = edges[i];
-            pst.modify(wi, m - i + 1, i - 1 + offset[i]);
+            pst.modify(wi, m - i + 1, i - 1 + offset[i - 1]);
 
             if (lct.find(xi) == lct.find(yi)) {
                 int j = lct.query(xi, yi);
