@@ -241,10 +241,10 @@ int main() {
         while (q--) {
             int l, h;
             cin >> l >> h;
-            l -= c;
-            h -= c;
 
-            int r = upper_bound(weights.begin() + 1, weights.end(), h) - weights.begin(), i = m - (lower_bound(weights.begin() + 1, weights.end(), l) - weights.begin() - 1);
+            int r = upper_bound(weights.begin() + 1, weights.end(), h - c) - weights.begin(), 
+                i = m - (lower_bound(weights.begin() + 1, weights.end(), l - c) - weights.begin() - 1);
+            
             c = pst.query(1, r, i + offset[i]).sum;
             cout << c << "\n";
         }
