@@ -179,7 +179,7 @@ struct LinkCutTree : SplayTree {
     void cut(int i, int j) {
         reroot(j);
         access(i);
-        ST[j].family[2] = ST[i].family[0] = 0;
+        ST[i].family[0] = ST[j].family[2] = 0;
         pull(i);
     }
 
