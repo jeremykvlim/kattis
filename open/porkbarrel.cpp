@@ -26,7 +26,7 @@ struct PersistentSegmentTree {
     vector<Segment> ST;
     vector<pair<int, int>> children;
 
-    PersistentSegmentTree(int l, int r) : root_l(l), root_r(r), roots(1), ST(1), children(1) {}
+    PersistentSegmentTree(int l, int r) : root_l(l), root_r(r), roots{0}, ST(1), children{{0, 0}} {}
 
     void modify(int v, int pos, int i) {
         roots.emplace_back(modify(v, pos, root_l, root_r, roots[i]));
