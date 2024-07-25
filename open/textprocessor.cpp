@@ -1,44 +1,52 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct SuffixTree {
-    struct Trie {
-        enum ascii {
-            LOWER = 97,
-            UPPER = 65,
-            NUM = 48,
-            NA = 0
-        };
-
-        struct TrieNode {
-            vector<int> next;
-
-            TrieNode(int range = 26) : next(range, -1) {}
-        };
-
-        vector<TrieNode> T;
-        ascii a;
-        int r;
-
-        Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
-
-        auto & operator[](int i) {
-            return T[i];
-        }
+struct Trie {
+    enum ascii {
+        LOWER = 97,
+        UPPER = 65,
+        NUM = 48,
+        NA = 0
     };
 
+    struct TrieNode {
+        vector<int> next;
+
+        TrieNode(int range = 26) : next(range, -1) {}
+    };
+
+    vector<TrieNode> T;
+    ascii a;
+    int r;
+
+    Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
+
+    auto & operator[](int i) {
+        return T[i];
+    }
+};
+
+struct SuffixTree : Trie {
     string s;
-    Trie trie;
     vector<int> l, r, parent, link;
     int node, pos, size, index, leaves;
     long long count;
     queue<int> order;
 
+    SuffixTree(string &s, int n) : Trie(2 * n + 1), s(s),
+                                   l(2 * n + 1, 0), r(2 * n + 1, n), link(2 * n + 1, 0), parent(2 * n + 1, 0),
+                                   node(0), pos(0), size(2), index(0), leaves(0), count(0) {
+        fill(T[1].next.begin(), T[1].next.end(), 0);
+        link[0] = 1;
+        l[0] = l[1] = -1;
+        r[0] = r[1] = parent[0] = parent[1] = 0;
+    }
+
     void add(char ch) {
-        int c = ch - trie.a;
+        int c = ch - a;
         if (pos >= r[node]) {
-            if (trie[node].next[c] == -1) {
-                trie[node].next[c] = size;
+            if (T[node].next[c] == -1) {
+                T[node].next[c] = size;
                 leaves++;
                 order.emplace(size);
 
@@ -47,15 +55,15 @@ struct SuffixTree {
                 node = link[node];
                 pos = r[node];
 
-                add(c + trie.a);
+                add(c + a);
                 return;
             }
 
-            node = trie[node].next[c];
+            node = T[node].next[c];
             pos = l[node];
         }
 
-        if (pos == -1 || c == s[pos] - trie.a) pos++;
+        if (pos == -1 || c == s[pos] - a) pos++;
         else {
             l[size + 1] = index;
             l[size] = l[node];
@@ -65,23 +73,23 @@ struct SuffixTree {
             parent[size] = parent[node];
             parent[node] = size;
 
-            trie[parent[size]].next[s[l[size]] - trie.a] = size;
-            trie[size].next[s[pos] - trie.a] = node;
-            trie[size].next[c] = size + 1;
+            T[parent[size]].next[s[l[size]] - a] = size;
+            T[size].next[s[pos] - a] = node;
+            T[size].next[c] = size + 1;
             leaves++;
             order.emplace(size + 1);
 
             node = link[parent[size]];
             pos = l[size];
             while (pos < r[size]) {
-                node = trie[node].next[s[pos] - trie.a];
+                node = T[node].next[s[pos] - a];
                 pos += r[node] - l[node];
             }
             link[size] = (pos == r[size]) ? node : size + 2;
             pos = r[node] + r[size] - pos;
             size += 2;
 
-            add(c + trie.a);
+            add(c + a);
             return;
         }
 
@@ -99,10 +107,10 @@ struct SuffixTree {
             pos = l[v];
 
             node = link[parent[v]];
-            node = trie[node].next[s[pos] - trie.a];
+            node = T[node].next[s[pos] - a];
             while (pos + r[node] - l[node] < i) {
                 pos += r[node] - l[node];
-                node = trie[node].next[s[pos] - trie.a];
+                node = T[node].next[s[pos] - a];
             }
             pos = l[node] + i - pos;
             order.emplace(v);
@@ -111,17 +119,17 @@ struct SuffixTree {
             count -= i - l[v];
 
             int p = parent[v];
-            trie[p].next[s[l[v]] - trie.a] = -1;
+            T[p].next[s[l[v]] - a] = -1;
 
             if (p) {
                 int ch = -1;
-                for (int c : trie[p].next)
+                for (int c : T[p].next)
                     if (c != -1) {
                         if (ch != -1) return;
                         else ch = c;
                     }
 
-                trie[parent[p]].next[s[l[p]] - trie.a] = ch;
+                T[parent[p]].next[s[l[p]] - a] = ch;
                 parent[ch] = parent[p];
                 l[ch] -= r[p] - l[p];
                 if (node == p) {
@@ -130,17 +138,6 @@ struct SuffixTree {
                 }
             }
         }
-    }
-
-    SuffixTree(string &s, int n) : s(s),
-                                   trie(2 * n + 1),
-                                   l(2 * n + 1, 0), r(2 * n + 1, n),
-                                   link(2 * n + 1, 0), parent(2 * n + 1, 0),
-                                   node(0), pos(0), size(2), index(0), leaves(0), count(0) {
-        fill(trie[1].next.begin(), trie[1].next.end(), 0);
-        link[0] = 1;
-        l[0] = l[1] = -1;
-        r[0] = r[1] = parent[0] = parent[1] = 0;
     }
 };
 
