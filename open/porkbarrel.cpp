@@ -63,135 +63,130 @@ struct PersistentSegmentTree {
     }
 };
 
-struct LinkCutTree {
-    struct SplayTree {
-        struct SplayNode {
-            array<int, 3> family;
-            bool flip;
-            int v1 = 0, v2 = 0, i1 = 0, i2 = 0;
+struct SplayTree {
+    struct SplayNode {
+        array<int, 3> family;
+        bool flip;
+        int v1 = 0, v2 = 0, i1 = 0, i2 = 0;
 
-            SplayNode(int v = 0, int i = -1) : family{0, 0, 0}, flip(false), v1(v), v2(v), i1(i), i2(i) {}
-        };
-
-        vector<SplayNode> ST;
-
-        SplayTree(int n) : ST(n) {}
-
-        auto & operator[](int i) {
-            return ST[i];
-        }
-
-        void pull(int i) {
-            if (!i) return;
-            ST[i].v2 = ST[i].v1;
-            ST[i].i2 = ST[i].i1;
-            auto update = [&](int c) {
-                if (ST[i].v2 < ST[c].v2) {
-                    ST[i].v2 = ST[c].v2;
-                    ST[i].i2 = ST[c].i2;
-                }
-            };
-            auto [l, r, p] = ST[i].family;
-            update(l);
-            update(r);
-        }
-
-        void reverse(int i) {
-            if (!i) return;
-            auto &[l, r, p] = ST[i].family;
-            swap(l, r);
-            ST[i].flip ^= 1;
-        }
-
-        void push(int i) {
-            if (!i) return;
-            if (ST[i].flip) {
-                auto [l, r, p] = ST[i].family;
-                if (l) reverse(l);
-                if (r) reverse(r);
-                ST[i].flip = false;
-            }
-        }
-
-        void splay(int i) {
-            auto root = [&](int i) {
-                auto [l, r, p] = ST[ST[i].family[2]].family;
-                return !i || l != i && r != i;
-            };
-
-            auto child = [&](int i, int parent) {return ST[parent].family[1] == i;};
-
-            auto rotate = [&](int i) {
-                int j = ST[i].family[2], k = ST[j].family[2];
-                if (!root(j)) ST[k].family[child(j, k)] = i;
-
-                int c = child(i, j), s = ST[j].family[c] = ST[i].family[c ^ 1];
-                if (s) ST[s].family[2] = j;
-
-                ST[i].family[c ^ 1] = j;
-                ST[i].family[2] = k;
-                ST[j].family[2] = i;
-                pull(j);
-            };
-
-            auto propagate = [&](auto &&self, int i) -> void {
-                if (!root(i)) self(self, ST[i].family[2]);
-                push(i);
-            };
-
-            propagate(propagate, i);
-            while (!root(i)) {
-                int j = ST[i].family[2], k = ST[j].family[2];
-                if (!root(j)) rotate(child(i, j) != child(j, k) ? i : j);
-                rotate(i);
-            }
-            pull(i);
-        }
+        SplayNode(int v = 0, int i = -1) : family{0, 0, 0}, flip(false), v1(v), v2(v), i1(i), i2(i) {}
     };
-    SplayTree tree;
 
-    LinkCutTree(int n) : tree(n + 1) {}
+    vector<SplayNode> ST;
+
+    SplayTree(int n) : ST(n) {}
 
     auto & operator[](int i) {
-        return tree[i];
+        return ST[i];
     }
 
-    void access(int i) {
-        for (int prev = 0, curr = i; curr; prev = curr, curr = tree[curr].family[2]) {
-            tree.splay(curr);
-            tree[curr].family[1] = prev;
-            tree.pull(curr);
+    void pull(int i) {
+        if (!i) return;
+        ST[i].v2 = ST[i].v1;
+        ST[i].i2 = ST[i].i1;
+        auto update = [&](int c) {
+            if (ST[i].v2 < ST[c].v2) {
+                ST[i].v2 = ST[c].v2;
+                ST[i].i2 = ST[c].i2;
+            }
+        };
+        auto [l, r, p] = ST[i].family;
+        update(l);
+        update(r);
+    }
+
+    void reverse(int i) {
+        if (!i) return;
+        auto &[l, r, p] = ST[i].family;
+        swap(l, r);
+        ST[i].flip ^= 1;
+    }
+
+    void push(int i) {
+        if (!i) return;
+        if (ST[i].flip) {
+            auto [l, r, p] = ST[i].family;
+            if (l) reverse(l);
+            if (r) reverse(r);
+            ST[i].flip = false;
         }
-        tree.splay(i);
+    }
+
+    void splay(int i) {
+        auto root = [&](int i) {
+            auto [l, r, p] = ST[ST[i].family[2]].family;
+            return !i || l != i && r != i;
+        };
+
+        auto child = [&](int i, int parent) {return ST[parent].family[1] == i;};
+
+        auto rotate = [&](int i) {
+            int j = ST[i].family[2], k = ST[j].family[2];
+            if (!root(j)) ST[k].family[child(j, k)] = i;
+
+            int c = child(i, j), s = ST[j].family[c] = ST[i].family[c ^ 1];
+            if (s) ST[s].family[2] = j;
+
+            ST[i].family[c ^ 1] = j;
+            ST[i].family[2] = k;
+            ST[j].family[2] = i;
+            pull(j);
+        };
+
+        auto propagate = [&](auto &&self, int i) -> void {
+            if (!root(i)) self(self, ST[i].family[2]);
+            push(i);
+        };
+
+        propagate(propagate, i);
+        while (!root(i)) {
+            int j = ST[i].family[2], k = ST[j].family[2];
+            if (!root(j)) rotate(child(i, j) != child(j, k) ? i : j);
+            rotate(i);
+        }
+        pull(i);
+    }
+};
+
+struct LinkCutTree : SplayTree {
+    LinkCutTree(int n) : SplayTree(n + 1) {}
+
+    void access(int i) {
+        for (int prev = 0, curr = i; curr; prev = curr, curr = ST[curr].family[2]) {
+            splay(curr);
+            ST[curr].family[1] = prev;
+            pull(curr);
+        }
+        splay(i);
     }
 
     int find(int i) {
         access(i);
-        while (tree[i].family[0]) tree.push(i = tree[i].family[0]);
+        while (ST[i].family[0]) push(i = ST[i].family[0]);
         return i;
     }
 
     void reroot(int i) {
         access(i);
-        tree.reverse(i);
+        reverse(i);
     }
 
     void link(int i, int j) {
         reroot(i);
-        tree[i].family[2] = j;
+        ST[i].family[2] = j;
     }
 
     void cut(int i, int j) {
         reroot(j);
         access(i);
-        tree[i].family[0] = tree[j].family[2] = 0;
-        tree.pull(i);
+        ST[j].family[2] = ST[i].family[0] = 0;
+        pull(i);
     }
 
     int query(int i, int j) {
         reroot(j);
         access(i);
-        return tree[i].i2;
+        return ST[i].i2;
     }
 };
 
