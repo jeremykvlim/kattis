@@ -3,16 +3,9 @@ using namespace std;
 
 struct Hash {
     static uint64_t encode(array<string, 3> a) {
-        auto encoded = 14695981039346656037ULL, p = 1099511628211ULL;
-        for (auto &s : a) {
-            encoded ^= s.size();
-            encoded *= p;
-            for (auto c : s) {
-                encoded ^= c;
-                encoded *= p;
-            }
-        }
-
+        auto encoded = 0ULL;
+        for (auto e : a)
+            for (auto c : e) encoded = (encoded << 8) | c;
         return encoded;
     }
 
