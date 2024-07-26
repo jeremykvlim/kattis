@@ -3,17 +3,17 @@ using namespace std;
 
 struct Hash {
     static uint64_t encode(array<string, 3> a) {
-        auto hash = 14695981039346656037ULL, p = 1099511628211ULL;
-        for (auto s : a) {
-            hash ^= s.size();
-            hash *= p;
-            for (char c : s) {
-                hash ^= c;
-                hash *= p;
+        auto encoded = 14695981039346656037ULL, p = 1099511628211ULL;
+        for (auto &s : a) {
+            encoded ^= s.size();
+            encoded *= p;
+            for (auto c : s) {
+                encoded ^= c;
+                encoded *= p;
             }
         }
 
-        return hash;
+        return encoded;
     }
 
     static uint64_t h(uint64_t key) {
