@@ -34,10 +34,10 @@ int main() {
     vector<string> orders{"Pre", "In", "Post"};
     do {
         unordered_map<array<string, 3>, array<string, 3>, Hash> cache;
-        auto construct = [&](auto &&self, array<string, 3> routines) -> array<string, 3> {
-            if (cache.count(routines)) return cache[routines];
+        auto construct = [&](auto &&self, array<string, 3> r) -> array<string, 3> {
+            if (cache.count(r)) return cache[r];
 
-            int n = routines[0].size() | routines[1].size() | routines[2].size();
+            int n = r[0].size() | r[1].size() | r[2].size();
 
             bool diff = false;
             auto change = [&](auto &s1, auto s2) {
@@ -46,25 +46,25 @@ int main() {
             };
 
             if (n == 1) {
-                auto s = !routines[0].empty() ? routines[0] : !routines[1].empty() ? routines[1] : routines[2];
-                change(routines[0], s);
-                change(routines[1], s);
-                change(routines[2], s);
+                auto s = !r[0].empty() ? r[0] : !r[1].empty() ? r[1] : r[2];
+                change(r[0], s);
+                change(r[1], s);
+                change(r[2], s);
 
-                if (!diff) return routines;
+                if (!diff) return r;
                 else return {};
             }
 
             array<string, 3> t;
             for (int i = 0; i < n; i++) {
-                auto v = !routines[0].empty() ? routines[0][0] : !routines[1].empty() ? routines[1][i] : routines[2][n - 1];
+                auto v = !r[0].empty() ? r[0][0] : !r[1].empty() ? r[1][i] : r[2][n - 1];
 
                 array<string, 3> l, r;
-                diff = (!routines[1].empty() && routines[1][i] != v) || (!routines[2].empty() && routines[2][n - 1] != v);
+                diff = (!r[1].empty() && r[1][i] != v) || (!r[2].empty() && r[2][n - 1] != v);
                 for (int j = 2; ~j; j--)
-                    if (!routines[j].empty()) {
-                        change(l[calls[j * 2]], routines[j].substr(!j, i));
-                        change(r[calls[j * 2 + 1]], routines[j].substr(i + (j < 2), n - i - 1));
+                    if (!r[j].empty()) {
+                        change(l[calls[j * 2]], r[j].substr(!j, i));
+                        change(r[calls[j * 2 + 1]], r[j].substr(i + (j < 2), n - i - 1));
                     }
                 if (diff) continue;
 
@@ -75,7 +75,7 @@ int main() {
                 t = !t[0].empty() && t < tl ? t : tl;
             }
 
-            return cache[routines] = t;
+            return cache[r] = t;
         };
         auto trees = construct(construct, routines);
         if (trees[0].empty()) continue;
