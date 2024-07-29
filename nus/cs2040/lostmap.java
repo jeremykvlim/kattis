@@ -10,6 +10,11 @@ public class lostmap {
         var adjMatrix = new int[n][n];
         for (int i = 0; i < n; i++) adjMatrix[i] = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
 
+        for (var e : prim_dense(n, adjMatrix)) pw.println(e.v + " " + e.u);
+        pw.flush();
+    }
+
+    static Edge[] prim_dense(int n, int[][] adjMatrix) {
         var dist = new int[n];
         Arrays.fill(dist, Integer.MAX_VALUE);
         dist[0] = 0;
@@ -24,15 +29,14 @@ public class lostmap {
                 }
 
             visited[j] = true;
-            for (int k = 1; k < n; k++)
+            for (int k = 0; k < n; k++)
                 if (!visited[k] && dist[k] > adjMatrix[j][k]) {
                     dist[k] = adjMatrix[j][k];
                     mst[k - 1] = new Edge(Math.min(j, k) + 1, Math.max(j, k) + 1);
                 }
         }
-        
-        for (var e : mst) pw.println(e.v + " " + e.u);
-        pw.flush();
+
+        return mst;
     }
 
     static class Edge {
