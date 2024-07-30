@@ -1,14 +1,12 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-bool survive(vector<pair<int, double>> food, double quant) {
+bool survive(vector<pair<int, double>> food, double total) {
     priority_queue<pair<int, double>, vector<pair<int, double>>, greater<>> pq;
     for (int i = 0; i < food.size(); i++) {
         pq.emplace(food[i]);
-        auto need = quant;
-        while (need > 0) {
-            if (pq.empty()) return false;
-
+        auto need = total;
+        while (!pq.empty()) {
             auto [f, q] = pq.top();
             pq.pop();
 
@@ -19,7 +17,10 @@ bool survive(vector<pair<int, double>> food, double quant) {
             q -= use;
 
             if (q > 0) pq.emplace(f, q);
+            if (need <= 0) break;
         }
+
+        if (need > 0) return false;
     }
 
     return true;
