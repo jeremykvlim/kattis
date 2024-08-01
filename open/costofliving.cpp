@@ -34,7 +34,7 @@ struct Matrix {
         r++;
         
         if (row.size() != c) {
-            c = row.size();
+            c = max(c, (int) row.size());
             recalibrate = true;
         }
     }
