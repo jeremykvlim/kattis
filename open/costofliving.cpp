@@ -4,10 +4,11 @@ using namespace std;
 template <typename T>
 struct Matrix {
     int r, c;
+    bool recalibrate;
     vector<vector<T>> mat;
 
     Matrix(int n) : Matrix(n, n) {}
-    Matrix(int row, int col, int v = 0) : r(row), c(col), mat(row, vector<T>(col, v)) {}
+    Matrix(int row, int col, int v = 0) : r(row), c(col), mat(row, vector<T>(col, v)), recalibrate(false) {}
 
     friend auto operator*(Matrix<T> &A, Matrix<T> &B) {
         int r1 = A.r, r2 = B.r, c2 = B.c;
@@ -31,6 +32,16 @@ struct Matrix {
     void add(vector<T> &row) {
         mat.emplace_back(row);
         r++;
+        
+        if (row.size() != c) {
+            c = row.size();
+            recalibrate = true;
+        }
+    }
+
+    void adjust() {
+        if (!recalibrate) return;
+        for (auto &row : mat) row.resize(c);
     }
 };
 
@@ -107,7 +118,8 @@ int main() {
             row.back() = log(r[i]);
             A.add(row);
         }
-
+    
+    A.adjust();
     auto price = rref(A);
     while (q--) {
         int a, b;
