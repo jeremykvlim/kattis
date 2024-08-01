@@ -254,8 +254,8 @@ int main() {
     double most = 0;
     int pivot_row = -1;
     for (int i = 0; i < r - 1; i++)
-        if (most < A[i].back()) {
-            most = A[i].back();
+        if (most < A[i][c - 1]) {
+            most = A[i][c - 1];
             pivot_row = i;
         }
 
@@ -263,9 +263,8 @@ int main() {
         pivots[pivot_row] = -1;
         normalize_pivot_row(A, pivot_row, -1.);
 
-        for (int i = 0; i < r - 1; i++)
+        for (int i = 0; i < r; i++)
             if (i != pivot_row) eliminate_pivot_column(A, i, pivot_row, -1.);
-        eliminate_pivot_column(A, r - 1, pivot_row, -1.);
         simplex(A, pivots);
 
         pivot_row = get_pivot(-1);
