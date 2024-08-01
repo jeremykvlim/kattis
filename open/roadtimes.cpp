@@ -57,6 +57,36 @@ struct Matrix {
 };
 
 template <typename T>
+vector<int> rref(Matrix<T> &matrix) {
+    int n = matrix.r, m = matrix.c;
+
+    vector<int> pivots(n, -1);
+    int rank = 0;
+    for (int c = 0; c < m && rank < n; c++) {
+        int pivot = rank;
+        for (int i = rank + 1; i < n; i++)
+            if (fabs(matrix[i][c]) > fabs(matrix[pivot][c])) pivot = i;
+
+        if (fabs(matrix[pivot][c]) < 1e-9) continue;
+        swap(matrix[pivot], matrix[rank]);
+        pivots[rank] = c;
+
+        auto temp = 1 / matrix[rank][c];
+        for (int j = 0; j < m; j++) matrix[rank][j] *= temp;
+
+        for (int i = 0; i < n; i++)
+            if (i != rank && fabs(matrix[i][c]) > 1e-9) {
+                temp = matrix[i][c];
+                for (int j = 0; j < m; j++) matrix[i][j] -= temp * matrix[rank][j];
+            }
+
+        rank++;
+    }
+
+    return pivots;
+}
+
+template <typename T>
 void normalize_pivot_row(Matrix<T> &matrix, int p, T v) {
     int m = matrix.c;
     for (int i = 0; i < m; i++) matrix[p][i] /= v;
@@ -107,36 +137,6 @@ T simplex(Matrix<T> &matrix, vector<int> &pivots) {
         value -= v * matrix[pivot_row][m - 1];
         eliminate_pivot_column(matrix, n - 1, pivot_row, v);
     }
-}
-
-template <typename T>
-vector<int> rref(Matrix<T> &matrix) {
-    int n = matrix.r, m = matrix.c;
-
-    vector<int> pivots(n, -1);
-    int rank = 0;
-    for (int c = 0; c < m && rank < n; c++) {
-        int pivot = rank;
-        for (int i = rank + 1; i < n; i++)
-            if (fabs(matrix[i][c]) > fabs(matrix[pivot][c])) pivot = i;
-
-        if (fabs(matrix[pivot][c]) < 1e-9) continue;
-        swap(matrix[pivot], matrix[rank]);
-        pivots[rank] = c;
-
-        auto temp = 1 / matrix[rank][c];
-        for (int j = 0; j < m; j++) matrix[rank][j] *= temp;
-
-        for (int i = 0; i < n; i++)
-            if (i != rank && fabs(matrix[i][c]) > 1e-9) {
-                temp = matrix[i][c];
-                for (int j = 0; j < m; j++) matrix[i][j] -= temp * matrix[rank][j];
-            }
-
-        rank++;
-    }
-
-    return pivots;
 }
 
 int main() {
@@ -228,9 +228,11 @@ int main() {
         for (int j = 0; j < n; j++)
             if (adj_matrix[i][j] > 0) {
                 pivots.emplace_back(count);
+                
                 vector<double> curr(count + 2, 0);
                 curr[indices[i][j]] = curr[count++] = 1;
                 curr[count] = -adj_matrix[i][j];
+
                 A.add(curr);
                 r++;
 
