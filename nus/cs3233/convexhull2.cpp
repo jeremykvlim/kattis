@@ -8,18 +8,18 @@ struct Point {
     Point() {}
     Point(T x, T y) : x(x), y(y) {}
 
-    auto operator<(Point<T> &p) const {
+    auto operator<(Point &p) const {
         return x != p.x ? x < p.x : y < p.y;
     }
 
-    auto operator==(Point<T> &p) const {
+    auto operator==(Point &p) const {
         return x == p.x && y == p.y;
     }
 };
 
 template <typename T>
-double cross(Point<T> a, Point<T> b, Point<T> c) {
-    return (double) (c.x - a.x) * (double) (b.y - a.y) - (double) (c.y - a.y) * (double) (b.x - a.x);
+T cross(Point<T> a, Point<T> b, Point<T> c) {
+    return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
 }
 
 template <typename T>
@@ -54,7 +54,7 @@ int main() {
     int n;
     cin >> n;
 
-    vector<Point<int>> points;
+    vector<Point<long long>> points;
     while (n--) {
         int x, y;
         char c;
