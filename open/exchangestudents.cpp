@@ -25,7 +25,7 @@ int main() {
     int n;
     cin >> n;
 
-    vector<int> g(n), h(n);
+    vector<int> g(n + 1), h(n + 1);
     for (int i = 1; i <= n; i++) cin >> g[i];
     for (int i = 1; i <= n; i++) cin >> h[i];
 
@@ -41,6 +41,9 @@ int main() {
     stable_sort(ranks_g.begin() + 1, ranks_g.end(), [&](int i, int j) {return g[i] < g[j];});
     stable_sort(ranks_h.begin() + 1, ranks_h.end(), [&](int i, int j) {return h[i] < h[j];});
 
+    vector<int> indices(n + 1);
+    for (int i = 1; i <= n; i++) indices[ranks_g[i]] = i;
+
     auto s = 0LL;
     for (int i = 1; i <= n; i++) {
         s += abs(fw_g.pref_sum(ranks_g[i]) - fw_h.pref_sum(ranks_h[i]));
@@ -48,11 +51,9 @@ int main() {
         fw_h.update(ranks_h[i], -1);
     }
     cout << s << "\n";
+
     s = min(s, (long long) 2e5);
-    
-    vector<int> indices(n + 1);
-    for (int i = 1; i <= n; i++) indices[ranks_g[i]] = i;
-    
+
     list<int> positions(n + 1);
     iota(positions.begin(), positions.end(), 0);
 
@@ -61,12 +62,13 @@ int main() {
     for (int i = n - 1; i; i--) its[i] = prev(its[i + 1]);
 
     for (int k = 1; k <= n; k++) {
-        int gr = ranks_g[k], hr = ranks_h[k];
+        int gi = ranks_g[k], hi = ranks_h[k];
 
         auto exchange = [&](auto l) {
-            for (auto r = l; *l != hr; r = ++l) {
+            while (*l != hi) {
+                auto r = next(l);
                 while (g[*l] == g[*r]) r++;
-                while (r != l) {
+                while (l != r) {
                     int i = *prev(r), j = *r;
                     cout << i << " " << j << "\n";
 
@@ -76,12 +78,13 @@ int main() {
                     if (!--s) exit(0);
                     r--;
                 }
+                l++;
             }
         };
 
-        if (gr < hr) exchange(its[gr]);
-        else exchange(make_reverse_iterator(next(its[gr])));
-
-        positions.erase(its[hr]);
+        if (gi < hi) exchange(its[gi]);
+        else exchange(make_reverse_iterator(next(its[gi])));
+        
+        positions.erase(its[hi]);
     }
 }
