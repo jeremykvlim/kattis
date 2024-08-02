@@ -14,14 +14,13 @@ void tarjan(int v, vector<int> &order, vector<int> &low, vector<int> &component,
 
     if (order[v] == low[v]) {
         sccs++;
-        for (int u = s.top(); u != v; u = s.top()) {
+        int u;
+        do {
+            u = s.top();
             s.pop();
             stacked[u] = false;
             component[u] = sccs;
-        }
-        s.pop();
-        stacked[v] = false;
-        component[v] = sccs;
+        } while (u != v);
     }
 }
 
