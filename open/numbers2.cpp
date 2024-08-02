@@ -310,10 +310,6 @@ struct Matrix {
         return C;
     }
 
-    friend auto operator*=(Matrix<T> &A, Matrix<T> &B) {
-        return A = A * B;
-    }
-
     auto & operator[](int i) {
         return mat[i];
     }
