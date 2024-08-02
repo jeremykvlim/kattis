@@ -10,8 +10,8 @@ struct Point {
 };
 
 template <typename T>
-double cross(Point<T> a, Point<T> b) {
-    return (double) (a.x * b.y) - (a.y * b.x);
+T cross(Point<T> a, Point<T> b) {
+    return (a.x * b.y) - (a.y * b.x);
 }
 
 int main() {
