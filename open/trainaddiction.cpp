@@ -37,6 +37,7 @@ bool isprime(unsigned long long n) {
 }
 
 template <typename M>
+struct MontgomeryModInt {
     using T = typename decay<decltype(M::value)>::type;
     using U = typename conditional<is_same<T, unsigned int>::value, unsigned long long, typename conditional<is_same<T, unsigned long long>::value, unsigned __int128, void>::type>::type;
     using I = typename conditional<is_same<T, unsigned int>::value, int, typename conditional<is_same<T, unsigned long long>::value, long long, void>::type>::type;
@@ -313,10 +314,6 @@ struct Matrix {
                 for (int k = 0; k < r2; k++) C[i][j] += A[i][k] * B[k][j];
 
         return C;
-    }
-
-    friend auto operator*=(Matrix<T> &A, Matrix<T> &B) {
-        return A = A * B;
     }
 
     auto & operator[](int i) {
