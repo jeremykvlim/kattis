@@ -13,8 +13,8 @@ int main() {
         int u, v, w;
         cin >> u >> v >> w;
 
-        adj_list[u - 1].emplace_back(w, v - 1);
-        adj_list[v - 1].emplace_back(w, u - 1);
+        adj_list[u - 1].emplace_back(v - 1, w);
+        adj_list[v - 1].emplace_back(u - 1, w);
     }
 
     vector<long long> dist(V, LLONG_MAX);
@@ -27,7 +27,7 @@ int main() {
 
         if (dist[v] != d) continue;
 
-        for (auto [w, u] : adj_list[v])
+        for (auto [u, w] : adj_list[v])
             if (dist[u] > d + w) {
                 dist[u] = d + w;
                 pq.emplace(d + w, u);
