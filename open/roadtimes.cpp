@@ -124,6 +124,31 @@ T simplex(Matrix<T> &matrix, vector<int> &pivots) {
     }
 }
 
+vector<int> dijkstra_dense(int s, vector<vector<int>> adj_matrix) {
+    int n = adj_matrix.size();
+
+    vector<int> dist(n, INT_MAX), prev(n, -1);
+    dist[s] = 0;
+    vector<bool> visited(n, false);
+    for (int i = 0; i < n; i++) {
+        int d = INT_MAX, j = 0;
+        for (int k = 0; k < n; k++)
+            if (!visited[k] && d > dist[k]) {
+                d = dist[k];
+                j = k;
+            }
+
+        visited[j] = true;
+        for (int k = 0; k < n; k++)
+            if (!visited[k] && adj_matrix[j][k] > 0 && dist[k] > dist[j] + adj_matrix[j][k]) {
+                dist[k] = dist[j] + adj_matrix[j][k];
+                prev[k] = j;
+            }
+    }
+
+    return prev;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -140,36 +165,11 @@ int main() {
             if (adj_matrix[i][j] > 0) indices[i][j] = c++;
         }
 
-    vector<int> prev(n);
-    vector<int> dist(n);
-    vector<bool> visited(n);
-    auto dijkstra_dense = [&](int s) {
-        fill(prev.begin(), prev.end(), -1);
-        fill(dist.begin(), dist.end(), INT_MAX);
-        dist[s] = 0;
-        fill(visited.begin(), visited.end(), false);
-        for (int i = 0; i < n; i++) {
-            int d = INT_MAX, j = 0;
-            for (int k = 0; k < n; k++)
-                if (!visited[k] && d > dist[k]) {
-                    d = dist[k];
-                    j = k;
-                }
-
-            visited[j] = true;
-            for (int k = 0; k < n; k++)
-                if (!visited[k] && adj_matrix[j][k] > 0 && dist[k] > dist[j] + adj_matrix[j][k]) {
-                    dist[k] = dist[j] + adj_matrix[j][k];
-                    prev[k] = j;
-                }
-        }
-    };
-
     int r;
     cin >> r;
 
     Matrix<double> A(r, c + 1);
-    auto path = [&](int d, int s, auto &t, int row, bool rev = false) {
+    auto path = [&](auto prev, int d, int s, auto &t, int row, bool rev = false) {
         while (d != s) {
             int v = prev[d];
             A[row][indices[v][d]] = rev ? -1 : 1;
@@ -182,9 +182,9 @@ int main() {
         int s, d, t;
         cin >> s >> d >> t;
 
-        dijkstra_dense(s);
+        auto prev = dijkstra_dense(s, adj_matrix);
         t *= -1;
-        path(d, s, t, i);
+        path(prev, d, s, t, i);
         A[i][c] = t;
     }
     auto pivots = rref(A);
@@ -213,7 +213,7 @@ int main() {
         for (int j = 0; j < n; j++)
             if (adj_matrix[i][j] > 0) {
                 pivots.emplace_back(count);
-                
+
                 vector<double> curr(count + 2, 0);
                 curr[indices[i][j]] = curr[count++] = 1;
                 curr[count] = -adj_matrix[i][j];
@@ -273,11 +273,11 @@ int main() {
         int s, d;
         cin >> s >> d;
 
-        dijkstra_dense(s);
+        auto prev = dijkstra_dense(s, adj_matrix);
         auto time = [&](int d, int s, bool rev = false) -> double {
             double t = 0;
             fill(A[r - 1].begin(), A[r - 1].end(), 0);
-            path(d, s, t, r - 1, rev);
+            path(prev, d, s, t, r - 1, rev);
             for (int i = 0; i < c - 1; i++) update(get_pivot(i), A[r - 1][i], t);
             return t + simplex(A, pivots);
         };
