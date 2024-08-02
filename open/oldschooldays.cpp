@@ -304,14 +304,14 @@ struct Point {
     Point() {}
     Point(T x, T y) : x(x), y(y) {}
 
-    auto operator<(Point<T> &p) const {
+    auto operator<(Point &p) const {
         return x != p.x ? x < p.x : y < p.y;
     }
 };
 
 template <typename T>
-double cross(Point<T> a, Point<T> b, Point<T> c) {
-    return (double) (c.x - a.x) * (double) (b.y - a.y) - (double) (c.y - a.y) * (double) (b.x - a.x);
+T cross(Point<T> a, Point<T> b, Point<T> c) {
+    return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
 }
 
 int main() {
@@ -323,7 +323,7 @@ int main() {
     int n;
     cin >> n;
 
-    vector<Point<int>> points(n);
+    vector<Point<long long>> points(n);
     for (auto &[x, y] : points) cin >> x >> y;
     sort(points.begin(), points.end());
 
@@ -337,8 +337,9 @@ int main() {
     for (int i = 0; i < n; i++)
         for (int j = i + 1; j < n; j++)
             for (int k = j + 1; k < n; k++) {
-                long long cross_product = cross(points[i], points[j], points[k]);
+                auto cross_product = cross(points[i], points[j], points[k]);
                 int c = count[i][j] + count[j][k] - count[k][i];
+                
                 if (cross_product < 0) {
                     cross_product *= -1;
                     c = -c - 1;
