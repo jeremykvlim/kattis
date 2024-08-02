@@ -9,21 +9,6 @@ struct Matrix {
     Matrix(int n) : Matrix(n, n) {}
     Matrix(int row, int col, int v = 0) : r(row), c(col), mat(row, vector<T>(col, v)) {}
 
-    friend auto operator*(Matrix<T> &A, Matrix<T> &B) {
-        int r1 = A.r, r2 = B.r, c2 = B.c;
-
-        Matrix<T> C(r1, c2);
-        for (int i = 0; i < r1; i++)
-            for (int j = 0; j < c2; j++)
-                for (int k = 0; k < r2; k++) C[i][j] += A[i][k] * B[k][j];
-
-        return C;
-    }
-
-    friend auto operator*=(Matrix<T> &A, Matrix<T> &B) {
-        return A = A * B;
-    }
-
     auto & operator[](int i) {
         return mat[i];
     }
