@@ -8,23 +8,23 @@ struct Point {
     Point() {}
     Point(T x, T y) : x(x), y(y) {}
 
-    auto operator<(Point<T> &p) const {
+    auto operator<(Point &p) const {
         return x != p.x ? x < p.x : y < p.y;
     }
 
-    auto operator==(Point<T> &p) const {
+    auto operator==(Point &p) const {
         return x == p.x && y == p.y;
     }
 };
 
 template <typename T>
 double dist(Point<T> a, Point<T> b) {
-    return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
+    return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
 }
 
 template <typename T>
-double cross(Point<T> a, Point<T> b, Point<T> c) {
-    return (double) (c.x - a.x) * (double) (b.y - a.y) - (double) (c.y - a.y) * (double) (b.x - a.x);
+T cross(Point<T> a, Point<T> b, Point<T> c) {
+    return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
 }
 
 template <typename T>
@@ -59,13 +59,13 @@ int main() {
     int n;
     cin >> n;
 
-    vector<Point<int>> points(n);
+    vector<Point<long long>> points(n);
     for (auto &[x, y] : points) cin >> x >> y;
 
     vector<double> d(1 << n, 0), dp(1 << n, 1e18);
     dp[0] = 0;
     for (int i = 0; i < 1 << n; i++) {
-        vector<Point<int>> enclosure;
+        vector<Point<long long>> enclosure;
         for (int j = 0; j < n; j++)
             if (i & (1 << j)) enclosure.emplace_back(points[j]);
         if (enclosure.empty()) continue;
