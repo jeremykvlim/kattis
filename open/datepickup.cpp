@@ -33,8 +33,8 @@ int main() {
     cin >> a >> b >> n >> m;
 
     vector<vector<pair<int, int>>> adj_list_front(n + 1), adj_list_back(n + 1);
-    vector<array<int, 3>> edges(m);
-    for (auto &[u, v, t] : edges) {
+    while (m--) {
+        int u, v, t;
         cin >> u >> v >> t;
 
         adj_list_front[u].emplace_back(v, t);
