@@ -3,7 +3,7 @@ using namespace std;
 
 void tarjan(int v, vector<int> &order, vector<int> &low, vector<bool> &stacked, int &count, int &sccs, bool &valid, vector<vector<int>> &adj_list, stack<int> &s) {
     if (!valid) return;
-    
+
     order[v] = low[v] = ++count;
     s.emplace(v);
     stacked[v] = true;
@@ -22,15 +22,15 @@ void tarjan(int v, vector<int> &order, vector<int> &low, vector<bool> &stacked, 
         valid = false;
         return;
     }
-    
+
     if (order[v] == low[v]) {
         sccs++;
-        for (int u = s.top(); u != v; u = s.top()) {
+        int u;
+        do {
+            u = s.top();
             s.pop();
             stacked[u] = false;
-        }
-        s.pop();
-        stacked[v] = false;
+        } while (u != v);
     }
 }
 
