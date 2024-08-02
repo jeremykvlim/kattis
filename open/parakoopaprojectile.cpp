@@ -8,14 +8,14 @@ struct Point {
     Point() {}
     Point(T x, T y) : x(x), y(y) {}
 
-    auto operator<(Point<T> &p) const {
+    auto operator<(Point &p) const {
         return x != p.x ? x < p.x : y < p.y;
     }
 };
 
 template <typename T>
-double cross(Point<T> a, Point<T> b) {
-    return (double) (a.x * b.y) - (a.y * b.x);
+T cross(Point<T> a, Point<T> b) {
+    return (a.x * b.y) - (a.y * b.x);
 }
 
 int main() {
