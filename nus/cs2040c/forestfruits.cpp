@@ -18,8 +18,8 @@ int main() {
     }
 
     vector<long long> dist(V, LLONG_MAX);
-    priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<>> pq;
     dist[0] = 0;
+    priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<>> pq;
     pq.emplace(0, 0);
     while (!pq.empty()) {
         auto [d, v] = pq.top();
