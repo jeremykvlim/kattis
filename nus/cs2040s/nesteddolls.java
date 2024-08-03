@@ -13,21 +13,27 @@ public class nesteddolls {
             var dolls = new Doll[m];
             var input = br.readLine().split(" ");
             for (int i = 0; i < m; i++) dolls[i] = new Doll(Integer.parseInt(input[2 * i]), Integer.parseInt(input[2 * i + 1]));
-            Arrays.sort(dolls, Comparator.reverseOrder());
+            Arrays.sort(dolls);
 
-            var dp = new int[2 * m];
-            int d = 0;
-            for (int i = 0; i < m; i++) {
-                int j = d;
-                for (; j >= 0; j--)
-                    if (dp[j] <= dolls[i].height) {
-                        dp[++j] = dolls[i].height;
-                        break;
+            var lnds = new int[m];
+            lnds[0] = dolls[0].height;
+            int len = 1;
+            for (int i = 1; i < m; i++) {
+                if (dolls[i].height > lnds[0]) lnds[0] = dolls[i].height;
+                else if (dolls[i].height <= lnds[len - 1]) lnds[len++] = dolls[i].height;
+                else {
+                    int l = -1, r = len, mid;
+                    while (l + 1 < r) {
+                        mid = l + (r - l) / 2;
+
+                        if (lnds[mid] < dolls[i].height) r = mid;
+                        else l = mid;
                     }
-                d = Math.max(d, j);
+                    lnds[r] = dolls[i].height;
+                }
             }
 
-            pw.println(d);
+            pw.println(len);
         }
         pw.flush();
     }
