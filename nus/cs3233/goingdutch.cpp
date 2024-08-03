@@ -18,9 +18,9 @@ int main() {
     }
     
     vector<int> dp(1 << m, 0);
-    for (int i = 1; i < 1 << m; ++i) {
+    for (int i = 1; i < 1 << m; i++) {
         int sum = 0;
-        for (int j = 0; j < m; ++j)
+        for (int j = 0; j < m; j++)
             if (i & (1 << j)) {
                 sum += balance[j];
                 dp[i] = max(dp[i], dp[i ^ (1 << j)]);
