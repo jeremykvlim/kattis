@@ -32,21 +32,30 @@ int main() {
             goto next;
         }
 
-        for (int _ = 0; _ < 2; _++) {
+        auto check = [&]() -> bool {
             for (int c = 0; c < 2; c++)
                 if (s[n - 1] == a[c ^ 1]) {
                     int len_pref = 0, len_suff = 0;
                     for (int i = 0; i < n - 1 && s[i] == a[c]; i++) len_pref++;
                     for (int i = m - 1; ~i && t[i] == a[c]; i--) len_suff++;
 
-                    if (len_pref == n - 1 && len_suff < m && len_pref <= len_suff) {
-                        cout << "1\n";
-                        goto next;
-                    }
+                    if (len_pref == n - 1 && len_suff < m && len_pref <= len_suff) return true;
                 }
 
-            reverse(s.begin(), s.end());
-            reverse(t.begin(), t.end());
+            return false;
+        };
+
+        if (check()) {
+            cout << "1\n";
+            goto next;
+        }
+
+        reverse(s.begin(), s.end());
+        reverse(t.begin(), t.end());
+
+        if (check()) {
+            cout << "1\n";
+            goto next;
         }
 
         cout << "0\n";
