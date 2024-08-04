@@ -14,10 +14,8 @@ int main() {
     int sectors = 9;
     auto theta = 2 * M_PI / sectors, a = -1e9;
     for (int i = 0; i < sectors; i++) {
-        double l = i * theta, r = i * theta + theta, mid1, mid2;
-
-        auto angle = [&](auto ang) {
-            auto xp = R * cos(ang), yp = R * sin(ang);
+        auto angle = [&](auto a) {
+            auto xp = R * cos(a), yp = R * sin(a);
 
             vector<double> angles;
             for (int i = 0; i < n; i++) angles.emplace_back(atan2(y[i] - yp, x[i] - xp));
@@ -35,6 +33,7 @@ int main() {
             return 2 * M_PI - gap;
         };
 
+        double l = i * theta, r = i * theta + theta, mid1, mid2;
         while (l + 1e-9 < r && l + l * 1e-9 < r) {
             mid1 = (l * 2 + r) / 3, mid2 = (l + r * 2) / 3;
 
