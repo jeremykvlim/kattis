@@ -44,5 +44,5 @@ int main() {
         a = max(a, angle(l));
     }
 
-    cout << fixed << setprecision(10) << a;
+    cout << fixed << setprecision(6) << a;
 }
