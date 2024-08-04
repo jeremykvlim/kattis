@@ -13,8 +13,8 @@ int main() {
     for (int i = 0; i < b; i++) cin >> p[i] >> s[i];
 
     vector<int> fails(b, 0);
-    vector<vector<vector<double>>> dp(1 << b, vector<vector<double>>(t, vector<double>(100, 0)));
-    vector<vector<vector<bool>>> visited(1 << b, vector<vector<bool>>(t, vector<bool>(100, false)));
+    vector<vector<vector<double>>> dp(1 << b, vector<vector<double>>(t, vector<double>(t, 0)));
+    vector<vector<vector<bool>>> visited(1 << b, vector<vector<bool>>(t, vector<bool>(t, false)));
     auto fix = [&](auto &&self, int mask = 0, int time = 0, int count = 0) -> double {
         if (mask == (1 << b) - 1 || time == t) return 0.;
         if (visited[mask][time][count]) return dp[mask][time][count];
