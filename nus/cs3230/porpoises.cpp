@@ -32,7 +32,6 @@ int main() {
     while (p--) {
         long long k, y;
         cin >> k >> y;
-
         cout << k << " " << fib(y, (int) 1e9).first << "\n";
     }
 }
