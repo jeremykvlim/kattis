@@ -8,10 +8,11 @@ int main() {
     int n;
     cin >> n;
 
-    vector<int> v(n + 1), p(n + 1), indices(n + 1);
+    vector<int> v(n + 1), p(n + 1);
     for (int i = 1; i <= n; i++) cin >> v[i] >> p[i];
-    iota(indices.begin(), indices.end(), 0);
 
+    vector<int> indices(n + 1);
+    iota(indices.begin(), indices.end(), 0);
     vector<multiset<int>> sets(n + 1);
     for (int i = n; i; i--) {
         auto it = sets[indices[i]].upper_bound(v[i] - 1);
