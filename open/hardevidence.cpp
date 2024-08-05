@@ -12,7 +12,7 @@ int main() {
     for (int i = 0; i < n; i++) cin >> x[i] >> y[i];
 
     int sectors = 9;
-    auto theta = 2 * M_PI / sectors, a = -1e9;
+    auto theta = 2 * M_PI / sectors, a = 0.;
     for (int i = 0; i < sectors; i++) {
         auto angle = [&](auto a) {
             auto xp = R * cos(a), yp = R * sin(a);
