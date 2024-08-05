@@ -27,20 +27,20 @@ int main() {
         int z;
         cin >> z;
 
-        while (z) {
-            auto &[f, y] = top ? deck.front() : deck.back();
-            if (z >= f) {
+        for (;;) {
+            auto &[x, y] = top ? deck.front() : deck.back();
+            if (z >= x) {
                 cards.erase({freq[y], y});
-                freq[y] -= f;
+                freq[y] -= x;
                 cards.emplace(freq[y], y);
+                z -= x;
                 top ? deck.pop_front() : deck.pop_back();
-                z -= f;
             } else {
                 cards.erase({freq[y], y});
                 freq[y] -= z;
                 cards.emplace(freq[y], y);
-                f -= z;
-                z = 0;
+                x -= z;
+                break;
             }
         }
     };
