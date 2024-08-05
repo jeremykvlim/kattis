@@ -3,7 +3,7 @@ using namespace std;
 
 int main() {
     ios::sync_with_stdio(false);
-    cin.tie(0);
+    cin.tie(nullptr);
 
     vector<int> fact(10, 1);
     for (int i = 2; i < 10; i++) fact[i] = i * fact[i - 1];
