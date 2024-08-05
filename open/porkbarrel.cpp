@@ -84,6 +84,7 @@ struct SplayTree {
         if (!i) return;
         ST[i].v2 = ST[i].v1;
         ST[i].i2 = ST[i].i1;
+
         auto update = [&](int c) {
             if (ST[i].v2 < ST[c].v2) {
                 ST[i].v2 = ST[c].v2;
@@ -95,7 +96,7 @@ struct SplayTree {
         update(r);
     }
 
-    void reverse(int i) {
+    void flip(int i) {
         if (!i) return;
         auto &[l, r, p] = ST[i].family;
         swap(l, r);
@@ -106,8 +107,8 @@ struct SplayTree {
         if (!i) return;
         if (ST[i].flip) {
             auto [l, r, p] = ST[i].family;
-            if (l) reverse(l);
-            if (r) reverse(r);
+            if (l) flip(l);
+            if (r) flip(r);
             ST[i].flip = false;
         }
     }
@@ -168,7 +169,7 @@ struct LinkCutTree : SplayTree {
 
     void reroot(int i) {
         access(i);
-        reverse(i);
+        flip(i);
     }
 
     void link(int i, int j) {
@@ -242,9 +243,9 @@ int main() {
             int l, h;
             cin >> l >> h;
 
-            int r = 1 + (upper_bound(weights.begin() + 1, weights.end(), h - c) - weights.begin() - 1), 
+            int r = 1 + (upper_bound(weights.begin() + 1, weights.end(), h - c) - weights.begin() - 1),
                 i = m - (lower_bound(weights.begin() + 1, weights.end(), l - c) - weights.begin() - 1);
-            
+
             c = pst.query(1, r, i + offset[i]).sum;
             cout << c << "\n";
         }
