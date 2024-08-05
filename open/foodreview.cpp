@@ -71,7 +71,7 @@ int main() {
 
         int d = 1e9;
         for (int u = 0; u < n; u++)
-            if (curr & (1 << u) && count & (1 << u))
+            if ((curr & (1 << u)) && (count & (1 << u)))
                 for (int v = 0; v < n; v++)
                     if (u != v && dist[u][v] < 1e9 && (curr & (1 << v)) && (count & (1 << v)))
                         d = min(d, dist[u][v] + self(self, count ^ ((1 << u) | (1 << v)), curr));
