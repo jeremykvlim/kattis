@@ -35,9 +35,9 @@ int main() {
 
     vector<string> words(n);
     for (auto &w : words) cin >> w;
-
     sort(words.begin(), words.end());
     words.erase(unique(words.begin(), words.end()), words.end());
+
     unordered_map<tuple<string, string, int, int>, int, Hash> pairs;
     for (int i = 0; i < words.size(); i++)
         for (int j = i + 1; j < words.size(); j++) {
@@ -54,7 +54,7 @@ int main() {
         }
 
     int count = 0;
-    for (auto [t, c] : pairs)
+    for (auto [p, c] : pairs)
         if (c == 1) count++;
 
     cout << count;
