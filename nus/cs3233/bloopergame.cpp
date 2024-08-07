@@ -19,7 +19,7 @@ int main() {
 
     double d = 1;
     while (l > 0) {
-        double prob = pq.top();
+        auto prob = pq.top();
         pq.pop();
 
         int c = (l + n - 1) / n;
