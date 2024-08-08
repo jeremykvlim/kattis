@@ -35,7 +35,7 @@ int main() {
 
         double l = i * theta, r = i * theta + theta, mid1, mid2;
         while (l + 1e-9 < r && l + l * 1e-9 < r) {
-            mid1 = (l * 2 + r) / 3, mid2 = (l + r * 2) / 3;
+            mid1 = l + (r - l) / 3, mid2 = r - (r - l) / 3;
 
             if (angle(mid1) > angle(mid2)) r = mid2;
             else l = mid1;
