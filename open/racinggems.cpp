@@ -5,20 +5,20 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n, r, w, h;
-    cin >> n >> r >> w >> h;
+    int n, R, w, h;
+    cin >> n >> R >> w >> h;
 
     vector<pair<long long, long long>> gems(n);
-    for (int i = 0; i < n; i++) {
+    for (auto &[l, r] : gems) {
         long long x, y;
         cin >> x >> y;
 
-        gems[i] = {y - x * r, y + x * r};
+        l = y - x * R;
+        r = y + x * R;
     }
     sort(gems.begin(), gems.end());
 
     vector<long long> lis(n, LLONG_MAX);
-    for (auto [x, y] : gems) *lower_bound(lis.begin(), lis.end(), y) = y;
-
+    for (auto [l, r] : gems) *lower_bound(lis.begin(), lis.end(), r) = r;
     cout << lower_bound(lis.begin(), lis.end(), LLONG_MAX) - lis.begin();
 }
