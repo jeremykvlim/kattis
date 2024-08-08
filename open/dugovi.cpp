@@ -8,34 +8,34 @@ int main() {
     int n;
     cin >> n;
 
-    vector<int> a(n + 1), b(n + 1), outdegree(n + 1, 0);
+    vector<int> a(n + 1), b(n + 1), degree(n + 1, 0);
     for (int i = 1; i <= n; i++) {
         cin >> a[i] >> b[i];
 
-        outdegree[a[i]]++;
+        degree[a[i]]++;
     }
 
     vector<int> sum(n + 1, 0);
     vector<bool> visited(n + 1, false);
     int money = 0;
     for (int i = 1; i <= n; i++)
-        if (!outdegree[i] && !visited[i])
-            for (int j = i, k = a[j]; !outdegree[j]; j = a[j], k = a[k]) {
+        if (!degree[i] && !visited[i])
+            for (int j = i, k = a[j]; !degree[j]; j = a[j], k = a[k]) {
                 money += max(0, b[j] - sum[j]);
                 sum[k] += b[j];
                 visited[j] = true;
-                outdegree[j] = 0;
-                outdegree[k]--;
+                degree[j] = 0;
+                degree[k]--;
             }
 
     for (int i = 1; i <= n; i++)
-        if (outdegree[i]) {
+        if (degree[i]) {
             int m = INT_MAX;
-            for (int j = i, k = a[j]; outdegree[k]; j = k, k = a[k]) {
+            for (int j = i, k = a[j]; degree[k]; j = k, k = a[k]) {
                 int diff1 = max(0, b[k] - b[j] - sum[k]), diff2 = max(0, b[k] - sum[k]);
                 money += diff1;
                 m = min(m, diff2 - diff1);
-                outdegree[k] = 0;
+                degree[k] = 0;
             }
             money += m;
         }
