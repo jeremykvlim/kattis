@@ -16,15 +16,17 @@ int main() {
         bool w1, w2;
         cin >> w1 >> w2;
 
-        if (w1 == w2) {
-            t = w1 ? (l2 == r1 - 1 ? l2 : -1) : (r2 == r - 1 ? r2 : -1);
-            l1 = w1 ? l2 - 1 : r2 - 1;
-            r = w1 ? r1 + 1 : min(r, n) + 1;
-        } else {
-            t = w1 ? (l1 == l2 - 1 ? l1 : -1) : (r1 == r2 - 1 ? r1 : -1);
-            l1 = w1 ? max(l1 - 1, 1) : r1 - 1;
-            r = w1 ? l2 + 1 : r2 + 1;
-        }
+        auto update = [&](int L1, int L2, int R1, int R2) {
+            t = w1 ? (L1 + 1 == L2 ? L1 : -1) : (R1 + 1 == R2 ? R1 : -1);
+            l1 = (w1 ? L1 : R1) - 1;
+            r = (w1 ? L2 : R2) + 1;
+
+            l1 = max(l1, 1);
+            r = min(r, n + 1);
+        };
+
+        if (w1 == w2) update(l2, r1, r2, r);
+        else update(l1, l2, r1, r2);
     }
 
     cout << "A " << t;
