@@ -60,15 +60,15 @@ int signum(T v) {
 }
 
 template <typename T>
-bool point_in_polygon(vector<Point<T>> polygon, Point<T> p) {
-    bool in = false;
+bool point_inside_polygon(vector<Point<T>> polygon, Point<T> p) {
+    bool inside = false;
     for (int i = 0; i < polygon.size(); i++) {
         auto a = polygon[i] - p, b = polygon[(i + 1) % polygon.size()] - p;
         if (a.y > b.y) swap(a, b);
-        if (signum(a.y) <= 0 && 0 < signum(b.y) && signum(cross(a, b)) < 0) in = !in;
+        if (signum(a.y) <= 0 && 0 < signum(b.y) && signum(cross(a, b)) < 0) inside = !inside;
         if (!signum(cross(a, b)) && signum(dot(a, b)) <= 0) return false;
     }
-    return in;
+    return inside;
 }
 
 template <typename T>
@@ -132,7 +132,7 @@ int main() {
             Point<double> tree(0, 0);
             auto smallest = 2 * M_PI;
             for (auto t : trees)
-                if (point_in_polygon({prev, spot, toy}, t)) {
+                if (point_inside_polygon({prev, spot, toy}, t)) {
                     auto b = t - prev;
 
                     auto theta = acos(dot(a, b) / (dist(a) * dist(b)));
@@ -145,12 +145,12 @@ int main() {
 
             auto theta = fmod(angle(a) - angle(b) + 3 * M_PI, 2 * M_PI) - M_PI;
             if (wrapped.size() > 1 && ((angles.back() < 0) ^ (angles.back() < -theta))) {
-                curr = line_intersection_point(Line(wrapped[wrapped.size() - 2], prev), Line(spot, toy));
+                spot = line_intersection_point(Line(wrapped[wrapped.size() - 2], prev), Line(spot, toy));
                 wrapped.pop_back();
                 angles.pop_back();
             } else {
                 angles.back() += theta;
-
+                spot = curr;
                 if (tree != Point(0., 0.)) {
                     wrapped.emplace_back(tree);
                     angles.emplace_back(signum(theta) * 1e-8);
@@ -159,10 +159,8 @@ int main() {
 
             double l = 0;
             for (int i = 0; i < wrapped.size() - 1; i++) l += dist(wrapped[i], wrapped[i + 1]);
-            l += dist(wrapped.back(), curr);
+            l += dist(wrapped.back(), spot);
             len = max(len, l);
-
-            spot = curr;
         }
 
     cout << fixed << setprecision(2) << len;
