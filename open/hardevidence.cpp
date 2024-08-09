@@ -22,8 +22,9 @@ int main() {
             sort(angles.begin(), angles.end());
 
             auto diff = [](auto a1, auto a2) {
-                while (a2 - a1 < -1e-11) a2 += 2 * M_PI;
-                return a2 - a1;
+                auto a = a2 - a1;
+                while (a < -1e-11) a += 2 * M_PI;
+                return a;
             };
 
             double gap = 0;
