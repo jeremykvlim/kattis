@@ -23,14 +23,13 @@ int main() {
 
             auto diff = [](auto a1, auto a2) {
                 auto a = a2 - a1;
-                while (a < -1e-11) a += 2 * M_PI;
-                return a;
+                if (a < -1e-9) a += 2 * M_PI;
+                return 2 * M_PI - a;
             };
 
-            double gap = 0;
-            for (int i = 0; i < angles.size(); i++) gap = max(gap, diff(angles[i], angles[(i + 1) % angles.size()]));
-
-            return 2 * M_PI - gap;
+            auto a = 2 * M_PI;
+            for (int i = 0; i < angles.size(); i++) a = min(a, diff(angles[i], angles[(i + 1) % angles.size()]));
+            return a;
         };
 
         double l = i * theta, r = i * theta + theta, mid1, mid2;
