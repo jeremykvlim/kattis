@@ -39,7 +39,7 @@ int main() {
 
         for (int i = max(x - r, 0); i <= min(x + r, farthest.first); i++)
             for (int j = max(y - r, 0); j <= min(y + r, farthest.second); j++)
-                if (dist(Point<int>(i, j), Point<int>(x, y)) <= r) soaked[i][j] = true;
+                if (dist(Point(i, j), Point(x, y)) <= r) soaked[i][j] = true;
     }
 
     for (auto [x, y] : points)
