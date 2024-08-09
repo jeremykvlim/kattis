@@ -61,14 +61,14 @@ int signum(T v) {
 
 template <typename T>
 bool point_in_polygon(vector<Point<T>> polygon, Point<T> p) {
-    bool inside = false;
+    bool in = false;
     for (int i = 0; i < polygon.size(); i++) {
         auto a = polygon[i] - p, b = polygon[(i + 1) % polygon.size()] - p;
         if (a.y > b.y) swap(a, b);
-        if (signum(a.y) <= 0 && 0 < signum(b.y) && signum(cross(a, b)) < 0) inside = !inside;
+        if (signum(a.y) <= 0 && 0 < signum(b.y) && signum(cross(a, b)) < 0) in = !in;
         if (!signum(cross(a, b)) && signum(dot(a, b)) <= 0) return false;
     }
-    return inside;
+    return in;
 }
 
 template <typename T>
