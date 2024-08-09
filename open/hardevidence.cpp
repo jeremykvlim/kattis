@@ -21,14 +21,8 @@ int main() {
             for (int i = 0; i < n; i++) angles.emplace_back(atan2(y[i] - yp, x[i] - xp));
             sort(angles.begin(), angles.end());
 
-            auto diff = [](auto a1, auto a2) {
-                auto a = a2 - a1;
-                if (a < -1e-9) a += 2 * M_PI;
-                return 2 * M_PI - a;
-            };
-
             auto a = 2 * M_PI;
-            for (int i = 0; i < angles.size(); i++) a = min(a, diff(angles[i], angles[(i + 1) % angles.size()]));
+            for (int i = 0; i < angles.size(); i++) a = min(a, 2 * M_PI - fmod(angles[(i + 1) % angles.size()] - angles[i] + 2 * M_PI, 2 * M_PI));
             return a;
         };
 
