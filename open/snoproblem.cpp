@@ -22,7 +22,7 @@ int main() {
     int len = 0;
     vector<vector<int>> dp(n + 1, vector<int>(3));
     auto dfs = [&](auto &&self, int v = 1, int prev = -1) -> void {
-        for (auto [u, w]: adj_list[v])
+        for (auto [u, w] : adj_list[v])
             if (u != prev) {
                 self(self, u, v);
                 len = max(len, max({dp[v][1] + dp[u][0] + w, dp[v][0] + dp[u][1] + w, dp[v][2] + dp[u][0] + w, dp[v][0] + dp[u][2], dp[v][2] + dp[u][2]}));
