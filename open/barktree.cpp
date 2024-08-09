@@ -12,7 +12,7 @@ struct Point {
         return x != p.x ? x < p.x : y < p.y;
     }
 
-    bool operator!=(Point p) const {
+    auto operator!=(Point p) const {
         return x != p.x || y != p.y;
     }
 
