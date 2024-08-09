@@ -14,8 +14,8 @@ int play(int d, int n, int r, long long total, vector<vector<vector<int>>> &bets
     for (int b = least; b <= bet; b++) {
         int most = min(play(d - b, n - 1, r - 1, total, bets, dp), play(d + b, n - 1, r, total, bets, dp));
         if (dp[d][n][r] > most) break;
-        bets[d][n][r] = b;
         dp[d][n][r] = most;
+        bets[d][n][r] = b;
     }
 
     return dp[d][n][r];
