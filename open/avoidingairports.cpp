@@ -8,7 +8,7 @@ struct Point {
     Point() {}
     Point(T x, T y) : x(x), y(y) {}
 
-    Point operator-(Point &p) const {
+    Point operator-(const Point &p) const {
         return {x - p.x, y - p.y};
     }
 };
