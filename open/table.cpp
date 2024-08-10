@@ -50,7 +50,6 @@ int main() {
     while (d--) {
         int x, y;
         cin >> x >> y;
-        
         cout << dp[x][y] << "\n";
     }
 }
