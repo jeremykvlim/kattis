@@ -53,7 +53,7 @@ int main() {
         };
         dfs(dfs);
 
-        least = 0, h = 0;
+        least = h = 0;
         eval();
         cout << (least || h < (long long) 1e12 ? "trapped\n" : "escaped\n");
     }
