@@ -8,23 +8,19 @@ struct Point {
     Point() {}
     Point(T x, T y) : x(x), y(y) {}
 
-    auto operator<(Point &p) const {
-        return x != p.x ? x < p.x : y < p.y;
-    }
-
-    auto operator!=(Point p) const {
+    auto operator!=(const Point &p) const {
         return x != p.x || y != p.y;
     }
 
-    Point operator+(Point p) const {
+    Point operator+(const Point &p) const {
         return {x + p.x, y + p.y};
     }
 
-    Point operator-(Point p) const {
+    Point operator-(const Point &p) const {
         return {x - p.x, y - p.y};
     }
 
-    Point operator*(T c) {
+    Point operator*(const T &c) {
         return {c * x, c * y};
     }
 };
