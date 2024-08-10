@@ -8,15 +8,11 @@ struct Point {
     Point() {}
     Point(T x, T y) : x(x), y(y) {}
 
-    auto operator<(Point &p) const {
-        return x != p.x ? x < p.x : y < p.y;
-    }
-
-    auto operator==(Point &p) const {
+    auto operator==(const Point &p) const {
         return x == p.x && y == p.y;
     }
 
-    auto operator!=(Point &p) const {
+    auto operator!=(const Point &p) const {
         return x != p.x || y != p.y;
     }
 
@@ -24,7 +20,7 @@ struct Point {
         return {-x, -y};
     }
 
-    Point operator-(Point &p) const {
+    Point operator-(const Point &p) const {
         return {x - p.x, y - p.y};
     }
 };
@@ -59,7 +55,6 @@ int main() {
 
     vector<int> dp(16, 16);
     dp[1] = 0;
-
     for (int i = 1; i < 15; i++) {
         auto p1 = indices[i] - indices[i - 1], p2 = indices[i + 1] - indices[i];
 
