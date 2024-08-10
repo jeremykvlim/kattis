@@ -101,8 +101,7 @@ T area_of_parallelogram(const Line<T> l1, const Line<T> l2) {
 
 template <typename T>
 Point<T> line_intersection_point(Line<T> l1, Line<T> l2) {
-    auto area = area_of_parallelogram(l1, l2);
-    auto pos = cross(l1.b - l1.a, l1.b - l2.a);
+    T area = area_of_parallelogram(l1, l2), pos = cross(l1.b - l1.a, l1.b - l2.a);
 
     if (!signum(area) && !signum(pos)) return l2.a;
     if (!signum(area)) return {numeric_limits<T>::epsilon(), numeric_limits<T>::epsilon()};
