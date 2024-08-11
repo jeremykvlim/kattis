@@ -26,15 +26,15 @@ array<long long, 3> operator*(array<long long, 3> a, long long v) {
     return {v * a[0], v * a[1], (v * (v - 1) / 2) * a[0] * a[1] + v * a[2]};
 }
 
-array<long long, 3> calc(long long range, long long a, long long x, long long b, array<long long, 3> t1, array<long long, 3> t2) {
+array<long long, 3> calc(long long range, long long a, long long x, long long b, array<long long, 3> a1, array<long long, 3> a2) {
     if (!range) return {0, 0, 0};
-    if (x >= b) return calc(range, a, x % b, b, t1, t2) + t1 * (x / b);
-    if (a >= b) return calc(range, a % b, x, b, t2 * (a / b) + t1, t2);
+    if (x >= b) return calc(range, a, x % b, b, a1, a2) + a1 * (x / b);
+    if (a >= b) return calc(range, a % b, x, b, a2 * (a / b) + a1, a2);
 
     auto r = (a * range + x) / b;
-    if (!r) return t1 * range;
+    if (!r) return a1 * range;
 
-    return t1 * ((b - x - 1) / a) + t2 + calc(r - 1, b, (b - x - 1) % a, a, t2, t1) + t1 * (range - (b * r - x - 1) / a);
+    return a1 * ((b - x - 1) / a) + a2 + calc(r - 1, b, (b - x - 1) % a, a, a2, a1) + a1 * (range - (b * r - x - 1) / a);
 }
 
 long long sum(int l, int r, int a, int b) {
@@ -99,8 +99,8 @@ int main() {
                 auto rq = fw.pref_sum(index(r1)) - fw.pref_sum(index(l1 - 1));
 
                 if (r1 != r2) rq += sum(l3, r1 - l2 + l3, a2, b2);
-                auto [l2, r2, a2, b2, l3, r3] = *s.lower_bound({0, l1, 0, 0, 0, 0});
-                if (l1 != l2) rq -= sum(l3, l1 - l2 + l3 - 1, a2, b2);
+                auto [l4, r4, a3, b3, l5, r5] = *s.lower_bound({0, l1, 0, 0, 0, 0});
+                if (l1 != l4) rq -= sum(l5, l1 - l4 + l5 - 1, a3, b3);
 
                 cout << rq << "\n";
             } else cout << sum(l1 - l2 + l3, r1 - r2 + r3, a2, b2) << "\n";
