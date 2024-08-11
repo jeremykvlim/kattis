@@ -20,7 +20,7 @@ int main() {
             auto s = dict[i];
             s.erase(s.begin() + j);
 
-            if (indices[j].find(s) != indices[j].end())
+            if (indices[j].count(s))
                 for (int k : indices[j][s]) {
                     adj_list[i].emplace_back(k);
                     adj_list[k].emplace_back(i);
