@@ -1,13 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void dfs(int i, vector<int> &prev, vector<string> &dict) {
-    if (i != -1) {
-        dfs(prev[i], prev, dict);
-        cout << dict[i] << "\n";
-    }
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -21,33 +14,35 @@ int main() {
     int size = dict.size();
     auto longest = max_element(dict.begin(), dict.end(), [&](auto s1, auto s2) {return s1.size() < s2.size();})->size();
     vector<vector<int>> adj_list(size);
-    vector<map<string, vector<int>>> sub(longest);
+    vector<unordered_map<string, vector<int>>> indices(longest);
     for (int i = 0; i < size; i++)
         for (int j = 0; j < dict[i].size(); j++) {
             auto s = dict[i];
             s.erase(s.begin() + j);
 
-            if (sub[j].count(s))
-                for (int k : sub[j][s]) {
+            if (indices[j].find(s) != indices[j].end())
+                for (int k : indices[j][s]) {
                     adj_list[i].emplace_back(k);
                     adj_list[k].emplace_back(i);
                 }
-            sub[j][s].emplace_back(i);
+
+            indices[j][s].emplace_back(i);
         }
 
-    pair<string, string> p;
     bool blank = false;
-    while (cin >> p.first >> p.second) {
+    string start, end;
+    while (cin >> start >> end) {
         if (blank) cout << "\n";
         blank = true;
 
-        int begin = lower_bound(dict.begin(), dict.end(), p.first) - dict.begin(), end = lower_bound(dict.begin(), dict.end(), p.second) - dict.begin();
+        int l = lower_bound(dict.begin(), dict.end(), start) - dict.begin(),
+            r = lower_bound(dict.begin(), dict.end(), end) - dict.begin();
 
         vector<int> dist(size, -1), prev(size, -1);
-        dist[begin] = 0;
+        dist[l] = 0;
         queue<int> q;
-        q.emplace(begin);
-        while (!q.empty() && dist[end] == -1) {
+        q.emplace(l);
+        while (!q.empty() && dist[r] == -1) {
             int v = q.front();
             q.pop();
 
@@ -59,11 +54,16 @@ int main() {
                 }
         }
 
-        if (dist[end] == -1) {
+        if (dist[r] == -1) {
             cout << "No solution.\n";
             continue;
         }
 
-        dfs(end, prev, dict);
+        auto dfs = [&](auto &&self, int v) -> void {
+            if (prev[v] != -1) self(self, prev[v]);
+            cout << dict[v] << "\n";
+        };
+
+        dfs(dfs, r);
     }
 }
