@@ -67,7 +67,7 @@ struct SplayTree {
     struct SplayNode {
         array<int, 3> family;
         bool flip;
-        int v1 = 0, v2 = 0, i1 = 0, i2 = 0;
+        int v1, v2, i1, i2;
 
         SplayNode(int v = 0, int i = -1) : family{0, 0, 0}, flip(false), v1(v), v2(v), i1(i), i2(i) {}
     };
