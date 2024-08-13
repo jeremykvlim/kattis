@@ -41,8 +41,8 @@ int main() {
     }
     sort(edges.begin(), edges.end());
 
-    vector<vector<int>> adj_list(n + 1);
     DisjointSet dsu(n + 1);
+    vector<vector<int>> adj_list(n + 1);
     vector<bool> visited(n + 1, false);
     for (auto [w, u, v] : edges)
         if (dsu.unite(u, v)) {
