@@ -1,8 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct DisjointSet {
+struct PersistentDisjointSet {
     vector<int> sets;
+    stack<pair<int, int>> history;
 
     int find(int p) {
         return (sets[p] == p) ? p : (sets[p] = find(sets[p]));
@@ -12,12 +13,24 @@ struct DisjointSet {
         int p_set = find(p), q_set = find(q);
         if (p_set != q_set) {
             sets[q_set] = p_set;
+            history.emplace(q_set, q_set);
             return true;
         }
         return false;
     }
 
-    DisjointSet(int n) : sets(n) {
+    int record() {
+        return history.size();
+    }
+
+    void undo(int version) {
+        while (record() > version) {
+            sets[history.top().first] = history.top().second;
+            history.pop();
+        }
+    }
+
+    PersistentDisjointSet(int n) : sets(n) {
         iota(sets.begin(), sets.end(), 0);
     }
 };
@@ -39,7 +52,7 @@ int main() {
     vector<pair<int, int>> junctions(q);
     for (auto &[s, t] : junctions) cin >> s >> t;
 
-    DisjointSet dsu(n + 1);
+    PersistentDisjointSet pdsu(n + 1);
     vector<int> all(q), cost(q);
     iota(all.begin(), all.end(), 0);
     auto dnc = [&](auto &&self, int curr, int lg, vector<int> &days) {
@@ -48,23 +61,19 @@ int main() {
             return;
         }
 
-        int next = curr ^ (1 << lg);
-        vector<int> undo;
+        int next = curr ^ (1 << lg), version = pdsu.record();
         for (int i = next; i; --i &= next) {
             auto [u, v] = roads[i];
-            dsu.unite(u, v);
-
-            undo.emplace_back(u);
-            undo.emplace_back(v);
+            pdsu.unite(u, v);
         }
 
         vector<int> same, diff;
         for (int d : days) {
             auto [s, t] = junctions[d];
-            (dsu.find(s) == dsu.find(t) ? same : diff).emplace_back(d);
+            (pdsu.find(s) == pdsu.find(t) ? same : diff).emplace_back(d);
         }
-
-        for (int i : undo) dsu.sets[i] = i;
+        pdsu.undo(version);
+        
         self(self, next, lg - 1, same);
         self(self, curr, lg - 1, diff);
     };
