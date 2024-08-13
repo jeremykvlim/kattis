@@ -8,13 +8,13 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<vector<int>> adj_list(n + 1), transpose(n + 1);
+    vector<vector<int>> adj_list_regular(n + 1), adj_list_transpose(n + 1);
     while (m--) {
         int a, b;
         cin >> a >> b;
 
-        adj_list[a].emplace_back(b);
-        transpose[b].emplace_back(a);
+        adj_list_regular[a].emplace_back(b);
+        adj_list_transpose[b].emplace_back(a);
     }
 
     vector<bool> visited1(n + 1, false), visited2(n + 1, false);
@@ -25,7 +25,7 @@ int main() {
         int v = q.front();
         q.pop();
 
-        for (int u : adj_list[v])
+        for (int u : adj_list_regular[v])
             if (!visited1[u]) {
                 visited1[u] = true;
                 q.emplace(u);
@@ -37,7 +37,7 @@ int main() {
         int v = q.front();
         q.pop();
 
-        for (int u : transpose[v])
+        for (int u : adj_list_transpose[v])
             if (!visited2[u]) {
                 visited2[u] = true;
                 q.emplace(u);
@@ -54,7 +54,7 @@ int main() {
     dp[1] = 1;
     for (int v = 1; v <= n; v++)
         if (visited1[v])
-            for (int u : adj_list[v])
+            for (int u : adj_list_regular[v])
                 if (visited1[u]) indegree[u]++;
 
     q.emplace(1);
@@ -64,7 +64,7 @@ int main() {
         q.pop();
 
         count--;
-        for (int u : adj_list[v])
+        for (int u : adj_list_regular[v])
             if (visited1[u]) {
                 dp[u] += dp[v];
                 if (dp[u] >= 1e9) {
