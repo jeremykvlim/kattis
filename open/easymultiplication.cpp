@@ -22,7 +22,7 @@ int main() {
         };
 
         vector<pair<int, int>> dist(m, {INT_MAX, INT_MAX});
-        vector<vector<int>> adj_list(m), transpose(m);
+        vector<vector<int>> adj_list_regular(m), adj_list_transpose(m);
         priority_queue<pair<pair<int, int>, pair<int, int>>, vector<pair<pair<int, int>, pair<int, int>>>, greater<>> pq;
         pq.push({{1, 0}, {1, 1}});
         while (!pq.empty()) {
@@ -32,8 +32,8 @@ int main() {
             auto [v, u] = nodes;
             if (dist[v] < d) continue;
 
-            adj_list[v].emplace_back(u);
-            transpose[u].emplace_back(v);
+            adj_list_regular[v].emplace_back(u);
+            adj_list_transpose[u].emplace_back(v);
 
             if (dist[v] == d) continue;
 
@@ -43,14 +43,14 @@ int main() {
         }
 
         vector<bool> visited(m + 1, false);
+        visited[0] = true;
         queue<int> q;
         q.emplace(0);
-        visited[0] = true;
         while (!q.empty()) {
             int v = q.front();
             q.pop();
 
-            for (int u : adj_list[v])
+            for (int u : adj_list_regular[v])
                 if (!visited[u]) {
                     visited[u] = true;
                     q.emplace(u);
@@ -60,7 +60,7 @@ int main() {
         stack<int> indices;
         indices.emplace(dist[0].second);
         for (int i = dist[0].second - 1, v = 1; ~i; i--)
-            if (find(transpose[v].begin(), transpose[v].end(), next(v, false)) != transpose[v].end() && visited[next(v, false)]) v = next(v, false);
+            if (find(adj_list_transpose[v].begin(), adj_list_transpose[v].end(), next(v, false)) != adj_list_transpose[v].end() && visited[next(v, false)]) v = next(v, false);
             else {
                 v = next(v, true);
                 indices.emplace(i);
