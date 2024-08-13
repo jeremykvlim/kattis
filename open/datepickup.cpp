@@ -32,15 +32,15 @@ int main() {
     int n, m;
     cin >> a >> b >> n >> m;
 
-    vector<vector<pair<int, int>>> adj_list_front(n + 1), adj_list_back(n + 1);
+    vector<vector<pair<int, int>>> adj_list_regular(n + 1), adj_list_transpose(n + 1);
     while (m--) {
         int u, v, t;
         cin >> u >> v >> t;
 
-        adj_list_front[u].emplace_back(v, t);
-        adj_list_back[v].emplace_back(u, t);
+        adj_list_regular[u].emplace_back(v, t);
+        adj_list_transpose[v].emplace_back(u, t);
     }
-    auto dist_front = dijkstra(1, adj_list_front), dist_back = dijkstra(n, adj_list_back);
+    auto dist_regular = dijkstra(1, adj_list_regular), dist_transpose = dijkstra(n, adj_list_transpose);
 
     long long l = 0, r = 1e12, mid;
     while (l + 1 < r) {
@@ -48,13 +48,13 @@ int main() {
 
         auto check = [&](auto d) -> bool {
             vector<bool> valid(n + 1, false);
-            for (int i = 1; i <= n; i++) valid[i] = (dist_back[i] <= d);
+            for (int i = 1; i <= n; i++) valid[i] = (dist_transpose[i] <= d);
             if (valid[1]) return true;
 
             queue<int> q;
             vector<bool> visited(n + 1, false);
             for (int i = 2; i <= n; i++)
-                if (valid[i] && dist_front[i] + dist_back[i] <= a + d) {
+                if (valid[i] && dist_regular[i] + dist_transpose[i] <= a + d) {
                     q.emplace(i);
                     visited[i] = true;
                 }
@@ -65,8 +65,8 @@ int main() {
                 int v = q.front();
                 q.pop();
 
-                for (auto [u, w] : adj_list_front[v])
-                    if (w + dist_back[u] <= d) {
+                for (auto [u, w] : adj_list_regular[v])
+                    if (w + dist_transpose[u] <= d) {
                         if (!visited[u]) {
                             q.emplace(u);
                             visited[u] = true;
@@ -84,7 +84,7 @@ int main() {
                 int v = q.front();
                 q.pop();
 
-                if (dist_front[v] <= a + d - dist_back[v]) dist[v] = max(dist[v], a + d - dist_back[v]);
+                if (dist_regular[v] <= a + d - dist_transpose[v]) dist[v] = max(dist[v], a + d - dist_transpose[v]);
                 if (dist[v] >= b) return true;
 
                 for (auto [u, w] : adj_list[v]) {
