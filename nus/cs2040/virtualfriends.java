@@ -8,18 +8,18 @@ public class virtualfriends {
 
         int t = Integer.parseInt(br.readLine());
         while (t-- > 0) {
-            int f = Integer.parseInt(br.readLine()), index = 0;
+            int f = Integer.parseInt(br.readLine()), i = 0;
             var dsu = new DisjointSet(2 * f + 1);
             var compress = new HashMap<String, Integer>();
 
-            for (int i = 0; i < f; i++) {
+            while (f-- > 0) {
                 var friends = br.readLine().split(" ");
 
                 for (var fr : friends)
                     if (!compress.containsKey(fr)) {
-                        compress.put(fr, index);
-                        dsu.sets[index] = index;
-                        dsu.size[index++] = 1;
+                        compress.put(fr, i);
+                        dsu.sets[i] = i;
+                        dsu.size[i++] = 1;
                     }
 
                 int a = compress.get(friends[0]), b = compress.get(friends[1]);
