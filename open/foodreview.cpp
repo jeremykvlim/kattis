@@ -18,6 +18,13 @@ struct DisjointSet {
         return false;
     }
 
+    void reroot() {
+        for (int i = 0; i < sets.size(); i++) {
+            sets[i] = sets[find(i)];
+            members[i] = members[find(i)];
+        }
+    }
+
     DisjointSet(int n) : sets(n), members(n) {
         iota(sets.begin(), sets.end(), 0);
         for (int i = 0; i < n; i++) members[i] = 1 << i;
@@ -46,7 +53,7 @@ int main() {
         all |= (1 << a) | (1 << b);
         dsu.unite(a, b);
     }
-    for (int i = 0; i < n; i++) dsu.members[i] = dsu.members[dsu.find(i)];
+    dsu.reroot();
 
     int f;
     cin >> f;
