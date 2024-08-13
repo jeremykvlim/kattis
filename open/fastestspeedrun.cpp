@@ -25,16 +25,15 @@ struct DisjointSet {
 pair<vector<int>, vector<long long>> edmonds(vector<vector<pair<int, int>>> adj_list_transpose) {
     int n = adj_list_transpose.size();
 
-    DisjointSet dsu(n);
     vector<vector<long long>> dist(n, vector<long long>(n, 1e18));
-    vector<int> state(n, 0);
     for (int v = 0; v < n; v++)
         for (auto [u, w] : adj_list_transpose[v]) dist[v][u] = min(dist[v][u], (long long) w);
 
-    vector<int> prev(n);
-    vector<long long> weights(n, 0);
+    DisjointSet dsu(n);
     stack<int> path;
+    vector<int> state(n, 0), prev(n);
     state[0] = 2;
+    vector<long long> weights(n, 0);
     for (int V = 0; V < n; V++) {
         if (state[dsu.find(V)] == 2) continue;
 
@@ -86,17 +85,17 @@ int main() {
     int n;
     cin >> n;
 
-    vector<vector<pair<int, int>>> adj_list_transpose(n + 1, vector<pair<int, int>>(n + 2));
+    vector<vector<pair<int, int>>> adj_list_transpose(n + 1);
     for (int i = 1; i <= n; i++) {
         int x, s;
         cin >> x >> s;
 
-        adj_list_transpose[i][0] = {x, s};
+        adj_list_transpose[i].emplace_back(x, s);
         for (int j = 0; j <= n; j++) {
             int a;
             cin >> a;
 
-            adj_list_transpose[i][j + 1] = {j, a};
+            adj_list_transpose[i].emplace_back(j, a);
         }
     }
 
