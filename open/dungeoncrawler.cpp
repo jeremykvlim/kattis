@@ -64,7 +64,7 @@ int main() {
                 continue;
             }
 
-            for (int l = in[k], r = l, j = k;; l = in[j], r = out[j], j = prev[j]) {
+            for (int l = in[k], r = l, j = k; l = in[j], r = out[j], j = prev[j]) {
                 time[i] = min(time[i], total + 2 * dist[j] - max(pref[l], suff[r]));
                 if (ancestor(j, t)) {
                     time[i] -= 2 * dist[j];
