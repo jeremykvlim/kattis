@@ -105,22 +105,6 @@ struct SuffixArray {
     };
 };
 
-vector<int> kasai(vector<int> s, vector<int> sa) {
-    int n = s.size();
-    vector<int> rank(n), lcp(n - 1, 0);
-    for (int i = 0; i < n; i++) rank[sa[i]] = i;
-    for (int i = 0, k = 0; i < n; i++) {
-        if (k) k--;
-        if (!rank[i]) continue;
-
-        int j = sa[rank[i] - 1];
-        while (i + k < n && j + k < n && s[i + k] == s[j + k]) k++;
-        lcp[rank[i] - 1] = k;
-    }
-
-    return lcp;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
