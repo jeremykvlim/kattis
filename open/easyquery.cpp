@@ -57,31 +57,31 @@ struct SegmentTree {
 template <typename T>
 struct WaveletTree {
     vector<T> WT, temp;
-    vector<int> pref1, pref2;
+    vector<int> pref_even, pref_odd;
     int b;
 
-    void range_select(vector<array<int, 3>> &order_statistics) {
+    void select(vector<array<int, 3>> &queries) {
         for (int bit = b; ~bit; bit--) {
             for (int i = 0; i < WT.size(); i++) {
-                pref1[i + 1] = pref1[i] + !((WT[i] >> bit) & 1);
-                pref2[i + 1] = pref2[i] + ((WT[i] >> bit) & 1);
+                pref_even[i + 1] = pref_even[i] + !((WT[i] >> bit) & 1);
+                pref_odd[i + 1] = pref_odd[i] + ((WT[i] >> bit) & 1);
             }
 
-            int it1 = 0, it2 = pref1.back();
-            for (int e : WT) temp[!((e >> bit) & 1) ? it1++ : it2++] = e;
+            int even = 0, odd = pref_even.back();
+            for (int e : WT) temp[!((e >> bit) & 1) ? even++ : odd++] = e;
             swap(WT, temp);
 
-            for (auto &[l, r, k] : order_statistics) {
+            for (auto &[l, r, k] : queries) {
                 if (r - l < k || !k) continue;
 
-                int K = pref1[r] - pref1[l];
+                int K = pref_even[r] - pref_even[l];
                 if (k <= K) {
-                    l = pref1[l];
-                    r = pref1[r];
+                    l = pref_even[l];
+                    r = pref_even[r];
                 } else {
                     k -= K;
-                    l = pref1.back() + pref2[l];
-                    r = pref1.back() + pref2[r];
+                    l = pref_even.back() + pref_odd[l];
+                    r = pref_even.back() + pref_odd[r];
                 }
             }
         }
@@ -91,12 +91,10 @@ struct WaveletTree {
         return WT[i];
     }
 
-    WaveletTree(vector<T> a, vector<array<int, 3>> &order_statistics) : WT(a.begin(), a.end()),
-                                                                        temp(a.size()),
-                                                                        pref1(a.size() + 1),
-                                                                        pref2(a.size() + 1) {
+    WaveletTree(vector<T> a, vector<array<int, 3>> &k_order_statistics) : WT(a.begin(), a.end()), temp(a.size()),
+                                                                          pref_even(a.size() + 1), pref_odd(a.size() + 1) {
         b = __lg(*max_element(a.begin(), a.end()));
-        range_select(order_statistics);
+        select(k_order_statistics);
     }
 };
 
@@ -123,23 +121,23 @@ int main() {
         for (auto &[ai, i] : compress) i = count++;
 
         vector<tuple<int, int, int, int>> queries(q);
-        vector<array<int, 3>> order_statistics(2 * q);
+        vector<array<int, 3>> k_order_statistics(2 * q);
         for (int i = 0; i < q; i++) {
             int l, r, u ,v;
             cin >> l >> r >> u >> v;
 
             queries[i] = {l - 1, r, u, v};
-            order_statistics[2 * i] = {l - 1, r, u};
-            order_statistics[2 * i + 1] = {l - 1, r, v};
+            k_order_statistics[2 * i] = {l - 1, r, u};
+            k_order_statistics[2 * i + 1] = {l - 1, r, v};
         }
 
-        WaveletTree<int> wt(a, order_statistics);
+        WaveletTree<int> wt(a, k_order_statistics);
         vector<vector<int>> OR(q, vector<int>(3));
         vector<vector<tuple<int, int, int, int>>> subranges(n);
         for (int i = 0; i < q; i++) {
             auto [l, r, u, v] = queries[i];
-            auto [l1, r1, k1] = order_statistics[2 * i];
-            auto [l2, r2, k2] = order_statistics[2 * i + 1];
+            auto [l1, r1, k1] = k_order_statistics[2 * i];
+            auto [l2, r2, k2] = k_order_statistics[2 * i + 1];
 
             int freq1 = r1 - l1 + 1 - k1, freq2 = k2;
             for (int j = 0; j < min({3, freq1, v - u + 1}); j++) OR[i][j] |= wt[r1 - 1];
