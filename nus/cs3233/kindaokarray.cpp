@@ -2,7 +2,7 @@
 using namespace std;
 
 struct SuffixArray {
-    vector<int> SA, ascii, lcp;
+    vector<int> SA, ascii;
 
     vector<int> sais(vector<int> &ascii1, int range) {
         int n = ascii1.size();
@@ -81,10 +81,9 @@ struct SuffixArray {
         return sa;
     }
 
-    void kasai() {
+    vector<int> kasai() {
         int n = ascii.size();
-        lcp.resize(n - 1);
-        vector<int> rank(n);
+        vector<int> lcp(n), rank(n);
         for (int i = 0; i < n; i++) rank[SA[i]] = i;
         for (int i = 0, k = 0; i < n; i++) {
             if (k) k--;
@@ -94,6 +93,8 @@ struct SuffixArray {
             while (i + k < n && j + k < n && ascii[i + k] == ascii[j + k]) k++;
             lcp[rank[i] - 1] = k;
         }
+        lcp.back() = n;
+        return lcp;
     }
 
     int & operator[](int i) {
@@ -132,10 +133,10 @@ int main() {
     }
 
     SuffixArray sa(str, ++range);
-    sa.kasai();
+    auto lcp = sa.kasai();
     auto even = 0LL;
     for (int i = 0; i < n; i++) {
-        int j = i ? sa[i] + sa.lcp[i - 1] : sa[i], count = pref_sum[n] - pref_sum[j];
+        int j = i ? sa[i] + lcp[i - 1] : sa[i], count = pref_sum[n] - pref_sum[j];
         even += (pref_xor[sa[i]]) ? count : n - j - count;
     }
 
