@@ -121,14 +121,6 @@ struct SuffixArray {
         return lcp;
     }
 
-    auto begin() {
-        return SA.begin();
-    }
-
-    auto end() {
-        return SA.end();
-    }
-
     int & operator[](int i) {
         return SA[i];
     }
