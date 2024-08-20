@@ -320,7 +320,7 @@ struct DisjointSet {
 };
 
 struct SuffixArray {
-    vector<int> SA, ascii, lcp;
+    vector<int> SA, ascii;
 
     vector<int> sais(vector<int> &ascii1, int range) {
         int n = ascii1.size();
@@ -399,10 +399,9 @@ struct SuffixArray {
         return sa;
     }
 
-    void kasai() {
+    vector<int> kasai() {
         int n = ascii.size();
-        lcp.resize(n - 1);
-        vector<int> rank(n);
+        vector<int> lcp(n), rank(n);
         for (int i = 0; i < n; i++) rank[SA[i]] = i;
         for (int i = 0, k = 0; i < n; i++) {
             if (k) k--;
@@ -412,6 +411,8 @@ struct SuffixArray {
             while (i + k < n && j + k < n && ascii[i + k] == ascii[j + k]) k++;
             lcp[rank[i] - 1] = k;
         }
+        lcp.back() = n;
+        return lcp;
     }
 
     int & operator[](int i) {
@@ -444,15 +445,13 @@ int main() {
         }
 
         SuffixArray sa(s);
-        sa.kasai();
-
-        vector<int> indices(n - 1), len(n);
+        vector<int> lcp = sa.kasai(), indices(n - 1), len(n);
         iota(indices.begin(), indices.end(), 0);
-        sort(indices.begin(), indices.end(), [&](int i, int j) {return sa.lcp[i] > sa.lcp[j];});
+        sort(indices.begin(), indices.end(), [&](int i, int j) {return lcp[i] > lcp[j];});
         for (int i = 0; i < n; i++) len[i] = n - i;
 
         DisjointSet dsu(n);
-        modint h = (long long) n * n * *min_element(sa.lcp.begin(), sa.lcp.end());
+        modint h = (long long) n * n * *min_element(lcp.begin(), lcp.end());
 
         auto compute = [&](auto &&self, int i = 0) -> void {
             if (i >= n - 1) return;
@@ -462,8 +461,8 @@ int main() {
                 h += (long long) size * size * (len[i_set] - l);
             };
 
-            int l = sa.lcp[indices[i]];
-            for (; i < n - 1 && sa.lcp[indices[i]] == l; i++) {
+            int l = lcp[indices[i]];
+            for (; i < n - 1 && lcp[indices[i]] == l; i++) {
                 int curr = sa[indices[i] + 1], prev = sa[indices[i]];
                 add(curr, l);
                 add(prev, l);
