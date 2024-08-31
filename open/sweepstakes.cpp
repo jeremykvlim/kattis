@@ -88,12 +88,12 @@ struct SegmentTree {
         return min(l + i - 1, r - (i >> 1));
     }
 
-    Segment query(int v, vector<int> &indices, int li, int ri, int l, int r) {
-        if (li == ri) return ST[v];
+    Segment query(int i, vector<int> &indices, int li, int ri, int l, int r) {
+        if (li == ri) return ST[i];
         if (l == r) return {};
 
         int m = midpoint(l, r), mi = upper_bound(indices.begin() + li, indices.begin() + ri, m) - indices.begin();
-        return query(v << 1, indices, li, mi, l, m) + query(v << 1 | 1, indices, mi, ri, m + 1, r);
+        return query(i << 1, indices, li, mi, l, m) + query(i << 1 | 1, indices, mi, ri, m + 1, r);
     }
 
     Segment query(vector<int> &indices) {
