@@ -89,7 +89,7 @@ struct SegmentTree {
         return ST[i];
     }
 
-    SegmentTree(int n, vector<int> &a) : n(n), h(__lg(n)), ST(2 * n), lazy(n) {
+    SegmentTree(int n, vector<int> &a) : n(n), h(__lg(n)), ST(2 * n), lazy(n, 0) {
         for (int i = 0; i < a.size(); i++) assign(i, a[i]);
         build();
     }
