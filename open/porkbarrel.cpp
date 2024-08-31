@@ -21,15 +21,15 @@ struct PersistentSegmentTree {
         }
     };
 
-    int root_l, root_r;
+    int n;
     vector<int> roots;
     vector<Segment> ST;
     vector<pair<int, int>> children;
 
-    PersistentSegmentTree(int l, int r) : root_l(l), root_r(r), roots{0}, ST(1), children{{0, 0}} {}
+    PersistentSegmentTree(int n) : n(n), roots{0}, ST(1), children{{0, 0}} {}
 
     void modify(int v, int pos, int i) {
-        roots.emplace_back(modify(v, pos, root_l, root_r, roots[i]));
+        roots.emplace_back(modify(v, pos, 1, n, roots[i]));
     }
 
     int modify(int v, int pos, int tl, int tr, int i) {
@@ -50,7 +50,7 @@ struct PersistentSegmentTree {
     }
 
     Segment query(int l, int r, int i) {
-        return query(l, r, root_l, root_r, roots[i]);
+        return query(l, r, 1, n, roots[i]);
     }
 
     Segment query(int l, int r, int tl, int tr, int i) {
@@ -216,7 +216,7 @@ int main() {
         for (int i = 1; i <= m; i++) lct[i + n] = {edges[i][2], i};
 
         vector<int> offset(m + 1, 0);
-        PersistentSegmentTree pst(1, m);
+        PersistentSegmentTree pst(m);
         for (int i = 1; i <= m; i++) {
             auto [xi, yi, wi] = edges[i];
             pst.modify(wi, m - i + 1, i - 1 + offset[i - 1]);
