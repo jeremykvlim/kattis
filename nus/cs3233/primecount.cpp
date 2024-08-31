@@ -67,6 +67,5 @@ int main() {
 
     long long n;
     cin >> n;
-
     cout << pi(n);
 }
