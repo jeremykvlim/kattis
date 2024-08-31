@@ -33,14 +33,14 @@ struct PersistentSegmentTree {
     }
 
     int modify(int v, int pos, int tl, int tr, int i) {
-        if (tr - tl == 1) {
+        if (tl + 1 == tr) {
             children.emplace_back(0, 0);
             ST.emplace_back(ST[i] + v);
             return ST.size() - 1;
         }
 
-        int tm = tl + (tr - tl) / 2;
         auto [cl, cr] = children[i];
+        int tm = tl + (tr - tl) / 2;
         if (pos < tm) cl = modify(v, pos, tl, tm, cl);
         else cr = modify(v, pos, tm, tr, cr);
 
@@ -57,8 +57,8 @@ struct PersistentSegmentTree {
         if (!i || r <= tl || tr <= l) return {};
         if (l <= tl && tr <= r) return ST[i];
 
-        int tm = tl + (tr - tl) / 2;
         auto [cl, cr] = children[i];
+        int tm = tl + (tr - tl) / 2;
         return query(l, r, tl, tm, cl) + query(l, r, tm, tr, cr);
     }
 };
