@@ -71,7 +71,8 @@ int main() {
 
     SparseTable<int> st(depth, [](int x, int y) {return min(x, y);});
     auto lca = [&](int v, int w) -> int {
-        return st.range_query(min(order[v], order[w]), max(order[v], order[w]));
+        auto [l, r] = minmax(order[v], order[w]);
+        return st.range_query(l, r);
     };
     for (auto [v, w, i] : queries) op[i] = lca(v, w);
 
