@@ -26,7 +26,7 @@ struct SparseTable {
 
 struct SuffixArray {
     string s;
-    vector<int> SA, ascii;
+    vector<int> SA, ascii, SA_inv;
 
     vector<int> sais(vector<int> &ascii1, int range) {
         int n = ascii1.size();
@@ -107,15 +107,16 @@ struct SuffixArray {
 
     vector<int> kasai() {
         int n = ascii.size();
-        vector<int> lcp(n), rank(n);
-        for (int i = 0; i < n; i++) rank[SA[i]] = i;
+        vector<int> lcp(n);
+        SA_inv.resize(n);
+        for (int i = 0; i < n; i++) SA_inv[SA[i]] = i;
         for (int i = 0, k = 0; i < n; i++) {
             if (k) k--;
-            if (!rank[i]) continue;
+            if (!SA_inv[i]) continue;
 
-            int j = SA[rank[i] - 1];
+            int j = SA[SA_inv[i] - 1];
             while (i + k < n && j + k < n && ascii[i + k] == ascii[j + k]) k++;
-            lcp[rank[i] - 1] = k;
+            lcp[SA_inv[i] - 1] = k;
         }
         lcp.back() = n;
         return lcp;
@@ -126,62 +127,26 @@ struct SuffixArray {
     }
 
     pair<int, int> search(string &t, SparseTable<int> &lcp_st) {
-        int match_l = mismatch(t.begin(), t.end(), s.begin() + SA.front(), s.end()).first - t.begin(),
-            match_r = mismatch(t.begin(), t.end(), s.begin() + SA.back(), s.end()).first - t.begin(),
-            match_m, l = 0, r = s.size(), m;
+        auto lcp = [&](int i, int j) -> int {
+            if (i == j) return s.size() - i;
 
-        auto update_match = [&]() {
-            if (SA[m] + match_m < s.size() && s[SA[m] + match_m] > t[match_m]) {
-                r = m;
-                match_r = match_m;
-            } else {
-                l = m;
-                match_l = match_m;
-            }
+            auto [l, r] = minmax(SA_inv[i], SA_inv[j]);
+            return lcp_st.range_query(l, r - 1);
         };
 
-        auto match_lcp = [&](int m) -> pair<int, int> {
-            auto search_half = [&](bool left) {
-                int l = left ? -1 : m, r = left ? m : s.size();
-                while (l + 1 < r) {
-                    int mid = l + (r - l) / 2;
+        int match_r = s.size(), match_len = 0;
+        auto cmp = [&](int match_l, int) -> bool {
+            int lcp_len = match_r == s.size() ? 0 : lcp(match_l, match_r);
+            if (lcp_len != match_len) return (lcp_len < match_len) ^ (SA_inv[match_l] > SA_inv[match_r]);
 
-                    if (lcp_st.range_query(left ? mid : l, left ? r - 1 : mid - 1) < t.size()) (left ? l : r) = mid;
-                    else (left ? r : l) = mid;
-                }
-                return r;
-            };
-
-            return {search_half(true), search_half(false)};
+            auto [it_s, it_t] = mismatch(s.begin() + match_l + match_len, s.end(), t.begin() + match_len, t.end());
+            match_r = match_l;
+            match_len = it_t - t.begin();
+            return lexicographical_compare(it_s, s.end(), it_t, t.end());
         };
 
-        while (l + 1 < r) {
-            m = l + (r - l) / 2;
-
-            if (match_l < match_r) {
-                int lcp = lcp_st.range_query(m, r - 1);
-
-                if (match_r < lcp) r = m;
-                else if (match_r > lcp) l = m;
-                else {
-                    match_m = mismatch(t.begin() + match_r, t.end(), s.begin() + SA[m] + match_r, s.end()).first - t.begin();
-
-                    if (match_m != t.size()) update_match();
-                    else return match_lcp(m);
-                }
-            } else {
-                int lcp = lcp_st.range_query(l, m - 1);
-
-                if (match_l < lcp) l = m;
-                else if (match_l > lcp) r = m;
-                else {
-                    match_m = mismatch(t.begin() + match_l, t.end(), s.begin() + SA[m] + match_l, s.end()).first - t.begin();
-
-                    if (match_m != t.size()) update_match();
-                    else return match_lcp(m);
-                }
-            }
-        }
+        int l = lower_bound(SA.begin(), SA.end(), 0, cmp) - SA.begin(),
+            r = match_len != t.size() ? l : lower_bound(SA.begin() + l, SA.end(), 0, [&](int match_l, int) -> bool {return lcp(match_l, match_r) >= t.size();}) - SA.begin();
 
         return {l, r};
     }
