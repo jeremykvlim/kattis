@@ -1,32 +1,34 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T>
-struct SparseTable {
-    vector<vector<T>> ST;
-    function<T(T, T)> f;
-
-    SparseTable(vector<T> v, function<T(T, T)> func) : f(move(func)) {
-        if (v.empty()) return;
-        int n = __lg(v.size()) + 1;
-        ST.resize(n);
-        ST.front() = v;
-        for (int i = 1; i < n; i++) {
-            ST[i].resize(v.size() - (1 << i) + 1);
-            for (int j = 0; j <= v.size() - (1 << i); j++)
-                ST[i][j] = f(ST[i - 1][j], ST[i - 1][j + (1 << (i - 1))]);
-        }
-    }
-
-    T range_query(int l, int r) {
-        int i = __lg(r - l + 1);
-        return f(ST[i][l], ST[i][r - (1 << i) + 1]);
-    }
-};
-
 struct SuffixArray {
+    template <typename T>
+    struct SparseTable {
+        vector<vector<T>> ST;
+        function<T(T, T)> f;
+
+        SparseTable() {}
+        SparseTable(vector<T> v, function<T(T, T)> func) : f(move(func)) {
+            if (v.empty()) return;
+            int n = __lg(v.size()) + 1;
+            ST.resize(n);
+            ST.front() = v;
+            for (int i = 1; i < n; i++) {
+                ST[i].resize(v.size() - (1 << i) + 1);
+                for (int j = 0; j <= v.size() - (1 << i); j++)
+                    ST[i][j] = f(ST[i - 1][j], ST[i - 1][j + (1 << (i - 1))]);
+            }
+        }
+
+        T range_query(int l, int r) {
+            int i = __lg(r - l + 1);
+            return f(ST[i][l], ST[i][r - (1 << i) + 1]);
+        }
+    };
+
     string s;
     vector<int> SA, ascii, SA_inv;
+    SparseTable<int> lcp_st;
 
     vector<int> sais(vector<int> &ascii1, int range) {
         int n = ascii1.size();
@@ -126,7 +128,7 @@ struct SuffixArray {
         return SA[i];
     }
 
-    pair<int, int> search(string &t, SparseTable<int> &lcp_st) {
+    pair<int, int> matches(string &t) {
         auto lcp = [&](int i, int j) -> int {
             if (i == j) return s.size() - i;
 
@@ -153,7 +155,8 @@ struct SuffixArray {
 
     SuffixArray(string &s, int r = 128) : s(s), ascii(s.begin(), s.end()) {
         SA = sais(ascii, r);
-    };
+        lcp_st = SparseTable<int>(kasai(), [](int x, int y) {return min(x, y);});
+    }
 };
 
 template <typename T>
@@ -209,8 +212,6 @@ int main() {
     cin >> s >> q;
 
     SuffixArray sa(s);
-    SparseTable<int> st(sa.kasai(), [](int x, int y) {return min(x, y);});
-
     vector<array<int, 3>> k_order_statistics(q);
     for (auto &[l, r, k] : k_order_statistics) {
         string t;
@@ -221,7 +222,7 @@ int main() {
             continue;
         }
 
-        tie(l, r) = sa.search(t, st);
+        tie(l, r) = sa.matches(t);
         if (r - l < k || s[sa[r - 1] + t.size() - 1] != t.back()) k = 0;
     }
 
