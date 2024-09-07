@@ -51,12 +51,13 @@ int main() {
             swap(fib1, fib2);
         }
 
-        int l = -1, r = fib2 - 1;
+        int l = -1, r = fib2 - 1, mid1, mid2;
         while (l + 1 < r) {
             fib2 -= fib1;
+            mid1 = l + fib2, mid2 = r - fib2;
 
-            if (query(l + fib2) > query(r - fib2)) r -= fib2;
-            else l += fib2;
+            if (query(mid1) > query(mid2)) r = mid2;
+            else l = mid1;
 
             if (fib2 <= 1) break;
             swap(fib1, fib2);
@@ -68,10 +69,10 @@ int main() {
     auto _2D = [&]() {
         pair<int, int> xy{-1, -1};
         auto &[x, y] = xy;
-        int l_x = -1, r_x = n, l_y = -1, r_y = m;
+        int l_x = -1, r_x = n, l_y = -1, r_y = m, mid;
         while (l_x + 1 < r_x || l_y + 1 < r_y) {
             if (l_x + 1 < r_x) {
-                int mid = l_x + (r_x - l_x) / 2;
+                mid = l_x + (r_x - l_x) / 2;
 
                 for (int i = l_y; i <= r_y; i++)
                     if (query(mid, i, 0) > query(x, y, 0)) xy = {mid, i};
@@ -86,7 +87,7 @@ int main() {
             }
 
             if (l_y + 1 < r_y) {
-                int mid = l_y + (r_y - l_y) / 2;
+                mid = l_y + (r_y - l_y) / 2;
 
                 for (int i = l_x; i <= r_x; i++)
                     if (query(i, mid) > query(x, y)) xy = {i, mid};
