@@ -26,7 +26,7 @@ int main() {
     cin >> n >> m >> k >> q;
 
     gp_hash_table<int, int, Hash> H;
-    auto query = [&](int x, int y, int z) {
+    auto query = [&](int x, int y = 0, int z = 0) {
         if (!(0 <= x && x < n && 0 <= y && y < m && 0 <= z && z < k)) return 0;
 
         int &h = H[(x * m + y) * k + z];
@@ -39,7 +39,7 @@ int main() {
         return h;
     };
 
-    auto guess = [](int x, int y, int z) {
+    auto guess = [](int x, int y = 0, int z = 0) {
         cout << "! " << x + 1 << " " << y + 1 << " " << z + 1 << "\n" << flush;
         exit(0);
     };
@@ -52,16 +52,17 @@ int main() {
         }
 
         int l = -1, r = fib2 - 1;
-        while (fib1 > 1) {
+        while (l + 1 < r) {
             fib2 -= fib1;
 
-            if (query(l + fib2, 0, 0) > query(r - fib2, 0, 0)) r -= fib2;
+            if (query(l + fib2) > query(r - fib2)) r -= fib2;
             else l += fib2;
 
+            if (fib2 <= 1) break;
             swap(fib1, fib2);
         }
 
-        guess(l + 1, 0, 0);
+        guess(l + 1);
     };
 
     auto _2D = [&]() {
@@ -78,9 +79,9 @@ int main() {
                 if (x < mid) r_x = mid;
                 else if (x > mid) l_x = mid;
                 else {
-                    if (query(mid - 1, y, 0) > query(mid, y, 0)) r_x = mid;
-                    else if (query(mid + 1, y, 0) > query(mid, y, 0)) l_x = mid;
-                    else guess(mid, y, 0);
+                    if (query(mid - 1, y) > query(mid, y)) r_x = mid;
+                    else if (query(mid + 1, y) > query(mid, y)) l_x = mid;
+                    else guess(mid, y);
                 }
             }
 
@@ -88,19 +89,19 @@ int main() {
                 int mid = l_y + (r_y - l_y) / 2;
 
                 for (int i = l_x; i <= r_x; i++)
-                    if (query(i, mid, 0) > query(x, y, 0)) xy = {i, mid};
+                    if (query(i, mid) > query(x, y)) xy = {i, mid};
 
                 if (y < mid) r_y = mid;
                 else if (y > mid) l_y = mid;
                 else {
-                    if (query(x, mid - 1, 0) > query(x, mid, 0)) r_y = mid;
-                    else if (query(x, mid + 1, 0) > query(x, mid, 0)) l_y = mid;
-                    else guess(x, mid, 0);
+                    if (query(x, mid - 1) > query(x, mid)) r_y = mid;
+                    else if (query(x, mid + 1) > query(x, mid)) l_y = mid;
+                    else guess(x, mid);
                 }
             }
         }
 
-        guess(l_x, l_y, 0);
+        guess(l_x, l_y);
     };
 
     auto _3D = [&]() {
@@ -128,7 +129,7 @@ int main() {
         guess(x, y, z);
     };
 
-    if (m == 1 && k == 1) _1D();
+    if (m == 1) _1D();
     else if (k == 1) _2D();
     else _3D();
 }
