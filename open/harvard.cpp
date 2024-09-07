@@ -110,7 +110,7 @@ int main() {
                 }
             }
 
-            for (int h = banks, k = 1 << __lg(m); h && k && m - k; h--, k |= 1 << __lg(m - k))
+            for (int h = banks, k = 1 << __lg(m); h && k && k != m; h--, k |= 1 << __lg(m - k))
                 for (int i = m; i > 0; --i &= m)
                     for (int j = i - k; j > 0; --j &= i - k)
                         dp1[i] = min(dp1[i], dp1[i - j] + dp2[j]);
