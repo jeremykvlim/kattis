@@ -8,19 +8,23 @@ struct Point {
     Point() {}
     Point(T x, T y) : x(x), y(y) {}
 
+    auto operator<(Point &p) const {
+        return x != p.x ? x < p.x : y < p.y;
+    }
+
     auto operator!=(const Point &p) const {
         return x != p.x || y != p.y;
     }
 
-    Point operator+(const Point &p) const {
+    Point operator+(Point p) const {
         return {x + p.x, y + p.y};
     }
 
-    Point operator-(const Point &p) const {
+    Point operator-(Point p) const {
         return {x - p.x, y - p.y};
     }
 
-    Point operator*(const T &c) {
+    Point operator*(T c) {
         return {c * x, c * y};
     }
 };
@@ -153,8 +157,7 @@ int main() {
             }
 
             double l = 0;
-            for (int i = 0; i < wrapped.size() - 1; i++) l += dist(wrapped[i], wrapped[i + 1]);
-            l += dist(wrapped.back(), spot);
+            for (int i = 0; i < wrapped.size(); i++) l += dist(wrapped[i], (i + 1 < wrapped.size()) ? wrapped[i + 1] : spot);
             len = max(len, l);
         }
 
