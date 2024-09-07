@@ -69,6 +69,7 @@ int main() {
     auto _2D = [&]() {
         pair<int, int> xy{-1, -1};
         auto &[x, y] = xy;
+        
         int l_x = -1, r_x = n, l_y = -1, r_y = m, mid;
         while (l_x + 1 < r_x || l_y + 1 < r_y) {
             if (l_x + 1 < r_x) {
