@@ -105,7 +105,7 @@ int main() {
 
     if (b > 1e11) {
         int count = 0;
-        for (long long c = a + !(a & 1); c <= b; c += 2) count += isprime(c);
+        for (auto c = a + !(a & 1); c <= b; c += 2) count += isprime(c);
         cout << count;
     } else cout << pi(b) - pi(a - 1);
 }
