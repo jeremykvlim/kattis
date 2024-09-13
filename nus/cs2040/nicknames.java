@@ -1,43 +1,61 @@
 import java.io.*;
+import java.util.*;
 
 public class nicknames {
-    static class TrieNode {
-        TrieNode[] children = new TrieNode[26];
-        int count = 0;
-    }
+    static class Trie {
+        static class TrieNode {
+            int[] next = new int[26];
+            int count = 0;
 
-    static void insert(TrieNode root, String str) {
-        var node = root;
-        for (int i = 0; i < str.length(); i++) {
-            int index = str.charAt(i) - 'a';
-            if (node.children[index] == null)
-                node.children[index] = new TrieNode();
-            node = node.children[index];
-            node.count++;
+            TrieNode() {
+                Arrays.fill(next, -1);
+            }
         }
-    }
 
-    static int substrings(TrieNode root, String str) {
-        var node = root;
-        for (int i = 0; i < str.length(); i++) {
-            int index = str.charAt(i) - 'a';
-            node = node.children[index];
-            if (node == null) return 0;
+        ArrayList<TrieNode> T;
+
+        Trie() {
+            T = new ArrayList<>();
+            T.add(new TrieNode());
         }
-        
-        return node.count;
+
+        void add(String s) {
+            int node = 0;
+            for (int i = 0; i < s.length(); i++) {
+                int pos = s.charAt(i) - 'a';
+
+                if (T.get(node).next[pos] == -1) {
+                    T.get(node).next[pos] = T.size();
+                    T.add(new TrieNode());
+                }
+                node = T.get(node).next[pos];
+                T.get(node).count++;
+            }
+        }
+
+        int occurrences(String s) {
+            int node = 0;
+            for (int i = 0; i < s.length(); i++) {
+                int pos = s.charAt(i) - 'a';
+
+                if (T.get(node).next[pos] == -1) return 0;
+                node = T.get(node).next[pos];
+            }
+
+            return T.get(node).count;
+        }
     }
 
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
-        
-        var root = new TrieNode();
+
+        var trie = new Trie();
         int a = Integer.parseInt(br.readLine());
-        for (int i = 0; i < a; i++) insert(root, br.readLine());
+        for (int i = 0; i < a; i++) trie.add(br.readLine());
 
         int b = Integer.parseInt(br.readLine());
-        for (int i = 0; i < b; i++) pw.println(substrings(root, br.readLine()));
+        for (int i = 0; i < b; i++) pw.println(trie.occurrences(br.readLine()));
         pw.flush();
     }
 }
