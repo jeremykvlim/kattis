@@ -59,16 +59,16 @@ int main() {
             for (int i = 0; i < n; i++) {
                 auto v = !r[0].empty() ? r[0][0] : !r[1].empty() ? r[1][i] : r[2][n - 1];
 
-                array<string, 3> l, r;
+                array<string, 3> cl, cr;
                 diff = (!r[1].empty() && r[1][i] != v) || (!r[2].empty() && r[2][n - 1] != v);
                 for (int j = 2; ~j; j--)
                     if (!r[j].empty()) {
-                        change(l[calls[j * 2]], r[j].substr(!j, i));
-                        change(r[calls[j * 2 + 1]], r[j].substr(i + (j < 2), n - i - 1));
+                        change(cl[calls[j << 1]], r[j].substr(!j, i));
+                        change(cr[calls[j << 1 | 1]], r[j].substr(i + (j < 2), n - i - 1));
                     }
                 if (diff) continue;
 
-                auto tl = self(self, l), tr = self(self, r);
+                auto tl = self(self, cl), tr = self(self, cr);
                 if (tl[0].size() != i || tr[0].size() != n - i - 1) continue;
 
                 tl = array<string, 3>{v + tl[0] + tr[0], tl[1] + v + tr[1], tl[2] + tr[2] + v};
