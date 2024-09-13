@@ -363,12 +363,10 @@ int main() {
     int n, k, t;
     cin >> n >> k >> t;
 
-    int p3 = 1;
-    for (int i = 0; i < k; i++) p3 *= 3;
-
-    vector<vector<int>> tritsets(p3, vector<int>(k));
+    int t_max = pow(3, k, 0);
+    vector<vector<int>> tritsets(t_max, vector<int>(k));
     vector<int> cw, ccw;
-    for (int i = 0; i < p3; i++) {
+    for (int i = 0; i < t_max; i++) {
         int temp = i, first_set_trit = -1;
         for (int j = 0; j < k; j++) {
             int trit = temp % 3;
@@ -404,7 +402,7 @@ int main() {
         cout << "\n";
     };
 
-    vector<long long> f(p3, 0);
+    vector<long long> f(t_max, 0);
     vector<int> ids;
     while (t--) {
         string s;
@@ -414,8 +412,8 @@ int main() {
         cin >> f[ids.back()];
     }
 
-    vector<pair<long long, long long>> F(p3), w{{1, 0}, {0, 1}, {-1, -1}};
-    for (int i = 0; i < p3; i++)
+    vector<pair<long long, long long>> F(t_max), w{{1, 0}, {0, 1}, {-1, -1}};
+    for (int i = 0; i < t_max; i++)
         for (int j : ids) {
             modint dot = 0;
             for (int l = 0; l < k; l++) dot += tritsets[i][l] * tritsets[j][l];
@@ -425,8 +423,8 @@ int main() {
             im += f[j] * w[dot()].second;
         }
 
-    vector<int> dir(p3), tzs(p3);
-    for (int i = 0; i < p3; i++) {
+    vector<int> dir(t_max), tzs(t_max);
+    for (int i = 0; i < t_max; i++) {
         auto [re, im] = F[i];
         if (!im) {
             dir[i] = 0;
@@ -440,12 +438,12 @@ int main() {
         }
     }
 
-    int h = (p3 - 1) / 2, z = (3 * accumulate(tzs.begin(), tzs.end(), 0) - p3 * n) / (2 * p3);
+    int h = (t_max - 1) / 2, z = (3 * accumulate(tzs.begin(), tzs.end(), 0) - t_max * n) / (2 * t_max);
     n -= z;
     for (int &tz : tzs) tz -= z;
 
     vector<array<int, 2>> levers;
-    vector<array<vector<int>, 3>> indices(p3);
+    vector<array<vector<int>, 3>> indices(t_max);
     if (k == 1) {
         for (int i = 0; i < h; i++)
             for (int j = 0; j < h; j++) {
