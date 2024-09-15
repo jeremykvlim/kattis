@@ -364,6 +364,7 @@ int main() {
     cin >> n >> k >> t;
 
     int t_max = pow(3, k, 0);
+
     vector<vector<int>> tritsets(t_max, vector<int>(k));
     vector<int> cw, ccw;
     for (int i = 0; i < t_max; i++) {
@@ -412,31 +413,27 @@ int main() {
         cin >> f[ids.back()];
     }
 
-    vector<pair<long long, long long>> F(t_max), w{{1, 0}, {0, 1}, {-1, -1}};
+    vector<complex<long long>> F(t_max, 0), w{{1, 0}, {0, 1}, {-1, -1}};
     for (int i = 0; i < t_max; i++)
         for (int j : ids) {
             modint dot = 0;
             for (int l = 0; l < k; l++) dot += tritsets[i][l] * tritsets[j][l];
 
-            auto &[re, im] = F[i];
-            re += f[j] * w[dot()].first;
-            im += f[j] * w[dot()].second;
+            F[i] += f[j] * w[dot()];
         }
 
     vector<int> dir(t_max), tzs(t_max);
-    for (int i = 0; i < t_max; i++) {
-        auto [re, im] = F[i];
-        if (!im) {
+    for (int i = 0; i < t_max; i++)
+        if (!F[i].imag()) {
             dir[i] = 0;
-            tzs[i] = __builtin_ctzll(abs(re));
-        } else if (re == im) {
+            tzs[i] = __builtin_ctzll(abs(F[i].real()));
+        } else if (F[i].real() == F[i].imag()) {
             dir[i] = 1;
-            tzs[i] = __builtin_ctzll(abs(re));
+            tzs[i] = __builtin_ctzll(abs(F[i].real()));
         } else {
             dir[i] = 2;
-            tzs[i] = __builtin_ctzll(abs(im));
+            tzs[i] = __builtin_ctzll(abs(F[i].imag()));
         }
-    }
 
     int h = (t_max - 1) / 2, z = (3 * accumulate(tzs.begin(), tzs.end(), 0) - t_max * n) / (2 * t_max);
     n -= z;
