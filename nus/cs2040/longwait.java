@@ -46,18 +46,17 @@ public class longwait {
     static void balance(int k) {
         if (frontSize == k) return;
 
-        if (frontSize > k) {
+        if (frontSize > k) 
             while (frontSize > k) {
                 back[backHead--] = front[--frontTail];
                 backSize++;
                 frontSize--;
             }
-        } else {
+        else 
             while (frontSize < k && backSize > 0) {
                 front[frontTail++] = back[++backHead];
                 backSize--;
                 frontSize++;
             }
-        }
     }
 }
