@@ -2,7 +2,7 @@ import java.io.*;
 import java.util.*;
 
 public class longwait {
-    static final int SIZE = (int) 1e6, MID = (int) 5e5;
+    static final int SIZE = (int) 2e6, MID = (int) 1e6;
     static String[] front = new String[SIZE], back = new String[SIZE];
     static int backHead = MID, backTail = MID + 1, backSize = 0, frontHead = MID - 1, frontTail = MID, frontSize = 0;
 
