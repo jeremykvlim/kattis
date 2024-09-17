@@ -33,7 +33,7 @@ public class longwait {
                 }
                 case "slower" -> balance(++k);
                 case "faster" -> balance(--k);
-                case "findID" -> {
+                default -> {
                     int pos = Integer.parseInt(op[1]);
                     pw.println(pos < frontSize ? front[frontHead + pos] : back[backHead + pos - frontSize]);
                 }
