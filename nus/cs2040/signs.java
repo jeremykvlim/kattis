@@ -32,7 +32,7 @@ public class signs {
 
         @Override
         public int compareTo(Sign s) {
-            return (!middle.equals(s.middle)) ? middle.compareTo(s.middle) : Integer.compare(index, s.index);
+            return !middle.equals(s.middle) ? middle.compareTo(s.middle) : Integer.compare(index, s.index);
         }
     }
 }
