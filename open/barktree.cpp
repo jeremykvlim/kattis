@@ -55,7 +55,7 @@ double dist(Point<T> a, Point<T> b) {
 }
 
 template <typename T>
-int signum(T v) {
+int sgn(T v) {
     return fabs(v) < 1e-8 ? 0 : (v > 0) - (v < 0);
 }
 
@@ -65,8 +65,8 @@ bool point_inside_polygon(vector<Point<T>> polygon, Point<T> p) {
     for (int i = 0; i < polygon.size(); i++) {
         auto a = polygon[i] - p, b = polygon[(i + 1) % polygon.size()] - p;
         if (a.y > b.y) swap(a, b);
-        if (signum(a.y) <= 0 && 0 < signum(b.y) && signum(cross(a, b)) < 0) inside = !inside;
-        if (!signum(cross(a, b)) && signum(dot(a, b)) <= 0) return false;
+        if (sgn(a.y) <= 0 && 0 < sgn(b.y) && sgn(cross(a, b)) < 0) inside = !inside;
+        if (!sgn(cross(a, b)) && sgn(dot(a, b)) <= 0) return false;
     }
     return inside;
 }
@@ -103,8 +103,8 @@ template <typename T>
 Point<T> line_intersection_point(Line<T> l1, Line<T> l2) {
     T area = area_of_parallelogram(l1, l2), pos = cross(l1.b - l1.a, l1.b - l2.a);
 
-    if (!signum(area) && !signum(pos)) return l2.a;
-    if (!signum(area)) return {numeric_limits<T>::epsilon(), numeric_limits<T>::epsilon()};
+    if (!sgn(area) && !sgn(pos)) return l2.a;
+    if (!sgn(area)) return {numeric_limits<T>::epsilon(), numeric_limits<T>::epsilon()};
 
     return l2.a + (l2.b - l2.a) * (pos / area);
 }
@@ -152,7 +152,7 @@ int main() {
                 spot = curr;
                 if (tree != Point(0., 0.)) {
                     wrapped.emplace_back(tree);
-                    angles.emplace_back(signum(theta) * 1e-8);
+                    angles.emplace_back(sgn(theta) * 1e-8);
                 }
             }
 
