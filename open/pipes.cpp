@@ -127,9 +127,9 @@ int main() {
         for (int i : order) {
             auto s = tile(connect[i].x, m, n), d = tile(connect[i].y, m, n);
 
+            unordered_map<Point<int>, Point<int>, Hash> prev;
             unordered_map<Point<int>, int, Hash> dist;
             dist[s] = 0;
-            unordered_map<Point<int>, Point<int>, Hash> prev;
             stack<Point<int>> st;
             st.emplace(s);
             while (!st.empty()) {
