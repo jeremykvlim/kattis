@@ -86,7 +86,7 @@ int main() {
                 used[c - 'a'] = true;
             }
             for (int i = s.size() - 1 - (p & 1); ~i; i--) s += s[i];
-            for (char c = 'a' + k - 1; s.size() < n; c = 'a' + (c - 'a' - 1 + k) % k) {
+            for (char c = 'a' + k - 1; s.size() < n; c = 'a' + (c - 'a' + k - 1) % k) {
                 s += c;
                 used[c - 'a'] = true;
             }
