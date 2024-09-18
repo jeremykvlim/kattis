@@ -1,11 +1,36 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+struct Point {
+    T x, y;
+
+    Point() {}
+    Point(T x, T y) : x(x), y(y) {}
+
+    auto operator==(const Point &p) const {
+        return x == p.x && y == p.y;
+    }
+
+    auto operator+=(const T &v) {
+        x += v;
+        y += v;
+    }
+
+    Point operator+(const Point &p) const {
+        return {x + p.x, y + p.y};
+    }
+
+    Point operator-(const Point &p) const {
+        return {x - p.x, y - p.y};
+    }
+};
+
 struct Hash {
-    static uint64_t encode(pair<int, int> p) {
+    static uint64_t encode(Point<int> p) {
         auto encoded = 0ULL;
-        encoded = (encoded << 8) | p.first;
-        encoded = (encoded << 8) | p.second;
+        encoded = (encoded << 8) | p.x;
+        encoded = (encoded << 8) | p.y;
         return encoded;
     }
 
@@ -17,13 +42,13 @@ struct Hash {
         return hash;
     }
 
-    size_t operator()(pair<int, int> p) const {
+    size_t operator()(Point<int> p) const {
         static uint64_t SEED = chrono::steady_clock::now().time_since_epoch().count();
         return h(encode(p) + SEED);
     }
 };
 
-pair<int, int> tile(int l, int m, int n) {
+Point<int> tile(int l, int m, int n) {
     if (l <= m) return {l - 1, 0};
     if (l <= m + n) return {m - 1, l - m - 1};
     if (l <= 2 * m + n) return {2 * m + n - l, n - 1};
@@ -43,7 +68,7 @@ int main() {
 
         vector<int> indices(2 * (m + n) + 1, -1);
         deque<int> locations(2 * l);
-        vector<pair<int, int>> connect(l);
+        vector<Point<int>> connect(l);
         for (int i = 0; i < l; i++) {
             int s, t;
             cin >> s >> t;
@@ -78,20 +103,17 @@ int main() {
         }
 
         if (!locations.empty()) {
+            no:;
             cout << "NO\n";
-            next:;
             continue;
         }
 
         vector<vector<bool>> visited(m, vector<bool>(n, false));
         for (int i : order) {
-            auto [r1, c1] = tile(connect[i].first, m, n);
-            auto [r2, c2] = tile(connect[i].second, m, n);
+            auto [r1, c1] = tile(connect[i].x, m, n);
+            auto [r2, c2] = tile(connect[i].y, m, n);
 
-            if (visited[r1][c1] || visited[r2][c2]) {
-                cout << "NO\n";
-                goto next;
-            }
+            if (visited[r1][c1] || visited[r2][c2]) goto no;
 
             visited[r1][c1] = visited[r2][c2] = true;
         }
@@ -100,59 +122,56 @@ int main() {
         for (int i = 0; i < m; i++) border[i][0] = border[i][n - 1] = true;
         for (int i = 0; i < n; i++) border[0][i] = border[m - 1][i] = true;
 
-        auto out = [&](auto next) -> bool {return next.first < 0 || next.first >= m || next.second < 0 || next.second >= n;};
-        vector<int> dr1{1, -1, 0, 0}, dc1{0, 0, 1, -1}, dr2{1, 1, 1, 0, 0, -1, -1, -1}, dc2{1, 0, -1, 1, -1, 1, 0, -1};
+        auto valid = [&](auto p) -> bool {return 0 <= p.x && p.x < m && 0 <= p.y && p.y < n;};
+        vector<Point<int>> drdc1{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}, drdc2{{1, 1}, {1, 0}, {1, -1}, {0, 1}, {0, -1}, {-1, 1}, {-1, 0}, {-1, -1}};
         for (int i : order) {
-            auto src = tile(connect[i].first, m, n), dest = tile(connect[i].second, m, n);
+            auto s = tile(connect[i].x, m, n), d = tile(connect[i].y, m, n);
 
-            unordered_map<pair<int, int>, int, Hash> dist;
-            dist[src] = 0;
-            unordered_map<pair<int, int>, pair<int, int>, Hash> prev;
-            stack<pair<int, int>> s;
-            s.emplace(src);
-            while (!s.empty()) {
-                auto curr = s.top();
-                s.pop();
+            unordered_map<Point<int>, int, Hash> dist;
+            dist[s] = 0;
+            unordered_map<Point<int>, Point<int>, Hash> prev;
+            stack<Point<int>> st;
+            st.emplace(s);
+            while (!st.empty()) {
+                auto v = st.top();
+                st.pop();
 
-                if (curr == dest) break;
+                if (v == d) break;
 
                 for (int j = 0; j < 4; j++) {
-                    pair<int, int> next{curr.first + dr1[j], curr.second + dc1[j]};
+                    auto u = v + drdc1[j];
 
-                    if (next == dest) {
-                        dist[next] = dist[curr] + 1;
-                        prev[next] = curr;
+                    if (u == d) {
+                        dist[u] = dist[v] + 1;
+                        prev[u] = v;
                         goto done;
                     }
 
-                    if (out(next) || visited[next.first][next.second] || !border[next.first][next.second]) continue;
+                    if (!valid(u) || visited[u.x][u.y] || !border[u.x][u.y]) continue;
 
-                    if (!dist.count(next)) {
-                        dist[next] = dist[curr] + 1;
-                        prev[next] = curr;
-                        s.emplace(next);
+                    if (!dist.count(u)) {
+                        dist[u] = dist[v] + 1;
+                        prev[u] = v;
+                        st.emplace(u);
                     }
                 }
             }
             done:;
 
-            if (!dist.count(dest)) {
-                cout << "NO\n";
-                goto next;
-            }
+            if (!dist.count(d)) goto no;
 
             for (int j = 0; j < 8; j++) {
-                pair<int, int> next{dest.first + dr2[j], dest.second + dc2[j]};
-                if (!out(next)) border[next.first][next.second] = true;
+                auto v = d + drdc2[j];
+                if (valid(v)) border[v.x][v.y] = true;
             }
 
-            while (src != dest) {
-                dest = prev[dest];
-                visited[dest.first][dest.second] = true;
+            while (s != d) {
+                d = prev[d];
+                visited[d.x][d.y] = true;
 
                 for (int j = 0; j < 8; j++) {
-                    pair<int, int> next{dest.first + dr2[j], dest.second + dc2[j]};
-                    if (!out(next)) border[next.first][next.second] = true;
+                    auto v = d + drdc2[j];
+                    if (valid(v)) border[v.x][v.y] = true;
                 }
             }
         }
