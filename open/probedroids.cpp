@@ -63,7 +63,7 @@ int main() {
             i -= destroyed(n, m, l);
 
             Point<long long> curr = {0, 1}, remaining = {l - 1, m - 1};
-            if (l >= n) remaining += n - l;
+            if (n <= l) remaining += n - l;
 
             auto valid = [&](Point<long long> p) {
                 return p.x < n && p.y < m;
