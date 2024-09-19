@@ -143,6 +143,7 @@ void divisors(vector<pair<int, int>> &pfs, vector<int> &divs, long long d = 1, i
 
 int pisano_period(int p, vector<int> &spf, gp_hash_table<int, int, Hash> &cache) {
     if (cache[p]) return cache[p];
+    
     auto pfs = factorize(p, spf);
 
     auto order = [&](int p) -> int {
@@ -164,8 +165,7 @@ int pisano_period(int p, vector<int> &spf, gp_hash_table<int, int, Hash> &cache)
         pisano = lcm(pisano, order(pf) * temp);
     }
 
-    cache[p] = pisano;
-    return pisano;
+    return cache[p] = pisano;
 }
 
 vector<int> sieve(int n) {
