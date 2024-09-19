@@ -21,7 +21,7 @@ int main() {
         for (int j = 0; j < 26; j++) {
             int least = INT_MAX;
             for (int k = 0; k < n; k++)
-                if (i & 1 << k) least = min(least, freq[k][j]);
+                if (i & (1 << k)) least = min(least, freq[k][j]);
 
             dp1[i] += least;
         }
