@@ -88,9 +88,7 @@ int main() {
                 while (l != i && abs(cross(convex_hull[next(l)] - convex_hull[j], convex_hull[i] - convex_hull[j]))
                               >= abs(cross(convex_hull[l] - convex_hull[j], convex_hull[i] - convex_hull[j])))
                     l = next(l);
-
-                if (k == i) next(k);
-                if (l == j) next(l);
+                
                 area = max(area, abs(cross(convex_hull[k] - convex_hull[i], convex_hull[j] - convex_hull[i])) + abs(cross(convex_hull[l] - convex_hull[j], convex_hull[i] - convex_hull[j])));
             }
 
