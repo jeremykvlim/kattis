@@ -143,7 +143,7 @@ void divisors(vector<pair<int, int>> &pfs, vector<int> &divs, long long d = 1, i
 
 int pisano_period(int p, vector<int> &spf, gp_hash_table<int, int, Hash> &cache) {
     if (cache[p]) return cache[p];
-    
+
     auto pfs = factorize(p, spf);
 
     auto order = [&](int p) -> int {
@@ -182,10 +182,10 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    vector<int> F(fixed_point, 0), spf = sieve(1e6);
-    F[1] = 1;
+    vector<int> memo(fixed_point, 0), spf = sieve(1e6);
+    memo[1] = 1;
     for (int i = 2; i < fixed_point; i++)
-        F[i] = (F[i - 1] + F[i - 2]) % fixed_point;
+        memo[i] = (memo[i - 1] + memo[i - 2]) % fixed_point;
 
     int t;
     cin >> t;
@@ -199,20 +199,21 @@ int main() {
         cin >> n >> k >> p;
 
         auto g = [&](auto &&self, auto n, auto k, int p) -> long long {
-            if (k == 1) return (n >= fixed_point || fixed_point % p) ? fib(n, p).first : F[n] % p;
+            auto F = [&](int n) -> long long {
+                return (n >= fixed_point || fixed_point % p) ? fib(n, p).first : memo[n] % p;
+            };
+
+            if (k == 1) return F(n);
 
             int pisano = pisano_period(p, spf, cache);
-            if (p != pisano) {
-                n = self(self, n, k - 1, pisano);
-                return (n >= fixed_point || fixed_point % p) ? fib(n, p).first : F[n] % p;
-            }
+            if (p != pisano) return F(self(self, n, k - 1, pisano));
 
             n %= p;
             vector<long long> seq{n};
             seq_indices[n] = 0;
             visited[n] = t;
             for (auto i = 1LL; i <= k; i++) {
-                n = (n >= fixed_point || fixed_point % p) ? fib(n, p).first : F[n] % p;
+                n = F(n);
 
                 if (cycle_members[p].find(n) != cycle_members[p].end()) {
                     auto [cycle_index, n_index] = cycle_members[p][n];
