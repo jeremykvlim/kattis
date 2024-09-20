@@ -47,25 +47,16 @@ int main() {
     unordered_map<char, int> ctoi{{'A', 0}, {'E', 1}, {'I', 2}};
     unordered_map<int, char> itoc{{0, '0'}, {1, '+'}, {2, '-'}};
 
-    auto read = [&](string s) {
-        int i = 0;
-        for (int K = 0; K < k; K++) i += ctoi[s[K]] * p3[K];
-        return i;
-    };
-
-    auto write = [&](int i) {
-        for (int trit : tritsets[i]) cout << itoc[trit];
-        cout << "\n";
-    };
-
     vector<long long> f(t_max, 0);
     vector<int> ids;
     while (t--) {
         string s;
         cin >> s;
-
-        ids.emplace_back(read(s));
-        cin >> f[ids.back()];
+        
+        int i = 0;
+        for (int K = 0; K < k; K++) i += ctoi[s[K]] * p3[K];
+        ids.emplace_back(i);
+        cin >> f[i];
     }
 
     vector<complex<long long>> F(t_max, 0), w{{1, 0}, {0, 1}, {-1, -1}};
@@ -126,9 +117,12 @@ int main() {
             for (int j = 0; j < t_max; j++) temp[combine(i, j)] += freq[j];
             freq = temp;
         }
-
+        
         if (freq == f) {
-            for (int i : levers) write(i);
+            for (int i : levers) {
+                for (int trit : tritsets[i]) cout << itoc[trit];
+                cout << "\n";
+            }
             break;
         }
     }
