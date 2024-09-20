@@ -16,7 +16,7 @@ int main() {
 
     int time = INT_MAX;
     do {
-        int curr = row[s[0]-'1'];
+        int curr = row[s[0] - '1'];
         for (int i = 0; i < 9; i++)
             for (int j = 0; j < 9; j++) curr += abs(row[i] - row[j]) * count[i][j];
         time = min(time, curr);
