@@ -9,7 +9,7 @@ int main() {
     cin >> n >> c;
 
     vector<int> t(n);
-    for(int &ti : t) cin >> ti;
+    for (int &ti : t) cin >> ti;
     sort(t.rbegin(), t.rend());
 
     vector<long long> suff(n + 1, 0);
