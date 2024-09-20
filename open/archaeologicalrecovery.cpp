@@ -70,7 +70,7 @@ int main() {
     for (int i = t_max - 1; i; i--)
         while (configs.size() < n) {
             vector<int> total(3, 0), z;
-            for(int j = 0; j < t_max; j++) {
+            for (int j = 0; j < t_max; j++) {
                 if (!dot[i][j]) z.emplace_back(j);
                 total[dot[i][j]] += tzs[j];
             }
