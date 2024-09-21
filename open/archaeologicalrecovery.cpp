@@ -15,8 +15,8 @@ int main() {
     vector<vector<int>> tritsets(t_max, vector<int>(k));
     vector<int> rev(t_max);
     for (int i = 0; i < t_max; i++) {
-        int temp = i, first_set_trit = -1;
-        for (int j = 0; j < k; j++) {
+        int first_set_trit = -1;
+        for (int j = 0, temp = i; j < k && temp; j++) {
             int trit = temp % 3;
             if (first_set_trit == -1 && trit) first_set_trit = trit;
 
