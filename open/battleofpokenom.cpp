@@ -36,7 +36,7 @@ int main() {
                 }
 
             cout << s << " " << c << "\n";
-            exit(0);
+            break;
             next:;
         }
     }
