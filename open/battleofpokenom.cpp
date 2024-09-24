@@ -21,7 +21,7 @@ int main() {
             if (steps[s] == 'E') points[s & 1]++;
             rounds[s & 1]--;
             if (points[0] + rounds[0] < points[1] || points[1] + rounds[1] < points[0]) {
-                end[(~s) & 1] = s++;
+                end[~s & 1] = s++;
                 break;
             }
         }
