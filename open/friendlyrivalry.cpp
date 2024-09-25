@@ -53,7 +53,7 @@ int main() {
     sort(d.begin(), d.end());
     d.erase(unique(d.begin(), d.end(), [&](double d1, double d2) {return abs(d1 - d2) < 1e-9;}), d.end());
 
-    double D = 0;
+    double distance = 0;
     vector<int> blue;
     int l = -1, r = d.size(), mid;
     while (l + 1 < r) {
@@ -68,29 +68,29 @@ int main() {
         for (int i = 0; i < c; i++) components[dsu.find(i)].emplace_back(i);
 
         vector<int> prev(n + 1);
-        vector<bool> dp(n + 1, false);
-        dp[0] = true;
+        vector<bool> visited1(n + 1, false);
+        visited1[0] = true;
         for (int i = 0; i < c; i++)
             for (int j = n, s = components[i].size(); j >= s; j--)
-                if (dp[j - s] && !dp[j]) {
+                if (visited1[j - s] && !visited1[j]) {
                     prev[j] = i;
-                    dp[j] = true;
+                    visited1[j] = true;
                 }
 
-        if (!dp[n]) r = mid;
+        if (!visited1[n]) r = mid;
         else {
-            D = d[mid];
+            distance = d[mid];
 
-            vector<bool> visited(c, false);
+            vector<bool> visited2(c, false);
             int temp = n;
             while (temp) {
-                visited[prev[temp]] = true;
+                visited2[prev[temp]] = true;
                 temp -= components[prev[temp]].size();
             }
 
             vector<int> b;
             for (int i = 0; i < c; i++)
-                if (visited[i])
+                if (visited2[i])
                     for (int chapter : components[i]) b.emplace_back(chapter);
 
             blue = b;
@@ -98,6 +98,6 @@ int main() {
         }
     }
 
-    cout << fixed << setprecision(6) << D << "\n";
+    cout << fixed << setprecision(6) << distance << "\n";
     for (int chapter : blue) cout << chapter + 1 << "\n";
 }
