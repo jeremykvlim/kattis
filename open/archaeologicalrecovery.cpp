@@ -12,7 +12,7 @@ int main() {
     for (int i = 1; i <= k; i++) p3[i] = p3[i - 1] * 3;
 
     int t_max = p3[k];
-    vector<vector<int>> tritsets(t_max, vector<int>(k));
+    vector<vector<int>> tritsets(t_max, vector<int>(k, 0));
     vector<int> rev(t_max);
     for (int i = 0; i < t_max; i++) {
         int first_set_trit = -1;
