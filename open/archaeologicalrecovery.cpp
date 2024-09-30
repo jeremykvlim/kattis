@@ -52,11 +52,11 @@ int main() {
     while (t--) {
         string s;
         cin >> s;
-        
+
         int i = 0;
         for (int K = 0; K < k; K++) i += ctoi[s[K]] * p3[K];
-        ids.emplace_back(i);
         cin >> f[i];
+        ids.emplace_back(i);
     }
 
     vector<complex<long long>> F(t_max, 0), w{{1, 0}, {0, 1}, {-1, -1}};
@@ -69,16 +69,18 @@ int main() {
     vector<int> configs;
     for (int i = t_max - 1; i; i--)
         while (configs.size() < n) {
-            vector<int> total(3, 0), z;
-            for (int j = 0; j < t_max; j++) {
-                if (!dot[i][j]) z.emplace_back(j);
-                total[dot[i][j]] += tzs[j];
-            }
+            vector<int> update;
+            int z = 0, o = 0;
+            for (int j = 0; j < t_max; j++)
+                if (!dot[i][j]) {
+                    update.emplace_back(j);
+                    z += tzs[j];
+                } else if (dot[i][j] == 1) o += tzs[j];
 
-            if (total[0] <= total[1]) break;
+            if (z <= o) break;
 
             configs.emplace_back(i);
-            for (int j : z) tzs[j]--;
+            for (int j : update) tzs[j]--;
         }
     configs.resize(n);
 
@@ -117,7 +119,7 @@ int main() {
             for (int j = 0; j < t_max; j++) temp[combine(i, j)] += freq[j];
             freq = temp;
         }
-        
+
         if (freq == f) {
             for (int i : levers) {
                 for (int trit : tritsets[i]) cout << itoc[trit];
