@@ -108,7 +108,6 @@ int main() {
         auto dijkstra = [&]() {
             vector<int> dist(id, INT_MAX);
             dist[0] = 0;
-
             priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
             pq.emplace(0, 0);
             while (!pq.empty()) {
@@ -128,7 +127,6 @@ int main() {
             for (int i = 0; i < id; i++)
                 if (dist[i] != INT_MAX) potential[i] += dist[i];
         };
-
         dijkstra();
 
         fill(visited.begin(), visited.end(), false);
