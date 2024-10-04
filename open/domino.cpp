@@ -17,7 +17,7 @@ void dijkstra(vector<vector<array<int, 6> *>> adj_list, vector<int> &potential) 
 
             if (dist[v] > d + w + potential[u] - potential[v]) {
                 dist[v] = d + w + potential[u] - potential[v];
-                pq.emplace(dist[u], u);
+                pq.emplace(dist[v], v);
             }
         }
     }
@@ -90,7 +90,7 @@ int main() {
         }
 
     vector<vector<array<int, 6> *>> adj_list(id);
-    for (auto &e : edges) adj_list[e[0]].emplace_back(&e);
+    for (auto &e : edges) adj_list[e[1]].emplace_back(&e);
 
     vector<int> potential(id, INT_MAX);
     potential[0] = 0;
