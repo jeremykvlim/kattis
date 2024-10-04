@@ -59,8 +59,8 @@ int main() {
     vector<array<int, 6>> edges;
     int index = 0;
     auto add = [&](int u, int v, int w) {
-        edges.push_back({u, v, w, 1, 0, index++});
-        edges.push_back({v, u, -w, 0, 0, index++});
+        edges.push_back({v, u, w, 1, 0, index++});
+        edges.push_back({u, v, -w, 0, 0, index++});
     };
 
     int id = 2;
