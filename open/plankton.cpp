@@ -27,7 +27,7 @@ int main() {
         dist[fu] = 0;
 
         auto bellman_ford = [&]() {
-            for (int i = 0; i < f - 1; i++)
+            for (int i = 0; i < f; i++)
                 for (auto [u, v, w] : edges) dist[v] = min(dist[v], dist[u] + w);
         };
         bellman_ford();
