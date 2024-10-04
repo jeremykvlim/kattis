@@ -4,7 +4,6 @@ using namespace std;
 void dijkstra(vector<vector<array<int, 6> *>> adj_list, vector<int> &potential) {
     vector<int> dist(potential.size(), INT_MAX);
     dist[0] = 0;
-
     priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
     pq.emplace(0, 0);
     while (!pq.empty()) {
@@ -12,12 +11,12 @@ void dijkstra(vector<vector<array<int, 6> *>> adj_list, vector<int> &potential) 
         pq.pop();
 
         for (auto e : adj_list[v]) {
-            auto [v, u, w, capacity, flow, index] = *e;
+            auto [u, v, w, capacity, flow, index] = *e;
 
             if (capacity == flow) continue;
 
-            if (dist[u] > d + w + potential[v] - potential[u]) {
-                dist[u] = d + w + potential[v] - potential[u];
+            if (dist[v] > d + w + potential[u] - potential[v]) {
+                dist[v] = d + w + potential[u] - potential[v];
                 pq.emplace(dist[u], u);
             }
         }
@@ -110,10 +109,10 @@ int main() {
         if (v == 1) return true;
 
         for (auto e : adj_list[v]) {
-            auto &[v, u, w, capacity, flow, index] = *e;
-            if (capacity == flow || w + potential[v] != potential[u]) continue;
+            auto &[u, v, w, capacity, flow, index] = *e;
+            if (capacity == flow || potential[v] != potential[u] + w) continue;
 
-            if (!visited[u] && self(self, u)) {
+            if (!visited[v] && self(self, v)) {
                 flow++;
                 edges[index ^ 1][4]--;
 
