@@ -14,7 +14,7 @@ int main() {
 
         vector<tuple<int, int, double>> edges;
         vector<vector<int>> adj_list(f + 1);
-        for (int i = 0; i < t; i++) {
+        while (t--) {
             int fr, fg;
             double u;
             cin >> fr >> fg >> u;
