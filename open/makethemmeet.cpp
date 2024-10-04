@@ -109,7 +109,7 @@ int main() {
         int j = i ? 1 : 3, step = i > 1 ? 2 : 4;
 
         auto dfs1 = [&](auto &&self, int v, int prev, int depth = 0) -> int {
-            int subtree_size = 1, k = j - depth;
+            int k = j - depth, subtree_size = 1;
             j += step;
 
             for (int u : adj_list2[v])
