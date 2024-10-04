@@ -30,10 +30,10 @@ int main() {
 
         vector<vector<int>> adj_list(n + k + m + k);
         for (int i = 0; i < n + k + m + k - 2; i++) {
-            auto [v, u] = read();
+            auto [u, v] = read();
             
-            adj_list[v].emplace_back(u);
             adj_list[u].emplace_back(v);
+            adj_list[v].emplace_back(u);
         }
 
         vector<pair<int, int>> path;
@@ -64,8 +64,8 @@ int main() {
                 return true;
             };
 
-            for (auto [v, u] : path)
-                if (!connect(v, u) || !connect(u, v)) return false;
+            for (auto [u, v] : path)
+                if (!connect(u, v) || !connect(v, u)) return false;
 
             int prev = parent[0], curr = 0, next;
             do {
