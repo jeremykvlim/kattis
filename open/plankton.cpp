@@ -39,7 +39,7 @@ int main() {
                 if (!visited[u]) self(self, u);
         };
         for (auto [u, v, w] : edges)
-            if (dist[u] != 1e20 && w + dist[u] < dist[v]) dfs(dfs, u);
+            if (dist[u] != 1e20 && dist[v] > dist[u] + w) dfs(dfs, u);
 
         cout << (visited[fn] ? "TRUE\n" : "FALSE\n");
     }
