@@ -48,18 +48,19 @@ int main() {
     trick_hulls[1].emplace_back(0, 0);
     auto sum = LLONG_MAX;
     for (auto [t, i, end] : times) {
-        auto [v, u] = edges[i];
+        auto [u, v] = edges[i];
+        
         if (end) {
             if (dp[i] == LLONG_MAX) continue;
 
-            add(trick_hulls[u], {2 * t, dp[i] + t * t});
+            add(trick_hulls[v], {2 * t, dp[i] + t * t});
         } else {
             auto f = [&](auto p) {
                 return -p.x * t + p.y;
             };
-            while (trick_hulls[v].size() > 1 && f(trick_hulls[v].back()) >= f(trick_hulls[v][trick_hulls[v].size() - 2])) trick_hulls[v].pop_back();
+            while (trick_hulls[u].size() > 1 && f(trick_hulls[u].back()) >= f(trick_hulls[u][trick_hulls[u].size() - 2])) trick_hulls[u].pop_back();
 
-            if (!trick_hulls[v].empty()) dp[i] = min(dp[i], t * t + f(trick_hulls[v].back()));
+            if (!trick_hulls[u].empty()) dp[i] = min(dp[i], t * t + f(trick_hulls[u].back()));
         }
 
         if (u == n) sum = min(sum, dp[i]);
