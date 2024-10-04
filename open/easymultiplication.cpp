@@ -29,17 +29,17 @@ int main() {
             auto [d, nodes] = pq.top();
             pq.pop();
 
-            auto [v, u] = nodes;
-            if (dist[v] < d) continue;
+            auto [u, v] = nodes;
+            if (dist[u] < d) continue;
 
-            adj_list_regular[v].emplace_back(u);
-            adj_list_transpose[u].emplace_back(v);
+            adj_list_regular[u].emplace_back(v);
+            adj_list_transpose[v].emplace_back(u);
 
-            if (dist[v] == d) continue;
+            if (dist[u] == d) continue;
 
-            auto [add, all] = dist[v] = d;
-            if (dist[next(v, false)] > make_pair(add, all + 1)) pq.push({{add, all + 1}, {next(v, false), v}});
-            if (dist[next(v, true)] > make_pair(add + 1, all + 1)) pq.push({{add + 1, all + 1}, {next(v, true), v}});
+            auto [add, all] = dist[u] = d;
+            if (dist[next(u, false)] > make_pair(add, all + 1)) pq.push({{add, all + 1}, {next(u, false), u}});
+            if (dist[next(u, true)] > make_pair(add + 1, all + 1)) pq.push({{add + 1, all + 1}, {next(u, true), u}});
         }
 
         vector<bool> visited(m + 1, false);
