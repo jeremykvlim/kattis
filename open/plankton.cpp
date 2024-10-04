@@ -12,14 +12,14 @@ int main() {
         int t, f, fu, fn;
         cin >> t >> f >> fu >> fn;
 
-        vector<tuple<int, int, double>> edges;
+        vector<tuple<int, int, double>> edges(t);
         vector<vector<int>> adj_list(f + 1);
-        while (t--) {
+        for (int i = 0; i < t; i++) {
             int fr, fg;
             double u;
             cin >> fr >> fg >> u;
 
-            edges.emplace_back(fr, fg, -u);
+            edges[i] = {fr, fg, -u};
             adj_list[fr].emplace_back(fg);
         }
 
