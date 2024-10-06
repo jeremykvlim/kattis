@@ -1,21 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int dfs(int v, int prev, vector<vector<int>> &adj_list, vector<int> &next, pair<int, int> &flight) {
-    int depth = 0;
-    for (int u : adj_list[v])
-        if (u != prev && (v != flight.first || u != flight.second) && (u != flight.first || v != flight.second)) {
-            int d = dfs(u, v, adj_list, next, flight) + 1;
-
-            if (d > depth) {
-                depth = d;
-                next[v] = u;
-            }
-        }
-
-    return depth;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -35,25 +20,44 @@ int main() {
     vector<int> next(n + 1);
     iota(next.begin(), next.end(), 0);
     pair<int, int> flight{-1, -1}, cancel, add;
-    dfs(1, -1, adj_list, next, flight);
 
-    auto city = [&](auto &&city, int v, int dist) -> int {
-        return !dist ? v : city(city, next[v], dist - 1);
+    auto dfs = [&](auto &&self, int v = 1, int prev = -1) -> int {
+        int depth = 0;
+        for (int u : adj_list[v])
+            if (u != prev && make_pair(v, u) != flight && make_pair(u, v) != flight) {
+                int d = self(self, u, v) + 1;
+
+                if (depth < d) {
+                    depth = d;
+                    next[v] = u;
+                }
+            }
+
+        return depth;
     };
+    dfs(dfs);
 
     int least = INT_MAX;
     for (int a = 1; a <= n; a++)
         for (int b : adj_list[a])
             if (b > a) {
                 flight = {a, b};
-                int furthest1 = city(city, a, dfs(a, -1, adj_list, next, flight)), furthest2 = city(city, b, dfs(b, -1, adj_list, next, flight)),
-                        dist1 = dfs(furthest1, -1, adj_list, next, flight), dist2 = dfs(furthest2, -1, adj_list, next, flight),
-                         curr = max(max(dist1, dist2), (dist1 + 1) / 2 + (dist2 + 1) / 2 + 1);
+                
+                auto city = [&](int v, int dist) -> int {
+                    for (; dist; dist--) v = next[v];
+                    return v;
+                };
+                
+                int furthest1 = city(a, dfs(dfs, a)),
+                    furthest2 = city(b, dfs(dfs, b)),
+                    dist1 = dfs(dfs, furthest1),
+                    dist2 = dfs(dfs, furthest2),
+                    curr = max(max(dist1, dist2), (dist1 + 1) / 2 + (dist2 + 1) / 2 + 1);
 
-                if (curr < least) {
+                if (least > curr) {
                     least = curr;
                     cancel = flight;
-                    add = {city(city, furthest1, dist1 / 2), city(city, furthest2, dist2 / 2)};
+                    add = {city(furthest1, dist1 / 2), city(furthest2, dist2 / 2)};
                 }
             }
 
