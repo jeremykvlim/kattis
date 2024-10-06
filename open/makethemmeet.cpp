@@ -108,15 +108,18 @@ int main() {
     for (int i = 0; i < adj_list2[a].size(); i++) {
         int j = i ? 1 : 3, step = i > 1 ? 2 : 4;
 
-        auto dfs1 = [&](auto &&self, int v, int prev, int depth = 0) -> int {
-            int k = j - depth, subtree_size = 1;
+        vector<int> subtree_size(n, 1);
+        auto dfs1 = [&](auto &&self, int v, int prev, int depth = 0) -> void {
+            int k = j - depth;
             j += step;
 
             for (int u : adj_list2[v])
-                if (u != prev) subtree_size += self(self, u, v, depth + 1);
+                if (u != prev) {
+                    self(self, u, v, depth + 1);
+                    subtree_size[v] += subtree_size[u];
+                }
 
-            for (int _ = 0; _ < subtree_size; _++) moves[k += step][v] = prev;
-            return subtree_size;
+            for (int _ = 0; _ < subtree_size[v]; _++) moves[k += step][v] = prev;
         };
         dfs1(dfs1, adj_list2[a][i], a);
     }
