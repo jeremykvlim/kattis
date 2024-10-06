@@ -1,30 +1,30 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void dfs(int i, int jack, int jill, int sold, int n, vector<int> &mansions, vector<int> &suff, int &value) {
-    if (sold >= value || abs(jack - jill) > suff[i]) return;
-    if (jack == jill) value = min(value, sold + suff[i]);
-    if (i == n) return;
-    
-    dfs(i + 1, jack + mansions[i], jill, sold, n, mansions, suff, value);
-    if (jack != jill && jack) dfs(i + 1, jack, jill + mansions[i], sold, n, mansions, suff, value);
-    dfs(i + 1, jack, jill, sold + mansions[i], n, mansions, suff, value);
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     int n;
     while (cin >> n && n) {
-        vector<int> mansions(n), suff(n + 1, 0);
+        vector<int> mansions(n);
         for (int &v : mansions) cin >> v;
         sort(mansions.rbegin(), mansions.rend());
-        
+
+        vector<int> suff(n + 1, 0);
         for (int i = n - 1; ~i; i--) suff[i] = suff[i + 1] + mansions[i];
-        
+
         int value = INT_MAX;
-        dfs(0, 0, 0, 0, n, mansions, suff, value);
+        auto dfs = [&](auto &&self, int depth = 0, int jack = 0, int jill = 0, int sold = 0) -> void {
+            if (sold >= value || abs(jack - jill) > suff[depth]) return;
+            if (jack == jill) value = min(value, sold + suff[depth]);
+            if (depth == n) return;
+
+            self(self, depth + 1, jack + mansions[depth], jill, sold);
+            if (jack != jill && jack) self(self, depth + 1, jack, jill + mansions[depth], sold);
+            self(self, depth + 1, jack, jill, sold + mansions[depth]);
+        };
+        dfs(dfs);
         cout << value << "\n";
     }
 }
