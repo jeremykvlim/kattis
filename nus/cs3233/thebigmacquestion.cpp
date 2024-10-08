@@ -1,16 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void dfs(vector<vector<int>> &adj_list, vector<int> &order, vector<int> &prev, int v) {
-    for (int u : adj_list[v]) {
-        if (u == prev[v]) continue;
-        
-        prev[u] = v;
-        order.emplace_back(u);
-        dfs(adj_list, order, prev, u);
-    }
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -33,12 +23,22 @@ int main() {
     }
 
     vector<int> order, prev(n, -1);
-    dfs(adj_list, order, prev, 0);
+
+    auto dfs = [&](auto &&self, int v = 0) {
+        for (int u : adj_list[v])
+            if (u != prev[v]) {
+                prev[u] = v;
+                order.emplace_back(u);
+                self(self, u);
+            }
+    };
+    dfs(dfs);
 
     vector<pair<int, int>> big, sugar;
     for (int i = 0; i < order.size(); i += 2) {
         big.emplace_back(order[i], prev[order[i]]);
         sugar.emplace_back(order[i + 1], prev[order[i + 1]]);
+
         if (order[i] == prev[order[i + 1]]) {
             big.emplace_back(prev[order[i]], order[i + 1]);
             sugar.emplace_back(prev[order[i]], order[i + 1]);
