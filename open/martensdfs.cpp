@@ -1,13 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void dfs(int v, vector<vector<int>> &adj_list, vector<bool> &visited, vector<int> &l) {
-    l.emplace_back(v);
-    visited[v] = true;
-    for (int u : adj_list[v])
-        if (!visited[u]) dfs(u, adj_list, visited, l);
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -36,7 +29,7 @@ int main() {
         L.emplace_back(v);
     }
 
-    if (L.size() ^ n) {
+    if (L.size() != n) {
         cout << "NO";
         exit(0);
     }
@@ -45,7 +38,12 @@ int main() {
 
     vector<int> l;
     vector<bool> visited(n, false);
-    dfs(L[0], adj_list, visited, l);
-
+    auto dfs = [&](auto &&self, int v) -> void {
+        l.emplace_back(v);
+        visited[v] = true;
+        for (int u : adj_list[v])
+            if (!visited[u]) self(self, u);
+    };
+    dfs(dfs, L[0]);
     cout << (l == L ? "YES" : "NO");
 }
