@@ -1,13 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void dfs(int v, int d, int k, int &n, vector<int> &dist, vector<vector<pair<int, int>>> &adj_list) {
-    if (dist[v] <= d) return;
-    if (dist[v] == k) n--;
-    dist[v] = d;
-    for (auto [t, w] : adj_list[v]) dfs(t, d + w, k, n, dist, adj_list);
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -28,7 +21,14 @@ int main() {
             int b;
             cin >> b;
 
-            if (n) dfs(b - 1, 0, k, n, dist, adj_list);
+            auto dfs = [&](auto &&self, int v, int d = 0) {
+                if (dist[v] <= d) return;
+                if (dist[v] == k) n--;
+                dist[v] = d;
+                for (auto [u, w] : adj_list[v]) self(self, u, d + w);
+            };
+
+            if (n) dfs(dfs, b - 1);
             cout << n << "\n";
         }
 
