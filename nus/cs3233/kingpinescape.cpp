@@ -1,13 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void dfs(vector<vector<int>> &adj_list, vector<int> &hideouts, int v, int prev = -1) {
-    if (adj_list[v].size() == 1) hideouts.emplace_back(v);
-
-    for (int u : adj_list[v])
-        if (u != prev) dfs(adj_list, hideouts, u, v);
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -25,7 +18,13 @@ int main() {
     }
 
     vector<int> hideouts;
-    dfs(adj_list, hideouts, h);
+    auto dfs = [&](auto &&self, int v, int prev = -1) -> void {
+        if (adj_list[v].size() == 1) hideouts.emplace_back(v);
+
+        for (int u : adj_list[v])
+            if (u != prev) self(self, u, v);
+    };
+    dfs(dfs, h);
 
     int m = (hideouts.size() + 1) / 2;
     cout << m << "\n";
