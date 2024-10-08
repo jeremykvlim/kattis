@@ -1,17 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void dfs(int v, string &parties, vector<int> &degree, vector<vector<int>> &adj_list) {
-    for (int u : adj_list[v]) {
-        degree[v] += (parties[u] == parties[v]) ? -1 : 1;
-        degree[u] += (parties[u] == parties[v]) ? -1 : 1;
-    }
-
-    parties[v] ^= 'A' ^ 'B';
-    for (int u : adj_list[v])
-        if (degree[u] > 2) dfs(u, parties, degree, adj_list);
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -37,8 +26,18 @@ int main() {
         }
     }
 
-    for (int v = 0; v < n; v++)
-        if (degree[v] > 2) dfs(v, parties, degree, adj_list);
+    auto dfs = [&](auto &&self, int v) -> void {
+        for (int u : adj_list[v]) {
+            degree[v] += (parties[u] == parties[v]) ? -1 : 1;
+            degree[u] += (parties[u] == parties[v]) ? -1 : 1;
+        }
+
+        parties[v] ^= 'A' ^ 'B';
+        for (int u : adj_list[v])
+            if (degree[u] > 2) self(self, u);
+    };
+    for (int i = 0; i < n; i++)
+        if (degree[i] > 2) dfs(dfs, i);
 
     cout << parties;
 }
