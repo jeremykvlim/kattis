@@ -13,14 +13,6 @@ vector<int> prefix_function(string s) {
     return pi;
 }
 
-void dfs(int v, vector<vector<int>> &adj_matrix, vector<bool> &visited, stack<int> &s) {
-    visited[v] = true;
-    for (int u = 0; u < adj_matrix.size(); u++)
-        if (u != v && !visited[u] && adj_matrix[v][u]) dfs(u, adj_matrix, visited, s);
-
-    s.emplace(v);
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -39,15 +31,18 @@ int main() {
         }
 
     vector<bool> visited(n);
-    stack<int> s;
-    for (int v = 0; v < n; v++)
-        if (!visited[v]) dfs(v, adj_matrix, visited, s);
+    deque<int> order;
+    auto dfs = [&](auto &&self, int v) -> void {
+        visited[v] = true;
+        for (int u = 0; u < adj_matrix.size(); u++)
+            if (u != v && !visited[u] && adj_matrix[v][u]) self(self, u);
 
-    vector<int> order, indices(n);
-    while (!s.empty()) {
-        order.emplace_back(s.top());
-        s.pop();
-    }
+        order.emplace_front(v);
+    };
+    for (int i = 0; i < n; i++)
+        if (!visited[i]) dfs(dfs, i);
+
+    vector<int> indices(n);
     for (int i = 0; i < n; i++) indices[order[i]] = i;
 
     for (int i = 0; i < n; i++)
@@ -57,10 +52,10 @@ int main() {
                 exit(0);
             }
 
-    vector<int> dp(n);
-    for (int v : order)
-        for (int u = 0; u < n; u++)
-            if (u != v && adj_matrix[v][u]) dp[u] = max(dp[u], dp[v] + adj_matrix[v][u]);
+    vector<int> dp(n, 0);
+    for (int i : order)
+        for (int j = 0; j < n; j++)
+            if (i != j && adj_matrix[i][j]) dp[j] = max(dp[j], dp[i] + adj_matrix[i][j]);
 
     cout << *max_element(dp.begin(), dp.end());
 }
