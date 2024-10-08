@@ -14,28 +14,6 @@ vector<int> sieve(int n) {
     return primes;
 }
 
-void dfs(vector<vector<int>> &adj_list, vector<int> &prev, int v = 0) {
-    for (int u : adj_list[v]) {
-        if (u == prev[v]) continue;
-
-        prev[u] = v;
-        dfs(adj_list, prev, u);
-    }
-}
-
-pair<int, long long> depth(vector<int> &prev, vector<long long> &labels, int v) {
-    if (labels[v]) return {0, labels[v]};
-
-    auto [d, x] = depth(prev, labels, prev[v]);
-    return {d + 1, x};
-}
-
-void update(vector<int> &prev, vector<long long> &labels, int v, int p) {
-    if (!labels[prev[v]]) update(prev, labels, prev[v], p);
-
-    labels[v] = labels[prev[v]] * p;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -53,23 +31,42 @@ int main() {
     }
 
     vector<int> primes = sieve(n), prev(n, -1);
-    dfs(adj_list, prev);
+    auto dfs = [&](auto &&self, int v = 0) -> void {
+        for (int u : adj_list[v])
+            if (u != prev[v]) {
+                prev[u] = v;
+                self(self, u);
+            }
+    };
+    dfs(dfs);
 
     vector<long long> labels(n, 0);
     labels[0] = 1;
     for (int p : primes) {
         pair<int, long long> deepest{1, 0};
-        int v = -1;
-        for (int u = 0; u < n; u++) {
-            auto d = depth(prev, labels, u);
+        int i = -1;
+        for (int j = 0; j < n; j++) {
+            auto depth = [&](auto &&self, int v) -> pair<int, long long> {
+                if (labels[v]) return {0, labels[v]};
+
+                auto [d, x] = self(self, prev[v]);
+                return {d + 1, x};
+            };
+
+            auto d = depth(depth, j);
             if (deepest < d) {
                 deepest = d;
-                v = u;
+                i = j;
             }
         }
+        if (!~i) break;
 
-        if (v == -1) break;
-        update(prev, labels, v, p);
+        auto update = [&](auto &&self, int v) -> void {
+            if (!labels[prev[v]]) self(self, prev[v]);
+
+            labels[v] = labels[prev[v]] * p;
+        };
+        update(update, i);
     }
 
     for (auto x : labels) cout << x << " ";
