@@ -22,55 +22,6 @@ struct Hash {
     }
 };
 
-void rotate(array<int, 8> &state, char dir) {
-    switch (dir) {
-        case 'N':
-            swap(state[1], state[5]);
-            swap(state[5], state[0]);
-            swap(state[0], state[4]);
-            break;
-        case 'S':
-            swap(state[4], state[0]);
-            swap(state[0], state[5]);
-            swap(state[5], state[1]);
-            break;
-        case 'E':
-            swap(state[1], state[3]);
-            swap(state[3], state[0]);
-            swap(state[0], state[2]);
-            break;
-        case 'W':
-            swap(state[2], state[0]);
-            swap(state[0], state[3]);
-            swap(state[3], state[1]);
-            break;
-    }
-}
-
-void dfs(array<int, 8> curr, vector<vector<int>> &board, unordered_set<array<int, 8>, Hash> &visited, vector<pair<pair<int, int>, char>> &directions) {
-    if (curr[6] + 1 == board.size() && curr[7] + 1 == board[0].size()) {
-        cout << "YES";
-        exit(0);
-    }
-
-    for (auto [d, c] : directions) {
-        auto next = curr;
-        next[6] += d.first;
-        next[7] += d.second;
-        if (!(0 <= next[6] && next[6] < board.size() && 0 <= next[7] && next[7] < board[0].size())) continue;
-
-        rotate(next, c);
-
-        if (next[1] == -1) next[1] = board[next[6]][next[7]];
-        if (next[1] != board[next[6]][next[7]]) continue;
-
-        if (!visited.count(next)) {
-            visited.emplace(next);
-            dfs(next, board, visited, directions);
-        }
-    }
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -90,7 +41,55 @@ int main() {
     unordered_set<array<int, 8>, Hash> visited;
     array<int, 8> start{-1, board[0][0], -1, -1, -1, -1, 0, 0};
     visited.emplace(start);
-    dfs(start, board, visited, directions);
+
+    auto dfs = [&](auto &&self, auto curr) -> void {
+        if (curr[6] + 1 == board.size() && curr[7] + 1 == board[0].size()) {
+            cout << "YES";
+            exit(0);
+        }
+
+        for (auto [d, c] : directions) {
+            auto next = curr;
+            next[6] += d.first;
+            next[7] += d.second;
+            if (!(0 <= next[6] && next[6] < board.size() && 0 <= next[7] && next[7] < board[0].size())) continue;
+
+            auto rotate = [&]() {
+                switch (c) {
+                    case 'N':
+                        swap(next[1], next[5]);
+                        swap(next[5], next[0]);
+                        swap(next[0], next[4]);
+                        break;
+                    case 'S':
+                        swap(next[4], next[0]);
+                        swap(next[0], next[5]);
+                        swap(next[5], next[1]);
+                        break;
+                    case 'E':
+                        swap(next[1], next[3]);
+                        swap(next[3], next[0]);
+                        swap(next[0], next[2]);
+                        break;
+                    case 'W':
+                        swap(next[2], next[0]);
+                        swap(next[0], next[3]);
+                        swap(next[3], next[1]);
+                        break;
+                }
+            };
+            rotate();
+
+            if (next[1] == -1) next[1] = board[next[6]][next[7]];
+            if (next[1] != board[next[6]][next[7]]) continue;
+
+            if (!visited.count(next)) {
+                visited.emplace(next);
+                self(self, next);
+            }
+        }
+    };
+    dfs(dfs, start);
 
     cout << "NO";
 }
