@@ -113,19 +113,15 @@ struct BarrettModInt {
     }
 
     auto operator++(int) {
-        BarrettModInt v(*this);
-        *this += 1;
-        return v;
+        return *this += 1;
     }
 
     auto operator--(int) {
-        BarrettModInt v(*this);
-        *this -= 1;
-        return v;
+        return *this -= 1;
     }
 
     auto operator-() const {
-        return BarrettModInt(-value);
+        return (BarrettModInt) 0 - *this;
     }
 
     template <typename V = M>

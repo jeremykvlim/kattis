@@ -115,7 +115,7 @@ struct MontgomeryModInt {
     }
 
     auto operator-() const {
-        return (MontgomeryModInt) -value;
+        return (MontgomeryModInt) 0 - *this;
     }
 
     template <typename V = M>
