@@ -46,7 +46,6 @@ int main() {
     vector<bool> stacked(n + 1, false);
     stack<int> st;
     int count = 0, sccs = 0;
-
     for (int i = 1; i <= n; i++)
         if (!order[i]) tarjan(i, order, low, component, members, stacked, count, sccs, adj_list, st);
 
