@@ -24,13 +24,11 @@ int main() {
 
         pieces[i] = {open, close, open - close, (int) s.size()};
     }
-
-    auto cmp = [](auto a1, auto a2) {
+    sort(pieces.begin(), pieces.end(), [](auto a1, auto a2) {
         if ((a1[2] > 0) ^ (a2[2] > 0)) return a2[2] < a1[2];
         else if (a1[2] > 0) return a1[1] == a2[1] ? a2[2] < a1[2] : a1[1] < a2[1];
         else return a1[0] == a2[0] ? a2[2] < a1[2] : a2[0] < a1[0];
-    };
-    sort(pieces.begin(), pieces.end(), cmp);
+    });
 
     vector<int> dp(total, -1);
     dp[0] = 0;
