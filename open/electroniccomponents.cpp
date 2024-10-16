@@ -15,7 +15,7 @@ int main() {
 
         most = max(most, f);
     }
-    sort(components.begin(), components.end(), [&](pair<int, int> p1, pair<int, int> p2) {return p1.second > p2.second;});
+    sort(components.begin(), components.end(), [&](auto p1, auto p2) {return p1.second > p2.second;});
 
     vector<vector<pair<int, long long>>> placements(most + 1);
     vector<long long> dp(most + 1, LLONG_MAX);
@@ -26,7 +26,7 @@ int main() {
 
         for (int i = 0; i < 2; i++) {
             priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<>> pq;
-            for (int j = i; j < dp.size(); j += 2) {
+            for (int j = i; j <= most; j += 2) {
                 while (!pq.empty() && pq.top().second < j) pq.pop();
 
                 for (auto [fj, tj] : placements[j]) pq.emplace(tj - j / 2 * ti, fj);
