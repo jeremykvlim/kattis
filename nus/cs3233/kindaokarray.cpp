@@ -124,11 +124,11 @@ int main() {
         pref_sum[i + 1] = pref_sum[i] + pref_xor[i + 1];
     }
 
-    vector<int> indices(a.size()), str(a.size());
+    vector<int> indices(n), str(n);
     iota(indices.begin(), indices.end(), 0);
     sort(indices.begin(), indices.end(), [&](int i, int j) {return a[i] < a[j];});
     int range = 0;
-    for (int i = 0; i < a.size(); i++) {
+    for (int i = 0; i < n; i++) {
         if (i && a[indices[i - 1]] != a[indices[i]]) range++;
         str[indices[i]] = range;
     }
