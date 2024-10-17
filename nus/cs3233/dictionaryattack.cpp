@@ -8,12 +8,12 @@ int main() {
     int n;
     cin >> n;
 
-    vector<string> dictionary(n);
-    for (auto &w : dictionary) cin >> w;
+    vector<string> dict(n);
+    for (auto &w : dict) cin >> w;
 
     string p;
     while (cin >> p) {
-        for (auto &w : dictionary) {
+        for (auto &w : dict) {
             if (w.size() != p.size()) continue;
 
             int diff = 0, digits = 0;
