@@ -41,7 +41,7 @@ int main() {
     auto pull = [&](auto &&self, int mask, int d, int i = 0) -> void {
         if (!~d) {
             double sum = 0;
-            for (int f = 1; f <= 6; f++) sum += E[i + (f << 3 * __builtin_ctz(mask))];
+            for (int f = 1; f <= 6; f++) sum += E[i + (f << 3 * __lg(mask))];
             E[i] = min(E[i], sum / 6);
             return;
         }
