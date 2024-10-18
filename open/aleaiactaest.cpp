@@ -46,7 +46,7 @@ int main() {
             return;
         }
 
-        int next = ~mask & (1 << d) - 1 ? __lg(~mask & (1 << d) - 1) : -1;
+        int next = ~mask & ((1 << d) - 1) ? __lg(~mask & ((1 << d) - 1)) : -1;
         for (int f = 1; f <= 6; f++) self(self, mask, next, i + (f << 3 * d));
     };
 
@@ -57,7 +57,7 @@ int main() {
             return;
         }
 
-        int next = ~mask & (1 << d) - 1 ? __lg(~mask & (1 << d) - 1) : -1;
+        int next = ~mask & ((1 << d) - 1) ? __lg(~mask & ((1 << d) - 1)) : -1;
         for (int f = 1; f <= 6; f++) self(self, mask, next, i + (f << 3 * d));
     };
 
