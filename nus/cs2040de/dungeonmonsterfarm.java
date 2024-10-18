@@ -6,9 +6,7 @@ public class dungeonmonsterfarm {
         var br = new BufferedReader(new InputStreamReader(System.in));
 
         var input = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
-        int x = input[0], n = input[1];
-
-        try (var farm = new Farm(x, n)) {
+        try (var farm = new Farm(input[0], input[1])) {
             for (var op = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray(); op[0] != 3; op = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray()) {
                 switch (op[0]) {
                     case 0 -> farm.buyMonster(op[1], op[2], op[3]);
