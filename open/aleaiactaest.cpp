@@ -65,8 +65,12 @@ int main() {
         auto prev = E[0] - !state[0];
         for (int m = 1; m < 1 << d; m++) pull(pull, m, m != (1 << d) - 1 ? __lg(m ^ (1 << d) - 1) : -1);
         for (int m = (1 << d) - 1; m; m--) push(push, m, m != (1 << d) - 1 ? __lg(m ^ (1 << d) - 1) : -1);
-        if (abs(prev - E[0]) < 1e-9) break;
+
+        if (abs(prev - E[0]) < 1e-9) {
+            cout << fixed << setprecision(6) << E[0] + !state[0];
+            exit(0);
+        }
+
         for (int i = 0; i < 1 << (3 * d); i++) E[i] += !state[i];
     }
-    cout << fixed << setprecision(6) << E[0] + !state[0];
 }
