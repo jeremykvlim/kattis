@@ -21,8 +21,7 @@ int main() {
 
     array<int, (int) 2e5> c;
     for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++) 
-            c[j] += a[i + j] > b[i];
+        for (int j = 0; j < n; j++) c[j] += a[i + j] > b[i];
 
     vector<int> shifts;
     for (int i = 0; i < n; i++)
