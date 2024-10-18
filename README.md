@@ -10,7 +10,7 @@ Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizat
 
 * NUS:
 
-  * CS2040/CS2040C/CS2040S/IT5003 Data Structures & Algorithms: C++ (CS2040C)/Java (CS2040, CS2040S)/Python (IT5003)
+  * CS2040/CS2040C/CS2040DE/CS2040S/IT5003 Data Structures & Algorithms: C++ (CS2040C)/Java (CS2040, CS2040DE, CS2040S)/Python (IT5003)
 
   * CS3230 Design and Analysis of Algorithms: C++/Java/Python
 
