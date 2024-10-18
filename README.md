@@ -14,7 +14,7 @@ Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizat
 
   * CS3230 Design and Analysis of Algorithms: C++/Java/Python
 
-  * CS3233 Competitive Programming: C++/Java/Python
+  * CS3233 Competitive Programming: C/C++/Java/Kotlin/Python
 
   * CS4234 Optimization Algorithms: C++/Java/Python
 
