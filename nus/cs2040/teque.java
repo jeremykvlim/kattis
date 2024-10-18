@@ -14,19 +14,17 @@ public class teque {
             var command = br.readLine().split(" ");
 
             switch (command[0]) {
-                case "push_front": {
+                case "push_front" -> {
                     front[frontHead--] = command[1];
                     frontSize++;
                     balance();
-                    break;
                 }
-                case "push_back": {
+                case "push_back" -> {
                     back[backTail++] = command[1];
                     backSize++;
                     balance();
-                    break;
                 }
-                case "push_middle": {
+                case "push_middle" -> {
                     if (frontSize >= backSize) {
                         back[backHead--] = command[1];
                         backSize++;
@@ -36,12 +34,10 @@ public class teque {
                         frontSize++;
                     }
                     balance();
-                    break;
                 }
-                default: {
+                default -> {
                     int i = Integer.parseInt(command[1]);
                     pw.println(i < frontSize ? front[frontHead + 1 + i] : back[backHead + 1 + i - frontSize]);
-                    break;
                 }
             }
         }
