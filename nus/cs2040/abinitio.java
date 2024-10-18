@@ -16,40 +16,36 @@ public class abinitio {
         while (q-- > 0) {
             int c = io.nextInt(), x, y;
             switch (c) {
-                case 1:
+                case 1 -> {
                     for (int i = 0; i < v; i++) adjMatrix[i][v] = adjMatrix[v][i] = status[1] == 0 ? 0 : 1;
                     adjMatrix[v][v] = 0;
                     v++;
-                    break;
-                case 2:
+                }
+                case 2 -> {
                     x = io.nextInt();
                     y = io.nextInt();
                     if (status[0] == 0) adjMatrix[x][y] ^= 1;
                     else adjMatrix[y][x] ^= 1;
-                    break;
-                case 3:
+                }
+                case 3 -> {
                     x = io.nextInt();
                     for (int i = 0; i < v; i++) adjMatrix[i][x] = adjMatrix[x][i] = status[1] == 0 ? 0 : 1;
-                    break;
-                case 4:
+                }
+                case 4 -> {
                     x = io.nextInt();
                     y = io.nextInt();
                     if (status[0] == 0) adjMatrix[x][y] = status[1];
                     else adjMatrix[y][x] = status[1];
-                    break;
-                case 5:
-                    status[0] ^= 1;
-                    break;
-                case 6:
-                    status[1] ^= 1;
-                    break;
+                }
+                case 5 -> status[0] ^= 1;
+                case 6 -> status[1] ^= 1;
             }
         }
         pw.println(v);
 
         for (int i = 0; i < v; i++) {
             long d = 0, h = 0;
-            for (int j = v - 1; j >= 0; j--) 
+            for (int j = v - 1; j >= 0; j--)
                 if (i != j && adjMatrix[status[0] == 1 ? j : i][status[0] == 1 ? i : j] == (status[1] == 1 ? 0 : 1)) {
                     d++;
                     h = (7 * h + j) % MODULO;
@@ -68,7 +64,7 @@ public class abinitio {
         IO(InputStream is) {
             dis = is;
         }
-        
+
         int nextInt() throws Exception {
             int n = 0;
             byte b;
@@ -86,7 +82,7 @@ public class abinitio {
             }
             return (negative) ? -n : n;
         }
-        
+
         byte nextByte() throws Exception {
             if (pointer == buffer.length) {
                 dis.read(buffer, 0, buffer.length);
