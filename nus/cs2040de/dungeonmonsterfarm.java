@@ -41,6 +41,10 @@ class Farm implements AutoCloseable {
         monsters = new ArrayList<>();
     }
 
+    void print() {
+        System.out.println(coins + " " + capacity);
+    }
+
     int buyMonster(int type, int count, int dailyWeightGain) {
         int cost = count * buyingPrice[type];
         if (coins < cost || capacity < count) return monsters.size();
@@ -78,10 +82,6 @@ class Farm implements AutoCloseable {
             m.daysRaised += days;
         }
         print();
-    }
-
-    void print() {
-        System.out.println(coins + " " + capacity);
     }
 
     @Override
