@@ -35,7 +35,6 @@ int main() {
         prev[s[i]] = i;
     }
 
-    vector<int> fenwick(n + 1, 0);
     FenwickTree<int> fw(n + 1);
     int a = INT_MAX;
     for (int i = n; i; i--)
