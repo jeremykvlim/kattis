@@ -100,6 +100,7 @@ struct SuffixTree : Trie {
     void remove(int i) {
         int v = order.front();
         order.pop();
+        
         if (v == node) {
             int len = i - pos;
             count -= len;
