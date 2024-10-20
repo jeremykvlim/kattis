@@ -8,14 +8,14 @@ struct FenwickTree2D {
 
     FenwickTree2D(int n, int m, function<T(T, T)> func) : BIT(n, vector<T>(m, 0)), f(move(func)) {}
 
-    void update(int i, int j, T value) {
-        for (; i < BIT[j].size(); i += i & -i) BIT[j][i] = f(BIT[j][i], value);
+    void update(int i, int j, T v) {
+        for (; i < BIT[j].size(); i += i & -i) BIT[j][i] = f(BIT[j][i], v);
     }
 
     T range_query(int i, int j) {
-        T value = 0;
-        for (; i; i &= (i - 1)) value = f(value, BIT[j][i]);
-        return value;
+        T v = 0;
+        for (; i; i &= (i - 1)) v = f(value, BIT[j][i]);
+        return v;
     }
 };
 

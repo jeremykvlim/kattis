@@ -5,8 +5,8 @@ template <typename T>
 struct FenwickTree {
     vector<T> BIT;
 
-    void update(int i, T value) {
-        for (; i < BIT.size(); i += i & -i) BIT[i] += value;
+    void update(int i, T v) {
+        for (; i < BIT.size(); i += i & -i) BIT[i] += v;
     }
 
     T pref_sum(int i) {

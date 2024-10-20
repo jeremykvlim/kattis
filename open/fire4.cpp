@@ -6,14 +6,14 @@ struct FenwickTree {
     vector<T> BIT;
     function<T(T, T)> f;
 
-    void update(int i, T value) {
-        for (; i < BIT.size(); i += i & -i) BIT[i] = f(BIT[i], value);
+    void update(int i, T v) {
+        for (; i < BIT.size(); i += i & -i) BIT[i] = f(BIT[i], v);
     }
 
     T range_query(int i) {
-        T value = 0;
-        for (; i; i &= (i - 1)) value = f(value, BIT[i]);
-        return value;
+        T v = 0;
+        for (; i; i &= (i - 1)) value = f(v, BIT[i]);
+        return v;
     }
 
     FenwickTree(int n, function<T(T, T)> func) : BIT(n, 0), f(move(func)) {}
