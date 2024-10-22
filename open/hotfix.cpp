@@ -19,11 +19,11 @@ struct SuffixAutomaton {
 
     vector<State> SAM;
     ascii a;
-    int curr, last;
+    int last, size;
     vector<int> occ;
     vector<long long> count;
 
-    SuffixAutomaton(string &s, ascii alpha = LOWER, int range = 26) : SAM(2 * s.size(), State(range)), a(alpha), curr(1), last(0),
+    SuffixAutomaton(string &s, ascii alpha = LOWER, int range = 26) : SAM(2 * s.size(), State(range)), a(alpha), last(0), size(1),
                                                                       occ(2 * s.size(), 0), count(2 * s.size(), 0) {
         SAM[0].link = -1;
         for (char &c : s) extend(c);
@@ -31,7 +31,7 @@ struct SuffixAutomaton {
     }
 
     void extend(char c) {
-        int v = curr++;
+        int v = size++;
         SAM[v].len = SAM[last].len + 1;
 
         int p = last;
@@ -45,7 +45,7 @@ struct SuffixAutomaton {
             int q = SAM[p].next[c - a];
             if (SAM[p].len + 1 == SAM[q].len) SAM[v].link = q;
             else {
-                int clone = curr++;
+                int clone = size++;
                 SAM[clone].len = SAM[p].len + 1;
                 SAM[clone].next = SAM[q].next;
                 SAM[clone].link = SAM[q].link;
@@ -81,10 +81,6 @@ struct SuffixAutomaton {
             }
     }
 
-    auto size() {
-        return SAM.size();
-    }
-
     auto & operator[](int i) {
         return SAM[i];
     }
@@ -103,7 +99,7 @@ int main() {
     sam.dfs_distinct();
 
     map<char, long long> chars;
-    for (int i = 0; i < sam.size(); i++) {
+    for (int i = 0; i < 2 * s.size(); i++) {
         int l = !i ? 1 : sam[i].len - sam[sam[i].link].len;
         for (int c = 0; c < range; c++)
             if (sam[i].next[c]) chars[c + 'A'] += l * (sam.count[sam[i].next[c]] + 1);
