@@ -61,22 +61,18 @@ struct SuffixAutomaton {
     }
 
     void dfs_occurrences(int v = 0) {
-        if (occ[v]) return;
-
         occ[v] = SAM[v].end;
         for (int u : SAM[v].next)
             if (u) {
-                dfs_occurrences(u);
+                if (!occ[u]) dfs_occurrences(u);
                 occ[v] += occ[u];
             }
     }
 
     void dfs_distinct(int v = 0) {
-        if (count[v]) return;
-
         for (int u : SAM[v].next)
             if (u) {
-                dfs_distinct(u);
+                if (!count[u]) dfs_distinct(u);
                 count[v] += count[u] + 1;
             }
     }
