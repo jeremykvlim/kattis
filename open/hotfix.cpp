@@ -104,8 +104,9 @@ int main() {
         for (int c = 0; c < range; c++)
             if (sam[i].next[c]) chars[c + 'A'] += l * (sam.count[sam[i].next[c]] + 1);
 
+        if (!i) continue;
         int temp = sam.occ[i];
-        while (i && temp) {
+        while (temp) {
             chars[(temp % 10) + '0'] += l;
             temp /= 10;
         }
