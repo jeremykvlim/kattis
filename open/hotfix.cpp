@@ -23,10 +23,10 @@ struct SuffixAutomaton {
     vector<int> occ;
     vector<long long> count;
 
-    SuffixAutomaton(string &s, ascii alpha = LOWER, int range = 26) : SAM(2 * s.size(), State(range)), a(alpha), last(0), size(1),
-                                                                      occ(2 * s.size(), 0), count(2 * s.size(), 0) {
+    SuffixAutomaton(string s, ascii alpha = LOWER, int range = 26) : SAM(2 * s.size(), State(range)), a(alpha), last(0), size(1),
+                                                                     occ(2 * s.size(), 0), count(2 * s.size(), 0) {
         SAM[0].link = -1;
-        for (char &c : s) extend(c);
+        for (char c : s) extend(c);
         for (int p = last; p; p = SAM[p].link) SAM[p].end = true;
     }
 
