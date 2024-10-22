@@ -98,19 +98,19 @@ int main() {
     sam.dfs_occurrences();
     sam.dfs_distinct();
 
-    map<char, long long> chars;
+    vector<long long> chars('z' + 1, 0);
     for (int i = 0; i < 2 * s.size(); i++) {
         int l = !i ? 1 : sam[i].len - sam[sam[i].link].len;
         for (int c = 0; c < range; c++)
             if (sam[i].next[c]) chars[c + 'A'] += l * (sam.count[sam[i].next[c]] + 1);
 
-        if (!i) continue;
-        int temp = sam.occ[i];
+        int temp = !i ? 0 : sam.occ[i];
         while (temp) {
             chars[(temp % 10) + '0'] += l;
             temp /= 10;
         }
     }
 
-    for (auto &[c, occ] : chars) cout << c << " " << occ << "\n";
+    for (int c = '0'; c <= 'z'; c++)
+        if (chars[c]) cout << (char) c << " " << chars[c] << "\n";
 }
