@@ -19,7 +19,7 @@ int main() {
             getline(cin, s);
             
             istringstream iss(s);
-            copy(istream_iterator<string>(iss), istream_iterator<string>(), back_inserter(st));
+            st = {istream_iterator<string>(iss), istream_iterator<string>()};
         }
 
         vector<bitset<501>> bitmasks(m);
