@@ -311,7 +311,7 @@ int main() {
     modint ways = 0;
     for (int i = 0; i < min(a, b); i++)
         for (int j = 0; j < n; j++)
-            for (int k = i + 1, l = j + k; k <= a && l <= n; k++, ++l += i) {
+            for (int k = i + 1, l = j + k; k <= a && l <= n; k++, l += i + 1) {
                 dp[k][l] += dp[i][j];
                 if (!((n - l) % k) && (n - l) / k + i + 1 <= b) ways += dp[i][j];
             }
