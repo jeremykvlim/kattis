@@ -46,7 +46,6 @@ int main() {
         if (c == 'P') cout << mic->partner->name << "\n";
         else if (c == 'F') mic = mic->prev;
         else if (c == 'B') mic = mic->next;
-
         else if (c == 'R') {
             auto *prev = mic->prev, *next = mic->next;
 
@@ -66,7 +65,6 @@ int main() {
             }
 
             mic = next;
-
         } else {
             auto *prev = mic->prev, *next = mic->next, *partner = mic->partner, *partner_next = partner->next;
 
@@ -89,7 +87,6 @@ int main() {
             mic = next;
         }
     }
-
     cout << "\n";
 
     auto *person = front;
