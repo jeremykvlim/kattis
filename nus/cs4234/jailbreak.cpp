@@ -24,7 +24,7 @@ int main() {
                 }
             }
 
-        vector<int> dx{1, -1, 0, 0}, dy{0, 0, 1, -1};
+        vector<int> dx{1, 0, -1, 0}, dy{0, 1, 0, -1};
         auto bfs = [&](vector<vector<int>> &dist, pair<int, int> src = {0, 0}) -> void {
             dist[src.first][src.second] = 0;
             deque<pair<int, int>> dq{src};
