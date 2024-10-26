@@ -33,7 +33,7 @@ int main() {
             adj_list[x1 * h + y1].emplace_back(x2 * h + y2, t);
         }
 
-        vector<int> dx{1, -1, 0, 0}, dy{0, 0, 1, -1};
+        vector<int> dx{1, 0, -1, 0}, dy{0, 1, 0, -1};
         for (int i = 0; i < w; i++)
             for (int j = 0; j < h; j++)
                 if (!state[i][j] || state[i][j] == 1)
