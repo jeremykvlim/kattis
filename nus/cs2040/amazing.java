@@ -5,27 +5,35 @@ public class amazing {
     static PrintWriter pw = new PrintWriter(System.out);
 
     public static void main(String[] args) throws IOException {
-        var visited = new boolean[220][220];
-        dfs(110, 110, -1, visited);
-        pw.println("no way out");
-        pw.flush();
+        var visited = new boolean[201][201];
+        if (!dfs(100, 100, visited)) {
+            pw.println("no way out");
+            pw.flush();
+        }
     }
-
-    static boolean send(int i) throws IOException {
-        String[] directions = {"down", "up", "right", "left"};
-        pw.println(directions[i]);
-        pw.flush();
-        var response = br.readLine();
-        if (response.equals("solved")) System.exit(0);
-        return response.equals("ok");
-    }
-
-    static void dfs(int x, int y, int prev, boolean[][] visited) throws IOException {
+    
+    static boolean dfs(int x, int y, boolean[][] visited) throws IOException {
         visited[x][y] = true;
-        int[] dx = {1, -1, 0, 0}, dy = {0, 0, 1, -1};
-        for (int i = 0; i < 4; i++)
-            if (!visited[x + dx[i]][y + dy[i]] && i != prev && send(i))
-                dfs(x + dx[i], y + dy[i], i ^ 1, visited);
-        if (prev != -1) send(prev);
+
+        int[] dx = {1, 0, -1, 0}, dy = {0, 1, 0, -1};
+        String[] dir = {"right", "down", "left", "up"};
+        for (int i = 0; i < 4; i++) {
+            if (!visited[x + dx[i]][y + dy[i]]) {
+                pw.println(dir[i]);
+                pw.flush();
+
+                var response = br.readLine();
+                if (response.equals("solved")) return true;
+                else if (response.equals("ok")) {
+                    if (dfs(x + dx[i], y + dy[i], visited)) return true;
+                    else {
+                        pw.println(dir[(i + 2) % 4]);
+                        pw.flush();
+                        br.readLine();
+                    }
+                }
+            }
+        }
+        return false;
     }
 }
