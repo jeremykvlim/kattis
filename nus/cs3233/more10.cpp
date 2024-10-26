@@ -30,7 +30,7 @@ int main() {
     cin >> n;
 
     DisjointSet dsu(2 * n);
-    map<string, int> compress;
+    unordered_map<string, int> compress;
     vector<pair<int, int>> unequivalent;
     while (n--) {
         string X, s, Y;
@@ -39,29 +39,36 @@ int main() {
         reverse(X.begin(), X.end());
         reverse(Y.begin(), Y.end());
 
-        int x = compress.emplace(X, compress.size()).first->second, y = compress.emplace(Y, compress.size()).first->second;
+        int x, y;
+        if (compress[X]) x = compress[X];
+        else x = compress[X] = compress.size();
+        if (compress[Y]) y = compress[Y];
+        else y = compress[Y] = compress.size();
+
         if (s == "is") dsu.unite(x, y);
         else unequivalent.emplace_back(x, y);
     }
 
-    for (auto x = compress.begin(), y = x; x != compress.end(); x = y) {
-        y = next(x);
-        while (y != compress.end()) {
-            int len = min({(int) x->first.size(), (int) y->first.size(), 3});
+    vector<pair<string, int>> unique{compress.begin(), compress.end()};
+    sort(unique.begin(), unique.end());
+    for (int i = 0, j = 1; i < unique.size() && j < unique.size(); i = j, j++)
+        while (j < unique.size()) {
+            auto [X, x] = unique[i];
+            auto [Y, y] = unique[j];
 
-            if (x->first.substr(0, len) == y->first.substr(0, len)) {
-                dsu.unite(x->second, y->second);
-                y++;
+            int len = min({(int) X.size(), (int) Y.size(), 3});
+
+            if (X.substr(0, len) == Y.substr(0, len)) {
+                dsu.unite(x, y);
+                j++;
             } else break;
         }
-    }
 
-    bool consistent = true;
     for (auto [x, y] : unequivalent)
         if (dsu.find(x) == dsu.find(y)) {
-            consistent = false;
-            break;
+            cout << "wait what?";
+            exit(0);
         }
 
-    cout << (consistent ? "yes" : "wait what?");
+    cout << "yes";
 }
