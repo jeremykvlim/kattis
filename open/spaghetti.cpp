@@ -19,22 +19,20 @@ int main() {
                 break;
             }
 
-            auto label = s.substr(0, 5);
-            if (!label.empty() && label != "     ") program[stoi(label)] = total;
-
+            if (s.substr(0, 5) != "     ") program[stoi(s.substr(0, 5))] = total;
             s = s.substr(6, s.size() - 6);
             s.erase(remove_if(s.begin(), s.end(), [](char c) {return c == ' ';}), s.end());
-            
+
             int i = s.size() - 1;
             while (i && isdigit(s[i])) i--;
-            int lab = (isdigit(s[++i]) ? stoi(s.substr(i)) : 0);
+            int label = (isdigit(s[++i]) ? stoi(s.substr(i)) : 0);
 
             if (i == 4 && s.substr(0, 4) == "goto") {
                 s.resize(4);
-                match.emplace_back(lab);
+                match.emplace_back(label);
             } else if (s.substr(0, 3) == "if(" && s.substr(i - 5, 5) == ")goto") {
                 s.resize(i);
-                match.emplace_back(lab);
+                match.emplace_back(label);
             } else match.emplace_back(0);
 
             lines.emplace_back(s);
