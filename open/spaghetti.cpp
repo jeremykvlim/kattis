@@ -20,8 +20,8 @@ int main() {
             }
 
             if (s.substr(0, 5) != "     ") program[stoi(s.substr(0, 5))] = total;
-            s = s.substr(6, s.size() - 6);
-            s.erase(remove_if(s.begin(), s.end(), [](char c) {return c == ' ';}), s.end());
+            s = s.substr(6);
+            s.erase(remove_if(s.begin(), s.end(), ::isspace), s.end());
 
             int i = s.size() - 1;
             while (i && isdigit(s[i])) i--;
@@ -46,13 +46,13 @@ int main() {
     read(p2, second, total);
 
     vector<bool> cycle(total, false);
-    auto dfs = [&](auto &&self, int a) -> bool {
-        if (cycle[a]) return true;
-        if (lines[a] != "goto") return false;
+    auto dfs = [&](auto &&self, int v) -> bool {
+        if (cycle[v]) return true;
+        if (lines[v] != "goto") return false;
 
-        cycle[a] = true;
-        if (self(self, match[a])) return true;
-        return cycle[a] = false;
+        cycle[v] = true;
+        if (self(self, match[v])) return true;
+        return cycle[v] = false;
     };
     for (int i = 0; i < total; i++) dfs(dfs, i);
 
@@ -74,6 +74,5 @@ int main() {
         return true;
     };
 
-    if (equiv(equiv, 0, second + 1)) cout << "The programs are equivalent.";
-    else cout << "The programs are not equivalent.";
+    cout << (equiv(equiv, 0, second + 1) ? "The programs are equivalent." : "The programs are not equivalent.");
 }
