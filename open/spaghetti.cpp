@@ -27,10 +27,7 @@ int main() {
             while (i && isdigit(s[i])) i--;
             int label = (isdigit(s[++i]) ? stoi(s.substr(i)) : 0);
 
-            if (s.substr(0, i) == "goto") {
-                s.resize(i);
-                match.emplace_back(label);
-            } else if (s.substr(0, 3) == "if(" && s.substr(i - 5, 5) == ")goto") {
+            if (s.substr(0, i) == "goto" || s.substr(0, 3) == "if(" && s.substr(i - 5, 5) == ")goto") {
                 s.resize(i);
                 match.emplace_back(label);
             } else match.emplace_back(0);
