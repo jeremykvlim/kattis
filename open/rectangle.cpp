@@ -27,24 +27,22 @@ int main() {
         if (!(sum % c) && sum / c >= c) {
             auto a = c, b = sum / c;
             vector<bool> visited(k, false);
-            for (bool v = false;; v = false) {
+            for (;;) {
                 if (a < b) swap(a, b);
 
                 auto visit = [&](auto len1, auto &len2, auto &indices, bool f) {
+                    bool v = false;
                     if (len1 <= longest)
                         for (int i : indices[len1])
                             if (!visited[i]) {
                                 v = visited[i] = true;
                                 len2 -= f ? edges[i].first : edges[i].second;
                             }
+                    return v;
                 };
 
-                visit(a, b, indices_a, false);
-                if (v) continue;
-                visit(b, a, indices_b, true);
-                if (v) continue;
-                visit(b, a, indices_a, false);
-                if (!v) break;
+                if (visit(a, b, indices_a, false) || visit(b, a, indices_b, true) || visit(b, a, indices_a, false)) continue;
+                else break;
             }
 
             if (!a || !b) lens.emplace_back(c);
