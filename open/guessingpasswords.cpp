@@ -3,7 +3,7 @@ using namespace std;
 
 tuple<vector<int>, vector<int>, int> hopcroft_karp(int n, int m, vector<pair<int, int>> edges) {
     vector<int> adj_list(edges.size()), l(n, -1), r(m, -1), degree(n + 1, 0);
-    for (auto [u, v] : edges) degree[v]++;
+    for (auto [u, v] : edges) degree[u]++;
     for (int i = 1; i <= n; i++) degree[i] += degree[i - 1];
     for (auto [u, v] : edges) adj_list[--degree[u]] = v;
 
