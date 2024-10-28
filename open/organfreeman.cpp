@@ -12,7 +12,7 @@ int main() {
     cin >> n;
 
     string s;
-    for (int i = fact.size() - 1, x; ~i; --i) {
+    for (int i = fact.size() - 1, x; ~i; i--) {
         x = n / fact[i];
         n %= fact[i];
         if (x) s += string(x, '0' + i - 1 + (i > 1));
