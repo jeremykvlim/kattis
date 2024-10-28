@@ -41,8 +41,7 @@ int main() {
                     return v;
                 };
 
-                if (visit(a, b, indices_a, false) || visit(b, a, indices_b, true) || visit(b, a, indices_a, false)) continue;
-                else break;
+                if (!visit(a, b, indices_a, false) && !visit(b, a, indices_b, true) && !visit(b, a, indices_a, false)) break;
             }
 
             if (!a || !b) lens.emplace_back(c);
