@@ -9,19 +9,18 @@ int main() {
     int n;
     cin >> n;
 
-    array<int, (int) 4e5> a;
+    vector<int> a(4e5), b(2e5);
     for (int i = 0; i < n; i++) {
         cin >> a[i];
 
         a[i + n] = a[i];
     }
-
-    array<int, (int) 2e5> b;
     for (int i = 0; i < n; i++) cin >> b[i];
 
-    array<int, (int) 2e5> c;
+    vector<int> c(2e5);
     for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++) c[j] += a[i + j] > b[i];
+        for (int j = 0; j < n; j++) 
+            c[j] += a[i + j] > b[i];
 
     vector<int> shifts;
     for (int i = 0; i < n; i++)
