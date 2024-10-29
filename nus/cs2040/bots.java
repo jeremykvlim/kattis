@@ -66,10 +66,10 @@ public class bots {
         pw.flush();
     }
 
-    static void dfs1(int v, boolean[] visited, ArrayList<Integer>[] adjList, Stack<Integer> s) {
+    static void dfs1(int v, boolean[] visited, ArrayList<Integer>[] adjListRegular, Stack<Integer> s) {
         visited[v] = true;
-        for (var u : adjList[v])
-            if (!visited[u]) dfs1(u, visited, adjList, s);
+        for (var u : adjListRegular[v])
+            if (!visited[u]) dfs1(u, visited, adjListRegular, s);
 
         s.push(v);
     }
