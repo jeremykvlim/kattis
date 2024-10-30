@@ -9,7 +9,7 @@ int main() {
     cin >> n;
 
     vector<int> first(n), second(n);
-    for (auto &num : second) cin >> num;
+    for (int &num : second) cin >> num;
 
     auto construct = [&](int start) -> int {
         int curr = start, smallest = 0, num = 0;
