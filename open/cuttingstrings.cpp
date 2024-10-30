@@ -124,7 +124,7 @@ int main() {
             for (int i = l + 1; i < n && next[i][c - 'a'] != -1; i++)
                 if (s[i] == c && s[i - 1] != c) diff.emplace_back(i);
             if (diff.empty()) continue;
-            sort(diff.begin(), diff.end(), [&](auto i, auto j) {return same[i] == same[j] ? i < j : same[j] < same[i];});
+            sort(diff.begin(), diff.end(), [&](int i, int j) {return same[i] == same[j] ? i < j : same[j] < same[i];});
 
             int i = 0, last = 0;
             for (; i < diff.size() && k; i++, k--) {
