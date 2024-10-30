@@ -38,6 +38,6 @@ int main() {
         }
 
         reverse(a.begin(), a.end());
-        cout << (b[a.size()] == 'a' ? "b" : "a") << a + "\n";
+        cout << (b[a.size()] == 'a' ? "b" : "a") << a << "\n";
     }
 }
