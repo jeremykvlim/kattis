@@ -55,7 +55,7 @@ int main() {
     PersistentDisjointSet pdsu(n + 1);
     vector<int> all(q), cost(q);
     iota(all.begin(), all.end(), 0);
-    auto dnc = [&](auto &&self, int curr, int lg, vector<int> &days) {
+    auto dfs = [&](auto &&self, int curr, int lg, vector<int> &days) {
         if (lg < 0) {
             for (int d : days) cost[d] = curr;
             return;
@@ -77,7 +77,7 @@ int main() {
         self(self, next, lg - 1, same);
         self(self, curr, lg - 1, diff);
     };
-    dnc(dnc, (1 << (__lg(m) + 1)) - 1, __lg(m), all);
+    dfs(dfs, (1 << (__lg(m) + 1)) - 1, __lg(m), all);
 
     for (int c : cost) cout << c << "\n";
 }
