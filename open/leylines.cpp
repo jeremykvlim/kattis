@@ -71,7 +71,6 @@ int main() {
     vector<Line<long long>> lines;
     for (int i = 0; i < n; i++)
         for (int j = i + 1; j < n; j++) lines.emplace_back(points[i], points[j], i, j);
-
     sort(lines.begin(), lines.end(), [&](auto l1, auto l2) {return area_of_parallelogram(l1, l2) < 0;});
 
     vector<int> indices(n);
