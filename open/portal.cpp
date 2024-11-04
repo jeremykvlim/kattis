@@ -13,11 +13,6 @@ int main() {
         exit(0);
     }
 
-    auto abs = [](auto v) {
-        auto mask = v >> 127;
-        return (v + mask) ^ mask;
-    };
-
     pair<__int128, __int128> a{1e7, 1e7}, b{1e7, 1e7}, c;
     vector<__int128> Y(n - 2);
     for (int i = 0; i < n; i++) {
