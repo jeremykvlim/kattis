@@ -44,17 +44,15 @@ int main() {
         cin >> a >> b;
 
         int a_set = dsu.find(a), b_set = dsu.find(b);
-        if (adj_list[a_set].size() < adj_list[b_set].size()) swap(a_set, b_set);
 
-        if (adj_list[a_set].count(b_set)) cout << "REFUSE\n";
-        else {
-            cout << "APPROVE\n";
-
-            dsu.unite(a_set, b_set);
-            for (int v : adj_list[b_set]) {
-                adj_list[a_set].emplace(v);
-                adj_list[v].emplace(a_set);
-            }
+        if (adj_list[a_set].count(b_set) || adj_list[b_set].count(a_set)) {
+            cout << "REFUSE\n";
+            continue;
         }
+
+        cout << "APPROVE\n";
+        if (adj_list[a_set].size() < adj_list[b_set].size()) swap(a_set, b_set);
+        dsu.unite(a_set, b_set);
+        for (int v : adj_list[b_set]) adj_list[a_set].emplace(dsu.find(v));
     }
 }
