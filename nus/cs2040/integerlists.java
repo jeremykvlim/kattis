@@ -1,6 +1,6 @@
 import java.io.*;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.stream.*;
 
 public class integerlists {
     public static void main(String[] args) throws IOException {
@@ -19,17 +19,15 @@ public class integerlists {
                 continue;
             }
 
-            var dq = Arrays.stream(br.readLine().replaceAll("\\[","").replaceAll("]","").split(","))
-                    .map(Integer::parseInt)
-                    .collect(Collectors.toCollection(ArrayDeque::new));
+            var dq = Arrays.stream(br.readLine().replaceAll("\\[","").replaceAll("]","").split(",")).map(Integer::parseInt).collect(Collectors.toCollection(ArrayDeque::new));
 
             var reversed = false;
             for (var c : p.toCharArray())
                 if (c == 'R') reversed = !reversed;
                 else {
                     if (!dq.isEmpty()) {
-                        if (!reversed) dq.removeFirst();
-                        else dq.removeLast();
+                        if (!reversed) dq.pop();
+                        else dq.pollLast();
                     }
                     else {
                         pw.println("error");
@@ -39,7 +37,7 @@ public class integerlists {
 
             pw.print("[");
             while (!dq.isEmpty()) {
-                pw.print(!reversed ? dq.removeFirst() : dq.removeLast());
+                pw.print(!reversed ? dq.pop() : dq.pollLast());
                 if (!dq.isEmpty()) pw.print(",");
             }
             pw.println("]");
