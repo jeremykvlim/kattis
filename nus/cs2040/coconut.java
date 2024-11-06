@@ -3,32 +3,22 @@ import java.util.*;
 public class coconut {
     public static void main(String[] args) {
         var sc = new Scanner(System.in);
-        
+
         int s = sc.nextInt(), n = sc.nextInt();
-        var players = new ArrayList<Player>();
-        for (int i = 0; i < n; i++) players.add(new Player("folded", i + 1));
+        var dq = new ArrayDeque<Integer>();
+        for (int i = 0; i < n; i++) dq.add(2 * (i + n));
 
-        int i = 0;
-        while (players.size() > 1) {
-            i = (i + s - 1) % players.size();
-            if (players.get(i).hands.equals("folded")) {
-                players.get(i).hands = "fist";
-                players.add(i, new Player("fist", players.get(i).number));
-            } else if (players.get(i).hands.equals("fist"))
-                players.get(i++).hands = "palm";
-            else players.remove(i);
+        while (dq.size() > 1) {
+            for (int i = 0; i < s - 1; i++) dq.add(dq.pop());
+            
+            int front = dq.pop();
+            if (front >= 2 * n) {
+                front -= 2 * n;
+                dq.push(front);
+                dq.push(front);
+            } else if ((front & 1) == 0) dq.add(front + 1);
         }
 
-        System.out.println(players.get(0).number);
-    }
-
-    static class Player {
-        String hands;
-        int number;
-
-        Player(String h, int n) {
-            hands = h;
-            number = n;
-        }
+        System.out.println(dq.pop() % (2 * n) / 2 + 1);
     }
 }
