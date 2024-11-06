@@ -1,48 +1,20 @@
 import java.io.*;
 import java.util.*;
+import java.util.stream.*;
 
 public class conformity {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
-        
-        int n = Integer.parseInt(br.readLine()), max = 0;
-        var combo = new HashMap<Combination, Integer>();
+
+        int n = Integer.parseInt(br.readLine());
+        var map = new HashMap<String, Integer>();
+
         while (n-- > 0) {
-            var courses = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
-            Arrays.sort(courses);
-            var combo = new Combination(courses);
-            combo.put(combo, combo.getOrDefault(combo, 0) + 1);
-            max = Math.max(max, combo.get(combo));
+            var s = Arrays.stream(br.readLine().split(" ")).sorted().collect(Collectors.joining(""));
+            map.put(s, map.getOrDefault(s, 0) + 1);
         }
 
-        int total = 0;
-        for (var set : combo.entrySet())
-            if (set.getValue() == max) total += set.getValue();
-
-        System.out.println(total);
-    }
-
-    static class Combination {
-        int[] courses;
-
-        Combination(int[] c) {
-            courses = c;
-        }
-
-        @Override
-        public int hashCode() {
-            return Arrays.hashCode(courses);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (o == null) return false;
-            if (o == this) return true;
-            if (o instanceof Combination) {
-                Combination object = (Combination) o;
-                return Arrays.equals(courses, object.courses);
-            }
-            return false;
-        }
+        int most = map.values().stream().max(Integer::compare).orElse(0);
+        System.out.println(map.values().stream().filter(integer -> integer == most).mapToInt(i -> i).sum());
     }
 }
