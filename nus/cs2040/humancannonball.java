@@ -11,7 +11,6 @@ public class humancannonball {
         var coords = new double[n + 2][2];
         coords[0] = src;
         coords[n + 1] = dest;
-
         for (int i = 1; i < n + 1; i++) coords[i] = Arrays.stream(br.readLine().split(" ")).mapToDouble(Double::parseDouble).toArray();
 
         var adjMatrix = new double[n + 2][n + 2];
@@ -26,23 +25,22 @@ public class humancannonball {
         var time = new double[n + 2];
         Arrays.fill(time, Double.POSITIVE_INFINITY);
         time[0] = 0;
-
         var pq = new PriorityQueue<Pair>();
         pq.offer(new Pair(0, 0));
         while (!pq.isEmpty()) {
-            var u = pq.poll();
-            
-            if (u.second != time[u.first]) continue;
-            
-            for (int v = 0; v < n + 2; v++) {
-                var d = time[u.first] + adjMatrix[u.first][v];
-                if (d < time[v]) {
-                    time[v] = d;
-                    pq.offer(new Pair(v, d));
+            var v = pq.poll();
+
+            if (v.second != time[v.first]) continue;
+
+            for (int u = 0; u < n + 2; u++) {
+                var d = time[v.first] + adjMatrix[v.first][u];
+                if (time[u] > d) {
+                    time[u] = d;
+                    pq.offer(new Pair(u, d));
                 }
             }
         }
-        
+
         System.out.printf("%3f", time[n + 1]);
     }
 
