@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class Main {
+public class t9spelling {
     public static void main(String[] args) {
         var sc = new Scanner(System.in);
 
@@ -11,7 +11,7 @@ public class Main {
             for (char c : sc.nextLine().toCharArray())
                 for (int i = 0; i < keypad.length; i++)
                     if (keypad[i].indexOf(c) != -1) {
-                        if (s.length() > 0 && Character.getNumericValue(s.charAt(s.length() - 1)) == i) s.append(' ');
+                        if (s.length() > 0 && s.charAt(s.length() - 1) - '0' == i) s.append(' ');
                         s.append(String.valueOf(i).repeat(keypad[i].indexOf(c)));
                         break;
                     }
