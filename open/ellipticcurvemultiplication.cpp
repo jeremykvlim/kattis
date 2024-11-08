@@ -324,13 +324,13 @@ Point<T> add(Point<T> p, Point<T> q, U a) {
 
 template <typename T, typename U>
 Point<T> multiply(Point<T> base, U exponent, U a) {
-    Point<T> result{-1, -1};
+    Point<T> p{-1, -1};
     while (exponent) {
-        if (exponent & 1) result = add(result, base, a);
+        if (exponent & 1) p = add(p, base, a);
         base = add(base, base, a);
         exponent >>= 1;
     }
-    return result;
+    return p;
 }
 
 int main() {
