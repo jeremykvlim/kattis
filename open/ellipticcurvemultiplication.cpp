@@ -306,7 +306,7 @@ struct Point {
 };
 
 template <typename T, typename U>
-Point<T> add(Point<T> p, Point<T> q, U a){
+Point<T> add(Point<T> p, Point<T> q, U a) {
     if (p == Point<T>{-1, -1}) return q;
     if (q == Point<T>{-1, -1}) return p;
 
@@ -323,7 +323,7 @@ Point<T> add(Point<T> p, Point<T> q, U a){
 }
 
 template <typename T, typename U>
-Point<T> multiply(Point<T> base, U exponent, U a){
+Point<T> multiply(Point<T> base, U exponent, U a) {
     Point<T> result{-1, -1};
     while (exponent) {
         if (exponent & 1) result = add(result, base, a);
