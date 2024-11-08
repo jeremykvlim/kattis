@@ -41,7 +41,7 @@ int main() {
         cin >> ti;
 
         t = max(t, ti);
-        if (ti <= x)exposed.emplace_back(x - ti + 1);
+        if (ti <= x) exposed.emplace_back(x - ti + 1);
     }
 
     if (exposed.size() <= 2) {
@@ -68,7 +68,7 @@ int main() {
     }
 
     int time = INT_MAX;
-    for (int i = 0; i < s; i++)
+    for (int i = h; i < s; i++)
         if (bs[i]) time = min(time, max((sum + i - h) / 2, (sum - i + h) / 2) + x + 1);
 
     cout << max(t, time);
