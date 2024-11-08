@@ -6,13 +6,14 @@ void balanced_shuffle(I l, I r) {
     if (l == r) return;
 
     using T = typename iterator_traits<I>::value_type;
-    int n = distance(l, r);
 
     unordered_map<T, int> freq;
-    for (auto it = l; it != r; ++it) freq[*it]++;
+    for (auto it = l; it < r; it++) freq[*it]++;
     
     auto cmp = [&](auto t1, auto t2) {return get<4>(t1) != get<4>(t2) ? get<4>(t1) > get<4>(t2) : get<0>(t1) > get<0>(t2);};
     priority_queue<tuple<T, int, int, double, double>, vector<tuple<T, int, int, double, double>>, decltype(cmp)> pq(cmp);
+
+    int n = distance(l, r);
     for (auto [e, f] : freq) pq.emplace(e, f, 0, (double) n / f, 0);
 
     for (auto it = l; it < r; it++) {
