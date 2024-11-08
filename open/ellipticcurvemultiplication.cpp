@@ -310,15 +310,9 @@ Point<T> add(Point<T> p, Point<T> q, U a) {
     if (p == Point<T>{-1, -1}) return q;
     if (q == Point<T>{-1, -1}) return p;
 
-    if (p == q) {
-        if (p.y == 0) return {-1, -1};
+    if (p.x == q.x && (p.y == -q.y || p.y == q.y && p.y == 0)) return {-1, -1};
 
-        T lambda = (3 * p.x * p.x + a) / (2 * p.y), xr = lambda * lambda - p.x - q.x, yr = lambda * (p.x - xr) - p.y;
-        return {xr, yr};
-    }
-
-    if (p.x == q.x && p.y == -q.y) return {-1, -1};
-    T lambda = (q.y - p.y) / (q.x - p.x), xr = lambda * lambda - p.x - q.x, yr = lambda * (p.x - xr) - p.y;
+    T lambda = p == q ? (3 * p.x * p.x + a) / (2 * p.y) : (q.y - p.y) / (q.x - p.x), xr = lambda * lambda - p.x - q.x, yr = lambda * (p.x - xr) - p.y;
     return {xr, yr};
 }
 
