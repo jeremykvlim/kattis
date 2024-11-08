@@ -35,7 +35,7 @@ int main() {
 
     int t = 0;
     vector<int> exposed;
-    for (int i = 0; i < n; i++) {
+    while (n--) {
         int ti;
         cin >> ti;
 
