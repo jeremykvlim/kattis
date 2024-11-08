@@ -21,9 +21,7 @@ void balanced_shuffle(I l, I r) {
 
         *it = e;
 
-        if(f > ++count) {
-            pq.emplace(e, f, count, step, next_pos + step);
-        }
+        if (f > ++count) pq.emplace(e, f, count, step, next_pos + step);
     }
 }
 
