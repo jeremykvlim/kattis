@@ -274,7 +274,7 @@ template <typename U, typename T>
 U & operator>>(U &stream, BarrettModInt<T> &v) {
     typename common_type<typename BarrettModInt<T>::I, long long>::type x;
     stream >> x;
-    v.value = BarrettModInt<T>::normalize(x);
+    v = BarrettModInt<T>(x);
     return stream;
 }
 
