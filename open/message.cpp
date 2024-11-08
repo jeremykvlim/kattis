@@ -116,17 +116,17 @@ struct ModInt {
     }
 
     auto operator-() const {
-        return ModInt(-value);
+        return (ModInt) 0 - *this;
     }
 
     template <typename U = M>
-    typename enable_if<is_same<typename ModInt<U>::T, int>::value, ModInt>::type & operator*=(const ModInt &v) {
+    typename enable_if<is_same<typename ModInt<U>::T, unsigned int>::value, ModInt>::type & operator*=(const ModInt &v) {
         value = normalize((long long) value * (long long) v.value);
         return *this;
     }
 
     template <typename U = M>
-    typename enable_if<is_same<typename ModInt<U>::T, long long>::value, ModInt>::type & operator*=(const ModInt &v) {
+    typename enable_if<is_same<typename ModInt<U>::T, unsigned long long>::value, ModInt>::type & operator*=(const ModInt &v) {
         value = normalize(mul(value, v.value, mod()));
         return *this;
     }
@@ -290,8 +290,8 @@ struct MODULO {
 template <typename T>
 T MODULO<T>::value;
 
-auto &m = MODULO<long long>::value;
-using modint = ModInt<MODULO<long long>>;
+auto &m = MODULO<unsigned long long>::value;
+using modint = ModInt<MODULO<unsigned long long>>;
 
 template <typename T>
 struct Matrix {
@@ -383,6 +383,6 @@ int main() {
                 if (fsm[i][c] < s) count[i][fsm[i][c]]++;
 
         count = matpow(count, n);
-        cout << pow(26LL, n, m) - accumulate(count[0].begin(), count[0].end(), (modint) 0) << "\n";
+        cout << pow(26LL, n, (long long) m) - accumulate(count[0].begin(), count[0].end(), (modint) 0) << "\n";
     }
 }
