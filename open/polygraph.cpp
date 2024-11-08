@@ -34,7 +34,7 @@ int main() {
             for (auto mask : bitmasks)
                 if (mask[i]) {
                     bitset<501> temp;
-                    for (int j = 1; j < i; j++) temp.set(j);
+                    for (int j = 1; j < i; j++) temp[j] = true;
 
                     if ((mask & temp).none()) {
                         for (auto &bm : bitmasks)
