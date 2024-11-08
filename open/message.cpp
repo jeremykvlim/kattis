@@ -44,7 +44,7 @@ struct ModInt {
     static bool prime_mod;
 
     static void init() {
-        prime_mod = mod() == 998244353 || mod() == 1e9 + 7 || mod() == 1e9 + 9 || mod() == 1e6 + 69 || mod() == 2524775926340780033 || isprime(mod());
+        prime_mod = mod() == 998244353 || mod() == (unsigned long long) 1e9 + 7 || mod() == (unsigned long long) 1e9 + 9 || mod() == (unsigned long long) 1e6 + 69 || mod() == 2524775926340780033 || isprime(mod());
     }
 
     constexpr ModInt() : value() {}
@@ -104,15 +104,11 @@ struct ModInt {
     }
 
     auto operator++(int) {
-        ModInt v(*this);
-        *this += 1;
-        return v;
+        return *this += 1;
     }
 
     auto operator--(int) {
-        ModInt v(*this);
-        *this -= 1;
-        return v;
+        return *this -= 1;
     }
 
     auto operator-() const {
@@ -120,19 +116,19 @@ struct ModInt {
     }
 
     template <typename U = M>
-    typename enable_if<is_same<typename ModInt<U>::T, unsigned int>::value, ModInt>::type & operator*=(const ModInt &v) {
+    typename enable_if<is_same<typename ModInt<U>::T, int>::value, ModInt>::type &operator*=(const ModInt &v) {
         value = normalize((long long) value * (long long) v.value);
         return *this;
     }
 
     template <typename U = M>
-    typename enable_if<is_same<typename ModInt<U>::T, unsigned long long>::value, ModInt>::type & operator*=(const ModInt &v) {
+    typename enable_if<is_same<typename ModInt<U>::T, long long>::value, ModInt>::type &operator*=(const ModInt &v) {
         value = normalize(mul(value, v.value, mod()));
         return *this;
     }
 
     template <typename U = M>
-    typename enable_if<!is_integral<typename ModInt<U>::T>::value, ModInt>::type & operator*=(const ModInt &v) {
+    typename enable_if<!is_integral<typename ModInt<U>::T>::value, ModInt>::type &operator*=(const ModInt &v) {
         value = normalize(value * v.value);
         return *this;
     }
@@ -275,7 +271,7 @@ template <typename U, typename T>
 U & operator>>(U &stream, ModInt<T> &v) {
     typename common_type<typename ModInt<T>::T, long long>::type x;
     stream >> x;
-    v.value = ModInt<T>::normalize(x);
+    v = ModInt<T>(x);
     return stream;
 }
 
@@ -290,8 +286,8 @@ struct MODULO {
 template <typename T>
 T MODULO<T>::value;
 
-auto &m = MODULO<unsigned long long>::value;
-using modint = ModInt<MODULO<unsigned long long>>;
+auto &m = MODULO<long long>::value;
+using modint = ModInt<MODULO<long long>>;
 
 template <typename T>
 struct Matrix {
@@ -383,6 +379,6 @@ int main() {
                 if (fsm[i][c] < s) count[i][fsm[i][c]]++;
 
         count = matpow(count, n);
-        cout << pow(26LL, n, (long long) m) - accumulate(count[0].begin(), count[0].end(), (modint) 0) << "\n";
+        cout << pow(26LL, n, m) - accumulate(count[0].begin(), count[0].end(), (modint) 0) << "\n";
     }
 }
