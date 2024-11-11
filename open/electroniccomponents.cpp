@@ -9,7 +9,7 @@ int main() {
     cin >> n;
 
     vector<pair<int, long long>> components(n);
-    int most = -1;
+    int most = 0;
     for (auto &[f, t] : components) {
         cin >> f >> t;
 
@@ -17,24 +17,24 @@ int main() {
     }
     sort(components.begin(), components.end(), [&](auto p1, auto p2) {return p1.second > p2.second;});
 
-    vector<vector<pair<int, long long>>> placements(most + 1);
-    vector<long long> dp(most + 1, LLONG_MAX);
+    int total = 0;
+    vector<long long> dp(2 * most + 1, 1e16);
     dp[0] = 0;
-    for (auto [fi, ti] : components) {
-        for (int i = 0; i < dp.size(); i++)
-            if (dp[i] != LLONG_MAX) placements[fi + i - 2 * min(fi, i)].emplace_back(fi + i, dp[i] + (fi - min(fi, i)) * ti);
+    for (auto [f, t] : components) {
+        vector<long long> temp(2 * most + 1, 1e16);
+        for (int i = (total + f) & 1, copies = 0; i <= 2 * most; i += 2) {
+            auto time = [&](int c) {
+                if (i < 2 * c - f) return LLONG_MAX;
+                return dp[i - 2 * c + f] + t * c;
+            };
 
-        for (int i = 0; i < 2; i++) {
-            priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<>> pq;
-            for (int j = i; j <= most; j += 2) {
-                while (!pq.empty() && pq.top().second < j) pq.pop();
-
-                for (auto [fj, tj] : placements[j]) pq.emplace(tj - j / 2 * ti, fj);
-                placements[j].clear();
-                dp[j] = !pq.empty() ? pq.top().first + j / 2 * ti : LLONG_MAX;
-            }
+            while (i - 2 * copies + f > total) copies++;
+            if (copies > min(i, f)) continue;
+            while (copies + 1 <= min(i, f) && time(copies + 1) <= time(copies)) copies++;
+            temp[i] = time(copies);
         }
+        total += f;
+        dp = temp;
     }
-
     cout << *min_element(dp.begin(), dp.end());
 }
