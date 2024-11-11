@@ -60,7 +60,7 @@ int main() {
         exit(0);
     }
 
-    vector<int> ord{0};
+    vector<int> order{0};
     for (int i = 0, count = 0, quadrant = 0;; ++quadrant %= 4) {
         vector<pair<Point<long long>, int>> points;
         for (int j = 1; j <= n; j++) points.emplace_back(coords[j] - coords[i], j);
@@ -114,12 +114,12 @@ int main() {
         for (int j = 1; j < indices.size(); j++) d -= dist(points[indices[j]].first - points[indices[j - 1]].first);
         i = points[indices.back()].second;
 
-        for (int j : indices) ord.emplace_back(points[j].second);
-        if (ord.size() >= 3)
-            for (int k = ord.size() - 3; ~k; k--)
-                if (ord[k] == ord[ord.size() - 2] && ord[k + 1] == ord.back()) {
+        for (int j : indices) order.emplace_back(points[j].second);
+        if (order.size() >= 3)
+            for (int k = order.size() - 2, l = order.size() - 1; ~k; k--)
+                if (order[k - 1] == order[l - 1] && order[k] == order[l]) {
                     double len = 0;
-                    for (int j = k + 1; j < ord.size() - 1; j++) len += dist(coords[ord[j + 1]] - coords[ord[j]]);
+                    for (int j = k; j < l; j++) len += dist(coords[order[j + 1]] - coords[order[j]]);
 
                     if (d > len) d -= (int) (d / len - 1) * len;
                     break;
