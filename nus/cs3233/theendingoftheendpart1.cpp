@@ -24,9 +24,9 @@ T cross(Point<T> a, Point<T> b, Point<T> c) {
 }
 
 template <typename T>
-void add(deque<Point<T>> &trick_hull, Point<T> p) {
-    while (trick_hull.size() > 1 && cross(trick_hull[1], trick_hull[0], p) > 0) trick_hull.pop_front();
-    trick_hull.emplace_front(p);
+void add(deque<Point<T>> &half_hull, Point<T> p) {
+    while (half_hull.size() > 1 && cross(half_hull[1], half_hull[0], p) > 0) half_hull.pop_front();
+    half_hull.emplace_front(p);
 }
 
 int main() {
