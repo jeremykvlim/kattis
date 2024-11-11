@@ -19,9 +19,9 @@ T cross(Point<T> a, Point<T> b, Point<T> c) {
 }
 
 template <typename T>
-void add(deque<Point<T>> &trick_hull, Point<T> p) {
-    while (trick_hull.size() > 1 && cross(trick_hull[1], trick_hull[0], p) > 0) trick_hull.pop_front();
-    trick_hull.emplace_front(p);
+void add(deque<Point<T>> &half_hull, Point<T> p) {
+    while (half_hull.size() > 1 && cross(half_hull[1], half_hull[0], p) > 0) half_hull.pop_front();
+    half_hull.emplace_front(p);
 }
 
 int main() {
@@ -43,9 +43,9 @@ int main() {
     }
     sort(times.begin(), times.end(), [](auto t1, auto t2) {return get<0>(t1) != get<0>(t2) ? get<0>(t1) < get<0>(t2) : get<2>(t1) < get<2>(t2);});
 
-    vector<deque<Point<long long>>> trick_hulls(n + 1);
+    vector<deque<Point<long long>>> half_hulls(n + 1);
     vector<long long> dp(m, LLONG_MAX);
-    trick_hulls[1].emplace_back(0, 0);
+    half_hulls[1].emplace_back(0, 0);
     auto sum = LLONG_MAX;
     for (auto [t, i, end] : times) {
         auto [u, v] = edges[i];
@@ -53,14 +53,14 @@ int main() {
         if (end) {
             if (dp[i] == LLONG_MAX) continue;
 
-            add(trick_hulls[v], {2 * t, dp[i] + t * t});
+            add(half_hulls[v], {2 * t, dp[i] + t * t});
         } else {
             auto f = [&](auto p) {
                 return -p.x * t + p.y;
             };
-            while (trick_hulls[u].size() > 1 && f(trick_hulls[u].back()) >= f(trick_hulls[u][trick_hulls[u].size() - 2])) trick_hulls[u].pop_back();
+            while (half_hulls[u].size() > 1 && f(half_hulls[u].back()) >= f(half_hulls[u][half_hulls[u].size() - 2])) half_hulls[u].pop_back();
 
-            if (!trick_hulls[u].empty()) dp[i] = min(dp[i], t * t + f(trick_hulls[u].back()));
+            if (!half_hulls[u].empty()) dp[i] = min(dp[i], t * t + f(half_hulls[u].back()));
         }
 
         if (u == n) sum = min(sum, dp[i]);
