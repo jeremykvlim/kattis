@@ -27,24 +27,10 @@ struct Point {
 };
 
 struct Hash {
-    static uint64_t encode(Point<int> p) {
-        auto encoded = 0ULL;
-        encoded = (encoded << 8) | p.x;
-        encoded = (encoded << 8) | p.y;
-        return encoded;
-    }
-
-    static uint64_t h(uint64_t key) {
-        auto hash = key + 0x9e3779b97f4a7c15;
-        hash = (hash ^ (hash >> 30)) * 0xbf58476d1ce4e5b9;
-        hash = (hash ^ (hash >> 27)) * 0x94d049bb133111eb;
-        hash = hash ^ (hash >> 31);
-        return hash;
-    }
-
     size_t operator()(Point<int> p) const {
-        static uint64_t SEED = chrono::steady_clock::now().time_since_epoch().count();
-        return h(encode(p) + SEED);
+        auto h = hash<int>()(p.x);
+        h ^= hash<int>()(p.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        return h;
     }
 };
 
