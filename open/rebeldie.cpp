@@ -2,23 +2,10 @@
 using namespace std;
 
 struct Hash {
-    static uint64_t encode(array<int, 8> a) {
-        auto encoded = 0ULL;
-        for (int e : a) encoded = (encoded << 8) | e;
-        return encoded;
-    }
-
-    static uint64_t h(uint64_t key) {
-        auto hash = key + 0x9e3779b97f4a7c15;
-        hash = (hash ^ (hash >> 30)) * 0xbf58476d1ce4e5b9;
-        hash = (hash ^ (hash >> 27)) * 0x94d049bb133111eb;
-        hash = hash ^ (hash >> 31);
-        return hash;
-    }
-
     size_t operator()(array<int, 8> a) const {
-        static uint64_t SEED = chrono::steady_clock::now().time_since_epoch().count();
-        return h(encode(a) + SEED);
+        auto h = 0ULL;
+        for (int e : a) h ^= e + 0x9e3779b9 + (h << 6) + (h >> 2);
+        return h;
     }
 };
 

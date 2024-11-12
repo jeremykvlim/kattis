@@ -83,7 +83,7 @@ int main() {
 
             if (curr == next) continue;
 
-            if (visited[next] > cost + P[i] || visited.find(next) == visited.end()) {
+            if (visited.find(next) == visited.end() || visited[next] > cost + P[i]) {
                 visited[next] = cost + P[i];
                 pq.emplace(cost + P[i], next);
             }

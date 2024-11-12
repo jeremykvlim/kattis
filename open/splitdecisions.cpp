@@ -2,27 +2,12 @@
 using namespace std;
 
 struct Hash {
-    static uint64_t encode(tuple<string, string, int, int> t) {
-        auto encoded = 0ULL;
-        auto [s1, s2, i1, i2] = t;
-        for (auto e : {s1, s2})
-            for (auto c : e) encoded = (encoded << 8) | c;
-        encoded = (encoded << 8) | i1;
-        encoded = (encoded << 8) | i2;
-        return encoded;
-    }
-
-    static uint64_t h(uint64_t key) {
-        auto hash = key + 0x9e3779b97f4a7c15;
-        hash = (hash ^ (hash >> 30)) * 0xbf58476d1ce4e5b9;
-        hash = (hash ^ (hash >> 27)) * 0x94d049bb133111eb;
-        hash = hash ^ (hash >> 31);
-        return hash;
-    }
-
-    size_t operator()(tuple<string, string, int, int> t) const {
-        static uint64_t SEED = chrono::steady_clock::now().time_since_epoch().count();
-        return h(encode(t) + SEED);
+    size_t operator()(const tuple<string, string, int, int> &t) const {
+        auto h = hash<string>{}(get<0>(t));
+        h ^= hash<string>{}(get<1>(t)) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        h ^= hash<int>{}(get<2>(t)) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        h ^= hash<int>{}(get<3>(t)) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        return h;
     }
 };
 
