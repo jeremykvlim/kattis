@@ -4,17 +4,8 @@ using namespace std;
 using namespace __gnu_pbds;
 
 struct Hash {
-    static uint64_t h(uint64_t key) {
-        auto hash = key + 0x9e3779b97f4a7c15;
-        hash = (hash ^ (hash >> 30)) * 0xbf58476d1ce4e5b9;
-        hash = (hash ^ (hash >> 27)) * 0x94d049bb133111eb;
-        hash = hash ^ (hash >> 31);
-        return hash;
-    }
-
-    size_t operator()(int i) const {
-        auto key = 0ULL ^ (i + 0x9e3779b9 + (i << 6) + (i >> 2));
-        return h(key);
+    size_t operator()(const int &i) const {
+        return 0ULL ^ (i + 0x9e3779b9 + (i << 6) + (i >> 2));
     }
 };
 
