@@ -79,8 +79,8 @@ int main() {
             while (s.size() < 20) {
                 auto si = 0LL;
                 for (int i = 0; i < k; i++) {
-                    if (i + s.size() < k) si += c[i] * a[i + s.size()];
-                    else si += c[i] * s[s.size() - k + i];
+                    if (s.size() + i < k) si += c[i] * a[s.size() + i];
+                    else si += c[i] * s[s.size() + i - k];
                 }
                 s.emplace_back(si);
             }
