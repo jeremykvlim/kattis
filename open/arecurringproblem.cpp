@@ -25,10 +25,8 @@ int main() {
             else return memo[{seq, start}] = {};
         }
 
-        if (seq.size() >= 2) {
-            vector<long long> s{seq.begin(), seq.end() - 1}, c{start.begin(), start.end() - 1};
-            if (self(self, s, c).empty()) return memo[{seq, start}] = {};
-        }
+        if (seq.size() > 1)
+            if (self(self, {seq.begin(), seq.end() - 1}, {start.begin(), start.end() - 1}).empty()) return memo[{seq, start}] = {};
 
         map<long long, long long> m;
         for (int ci = 1; ci <= seq[0]; ci++)
