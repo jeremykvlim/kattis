@@ -85,6 +85,7 @@ int main() {
                 s.emplace_back(si);
             }
             rec.push_back({c, a, s});
+            return;
         }
 
         for (int ci = 1; ci <= seq[0]; ci++)
@@ -106,7 +107,7 @@ int main() {
     };
     dfs2(dfs2, seq, seq);
 
-    sort(rec.begin(), rec.end(), [](auto a1, auto a2) {return a1[2] < a2[2];});
+    sort(rec.begin(), rec.end(), [](auto a1, auto a2) {return a1[2] != a2[2] ? a1[2] < a2[2] : a1[0] < a2[0];});
     auto [c, a, s] = rec[n - 1];
     s.resize(10);
     cout << c.size() << "\n";
