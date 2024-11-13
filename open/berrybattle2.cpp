@@ -94,13 +94,7 @@ int main() {
             nim_sum = 0;
             ranges_active.clear();
             for (auto &us : ranges_by_bits) us.clear();
-
-            for (auto [l, r] : ranges_sorted) {
-                int g = grundy(grundy, l, r);
-                nim_sum ^= g;
-                update_by_bits(l, r, g, true);
-                if (!moves[pick][{l, r}].empty()) ranges_active.emplace(l, r);
-            }
+            for (auto [l, r] : ranges_sorted) update(l, r, true);
         }
 
         auto move = [&]() {
