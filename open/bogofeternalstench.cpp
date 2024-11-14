@@ -9,8 +9,7 @@ int main() {
     cin >> n >> m;
 
     vector<vector<pair<int, int>>> adj_list(n + 1);
-
-    for (int i = 0; i < m; ++i) {
+    while (m--) {
         int u, v, w;
         cin >> u >> v >> w;
 
