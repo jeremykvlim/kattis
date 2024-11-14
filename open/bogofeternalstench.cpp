@@ -1,17 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-bool relax(vector<array<int, 3>> &edges, vector<long long> &dist, bool detect = false) {
-    bool change = false;
-    for (auto &[u, v, s] : edges)
-        if (s <= dist[v] && dist[u] < dist[v] - s) {
-            dist[u] = !detect ? dist[v] - s : LLONG_MAX;
-            change = true;
-        }
-
-    return change;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -19,28 +8,33 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<array<int, 3>> edges(m);
-    for (auto &[u, v, s] : edges) cin >> u >> v >> s;
+    vector<vector<pair<int, int>>> adj_list(n + 1);
 
-    long long l = 0, r = LLONG_MAX, mid;
-    while (l + 1 < r) {
-        mid = l + (r - l) / 2;
+    for (int i = 0; i < m; ++i) {
+        int u, v, w;
+        cin >> u >> v >> w;
 
-        vector<long long> dist(n + 1, LLONG_MIN);
-        dist[n] = mid;
-
-        auto bellman_ford = [&]() {
-            for (int i = 0; i < n; i++)
-                if (!relax(edges, dist)) break;
-        };
-
-        bellman_ford();
-        relax(edges, dist, true);
-        bellman_ford();
-
-        if (dist[1] >= 0) r = mid;
-        else l = mid;
+        adj_list[u].emplace_back(v, w);
     }
 
-    cout << (!l ? l : r);
+    vector<long long> dist(n + 1, 1e18);
+    dist[1] = 0;
+    vector<int> visited(n + 1, 0);
+    priority_queue<pair<long long, long long>, vector<pair<long long, long long>>, greater<>> pq;
+    pq.emplace(0, 1);
+    while (!pq.empty()) {
+        auto [d, v] = pq.top();
+        pq.pop();
+
+        if (visited[v]++ > n) continue;
+
+        for (auto [u, w] : adj_list[v])
+            if (dist[u] > max(0LL, dist[v] + w)) {
+                if (visited[u] > 1) dist[u] = (w < 0 ? 0 : max(0LL, dist[v] + w));
+                else dist[u] = max(0LL, dist[v] + w);
+                pq.emplace(dist[u], u);
+            }
+    }
+
+    cout << dist[n];
 }
