@@ -1,0 +1,123 @@
+#include <bits/stdc++.h>
+#include <ext/pb_ds/assoc_container.hpp>
+using namespace std;
+using namespace __gnu_pbds;
+
+template <typename T>
+struct Point {
+    T x, y;
+
+    Point() {}
+    Point(T x, T y) : x(x), y(y) {}
+
+    auto operator<(const Point &p) const {
+        return x != p.x ? x < p.x : y < p.y;
+    }
+
+    auto operator==(const Point &p) const {
+        return x == p.x && y == p.y;
+    }
+};
+
+template <typename T>
+T manhattan_dist(Point<T> a, Point<T> b) {
+    return abs(a.x - b.x) + abs(a.y - b.y);
+}
+
+struct Hash {
+    size_t operator()(const int &i) const {
+        return 0ULL ^ (i + 0x9e3779b9 + (i << 6) + (i >> 2));
+    }
+};
+
+int main () {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int b, K, w;
+    cin >> b >> K >> w;
+
+    auto ask = [&](vector<Point<int>> probes) {
+        cout << "? ";
+        for (auto [x, y] : probes) cout << x << " " << y << " ";
+        cout << "\n" << flush;
+
+        vector<int> dist(K * probes.size());
+        for (int &di : dist) cin >> di;
+        return dist;
+    };
+
+    auto dist = ask({{-b, b}, {-b, -b}});
+    vector<Point<int>> possible;
+    for (int d1 : dist)
+        for (int d2 : dist) {
+            if ((d1 + d2) & 1) continue;
+
+            int x = (d1 + d2 - 2 * b) / 2 - b, y = d1 - x - 2 * b;
+            if (!(-b <= x && x <= b) || !(-b <= y && y <= b)) continue;
+            possible.emplace_back(x, y);
+        }
+    sort(possible.begin(), possible.end());
+    possible.erase(unique(possible.begin(), possible.end()), possible.end());
+
+    int d = possible.size();
+    vector<Point<int>> probes(d);
+    vector<vector<int>> indices(d);
+    vector<pair<int, int>> candidates(d);
+    vector<bool> selected(d, false), used(2 * d * d, false), visited(2 * d * d, false);
+    vector<int> dx{1, 0, -1, 0}, dy{0, 1, 0, -1};
+    for (int h = 0, d1 = 0; h < d; d1++)
+        if (!visited[d1])
+            for (int i = 0; i < d; i++) {
+                if (selected[i]) continue;
+
+                Point<int> p;
+                for (int k = 0; k < 4; k++) {
+                    int x = possible[i].x + dx[k] * d1, y = possible[i].y + dy[k] * d1;
+                    if (!(-1e8 <= x && x <= 1e8) || !(-1e8 <= y && y <= 1e8)) continue;
+
+                    p = {x, y};
+                    for (int j = 0; j < d; j++) {
+                        if (i == j) continue;
+                        int d2 = manhattan_dist(p, possible[j]);
+                        if (d2 >= 2 * d * d) continue;
+                        if ((!selected[j] && d1 == d2) || used[d2]) goto next;
+                    }
+                    goto done;
+                    next:;
+                }
+                continue;
+
+                done:
+                for (int j = 0; j < d; j++) {
+                    if (i == j) continue;
+                    int d2 = manhattan_dist(p, possible[j]);
+                    if (d2 >= 2 * d * d) continue;
+                    if (d1 == d2) indices[h].emplace_back(j);
+                    visited[d2] = true;
+                }
+                probes[h] = p;
+                candidates[h++] = {i, d1};
+                selected[i] = used[d1] = true;
+                break;
+            }
+
+    unordered_map<int, int> count;
+    for (int di : ask(probes)) count[di]++;
+
+    vector<Point<int>> locations(K);
+    vector<bool> deposit(d, false);
+    for (int i = 0, j = 0; i < d && j < K; i++) {
+        int c = 1;
+        for (int k : indices[i]) c += deposit[k];
+
+        auto [k, di] = candidates[i];
+        if (count[di] == c) {
+            locations[j++] = possible[k];
+            deposit[k] = true;
+        }
+    }
+    cout << "! ";
+    for (auto [x, y] : locations) cout << x << " " << y << " ";
+    cout << flush;
+}
