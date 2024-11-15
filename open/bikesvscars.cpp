@@ -58,7 +58,7 @@ int main() {
         for (int j = i + 1; j < n; j++)
             for (int k = 0; k < n; k++) {
                 if (i != k && j != k) {
-                    auto check = [&](vector<vector<int>> &a) {
+                    auto check = [&](vector<vector<int>> a) {
                         return min(a[i][k], a[k][j]) > a[i][j];
                     };
 
