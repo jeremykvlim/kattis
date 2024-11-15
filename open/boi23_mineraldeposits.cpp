@@ -1,7 +1,5 @@
 #include <bits/stdc++.h>
-#include <ext/pb_ds/assoc_container.hpp>
 using namespace std;
-using namespace __gnu_pbds;
 
 template <typename T>
 struct Point {
@@ -23,12 +21,6 @@ template <typename T>
 T manhattan_dist(Point<T> a, Point<T> b) {
     return abs(a.x - b.x) + abs(a.y - b.y);
 }
-
-struct Hash {
-    size_t operator()(const int &i) const {
-        return 0ULL ^ (i + 0x9e3779b9 + (i << 6) + (i >> 2));
-    }
-};
 
 int main () {
     ios::sync_with_stdio(false);
