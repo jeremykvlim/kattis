@@ -35,7 +35,7 @@ int main() {
         for (int u : adj_list[v])
             if (u != prev) {
                 int su = subtree_size[u], sv = subtree_size[v];
-                auto fu = dp[u], fv = dp[v];
+                auto du = dp[u], dv = dp[v];
                 subtree_size[v] -= subtree_size[u];
                 dp[v] -= dp[u] + subtree_size[u] + 2LL * (subtree_size[v] - 1) * subtree_size[u];
                 dp[u] += dp[v] + subtree_size[v] + 2LL * (subtree_size[u] - 1) * subtree_size[v];
@@ -43,8 +43,8 @@ int main() {
                 self(self, u, v);
                 subtree_size[u] = su;
                 subtree_size[v] = sv;
-                dp[u] = fu;
-                dp[v] = fv;
+                dp[u] = du;
+                dp[v] = dv;
             }
     };
     dfs2(dfs2);
