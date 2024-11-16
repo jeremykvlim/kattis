@@ -27,7 +27,7 @@ int main() {
     int d, n;
     cin >> b >> p >> d >> n;
 
-    vector<long long> a(n + 1), r(n + 1);
+    vector<long long> a(n + 1, 0), r(n + 1, 0);
     for (int i = 1; i <= n; i++) {
         cin >> a[i];
 
