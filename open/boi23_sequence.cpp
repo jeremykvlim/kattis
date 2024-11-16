@@ -30,18 +30,18 @@ int main() {
     unordered_map<vector<int>, int, Hash> memo;
     auto dfs = [&](auto &&self, vector<int> curr) {
         if (curr.empty()) return w[1] + w[2];
-        if (memo.find(curr) != memo.end()) return memo[curr];
+        if (memo.count(curr)) return memo[curr];
 
         auto temp = curr;
         int x = temp.back();
         temp.pop_back();
 
         int dp = INT_MAX;
-        for (int d : divisors[x]) {
+        for (int d1 : divisors[x]) {
             auto next = temp;
-            int j = x / d;
-            if (d > 2) next.emplace_back(d);
-            if (j > 2) next.emplace_back(j);
+            int d2 = x / d1;
+            if (d1 > 2) next.emplace_back(d1);
+            if (d2 > 2) next.emplace_back(d2);
             sort(next.begin(), next.end());
             next.erase(unique(next.begin(), next.end()), next.end());
             dp = min(dp, self(self, next));
