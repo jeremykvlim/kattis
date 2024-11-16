@@ -12,7 +12,7 @@ struct FenwickTree {
 
     T range_query(int i) {
         T v = 0;
-        for (; i; i &= (i - 1)) value = f(v, BIT[i]);
+        for (; i; i &= (i - 1)) v = f(v, BIT[i]);
         return v;
     }
 

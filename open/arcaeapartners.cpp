@@ -14,7 +14,7 @@ struct FenwickTree2D {
 
     T range_query(int i, int j) {
         T v = 0;
-        for (; i; i &= (i - 1)) v = f(value, BIT[j][i]);
+        for (; i; i &= (i - 1)) v = f(v, BIT[j][i]);
         return v;
     }
 };
