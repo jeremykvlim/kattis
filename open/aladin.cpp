@@ -45,11 +45,9 @@ int main() {
             auto it = intervals.upper_bound(x);
             if (it == intervals.begin()) return;
 
-            --it;
-            int L = it->first, R = it->second[0];
-            if (L == x || x > R) return;
+            auto [L, interval] = *(--it);
+            if (L == x || x > interval[0]) return;
 
-            auto interval = it->second;
             it->second[0] = x - 1;
             intervals[x] = interval;
         };
