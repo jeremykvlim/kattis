@@ -39,19 +39,19 @@ int main() {
         cin >> c >> l >> r;
 
 
-        auto split = [&](int i) -> void {
-            if (i > n) return;
+        auto split = [&](int x) -> void {
+            if (x > n) return;
 
-            auto it = intervals.upper_bound(i);
+            auto it = intervals.upper_bound(x);
             if (it == intervals.begin()) return;
 
             --it;
             int L = it->first, R = it->second[0];
-            if (L == i || i > R) return;
+            if (L == x || x > R) return;
 
             auto interval = it->second;
-            it->second[0] = i - 1;
-            intervals[i] = interval;
+            it->second[0] = x - 1;
+            intervals[x] = interval;
         };
         split(l);
         split(r + 1);
