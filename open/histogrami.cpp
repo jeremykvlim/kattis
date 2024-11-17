@@ -74,7 +74,7 @@ int main() {
             auto ls = fw_sum.pref_sum(y - 1), us = fw_sum.pref_sum(max_y_h) - fw_sum.pref_sum(y);
 
             if (~X) {
-                long long delta = g & 1 ? lc - lower_count[y] + uc - upper_count[y] 
+                long long delta = g & 1 ? lc - lower_count[y] + uc - upper_count[y]
                                         : us - upper_sum[y] - ls + lower_sum[y] + (long long) y * (lc - lower_count[y]) - (long long) y * (uc - upper_count[y]);
 
                 if (d[x] > d[X] + delta) {
@@ -82,11 +82,7 @@ int main() {
                     p[x] = {X, y};
                 }
             }
-            indices[y] = x;
-            lower_count[y] = lc;
-            upper_count[y] = uc;
-            lower_sum[y] = ls;
-            upper_sum[y] = us;
+            tie(indices[y], lower_count[y], upper_count[y], lower_sum[y], upper_sum[y]) = tie(x, lc, uc, ls, us);
         }
     }
 
