@@ -41,5 +41,5 @@ int main() {
         return freq_v;
     };
     dfs(dfs);
-    for (int i = 0; i < n - 1; i++) cout << same[i] << '\n';
+    for (int i = 0; i < n - 1; i++) cout << same[i] << "\n";
 }
