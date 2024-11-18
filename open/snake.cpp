@@ -26,7 +26,7 @@ int main() {
                 y = j;
             }
         }
-    
+
     if (!max_d) {
         cout << 1;
         exit(0);
@@ -36,7 +36,7 @@ int main() {
     int j = -1;
     for (int i = 0; i < 4; i++) {
         int X = x - dx[i], Y = y - dy[i];
-        if (!(X < 0 || X > r - 1 || Y < 0 || Y > c - 1) && grid[X][Y] == 1) j = i;
+        if (0 <= X && X <= r - 1 && 0 <= Y && Y <= c - 1 && grid[X][Y] == 1) j = i;
     }
 
     vector<vector<bool>> visited(r, vector<bool>(c, false));
@@ -49,7 +49,7 @@ int main() {
 
         for (int i = 0; i < 4; i++) {
             int X = x + dx[i], Y = y + dy[i];
-            if ((X < 0 || X > r - 1 || Y < 0 || Y > c - 1) || visited[X][Y] || abs(i - j) == 2) continue;
+            if (!(0 <= X && X <= r - 1 && 0 <= Y && Y <= c - 1) || visited[X][Y] || abs(i - j) == 2) continue;
 
             if (grid[X][Y] == -2 || max_d - depth <= grid[X][Y] && grid[X][Y] != -1) {
                 cout << 1;
