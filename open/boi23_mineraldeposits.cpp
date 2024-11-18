@@ -46,7 +46,7 @@ int main () {
             if ((d1 + d2) & 1) continue;
 
             int x = (d1 + d2 - 2 * b) / 2 - b, y = d1 - x - 2 * b;
-            if (!(-b <= x && x <= b) || !(-b <= y && y <= b)) continue;
+            if (!(-b <= x && x <= b && -b <= y && y <= b)) continue;
             possible.emplace_back(x, y);
         }
     sort(possible.begin(), possible.end());
@@ -66,7 +66,7 @@ int main () {
                 Point<int> p;
                 for (int k = 0; k < 4; k++) {
                     int x = possible[i].x + dx[k] * d1, y = possible[i].y + dy[k] * d1;
-                    if (!(-1e8 <= x && x <= 1e8) || !(-1e8 <= y && y <= 1e8)) continue;
+                    if (!(-1e8 <= x && x <= 1e8 && -1e8 <= y && y <= 1e8)) continue;
 
                     p = {x, y};
                     for (int j = 0; j < d; j++) {
