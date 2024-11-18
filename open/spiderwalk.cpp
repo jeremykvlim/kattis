@@ -60,21 +60,21 @@ int main() {
         while (l + 1 < r) {
             mid = l + (r - l) / 2;
 
-            if (sd.query(index(t + dir * mid)) <= dp + mid) r = mid;
-            else l = mid;
+            if (sd.query(index(t + dir * mid)) > dp + mid) l = mid;
+            else r = mid;
         }
 
         if (l) {
-            auto update = [&](int l, int r, int v) {
-                if (l <= r) sd.update(l, r, v);
+            auto update = [&](int l, int r) {
+                if (l <= r) sd.update(l, r, -1);
                 else {
-                    sd.update(0, r, v);
-                    sd.update(l, n - 1, v);
+                    sd.update(0, r, -1);
+                    sd.update(l, n - 1, -1);
                 }
             };
 
-            if (~dir) update(index(t + 1), index(t + l), -1);
-            else update(index(t - l), index(t - 1), -1);
+            if (~dir) update(index(t + 1), index(t + l));
+            else update(index(t - l), index(t - 1));
         }
     }
     for (int i = 0; i < n; i++) cout << sd.query(i) << "\n";
