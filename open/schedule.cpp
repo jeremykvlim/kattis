@@ -8,23 +8,23 @@ int main() {
     int n, w;
     cin >> n >> w;
 
-    for (int iso = 4; iso <= w; iso++) {
-        vector<int> teams;
-        for (int mask = 0; mask < 1 << (iso - 1) && teams.size() < n; mask++)
-            if (__builtin_popcount(mask) == (iso - 1) / 2 + 1) teams.emplace_back(mask);
-
-        if (teams.size() == n) {
-            cout << iso << "\n";
-            for (int k = 0; k < w; k++) {
-                if (!(k % iso)) cout << string(n, '1') << "\n";
-                else {
-                    for (int i : teams) cout << (char) ('1' + ((i >> (k % iso - 1)) & 1));
-                    cout << "\n";
-                }
-            }
-            exit(0);
-        }
+    int one = 1, two = 2;
+    vector<string> schedule(1);
+    while (schedule[0].size() < n) {
+        (one < two ? one : two)++;
+        schedule.assign(one + two, "");
+        auto s = string(one, '1') + string(two, '2');
+        do {
+            for (int i = one + two - 1; ~i; i--) schedule[i] += s[i];
+        } while (next_permutation(s.begin() + 1, s.end()));
     }
 
-    cout << "infinity";
+    if (one + two > w) {
+        cout << "infinity";
+        exit(0);
+    }
+    cout << one + two << "\n";
+    for (auto &sc : schedule) sc.resize(n);
+    for (int s = schedule.size(); schedule.size() < w; ) schedule.emplace_back(schedule[schedule.size() % s]);
+    for (auto &sc : schedule) cout << sc << "\n";
 }
