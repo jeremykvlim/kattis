@@ -36,7 +36,7 @@ T cross(Point<T> a, Point<T> b) {
 }
 
 template <typename T>
-bool parallel(Point<T> a, Point<T> b) {
+bool collinear(Point<T> a, Point<T> b) {
     return cross(a, b) == 0;
 }
 
@@ -58,8 +58,8 @@ int main() {
     for (int i = 1; i < 15; i++) {
         auto p1 = indices[i] - indices[i - 1], p2 = indices[i + 1] - indices[i];
 
-        dp[i + 1] = min(dp[i + 1], dp[i] + !(parallel(p1, p2) && dot(p1, p2) > 0));
-        if (parallel(p1, p2)) continue;
+        dp[i + 1] = min(dp[i + 1], dp[i] + !(collinear(p1, p2) && dot(p1, p2) > 0));
+        if (collinear(p1, p2)) continue;
 
         p2 = p1;
         for (int j = i + 1; j < 16; j++) {
@@ -73,7 +73,7 @@ int main() {
             p1 = -p1;
             p2 = -p2;
 
-            if (cross(p1, p3) > 0 && cross(p3, p2) > 0 || parallel(p1, p3) && dot(p1, p3) > 0 || parallel(p3, p2) && dot(p3, p2) > 0) continue;
+            if (cross(p1, p3) > 0 && cross(p3, p2) > 0 || collinear(p1, p3) && dot(p1, p3) > 0 || collinear(p3, p2) && dot(p3, p2) > 0) continue;
 
             if (cross(p3, p1) > 0) p1 = p3;
             else if (cross(p2, p3) > 0) p2 = p3;
