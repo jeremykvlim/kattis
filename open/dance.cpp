@@ -42,13 +42,11 @@ int main() {
 
         for (int i = 0; i < ids.size(); i += q) {
             vector<int> p(s);
-            for (int j = 0; j < q && i + j < ids.size(); j++) {
-                int m = j;
-                for (int l = 0; l < size; l++) {
+            for (int j = 0; j < q && i + j < ids.size(); j++) 
+                for (int l = 0, m = j; l < size; l++) {
                     p[m] = seqs[ids[i + j]][l];
                     m = (m + k) % s;
                 }
-            }
 
             for (int j = 0; j < s; j++) next[p[j]] = p[(j + 1) % s];
         }
