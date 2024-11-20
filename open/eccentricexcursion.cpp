@@ -79,18 +79,18 @@ int main() {
 
         done:;
         int r = 0;
-        unordered_set<int> asdasd;
+        unordered_set<int> connect;
         for (int v : order) {
             int roads = 2 - (v == c);
 
             for (int u : adj_list[v])
-                if (!visited[u] && asdasd.count(u)) {
-                    asdasd.erase(u);
+                if (!visited[u] && connect.count(u)) {
+                    connect.erase(u);
                     r++;
                     if (!--roads) break;
                 }
 
-            if (roads) asdasd.emplace(v);
+            if (roads) connect.emplace(v);
         }
 
         return {l, r};
