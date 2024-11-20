@@ -43,7 +43,7 @@ int main() {
         for (int i = 0; i < ids.size(); i += q) {
             vector<int> p(s);
             for (int j = 0; j < q && i + j < ids.size(); j++) {
-                long long m = j;
+                int m = j;
                 for (int l = 0; l < size; l++) {
                     p[m] = seqs[ids[i + j]][l];
                     m = (m + k) % s;
