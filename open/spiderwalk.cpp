@@ -15,7 +15,7 @@ struct SqrtDecomposition {
         if (b_l == b_r)
             for (int i = l; i <= r; i++) arr[i] += v;
         else {
-            for (int i = l; i < size * (b_l + 1); i++) arr[i] += v;
+            for (int i = l; i < (b_l + 1) * size; i++) arr[i] += v;
             for (int i = b_l + 1; i < b_r; i++) blocks[i] += v;
             for (int i = b_r * size; i <= r; i++) arr[i] += v;
         }
