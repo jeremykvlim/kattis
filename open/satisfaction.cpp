@@ -3,7 +3,7 @@ using namespace std;
 
 string shunting_yard(string infix) {
     auto isop = [&](char c) {
-        return c == '&' || c == '|' || c == '~';
+        return c == '|' || c == '&' || c == '~';
     };
 
     auto precedence = [&](char op) -> int {
@@ -97,8 +97,8 @@ int main() {
                     auto bs2 = st.top();
                     st.pop();
 
-                    if (c == '&') st.emplace(bs2 & bs1);
-                    else st.emplace(bs2 | bs1);
+                    if (c == '&') st.emplace(bs1 & bs2);
+                    else st.emplace(bs1 | bs2);
                 }
             }
         }
