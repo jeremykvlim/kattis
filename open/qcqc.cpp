@@ -76,8 +76,8 @@ int main() {
                 auto s = test();
                 for (auto [m1, m2] : m)
                     if (s[m1 - 1] == '1' && s[m2 - 1] == '1') {
-                        all.erase(its[m2]);
                         dsu.unite(m1, m2);
+                        all.erase(its[m2]);
                     } else {
                         maybe_bad.emplace_back(m2);
                         maybe_bad.emplace_back(m1);
