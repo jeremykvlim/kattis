@@ -16,12 +16,12 @@ int main() {
     for (auto [c, v] : cards)
         if (c == 'a') add.emplace_back(v);
         else {
-            mul_count++;
+            mul_count = min(mul_count + 1, k);
             sort(add.rbegin(), add.rend());
             for (int i = 0; i < add.size(); i++) pref[i + 1] = pref[i] + add[i];
 
             int add_count_next = add_count_curr + add.size();
-            for (int i = 0; i < min(mul_count, k + 1); i++) {
+            for (int i = 0; i <= mul_count; i++) {
                 auto dnc = [&](auto &&self, int l1, int r1, int l2, int r2) {
                     if (l1 > r1) return;
 
@@ -39,7 +39,7 @@ int main() {
                 for (int j = 1; j <= min(add_count_next, n - i); j++) dp[i][j] = temp[j];
             }
 
-            for (int i = min(mul_count, k); i; i--)
+            for (int i = mul_count; i; i--)
                 for (int j = 1; j <= min(add_count_next, n - i); j++) {
                     if (!dp[i - 1][j]) break;
                     dp[i][j] = max(dp[i][j], dp[i - 1][j] * v);
