@@ -76,8 +76,8 @@ int main() {
                 auto s = test();
                 for (auto [m1, m2] : m)
                     if (s[m1 - 1] == '1' && s[m2 - 1] == '1') {
-                        dsu.unite(m1, m2);
                         all.erase(its[m2]);
+                        dsu.unite(m1, m2);
                     } else {
                         maybe_bad.emplace_back(m2);
                         maybe_bad.emplace_back(m1);
@@ -97,19 +97,21 @@ int main() {
         maybe_good.pop_back();
 
         reverse(maybe_bad.begin(), maybe_bad.end());
-        maybe_bad.insert(maybe_bad.end(), maybe_good.begin(), maybe_good.end());
-        for (int j = 0; j < maybe_bad.size();) {
+        queue<int> maybe;
+        for (int m : maybe_bad) maybe.emplace(m);
+        for (int m : maybe_good) maybe.emplace(m);
+        while (!maybe.empty()) {
             fill(x.begin(), x.end(), 0);
-            for (int i = 0; i < good.size(); i++) {
-                if (i + j >= maybe_bad.size()) break;
-                x[good[i]] = maybe_bad[i + j];
+            for (int m : good) {
+                if (maybe.empty()) break;
+                x[m] = maybe.front();
+                maybe.pop();
             }
-            j += good.size();
 
             auto s = test();
             queue<int> q;
-            for (int i = 0; i < good.size(); i++)
-                if (s[good[i] - 1] == '1') q.emplace(x[good[i]]);
+            for (int m : good)
+                if (s[m - 1] == '1') q.emplace(x[m]);
 
             while (!q.empty()) {
                 for (int i = 1; i <= n; i++)
