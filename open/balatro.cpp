@@ -2,68 +2,59 @@
 using namespace std;
 
 int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
-
     int n, k;
     cin >> n >> k;
+    k = min(k, 29);
 
-    vector<bool> type(n);
-    vector<int> v(n), indices;
-    int max_v = 0;
-    for (int i = 0; i < n; i++) {
-        char c;
-        cin >> c >> v[i];
+    vector<pair<char, int>> cards(n);
+    for (auto &[c, v] : cards) cin >> c >> v;
+    cards.emplace_back('m', 1);
 
-        max_v = max(max_v, v[i]);
-        type[i] = c == 'm';
-        if (type[i]) indices.emplace_back(i);
-    }
+    vector<vector<long long>> dp(k + 1, vector<long long>(n + 1, 0));
+    vector<long long> add, pref(n, 0), temp(n);
+    int mul_count = 0, add_count_curr = 0;
+    for (auto [c, v] : cards)
+        if (c == 'a') add.emplace_back(v);
+        else {
+            mul_count++;
+            sort(add.rbegin(), add.rend());
+            for (int i = 0; i < add.size(); i++) pref[i + 1] = pref[i] + add[i];
 
-    int size = indices.size();
-    vector<vector<int>> count(size + 1, vector<int>(max_v + 1, 0));
-    for (int i = 0, j = 0; i < n; i++) {
-        if (type[i]) j++;
-        else count[j][v[i]]++;
-    }
+            int add_count_next = add_count_curr + add.size();
+            for (int i = 0; i < min(mul_count, k + 1); i++) {
+                auto dnc = [&](auto &&self, int l1, int r1, int l2, int r2) {
+                    if (l1 > r1) return;
 
-    vector<int> adj_list(size, 0);
-    for (int i = 0; i < size; i++)
-        for (int j = i + 1; j < size; j++)
-            if (v[indices[i]] <= v[indices[j]]) adj_list[i] |= 1 << j;
-
-    vector<pair<long long, int>> a;
-    vector<long long> score(n + 1, 0);
-    auto dfs = [&](auto &&self, int i, int mask = 0, int depth = 0) -> void {
-        if (!~i) {
-            a.clear();
-            int product = 1;
-            for (int j = size; ~j; j--) {
-                if ((mask >> j) & 1) product *= v[indices[j]];
-
-                for (int vi = 2; vi <= max_v; vi++)
-                    if (count[j][vi]) a.emplace_back((long long) vi * product, count[j][vi]);
+                    int mid1 = l1 + (r1 - l1) / 2, mid2 = -1;
+                    temp[mid1] = -1;
+                    for (int j = max(l2, mid1 - (int) add.size()); j <= min(mid1, r2); j++)
+                        if (temp[mid1] < dp[i][j] + pref[mid1 - j]) {
+                            temp[mid1] = dp[i][j] + pref[mid1 - j];
+                            mid2 = j;
+                        }
+                    self(self, l1, mid1 - 1, l2, mid2);
+                    self(self, mid1 + 1, r1, mid2, r2);
+                };
+                dnc(dnc, 0, add_count_next, 0, min(add_count_curr, n - i));
+                for (int j = 1; j <= min(add_count_next, n - i); j++) dp[i][j] = temp[j];
             }
-            sort(a.rbegin(), a.rend());
 
-            auto sum = 0LL;
-            int d = depth + 1;
-            for (auto [vi, c] : a)
-                for (int j = 0; j < c; j++, d++) {
-                    sum += vi;
-                    if (d <= n) score[d] = max(score[d], sum);
+            for (int i = min(mul_count, k); i; i--)
+                for (int j = 1; j <= min(add_count_next, n - i); j++) {
+                    if (!dp[i - 1][j]) break;
+                    dp[i][j] = max(dp[i][j], dp[i - 1][j] * v);
                 }
-            return;
+
+            add_count_curr = add_count_next;
+            add.clear();
         }
 
-        self(self, i - 1, mask, depth);
-        if ((mask | adj_list[i]) == mask && depth < k) self(self, i - 1, mask | (1 << i), depth + 1);
-    };
-    dfs(dfs, size - 1);
+    vector<long long> score(n + 1, 0);
+    for (int i = 0; i <= k; i++)
+        for (int j = 0; j <= n - i; j++) score[i + j] = max(score[i + j], dp[i][j]);
 
     for (int i = 1; i <= n; i++) {
         score[i] = max(score[i], score[i - 1]);
-
         cout << score[i] << "\n";
     }
 }
