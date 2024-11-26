@@ -1,11 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct Person {
-    string name;
-    Person *next, *prev, *partner;
-};
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -13,85 +8,35 @@ int main() {
     int n, q;
     cin >> n >> q;
 
-    Person *front = nullptr, *back = nullptr;
+    unordered_map<string, list<string>::iterator> partner;
+    list<string> people;
     while (n--) {
-        auto *p1 = new Person(), *p2 = new Person();
-        cin >> p1->name >> p2->name;
+        string p1, p2;
+        cin >> p1 >> p2;
 
-        p1->partner = p2;
-        p2->partner = p1;
-
-        if (!front) {
-            front = p1;
-            back = p2;
-        } else {
-            back->next = p1;
-            p1->prev = back;
-            back = p2;
-        }
-
-        p1->next = p2;
-        p2->prev = p1;
+        partner[p2] = people.emplace(people.end(), p1);
+        partner[p1] = people.emplace(people.end(), p2);
     }
-
-    front->prev = back;
-    back->next = front;
-
-    auto *mic = front;
+    auto mic = people.begin();
 
     string instructions;
     cin >> instructions;
 
     for (char c : instructions) {
-        if (c == 'P') cout << mic->partner->name << "\n";
-        else if (c == 'F') mic = mic->prev;
-        else if (c == 'B') mic = mic->next;
+        if (c == 'P') cout << *partner[*mic] << "\n";
+        else if (c == 'F') mic = mic != people.begin() ? prev(mic) : prev(people.end());
+        else if (c == 'B') mic = mic != prev(people.end()) ? next(mic) : people.begin();
         else if (c == 'R') {
-            auto *prev = mic->prev, *next = mic->next;
-
-            if (mic == front) {
-                front = next;
-                back = mic;
-            } else if (mic != back) {
-                prev->next = next;
-                next->prev = prev;
-
-                back->next = mic;
-                mic->prev = back;
-                front->prev = mic;
-                mic->next = front;
-
-                back = mic;
-            }
-
-            mic = next;
+            auto temp = mic;
+            mic = mic != prev(people.end()) ? next(mic) : people.begin();
+            people.splice(people.end(), people, temp);
         } else {
-            auto *prev = mic->prev, *next = mic->next, *partner = mic->partner, *partner_next = partner->next;
-
-            if (prev != partner) {
-                prev->next = next;
-                next->prev = prev;
-
-                partner->next = mic;
-                mic->prev = partner;
-                partner_next->prev = mic;
-                mic->next = partner_next;
-
-                front = (mic == front) ? next : front;
-                back = (mic == back) ? prev : (partner == back) ? mic : back;
-            } else if (partner == back) {
-                front = next;
-                back = mic;
-            }
-
-            mic = next;
+            auto temp = mic;
+            mic =  mic != prev(people.end()) ? next(mic) : people.begin();
+            people.splice(next(partner[*temp]), people, temp);
         }
     }
     cout << "\n";
 
-    auto *person = front;
-    do {
-        cout << person->name << "\n";
-        person = person->next;
-    } while (person != front);
+    for (auto p : people) cout << p << "\n";
 }
