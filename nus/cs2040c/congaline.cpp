@@ -19,10 +19,10 @@ int main() {
     }
     auto mic = people.begin();
 
-    string instructions;
-    cin >> instructions;
+    string q;
+    cin >> q;
 
-    for (char c : instructions) {
+    for (char c : q) {
         if (c == 'P') cout << *partner[*mic] << "\n";
         else if (c == 'F') mic = mic != people.begin() ? prev(mic) : prev(people.end());
         else if (c == 'B') mic = mic != prev(people.end()) ? next(mic) : people.begin();
