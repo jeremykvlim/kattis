@@ -9,7 +9,7 @@ int main() {
     int n, z;
     cin >> s >> r >> n >> z;
 
-    int count = 0, bbb;
+    int count = 0;
     while (s >= 2 * r) {
         count += (int) (M_PI / asin(r / (s - r)));
         s -= 2 * r;
