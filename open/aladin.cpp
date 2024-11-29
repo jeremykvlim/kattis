@@ -38,7 +38,6 @@ int main() {
         int c, l, r;
         cin >> c >> l >> r;
 
-
         auto split = [&](int x) -> void {
             if (x > n) return;
 
