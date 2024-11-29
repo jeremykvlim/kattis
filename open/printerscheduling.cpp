@@ -53,7 +53,6 @@ int main() {
             }
         }
 
-        cout << "YES\n";
         for (int i = 1; i < t.size(); i++) {
             int x = t[i - 1], y, z = 1;
             for (auto [j, freq] : count[t[i - 1]]) {
@@ -74,6 +73,7 @@ int main() {
             }
         }
 
+        cout << "YES\n";
         for (auto f : files) {
             cout << f.size() << "\n";
             for (auto [x, y, z] : f) cout << x << " " << y << " " << z << "\n";
