@@ -53,27 +53,26 @@ int main() {
             }
         }
 
+        cout << "YES\n";
         for (int i = 1; i < t.size(); i++) {
             int x = t[i - 1], y, z = 1;
             for (auto [j, freq] : count[t[i - 1]]) {
-                auto add = [&]() {
+                auto assign = [&]() {
                     y = min(freq, t[i] - x) + x;
                     files[j - 1].push_back({x, y, z});
                     freq -= y - x;
-                    x = y;
 
-                    if (x == t[i]) {
+                    if (y == t[i]) {
                         x = t[i - 1];
                         z++;
-                    }
+                    } else x = y;
                 };
-                add();
+                assign();
                 if (!freq) continue;
-                add();
+                assign();
             }
         }
 
-        cout << "YES\n";
         for (auto f : files) {
             cout << f.size() << "\n";
             for (auto [x, y, z] : f) cout << x << " " << y << " " << z << "\n";
