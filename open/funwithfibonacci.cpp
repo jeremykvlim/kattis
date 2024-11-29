@@ -30,11 +30,6 @@ T pow(T base, T exponent, T mod) {
 }
 
 template <typename T>
-T lcm(T a, T b) {
-    return (a / __gcd(a, b)) * b;
-}
-
-template <typename T>
 pair<T, T> fib(long long n, T mod = 1) {
     if (!n) return {0, 1};
     else {
