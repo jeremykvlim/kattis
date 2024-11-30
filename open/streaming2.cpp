@@ -17,21 +17,21 @@ int main() {
             buy = min({buy, dp[n][0][0], dp[n][1][0]});
             break;
         }
-        
-        auto parse = [&](bool second) {
-            auto update = [&](int i, int j, int count, int date) {
+
+        auto parse = [&](bool j) {
+            auto update = [&](int i, int count, int date) {
                 if (dp[i][j][0] > count) dp[i][j] = {count, date};
                 else if (dp[i][j][0] == count) dp[i][j][1] = max(dp[i][j][1], date);
             };
 
-            if (dp[i][second][1] > 1) update(i + 1, second, dp[i][second][0], dp[i][second][1] - 1);
+            if (dp[i][j][1] > 1) update(i + 1, dp[i][j][0], dp[i][j][1] - 1);
 
-            if (dp[i][!second][1] > 1) {
-                if (i + dp[i][!second][1] - 1 >= n) buy = min(buy, dp[i][!second][0] + 1);
-                else update(i + dp[i][!second][1] - 1, second, dp[i][!second][0] + 1, k + 2 - dp[i][!second][1]);
+            if (dp[i][!j][1] > 1) {
+                if (i + dp[i][!j][1] - 1 >= n) buy = min(buy, dp[i][!j][0] + 1);
+                else update(i + dp[i][!j][1] - 1, dp[i][!j][0] + 1, k + 2 - dp[i][!j][1]);
             }
-            update(i + 1, second, dp[i][0][0] + 1, k);
-            update(i + 1, second, dp[i][1][0] + 1, k);
+            update(i + 1, dp[i][0][0] + 1, k);
+            update(i + 1, dp[i][1][0] + 1, k);
         };
 
         if (s[i] == '1' || s[i] == 'B') parse(false);
