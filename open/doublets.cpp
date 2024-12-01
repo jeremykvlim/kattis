@@ -7,7 +7,7 @@ int main() {
 
     string word;
     vector<string> dict;
-    while (getline(cin, word), !word.empty()) dict.emplace_back(word);
+    while (getline(cin, word) && !word.empty()) dict.emplace_back(word);
     sort(dict.begin(), dict.end());
     dict.erase(unique(dict.begin(), dict.end()), dict.end());
 
