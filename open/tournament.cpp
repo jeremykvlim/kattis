@@ -14,13 +14,11 @@ int main() {
         vector<double> mismatch(k + 1, 0);
         for (int i = 2; i <= k; i++) mismatch[i] = mismatch[i - 2] + (knights[i - 2].first - knights[i - 1].first) * (knights[i - 2].first - knights[i - 1].first);
 
-        priority_queue<pair<double, pair<int, int>>, vector<pair<double, pair<int, int>>>, greater<>> pq;
-        for (int i = 2; i <= k; i++) pq.emplace(mismatch[i] - mismatch[i - 2], make_pair(i - 2, i - 1));
-
         set<int> byes;
         for(int i = 0; i < k; i++) byes.emplace(i);
-
-        while (k + byes.size() != bit_ceil((unsigned) k)) {
+        priority_queue<pair<double, pair<int, int>>, vector<pair<double, pair<int, int>>>, greater<>> pq;
+        for (int i = 2; i <= k; i++) pq.emplace(mismatch[i] - mismatch[i - 2], make_pair(i - 2, i - 1));
+        while (!pq.empty() && byes.size() > bit_ceil((unsigned) k) - k) {
             auto [i, j] = pq.top().second;
             pq.pop();
 
