@@ -22,16 +22,15 @@ struct DisjointSet {
     }
 };
 
-template<typename T>
+template <typename T>
 struct Point {
     T x, y;
 
     Point() {}
-
     Point(T x, T y) : x(x), y(y) {}
 };
 
-template<typename T>
+template <typename T>
 double dist(Point<T> a, Point<T> b) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
