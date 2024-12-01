@@ -1,12 +1,11 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template<typename T>
+template <typename T>
 struct Point {
     T x, y;
 
     Point() {}
-
     Point(T x, T y) : x(x), y(y) {}
 
     auto operator<(const Point &p) const {
@@ -27,12 +26,12 @@ T cross(Point<T> a, Point<T> b) {
     return (a.x * b.y) - (a.y * b.x);
 }
 
-template<typename T>
+template <typename T>
 T cross(Point<T> a, Point<T> b, Point<T> c) {
     return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
 }
 
-template<typename T>
+template <typename T>
 deque<Point<T>> monotone(vector<Point<T>> &points) {
     sort(points.begin(), points.end());
     points.erase(unique(points.begin(), points.end()), points.end());
