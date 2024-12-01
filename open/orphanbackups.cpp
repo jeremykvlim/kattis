@@ -8,7 +8,7 @@ int main() {
     map<string, bool> images;
     set<string> files;
     string s;
-    while (getline(cin, s), !s.empty()) images[s] = true;
+    while (getline(cin, s) && !s.empty()) images[s] = true;
     while (cin >> s >> ws) {
         auto name = s.substr(0, s.rfind('_', s.rfind('_') - 1));
         if (images.count(name)) images[name] = false;
