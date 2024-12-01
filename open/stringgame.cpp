@@ -12,18 +12,15 @@ int main() {
         string s, t;
         cin >> s >> t;
 
-        bool alice;
         int n = s.size(), m = t.size(), diff = n - m, r = diff / 2;
-        if (n == m) alice = s == t;
-        else if (diff & 1) {
-            alice = s.substr(r, m) == t;
-            alice &= (s.substr(r + 1, m) == t);
-        } else {
-            alice = s.substr(r, m) == t;
-            alice |= (s.substr(r + 1, m) == t);
-            alice |= (s.substr(r - 1, m) == t);
-        }
+        auto same = [&](int r) {
+            return s.substr(r, m) == t;
+        };
 
-        cout << (alice ? "Alice\n" : "Bob\n");
+        bool a;
+        if (n == m) a = s == t;
+        else if (diff & 1) a = same(r) & same(r + 1);
+        else a = same(r) | same(r + 1) | same(r - 1);
+        cout << (a ? "Alice\n" : "Bob\n");
     }
 }
