@@ -9,8 +9,8 @@ void tarjan(int v, vector<int> &order, vector<int> &low, vector<int> &component,
     for (int &u : adj_list[v])
         if (!order[u]) {
             tarjan(u, order, low, component, stacked, count, sccs, adj_list, s);
-            low[v] = min(low[u], low[v]);
-        } else if (stacked[u]) low[v] = min(order[u], low[v]);
+            low[v] = min(low[v], low[u]);
+        } else if (stacked[u]) low[v] = min(low[v], order[u]);
 
     if (order[v] == low[v]) {
         sccs++;
