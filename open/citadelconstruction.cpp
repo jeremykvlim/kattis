@@ -39,7 +39,7 @@ deque<Point<T>> monotone(vector<Point<T>> &points) {
     if (points.size() < 3) return deque<Point<T>>(points.begin(), points.end());
 
     deque<Point<T>> convex_hull;
-    for (auto p: points) {
+    for (auto p : points) {
         while (convex_hull.size() > 1 && cross(convex_hull[1], convex_hull[0], p) <= 0) convex_hull.pop_front();
         convex_hull.emplace_front(p);
     }
@@ -47,7 +47,7 @@ deque<Point<T>> monotone(vector<Point<T>> &points) {
     int s = convex_hull.size();
     points.pop_back();
     reverse(points.begin(), points.end());
-    for (auto p: points) {
+    for (auto p : points) {
         while (convex_hull.size() > s && cross(convex_hull[1], convex_hull[0], p) <= 0) convex_hull.pop_front();
         convex_hull.emplace_front(p);
     }
