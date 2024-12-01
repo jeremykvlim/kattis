@@ -68,41 +68,37 @@ int main() {
 
                     for (int p2 = l; p2 <= r; p2++) temp[p2] = count[p3][p2];
 
-                    if (p2_i <= p2_j) {
-                        for (int p2 = l; p2 < p2_i; p2++)
+                    bool rev = p2_i > p2_j;
+                    auto check_left = [&]() {
+                        for (int p2 = l; p2 < (!rev ? p2_i : p2_j); p2++)
                             if (temp[p2]) {
                                 if (temp[p2 + 1] > temp[p2]) temp[p2 + 1] -= temp[p2];
-                                else goto done;
+                                else return false;
                             }
+                        return true;
+                    };
 
-                        for (int p2 = p2_i; p2 < p2_j; p2++) {
-                            if (temp[p2] > 0) temp[p2 + 1] -= temp[p2] - 1;
-                            else goto done;
+                    auto check_middle = [&]() {
+                        for (int p2 = p2_i; (!rev ? p2 < p2_j : p2 > p2_j); (!rev ? p2++ : p2--)) {
+                            if (temp[p2] > 0) temp[(!rev ? p2 + 1 : p2 - 1)] -= temp[p2] - 1;
+                            else return false;
                         }
+                        return true;
+                    };
 
-                        for (int p2 = r; p2 > p2_j; p2--)
+                    auto check_right = [&]() {
+                        for (int p2 = r; p2 > (!rev ? p2_j : p2_i); p2--)
                             if (temp[p2]) {
                                 if (temp[p2 - 1] > temp[p2]) temp[p2 - 1] -= temp[p2];
-                                else goto done;
+                                else return false;
                             }
+                        return true;
+                    };
 
+                    if (!rev) {
+                        if (!check_left() || !check_middle() || !check_right()) goto done;
                     } else {
-                        for (int p2 = r; p2 > p2_i; p2--)
-                            if (temp[p2]) {
-                                if (temp[p2 - 1] > temp[p2]) temp[p2 - 1] -= temp[p2];
-                                else goto done;
-                            }
-
-                        for (int p2 = p2_i; p2 > p2_j; p2--) {
-                            if (temp[p2] > 0) temp[p2 - 1] -= temp[p2] - 1;
-                            else goto done;
-                        }
-
-                        for (int p2 = l; p2 < p2_j; p2++)
-                            if (temp[p2]) {
-                                if (temp[p2 + 1] > temp[p2]) temp[p2 + 1] -= temp[p2];
-                                else goto done;
-                            }
+                        if (!check_right() || !check_middle() || !check_left()) goto done;
                     }
 
                     dp[dp_index(p3, p2_i, p2_j)] = temp[p2_j] == 1;
@@ -133,6 +129,7 @@ int main() {
                     int p2_i = prev[prev_index(p3, p2_j)], l = p2_l[p3], r = p2_r[p3];
                     for (int p2 = l; p2 <= r; p2++) temp[p2] = count[p3][p2];
 
+                    vector<long long> seq;
                     auto calc = [&](int p3, int p2) {
                         auto a = 1LL;
                         while (p2--) a *= 2;
@@ -140,68 +137,49 @@ int main() {
                         return a;
                     };
 
-                    vector<long long> seq;
-                    if (p2_i <= p2_j) {
-                        for (int p2 = p2_i; p2 > l; p2--) {
-                            temp[p2]--;
+                    bool rev = p2_i > p2_j;
+                    auto add_left = [&]() {
+                        for (int p2 = !rev ? p2_i : p2_j; p2 > l; p2--) {
                             seq.emplace_back(calc(p3, p2));
+                            temp[p2]--;
                         }
 
                         for (int p2 = l; p2 < p2_j; p2++) {
                             while (temp[p2] > 1) {
                                 seq.emplace_back(calc(p3, p2));
-                                seq.emplace_back(calc(p3, p2 + 1)), temp[p2 + 1]--;
+                                seq.emplace_back(calc(p3, p2 + 1));
                                 temp[p2]--;
+                                temp[p2 + 1]--;
                             }
                             seq.emplace_back(calc(p3, p2));
                         }
+                    };
 
-                        for (int p2 = p2_j; p2 < r; p2++) {
-                            temp[p2]--;
+                    auto add_right = [&]() {
+                        for (int p2 = !rev ? p2_j : p2_i; p2 < r; p2++) {
                             seq.emplace_back(calc(p3, p2));
+                            temp[p2]--;
                         }
 
                         for (int p2 = r; p2 > p2_j; p2--) {
                             while (temp[p2] > 1) {
                                 seq.emplace_back(calc(p3, p2));
-                                seq.emplace_back(calc(p3, p2 - 1)), temp[p2 - 1]--;
+                                seq.emplace_back(calc(p3, p2 - 1));
                                 temp[p2]--;
+                                temp[p2 - 1]--;
                             }
                             seq.emplace_back(calc(p3, p2));
                         }
+                    };
 
-                        seq.emplace_back(calc(p3, p2_j));
+                    if (!rev) {
+                        add_left();
+                        add_right();
                     } else {
-                        for (int p2 = p2_i; p2 < r; p2++) {
-                            temp[p2]--;
-                            seq.emplace_back(calc(p3, p2));
-                        }
-
-                        for (int p2 = r; p2 > p2_j; p2--) {
-                            while (temp[p2] > 1) {
-                                seq.emplace_back(calc(p3, p2));
-                                seq.emplace_back(calc(p3, p2 - 1)), temp[p2 - 1]--;
-                                temp[p2]--;
-                            }
-                            seq.emplace_back(calc(p3, p2));
-                        }
-
-                        for (int p2 = p2_j; p2 > l; p2--) {
-                            temp[p2]--;
-                            seq.emplace_back(calc(p3, p2));
-                        }
-
-                        for (int p2 = l; p2 < p2_j; p2++) {
-                            while (temp[p2] > 1) {
-                                seq.emplace_back(calc(p3, p2));
-                                seq.emplace_back(calc(p3, p2 + 1)), temp[p2 + 1]--;
-                                temp[p2]--;
-                            }
-                            seq.emplace_back(calc(p3, p2));
-                        }
-
-                        seq.emplace_back(calc(p3, p2_j));
+                        add_right();
+                        add_left();
                     }
+                    seq.emplace_back(calc(p3, p2_j));
                     reverse(seq.begin(), seq.end());
                     for (auto ai : seq) a.emplace_back(ai);
                     p2_j = p2_i;
