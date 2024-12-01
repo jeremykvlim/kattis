@@ -16,15 +16,15 @@ int main() {
         sum += car;
 
         bool done = true;
-        for (int j = 0; j <= 1e5; j++)
-            if (dp[count][j] != -1) {
-                if (j + car <= ferry && sum - car - j <= ferry) {
-                    dp[count + 1][j + car] = j;
+        for (int i = 0; i <= 1e5; i++)
+            if (dp[count][i] != -1) {
+                if (i + car <= ferry && sum - car - i <= ferry) {
+                    dp[count + 1][i + car] = i;
                     done = false;
                 }
 
-                if (j <= ferry && sum - j <= ferry) {
-                    dp[count + 1][j] = j;
+                if (i <= ferry && sum - i <= ferry) {
+                    dp[count + 1][i] = i;
                     done = false;
                 }
             }
@@ -34,13 +34,13 @@ int main() {
     }
     cout << count << "\n";
 
-    int j = 0;
-    while (dp[count][j] == -1) j++;
-    auto dfs = [&](auto &&self, int count, int j) {
+    int i = 0;
+    while (dp[count][i] == -1) i++;
+    auto dfs = [&](auto &&self, int count, int i) {
         if (!count) return;
 
-        self(self, count - 1, dp[count][j]);
-        cout << (j == dp[count][j] ? "starboard" : "port") << "\n";
+        self(self, count - 1, dp[count][i]);
+        cout << (dp[count][i] == i ? "starboard" : "port") << "\n";
     };
-    dfs(dfs, count, j);
+    dfs(dfs, count, i);
 }
