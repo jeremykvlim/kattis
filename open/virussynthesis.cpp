@@ -39,7 +39,7 @@ struct EerTree {
                 return 0;
             };
 
-            if(!next(curr)) {
+            if (!next(curr)) {
                 int u = next(suff_link(link[curr]));
                 link[size] = u;
                 prev[size] = curr;
