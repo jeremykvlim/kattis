@@ -9,14 +9,15 @@ int main() {
     cin >> n;
 
     vector<int> strengths(n);
-    for (auto &s : strengths) cin >> s;
+    for (int s : strengths) cin >> s;
 
     sort(strengths.rbegin(), strengths.rend());
     int remain = 0;
-    long long last = 0, curr = 0;
+    auto last = 0LL, curr = 0LL;
     for (int i = 0; i < n; i++) {
         curr += strengths[i];
-        if (curr >= last) {
+        
+        if (last <= curr) {
             last += curr;
             curr = 0;
             remain = i + 1;
