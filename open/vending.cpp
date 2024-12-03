@@ -1,27 +1,39 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void tarjan(int v, vector<int> &order, vector<int> &low, vector<int> &component, vector<bool> &stacked, int &count, int &sccs, vector<vector<int>> &adj_list, stack<int> &s) {
-    order[v] = low[v] = ++count;
-    s.emplace(v);
-    stacked[v] = true;
+pair<int, vector<int>> tarjan(int n, vector<vector<int>> &adj_list) {
+    vector<int> order(n + 1, 0), low(n + 1, 0), component(n + 1, 0);
+    vector<bool> stacked(n + 1, false);
+    stack<int> st;
+    int count = 0, sccs = 0;
 
-    for (int &u : adj_list[v])
-        if (!order[u]) {
-            tarjan(u, order, low, component, stacked, count, sccs, adj_list, s);
-            low[v] = min(low[v], low[u]);
-        } else if (stacked[u]) low[v] = min(low[v], order[u]);
+    auto dfs = [&](auto &&self, int v) -> void {
+        order[v] = low[v] = ++count;
+        st.emplace(v);
+        stacked[v] = true;
 
-    if (order[v] == low[v]) {
-        sccs++;
-        int u;
-        do {
-            u = s.top();
-            s.pop();
-            stacked[u] = false;
-            component[u] = sccs;
-        } while (u != v);
-    }
+        for (int u : adj_list[v])
+            if (!order[u]) {
+                self(self, u);
+                low[v] = min(low[v], low[u]);
+            } else if (stacked[u]) low[v] = min(low[v], order[u]);
+
+        if (order[v] == low[v]) {
+            sccs++;
+            int u;
+            do {
+                u = st.top();
+                st.pop();
+                stacked[u] = false;
+                component[u] = sccs;
+            } while (u != v);
+        }
+    };
+
+    for (int v = 1; v <= n; v++)
+        if (!order[v]) dfs(dfs, v);
+
+    return {sccs, component};
 }
 
 int main() {
@@ -42,13 +54,7 @@ int main() {
             adj_list[i].emplace_back(f[i]);
         }
 
-    vector<int> order(n + 1, 0), low(n + 1, 0), component(n + 1, 0);
-    vector<bool> stacked(n + 1, false);
-    stack<int> st;
-    int count = 0, sccs = 0;
-
-    for (int i = 1; i <= n; i++)
-        if (!order[i]) tarjan(i, order, low, component, stacked, count, sccs, adj_list, st);
+    auto [sccs, component] = tarjan(n, adj_list);
 
     vector<int> same(n + 1, 0), diff(n + 1, 0), sales(n + 1, INT_MIN);
     for (int i : cheaper)
