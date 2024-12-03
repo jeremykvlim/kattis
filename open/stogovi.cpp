@@ -25,14 +25,14 @@ struct SparseTable {
     }
 };
 
-pair<SparseTable<int>, vector<int>> lca_st(int n, vector<vector<int>> &adj_list) {
+tuple<SparseTable<int>, vector<int>, vector<int>> lca_st(int n, vector<vector<int>> &adj_list) {
     vector<int> order(n + 1, 0), euler_tour, depth(2 * n);
-    auto dfs = [&](auto &&self, int v = 0, int p = -1, int d = 0) -> void {
+    auto dfs = [&](auto &&self, int v = 0, int prev = -1, int d = 0) -> void {
         euler_tour.emplace_back(v);
         depth[euler_tour.size()] = d;
         order[v] = euler_tour.size();
         for (int u : adj_list[v])
-            if (u != p) {
+            if (u != prev) {
                 self(self, u, v, d + 1);
                 euler_tour.emplace_back(v);
                 depth[euler_tour.size()] = d;
@@ -40,7 +40,7 @@ pair<SparseTable<int>, vector<int>> lca_st(int n, vector<vector<int>> &adj_list)
     };
     dfs(dfs);
 
-    return {SparseTable<int>(depth, [](int x, int y) {return min(x, y);}), order};
+    return {SparseTable<int>(depth, [](int x, int y) {return min(x, y);}), order, depth};
 }
 
 int lca(int u, int v, SparseTable<int> &st, vector<int> &order) {
@@ -79,7 +79,7 @@ int main() {
         }
     }
 
-    auto [st, order] = lca_st(n, adj_list);
+    auto [st, order, _] = lca_st(n, adj_list);
     for (auto [v, w, i] : queries) op[i] = lca(v, w, st, order);
 
     for (int i = 1; i <= n; i++)
