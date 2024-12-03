@@ -9,7 +9,7 @@ int main() {
     cin >> b >> p;
 
     vector<int> digits(p);
-    for (auto &x : digits) cin >> x;
+    for (int &x : digits) cin >> x;
 
     vector<vector<pair<int, int>>> prev{{{0, 0}}, {}};
     for (int i = p - 1; ~i; i--) {
