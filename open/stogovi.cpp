@@ -26,11 +26,10 @@ struct SparseTable {
 };
 
 tuple<SparseTable<int>, vector<int>, vector<int>> lca_st(int n, vector<vector<int>> &adj_list) {
-    vector<int> order(n + 1, 0), euler_tour, depth(2 * n);
+    vector<int> euler_tour, order(n + 1, 0), depth(2 * n);
     auto dfs = [&](auto &&self, int v = 0, int prev = -1, int d = 0) -> void {
         euler_tour.emplace_back(v);
-        depth[euler_tour.size()] = d;
-        order[v] = euler_tour.size();
+        depth[order[v] = euler_tour.size()] = d;
         for (int u : adj_list[v])
             if (u != prev) {
                 self(self, u, v, d + 1);
