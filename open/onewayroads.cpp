@@ -2,9 +2,10 @@
 using namespace std;
 
 vector<pair<int, int>> tarjan(int n, vector<vector<int>> &adj_list) {
-    int count = 0;
-    vector<int> order(n + 1), low(n + 1);
+    vector<int> order(n + 1, 0), low(n + 1,0);
     vector<pair<int, int>> non_bridges;
+    int count = 0;
+    
     auto dfs = [&](auto &&self, int v = 1, int prev = -1) -> void {
         order[v] = low[v] = ++count;
         for (int u : adj_list[v])
