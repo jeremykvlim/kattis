@@ -1,29 +1,42 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void tarjan(int v, vector<int> &order, vector<int> &low, vector<int> &component, vector<vector<int>> &members, vector<bool> &stacked, int &count, int &sccs, vector<vector<int>> &adj_list, stack<int> &s) {
-    order[v] = low[v] = ++count;
-    s.emplace(v);
-    stacked[v] = true;
+tuple<int, vector<int>, vector<vector<int>>> tarjan(int n, vector<vector<int>> &adj_list) {
+    vector<int> order(n + 1, 0), low(n + 1, 0), component(n + 1, 0);
+    vector<vector<int>> members(1);
+    vector<bool> stacked(n + 1, false);
+    stack<int> st;
+    int count = 0, sccs = 0;
 
-    for (int &u : adj_list[v])
-        if (!order[u]) {
-            tarjan(u, order, low, component, members, stacked, count, sccs, adj_list, s);
-            low[v] = min(low[v], low[u]);
-        } else if (stacked[u]) low[v] = min(low[v], order[u]);
+    auto dfs = [&](auto &&self, int v) -> void {
+        order[v] = low[v] = ++count;
+        st.emplace(v);
+        stacked[v] = true;
 
-    if (order[v] == low[v]) {
-        sccs++;
-        if (members.size() == sccs) members.emplace_back();
-        int u;
-        do {
-            u = s.top();
-            s.pop();
-            stacked[u] = false;
-            component[u] = sccs;
-            members[sccs].emplace_back(u);
-        } while (u != v);
-    }
+        for (int u : adj_list[v])
+            if (!order[u]) {
+                self(self, u);
+                low[v] = min(low[v], low[u]);
+            } else if (stacked[u]) low[v] = min(low[v], order[u]);
+
+        if (order[v] == low[v]) {
+            sccs++;
+            members.emplace_back();
+            int u;
+            do {
+                u = st.top();
+                st.pop();
+                stacked[u] = false;
+                component[u] = sccs;
+                members[sccs].emplace_back(u);
+            } while (u != v);
+        }
+    };
+
+    for (int v = 1; v <= n; v++)
+        if (!order[v]) dfs(dfs, v);
+
+    return {sccs, component, members};
 }
 
 int main() {
@@ -41,13 +54,7 @@ int main() {
         adj_list[a].emplace_back(b);
     }
 
-    vector<int> order(n + 1, 0), low(n + 1, 0), component(n + 1, 0);
-    vector<vector<int>> members(1);
-    vector<bool> stacked(n + 1, false);
-    stack<int> st;
-    int count = 0, sccs = 0;
-    for (int i = 1; i <= n; i++)
-        if (!order[i]) tarjan(i, order, low, component, members, stacked, count, sccs, adj_list, st);
+    auto [sccs, component, members] = tarjan(n, adj_list);
 
     vector<int> dp1(n + 1, 0), dp2(n + 1, 0);
     for (int i = sccs; i; i--) {
