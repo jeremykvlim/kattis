@@ -95,8 +95,8 @@ struct BlockCutTree {
     }
 
     bool on_path(int v, int u, int t) {
-        int rs = lca(v, u), pqr = lca(v, t), pqs = lca(u, t);
-        return !(rs != t && (rs != pqs || pqr != t) && (rs != pqr || pqs != t));
+        int vu = lca(v, u), vt = lca(v, t), ut = lca(u, t);
+        return vu == t || (vu == ut && vt == t) || (vu == vt && ut == t);
     }
 
     bool iscutpoint(int node) {
