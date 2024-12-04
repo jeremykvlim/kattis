@@ -9,10 +9,10 @@ int main() {
     for (int &Xi : X) cin >> Xi;
 
     auto losing = [&]() {
-        int lsb = (X[1] - X[0]) & (-(X[1] - X[0]));
-        return ((X[2] - X[1] - 1) % (lsb * 2) != lsb - 1 || (X[3] - X[2] - 1) % (lsb * 2) != lsb - 1);
+        int b = (X[1] - X[0]) & (-(X[1] - X[0]));
+        return ((X[2] - X[1] - 1) % (b * 2) != b - 1 || (X[3] - X[2] - 1) % (b * 2) != b - 1);
     };
-    
+
     auto read = [&]() {
         char c;
         cin >> c;
@@ -44,7 +44,7 @@ int main() {
                 X = temp;
                 return !b;
             };
-            
+
             if (y < X[i] && winning(y, j)) {
                 cout << "M " << X[j] << " " << y << "\n" << flush;
 
