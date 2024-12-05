@@ -14,7 +14,7 @@ def isprime(n):
         p = pow(a % n, d, n)
         i = s
         while 1 < p < n - 1 and (a % n) != 0 and i > 0:
-            p = pow(p, 2, n)
+            p = (p * p) % n
             i -= 1
         if p != n - 1 and i != s: return False
     return True
@@ -62,6 +62,5 @@ def factorize(n):
 
 n = int(input())
 pfs = factorize(n)
-pfs.sort()
-print(' '.join(str(p) for p in pfs))
+print(' '.join(str(p) for p in sorted(pfs)))
 
