@@ -31,7 +31,7 @@ def brent(n):
                 xs = x
                 for _ in range(min(128, i - j)):
                     x = (x * x) % n + c
-                    q = (q * (max(x, y) - min(x, y))) % n
+                    q = (q * abs(x - y)) % n
                 g = math.gcd(q, n)
                 if g != 1: break
                 j += 128
@@ -41,7 +41,7 @@ def brent(n):
         if g == n: g = 1
         while g == 1:
             xs = (xs * xs) % n + c
-            g = math.gcd(max(xs, y) - min(xs, y), n)
+            g = math.gcd(abs(xs - y), n)
 
         if g != n:
             return g if isprime(g) else brent(g)
