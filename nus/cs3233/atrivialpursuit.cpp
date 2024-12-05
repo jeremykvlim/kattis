@@ -302,7 +302,7 @@ long long brent(long long n) {
 
     mt19937_64 rng(random_device{}());
     for (;;) {
-        auto x = 2LL, y = 2LL, g = 1LL, q = 1LL, xs = -1LL, c = (long long) rng() % (n - 1) + 1;
+        auto x = 2LL, y = 2LL, g = 1LL, q = 1LL, xs = 1LL, c = (long long) rng() % (n - 1) + 1;
         for (int i = 1; g == 1; i <<= 1, y = x) {
             for (int j = 1; j < i; j++) x = mul(x, x, n) + c;
             for (int j = 0; j < i && g == 1; j += 128) {
