@@ -60,4 +60,5 @@ def factorize(n):
     dnc(n)
     return pfs
 
-print(' '.join(str(p) for p in sorted(factorize(int(input())))))
+n = int(input())
+print(' '.join(str(p) for p in sorted(factorize(n))))
