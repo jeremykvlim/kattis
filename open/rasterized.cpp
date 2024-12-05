@@ -74,7 +74,7 @@ long long brent(long long n) {
 vector<pair<long long, int>> factorize(long long n, vector<int> &spf) {
     gp_hash_table<long long, int, Hash> pfs;
 
-    auto dfs = [&](auto &&self, long long m) -> void {
+    auto dnc = [&](auto &&self, long long m) -> void {
         if (m < 2) return;
         if (isprime(m) || m < spf.size() && spf[m] == m) {
             pfs[m]++;
@@ -93,7 +93,7 @@ vector<pair<long long, int>> factorize(long long n, vector<int> &spf) {
         self(self, d);
         self(self, m / d);
     };
-    dfs(dfs, n);
+    dnc(dnc, n);
 
     return {pfs.begin(), pfs.end()};
 }

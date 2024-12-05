@@ -327,7 +327,7 @@ long long brent(long long n) {
 vector<long long> factorize(long long n) {
     vector<long long> pfs;
 
-    auto dfs = [&](auto &&self, long long m) -> void {
+    auto dnc = [&](auto &&self, long long m) -> void {
         if (m < 2) return;
         if (isprime(m)) {
             pfs.emplace_back(m);
@@ -338,7 +338,7 @@ vector<long long> factorize(long long n) {
         self(self, d);
         self(self, m / d);
     };
-    dfs(dfs, n);
+    dnc(dnc, n);
 
     return pfs;
 }
