@@ -60,7 +60,4 @@ def factorize(n):
     dnc(n)
     return pfs
 
-n = int(input())
-pfs = factorize(n)
-print(' '.join(str(p) for p in sorted(pfs)))
-
+print(' '.join(str(p) for p in sorted(factorize(int(input())))))
