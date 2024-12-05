@@ -29,16 +29,16 @@ int main() {
         sort(tiles.begin(), tiles.end());
 
         int score = 0;
-        for (int mask = 0; mask < (1 << p); mask++) {
+        for (int mask = 0; mask < 1 << p; mask++) {
             string s;
             int sum = 0;
-            for (int i = 0; i < p; i++) {
+            for (int i = 0; i < p; i++) 
                 if (mask & (1 << i)) {
                     auto [c, v] = tiles[i];
                     s += c;
                     sum += v;
                 }
-            }
+            
             if (dict.count(s)) score = max(score, sum);
         }
         cout << score << "\n";
