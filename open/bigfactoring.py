@@ -41,8 +41,7 @@ def brent(n):
         if g == n: g = 1
         while g == 1:
             xs = (xs * xs) % n + c
-            diff = max(xs, y) - min(xs, y)
-            g = math.gcd(diff, n)
+            g = math.gcd(max(xs, y) - min(xs, y), n)
 
         if g != n:
             return g if isprime(g) else brent(g)
