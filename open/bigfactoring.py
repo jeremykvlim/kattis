@@ -49,16 +49,16 @@ def brent(n):
 
 def factorize(n):
     pfs = []
-    def dfs(m):
+    def dnc(m):
         if m < 2:
             return
         if isprime(m):
             pfs.append(m)
             return
         d = brent(m)
-        dfs(d)
-        dfs(m // d)
-    dfs(n)
+        dnc(d)
+        dnc(m // d)
+    dnc(n)
     return pfs
 
 n = int(input())
