@@ -1,5 +1,4 @@
-import random
-from math import gcd
+import random, math
 
 def ctz(n):
     return (n & -n).bit_length() - 1
@@ -33,7 +32,7 @@ def brent(n):
                 for _ in range(min(128, i - j)):
                     x = (x * x) % n + c
                     q = (q * (max(x, y) - min(x, y))) % n
-                g = gcd(q, n)
+                g = math.gcd(q, n)
                 if g != 1: break
                 j += 128
             i <<= 1
@@ -43,7 +42,7 @@ def brent(n):
         while g == 1:
             xs = (xs * xs) % n + c
             diff = max(xs, y) - min(xs, y)
-            g = gcd(diff, n)
+            g = math.gcd(diff, n)
 
         if g != n:
             return g if isprime(g) else brent(g)
