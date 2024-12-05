@@ -320,7 +320,7 @@ long long brent(long long n) {
             xs = mul(xs, xs, n) + c;
             g = __gcd(abs(xs - y), n);
         }
-        if (g != n) return g;
+        if (g != n) return isprime(g) ? g : brent(g);
     }
 }
 
