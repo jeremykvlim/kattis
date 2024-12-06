@@ -299,9 +299,7 @@ using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type,
 
 template <typename T>
 vector<T> convolve(const vector<T> &a, const vector<T> &b) {
-    int size = a.size() + b.size() - 1;
-    int n = 1;
-    while (n < size) n <<= 1;
+    int n = bit_ceil(a.size() + b.size() - 1);
     vector<int> rev(n, 0);
     for (int i = 0; i < n; i++) rev[i] = (rev[i >> 1] | (i & 1) << __lg(n)) >> 1;
 
