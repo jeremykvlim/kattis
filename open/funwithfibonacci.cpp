@@ -114,17 +114,23 @@ vector<pair<int, int>> factorize(int n, vector<int> &spf) {
     return {pfs.begin(), pfs.end()};
 }
 
-void divisors(vector<pair<int, int>> &pfs, vector<int> &divs, long long d = 1, int i = 0) {
-    if (i == pfs.size()) return;
+vector<int> divisors(int n, vector<int> &spf) {
+    auto pfs = factorize(n, spf);
+    vector<int> divs{1};
 
-    divisors(pfs, divs, d, i + 1);
+    auto dfs = [&](auto &&self, int d = 1, int i = 0) {
+        if (i == pfs.size()) return;
 
-    auto [pf, pow] = pfs[i];
-    while (pow--) {
-        d *= pf;
-        divs.emplace_back(d);
-        divisors(pfs, divs, d, i + 1);
-    }
+        self(self, d, i + 1);
+        auto [pf, pow] = pfs[i];
+        while (pow--) {
+            d *= pf;
+            divs.emplace_back(d);
+            self(self, d, i + 1);
+        }
+    };
+    dfs(dfs);
+    return divs;
 }
 
 int pisano_period(int p, vector<int> &spf, gp_hash_table<int, int, Hash> &cache) {
@@ -132,13 +138,11 @@ int pisano_period(int p, vector<int> &spf, gp_hash_table<int, int, Hash> &cache)
 
     auto pfs = factorize(p, spf);
 
-    auto order = [&](int p) -> int {
+    auto prime_period = [&](int p) -> int {
         if (p == 2) return 3;
         if (p == 5) return 20;
 
-        auto pfs = factorize((p % 10 == 1 || p % 10 == 9) ? p - 1 : 2 * (p + 1), spf);
-        vector<int> divs;
-        divisors(pfs, divs);
+        auto divs = divisors((p % 10 == 1 || p % 10 == 9) ? p - 1 : 2 * (p + 1), spf);
         sort(divs.begin(), divs.end());
         for (int d : divs)
             if (fib(d, p) == make_pair(0, 1)) return d;
@@ -148,7 +152,7 @@ int pisano_period(int p, vector<int> &spf, gp_hash_table<int, int, Hash> &cache)
     for (auto [pf, pow] : pfs) {
         int temp = 1;
         while (pow-- > 1) temp *= pf;
-        pisano = lcm(pisano, order(pf) * temp);
+        pisano = lcm(pisano, prime_period(pf) * temp);
     }
 
     return cache[p] = pisano;
