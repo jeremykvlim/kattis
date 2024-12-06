@@ -310,18 +310,23 @@ vector<int> sieve(int n) {
     return primes;
 }
 
-void divisors(vector<pair<int, int>> &pfs, vector<pair<double, modint>> &divs, pair<double, modint> d = {0, 1}, int i = 0) {
-    if (i == pfs.size()) return;
+vector<pair<double, modint>> divisors(vector<pair<int, int>> &pfs) {
+    vector<pair<double, modint>> divs{{0, 1}};
 
-    divisors(pfs, divs, d, i + 1);
+    auto dfs = [&](auto &&self, pair<double, modint> d = {0, 1}, int i = 0) {
+        if (i == pfs.size()) return;
 
-    auto [pf, pow] = pfs[i];
-    pair<double, modint> p{log(pf), pf};
-    while (pow--) {
-        d = {d.first + p.first, d.second * p.second};
-        divs.emplace_back(d);
-        divisors(pfs, divs, d, i + 1);
-    }
+        self(self, d, i + 1);
+        auto [pf, pow] = pfs[i];
+        pair<double, modint> p{log(pf), pf};
+        while (pow--) {
+            d = {d.first + p.first, d.second * p.second};
+            divs.emplace_back(d);
+            self(self, d, i + 1);
+        }
+    };
+    dfs(dfs);
+    return divs;
 }
 
 int main() {
@@ -354,9 +359,7 @@ int main() {
         (s1 <= s2 ? s1 : s2) *= factors[i] + 1;
     }
 
-    vector<pair<double, modint>> divs1{{0, 1}}, divs2{{0, 1}};
-    divisors(pfs1, divs1);
-    divisors(pfs2, divs2);
+    auto divs1 = divisors(pfs1), divs2 = divisors(pfs2);
     sort(divs1.begin(), divs1.end(), [](auto p1, auto p2) {return p1.first < p2.first;});
     sort(divs2.rbegin(), divs2.rend(), [](auto p1, auto p2) {return p1.first < p2.first;});
 
