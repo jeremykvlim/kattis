@@ -3,7 +3,7 @@ using namespace std;
 
 struct SuffixArray {
     string s;
-    vector<int> SA, ascii, SA_inv, lcp, L_lcp, R_lcp;
+    vector<int> SA, ascii, SA_inv, lcp, lcp_l, lcp_r;
 
     vector<int> sais(vector<int> &ascii1, int range) {
         int n = ascii1.size();
@@ -102,9 +102,9 @@ struct SuffixArray {
         if (l + 1 >= r) return lcp[l];
 
         int m = l + (r - l) / 2;
-        L_lcp[m] = lcp_lr(l, m);
-        R_lcp[m] = lcp_lr(m, r);
-        return min(L_lcp[m], R_lcp[m]);
+        lcp_l[m] = lcp_lr(l, m);
+        lcp_r[m] = lcp_lr(m, r);
+        return min(lcp_l[m], lcp_r[m]);
     }
 
     int & operator[](int i) {
@@ -125,8 +125,8 @@ struct SuffixArray {
             while (l + 1 < r) {
                 m = l + (r - l) / 2;
 
-                if (match_l >= match_r) match_m = L_lcp[m] < match_l ? L_lcp[m] : match(match_l, SA[m]);
-                else match_m = R_lcp[m] < match_r ? R_lcp[m] : match(match_r, SA[m]);
+                if (match_l >= match_r) match_m = lcp_l[m] < match_l ? lcp_l[m] : match(match_l, SA[m]);
+                else match_m = lcp_r[m] < match_r ? lcp_r[m] : match(match_r, SA[m]);
 
                 if ((match_m != t.size() && SA[m] + match_m < s.size() && t[match_m] < s[SA[m] + match_m]) || (left && match_m == t.size())) {
                     r = m;
@@ -141,7 +141,7 @@ struct SuffixArray {
         return {search(true), search(false)};
     }
 
-    SuffixArray(string &s, int r = 128) : s(s), ascii(s.begin(), s.end()), L_lcp(s.size()), R_lcp(s.size()) {
+    SuffixArray(string &s, int r = 128) : s(s), ascii(s.begin(), s.end()), lcp_l(s.size()), lcp_r(s.size()) {
         SA = sais(ascii, r);
         kasai();
         lcp_lr(0, s.size() - 1);
