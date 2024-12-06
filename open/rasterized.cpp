@@ -98,17 +98,23 @@ vector<pair<long long, int>> factorize(long long n, vector<int> &spf) {
     return {pfs.begin(), pfs.end()};
 }
 
-void divisors(vector<pair<long long, int>> &pfs, vector<long long> &divs, long long d = 1, int i = 0) {
-    if (i == pfs.size()) return;
+vector<long long> divisors(long long n, vector<int> &spf) {
+    auto pfs = factorize(n, spf);
+    vector<long long> divs{1};
 
-    divisors(pfs, divs, d, i + 1);
+    auto dfs = [&](auto &&self, long long d = 1, int i = 0) {
+        if (i == pfs.size()) return;
 
-    auto [pf, pow] = pfs[i];
-    while (pow--) {
-        d *= pf;
-        divs.emplace_back(d);
-        divisors(pfs, divs, d, i + 1);
-    }
+        self(self, d, i + 1);
+        auto [pf, pow] = pfs[i];
+        while (pow--) {
+            d *= pf;
+            divs.emplace_back(d);
+            self(self, d, i + 1);
+        }
+    };
+    dfs(dfs);
+    return divs;
 }
 
 long long phi(long long n, vector<pair<long long, int>> pfs) {
@@ -139,12 +145,8 @@ int main() {
         long long n;
         cin >> n;
 
-        auto pfs = factorize(n, spf);
-        vector<long long> divs{1};
-        divisors(pfs, divs);
-
         auto sum = 0LL;
-        for (auto d : divs) sum += phi(d + 1, factorize(d + 1, spf));
+        for (auto d : divisors(n, spf)) sum += phi(d + 1, factorize(d + 1, spf));
         cout << sum << "\n";
     }
 }
