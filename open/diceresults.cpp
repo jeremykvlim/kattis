@@ -352,15 +352,15 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    
+
     modint::init();
 
     int n;
     cin >> n;
 
     int sum = 0;
-    vector<vector<int>> polys(n);
-    for (auto &poly : polys) {
+    vector<vector<int>> dp(n);
+    for (auto &poly : dp) {
         int hi;
         cin >> hi;
 
@@ -369,12 +369,8 @@ int main() {
         poly[0] = 0;
     }
 
-    while (polys.size() > 1) {
-        vector<vector<int>> temp;
-        for (int i = 0; i + 1 < polys.size(); i += 2) temp.emplace_back(convolve(polys[i], polys[i + 1]));
-        if (polys.size() & 1) temp.emplace_back(polys.back());
-        polys = temp;
-    }
+    for (int i = 1; i < n; i <<= 1)
+        for (int j = 0; j < n - i; j += i << 1) dp[j] = convolve(dp[j], dp[i + j]);
 
-    for (int i = 1; i <= sum; i++) cout << (i < n ? 0 : polys[0][i]) << "\n";
+    for (int i = 1; i <= sum; i++) cout << (i < n ? 0 : dp[0][i]) << "\n";
 }
