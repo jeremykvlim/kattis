@@ -113,12 +113,7 @@ void divisors(vector<pair<long long, int>> &pfs, vector<long long> &divs, long l
 
 long long phi(long long n, vector<pair<long long, int>> pfs) {
     auto count = n;
-
-    for (auto [pf, pow] : pfs) {
-        count /= pf;
-        count *= pf - 1;
-    }
-
+    for (auto [pf, pow] : pfs) count -= count / pf;
     return count;
 }
 
