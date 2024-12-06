@@ -2,33 +2,8 @@
 using namespace std;
 
 struct SuffixArray {
-    template <typename T>
-    struct SparseTable {
-        vector<vector<T>> ST;
-        function<T(T, T)> f;
-
-        SparseTable() {}
-        SparseTable(vector<T> v, function<T(T, T)> func) : f(move(func)) {
-            if (v.empty()) return;
-            int n = __lg(v.size()) + 1;
-            ST.resize(n);
-            ST.front() = v;
-            for (int i = 1; i < n; i++) {
-                ST[i].resize(v.size() - (1 << i) + 1);
-                for (int j = 0; j <= v.size() - (1 << i); j++)
-                    ST[i][j] = f(ST[i - 1][j], ST[i - 1][j + (1 << (i - 1))]);
-            }
-        }
-
-        T range_query(int l, int r) {
-            int i = __lg(r - l + 1);
-            return f(ST[i][l], ST[i][r - (1 << i) + 1]);
-        }
-    };
-
     string s;
-    vector<int> SA, ascii, SA_inv;
-    SparseTable<int> lcp_st;
+    vector<int> SA, ascii, SA_inv, lcp, L_lcp, R_lcp;
 
     vector<int> sais(vector<int> &ascii1, int range) {
         int n = ascii1.size();
@@ -107,9 +82,9 @@ struct SuffixArray {
         return sa;
     }
 
-    vector<int> kasai() {
+    void kasai() {
         int n = ascii.size();
-        vector<int> lcp(n);
+        lcp.resize(n);
         SA_inv.resize(n);
         for (int i = 0; i < n; i++) SA_inv[SA[i]] = i;
         for (int i = 0, k = 0; i < n; i++) {
@@ -121,7 +96,15 @@ struct SuffixArray {
             lcp[SA_inv[i] - 1] = k;
         }
         lcp.back() = n;
-        return lcp;
+    }
+
+    int lcp_lr(int l, int r) {
+        if (l + 1 >= r) return lcp[l];
+
+        int m = l + (r - l) / 2;
+        L_lcp[m] = lcp_lr(l, m);
+        R_lcp[m] = lcp_lr(m, r);
+        return min(L_lcp[m], R_lcp[m]);
     }
 
     int & operator[](int i) {
@@ -129,33 +112,39 @@ struct SuffixArray {
     }
 
     pair<int, int> matches(string &t) {
-        auto lcp = [&](int i, int j) -> int {
-            if (i == j) return s.size() - i;
+        auto search = [&](bool left) -> int {
+            auto match = [&](auto t_l, auto s_l) {
+                return mismatch(t.begin() + t_l, t.end(), s.begin() + s_l + t_l, s.end()).first - t.begin();
+            };
+            int match_l = match(0, SA[0]), match_r = match(0, SA[s.size() - 1]), match_m;
 
-            auto [l, r] = minmax(SA_inv[i], SA_inv[j]);
-            return lcp_st.range_query(l, r - 1);
+            if (left && match_l == t.size()) return 0;
+            if (!left && match_r == t.size()) return s.size();
+
+            int l = 0, r = s.size() - 1, m;
+            while (l + 1 < r) {
+                m = l + (r - l) / 2;
+
+                if (match_l >= match_r) match_m = L_lcp[m] < match_l ? L_lcp[m] : match(match_l, SA[m]);
+                else match_m = R_lcp[m] < match_r ? R_lcp[m] : match(match_r, SA[m]);
+
+                if ((match_m != t.size() && SA[m] + match_m < s.size() && t[match_m] < s[SA[m] + match_m]) || (left && match_m == t.size())) {
+                    r = m;
+                    match_r = match_m;
+                } else {
+                    l = m;
+                    match_l = match_m;
+                }
+            }
+            return max(match_l, match_r) < t.size() ? s.size() : r;
         };
-
-        int match_r = s.size(), match_len = 0;
-        auto cmp = [&](int match_l, int) -> bool {
-            int lcp_len = match_r == s.size() ? 0 : lcp(match_l, match_r);
-            if (lcp_len != match_len) return (lcp_len < match_len) ^ (SA_inv[match_l] > SA_inv[match_r]);
-
-            auto [it_s, it_t] = mismatch(s.begin() + match_l + match_len, s.end(), t.begin() + match_len, t.end());
-            match_r = match_l;
-            match_len = it_t - t.begin();
-            return lexicographical_compare(it_s, s.end(), it_t, t.end());
-        };
-
-        int l = lower_bound(SA.begin(), SA.end(), 0, cmp) - SA.begin(),
-            r = match_len != t.size() ? l : lower_bound(SA.begin() + l, SA.end(), 0, [&](int match_l, int) -> bool {return lcp(match_l, match_r) >= t.size();}) - SA.begin();
-
-        return {l, r};
+        return {search(true), search(false)};
     }
 
-    SuffixArray(string &s, int r = 128) : s(s), ascii(s.begin(), s.end()) {
+    SuffixArray(string &s, int r = 128) : s(s), ascii(s.begin(), s.end()), L_lcp(s.size()), R_lcp(s.size()) {
         SA = sais(ascii, r);
-        lcp_st = SparseTable<int>(kasai(), [](int x, int y) {return min(x, y);});
+        kasai();
+        lcp_lr(0, s.size() - 1);
     }
 };
 
