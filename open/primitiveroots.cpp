@@ -83,33 +83,21 @@ vector<long long> factorize(long long n) {
 }
 
 long long primitive_root(long long m) {
-    if (m == 1) return 0;
-    if (m == 2) return 1;
-    if (m == 4) return 3;
-    if (!(m % 4)) return -1;
+    if (m == 1 || m == 2 || m == 4) return m - 1;
+    if (!(m & 3)) return -1;
 
-    auto p = m & 1 ? m : m / 2;
-    auto pfs = factorize(p);
-    sort(pfs.begin(), pfs.end());
-    bool composite = pfs.size() > 1;
-    if (composite && unique(pfs.begin(), pfs.end()) == pfs.end()) return -1;
-
-    auto q = pfs[0];
-    auto phi = p / q * (q - 1);
-    pfs = factorize(q - 1);
-
-    if (composite) pfs.emplace_back(q);
+    auto pfs = factorize(m);
     sort(pfs.begin(), pfs.end());
     pfs.erase(unique(pfs.begin(), pfs.end()), pfs.end());
-    for (auto g = 2LL; g < m; g++) {
-        if (gcd(g, m) != 1) continue;
+    if (pfs.size() > 2 || (pfs.size() == 2 && pfs[0] > 2)) return -1;
 
-        for (auto pf : pfs)
-            if (pow(g, phi / pf, m) == 1) goto next;
-
-        return g;
-        next:;
-    }
+    auto phi = !(m & 1) ? m / 2 / pfs[1] * (pfs[1] - 1) : m / pfs[0] * (pfs[0] - 1);
+    pfs = factorize(phi);
+    sort(pfs.begin(), pfs.end());
+    pfs.erase(unique(pfs.begin(), pfs.end()), pfs.end());
+    for (auto g = 2LL; g < m; g++)
+        if (gcd(g, m) == 1 && all_of(pfs.begin(), pfs.end(), [&](auto pf) {return pow(g, phi / pf, m) != 1;})) return g;
+    
     return -1;
 }
 
