@@ -89,7 +89,7 @@ long long primitive_root(long long m) {
     auto pfs = factorize(m);
     sort(pfs.begin(), pfs.end());
     pfs.erase(unique(pfs.begin(), pfs.end()), pfs.end());
-    if (pfs.size() > 2 || (pfs.size() == 2 && pfs[0] > 2)) return -1;
+    if (pfs.size() > 2 || (pfs.size() == 2 && m & 1)) return -1;
 
     auto phi = !(m & 1) ? m / 2 / pfs[1] * (pfs[1] - 1) : m / pfs[0] * (pfs[0] - 1);
     pfs = factorize(phi);
