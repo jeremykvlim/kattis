@@ -19,7 +19,7 @@ T pow(T base, T exponent, T mod) {
     return value;
 }
 
-bool isprime(long long n) {
+bool isprime(unsigned long long n) {
     if (n < 2) return false;
     if (n % 6 % 4 != 1) return (n | 1) == 3;
 

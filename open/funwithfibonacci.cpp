@@ -43,7 +43,7 @@ pair<T, T> fib(long long n, T mod = 1) {
     }
 }
 
-bool isprime(long long n) {
+bool isprime(unsigned long long n) {
     if (n < 2) return false;
     if (n % 6 % 4 != 1) return (n | 1) == 3;
 
