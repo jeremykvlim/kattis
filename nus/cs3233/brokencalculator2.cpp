@@ -1,11 +1,12 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-long long hungarian(vector<vector<long long>> &adj_matrix) {
+template <typename T, typename U>
+U hungarian(const vector<vector<T>> &adj_matrix, const U delta) {
     int R = adj_matrix.size(), C = adj_matrix[0].size();
 
     vector<int> r_match(R, -1), c_match(C, -1);
-    vector<long long> potential(R, 0);
+    vector<T> potential(R, 0);
     for (int c = 0; c < C; c++) {
         int r = 0;
         for (int row = 1; row < R; row++)
@@ -27,7 +28,7 @@ long long hungarian(vector<vector<long long>> &adj_matrix) {
     for (int r = 0; r < R; r++) {
         if (r_match[r] != -1) continue;
 
-        vector<long long> dist(C);
+        vector<T> dist(C);
         for (int c = 0; c < C; c++) dist[c] = diff(r, c);
 
         vector<int> prev(C, r);
@@ -85,22 +86,9 @@ long long hungarian(vector<vector<long long>> &adj_matrix) {
         }
     }
 
-    auto cost = 0LL;
+    U cost = 0;
     for (int r = 0; r < R; r++) cost += adj_matrix[r][r_match[r]];
-
-    return cost;
-}
-
-long long time(long long a, long long b, long long c, long long x, long long y) {
-    if (x == y) return 0;
-
-    auto t = x ? time(a, b, c, 0, y) + c : LLONG_MAX;
-    if (x > y) return t;
-    
-    if (LLONG_MAX >= (__int128) a * (y - x)) t = min(t, a * (y - x));
-    if (x <= y / 2) t = min(t, time(a, b, c, x, y / 2) + (y & 1 ? a : 0) + (y > 1 ? b : 0));
-
-    return t;
+    return cost - delta;
 }
 
 int main() {
@@ -114,10 +102,22 @@ int main() {
     vector<long long> x(n + 1, 0);
     for (int i = 1; i <= n; i++) cin >> x[i];
 
+    auto time = [&](auto &&self, long long x, long long y) -> long long {
+        if (x == y) return 0;
+
+        auto t = x ? self(self, 0, y) + c : LLONG_MAX;
+        if (x > y) return t;
+
+        if (LLONG_MAX >= (__int128) a * (y - x)) t = min(t, a * (y - x));
+        if (x <= y / 2) t = min(t, self(self, x, y / 2) + (y & 1 ? a : 0) + (y > 1 ? b : 0));
+
+        return t;
+    };
+
     vector<vector<long long>> adj_matrix(n + 1, vector<long long>(n + 1));
     for (int i = 0; i <= n; i++)
         for (int j = 0; j <= n; j++)
-            adj_matrix[i][j] = i == j ? LLONG_MAX : time(a, b, c, x[i], x[j]);
+            adj_matrix[i][j] = i == j ? LLONG_MAX : time(time, x[i], x[j]);
 
-    cout << hungarian(adj_matrix) - c;
+    cout << hungarian(adj_matrix, c);
 }
