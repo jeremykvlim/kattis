@@ -27,8 +27,8 @@ T pow(T base, U exponent, T mod) {
     return value;
 }
 
-template <typename T>
-pair<T, T> fib(long long n, T mod = 1) {
+template <typename T, typename U>
+pair<T, T> fib(U n, T mod = 1) {
     if (!n) return {0, 1};
     else {
         auto [f1, f2] = fib(n >> 1, mod);
@@ -86,21 +86,14 @@ T brent(T n) {
     }
 }
 
-vector<pair<int, int>> factorize(int n, vector<int> &spf) {
-    gp_hash_table<int, int, Hash> pfs;
+template <typename T>
+vector<pair<T, int>> factorize(T n) {
+    gp_hash_table<T, int, Hash> pfs;
 
-    auto dnc = [&](auto &&self, int m) -> void {
+    auto dnc = [&](auto &&self, T m) -> void {
         if (m < 2) return;
-        if (isprime(m) || m < spf.size() && spf[m] == m) {
+        if (isprime(m)) {
             pfs[m]++;
-            return;
-        }
-
-        if (m <= 1e6) {
-            while (m > 1) {
-                pfs[spf[m]]++;
-                m /= spf[m];
-            }
             return;
         }
 
@@ -113,11 +106,12 @@ vector<pair<int, int>> factorize(int n, vector<int> &spf) {
     return {pfs.begin(), pfs.end()};
 }
 
-vector<int> divisors(int n, vector<int> &spf) {
-    auto pfs = factorize(n, spf);
-    vector<int> divs{1};
+template <typename T>
+vector<T> divisors(T n) {
+    auto pfs = factorize(n);
+    vector<T> divs{1};
 
-    auto dfs = [&](auto &&self, int d = 1, int i = 0) {
+    auto dfs = [&](auto &&self, T d = 1, int i = 0) {
         if (i == pfs.size()) return;
 
         self(self, d, i + 1);
@@ -129,19 +123,20 @@ vector<int> divisors(int n, vector<int> &spf) {
         }
     };
     dfs(dfs);
+
     return divs;
 }
 
-int pisano_period(int p, vector<int> &spf, gp_hash_table<int, int, Hash> &cache) {
+int pisano_period(int p, gp_hash_table<int, int, Hash> &cache) {
     if (cache[p]) return cache[p];
 
-    auto pfs = factorize(p, spf);
+    auto pfs = factorize(p);
 
     auto prime_period = [&](int p) -> int {
         if (p == 2) return 3;
         if (p == 5) return 20;
 
-        auto divs = divisors((p % 10 == 1 || p % 10 == 9) ? p - 1 : 2 * (p + 1), spf);
+        auto divs = divisors((p % 10 == 1 || p % 10 == 9) ? p - 1 : 2 * (p + 1));
         sort(divs.begin(), divs.end());
         for (int d : divs)
             if (fib(d, p) == make_pair(0, 1)) return d;
@@ -157,21 +152,11 @@ int pisano_period(int p, vector<int> &spf, gp_hash_table<int, int, Hash> &cache)
     return cache[p] = pisano;
 }
 
-vector<int> sieve(int n) {
-    vector<int> spf(n + 1, 0);
-    for (int i = 2; i <= n; i++)
-        if (!spf[i])
-            for (int j = i; j <= n; j += i)
-                if (!spf[j]) spf[j] = i;
-
-    return spf;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    vector<int> memo(fixed_point, 0), spf = sieve(1e6);
+    vector<int> memo(fixed_point, 0);
     memo[1] = 1;
     for (int i = 2; i < fixed_point; i++)
         memo[i] = (memo[i - 1] + memo[i - 2]) % fixed_point;
@@ -194,7 +179,7 @@ int main() {
 
             if (k == 1) return F(n);
 
-            int pisano = pisano_period(p, spf, cache);
+            int pisano = pisano_period(p, cache);
             if (p != pisano) return F(self(self, n, k - 1, pisano));
 
             n %= p;
