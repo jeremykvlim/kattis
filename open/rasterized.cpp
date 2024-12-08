@@ -70,21 +70,14 @@ T brent(T n) {
     }
 }
 
-vector<pair<long long, int>> factorize(long long n, vector<int> &spf) {
-    gp_hash_table<long long, int, Hash> pfs;
+template <typename T>
+vector<pair<T, int>> factorize(T n) {
+    gp_hash_table<T, int, Hash> pfs;
 
-    auto dnc = [&](auto &&self, long long m) -> void {
+    auto dnc = [&](auto &&self, T m) -> void {
         if (m < 2) return;
-        if (isprime(m) || m < spf.size() && spf[m] == m) {
+        if (isprime(m)) {
             pfs[m]++;
-            return;
-        }
-
-        if (m <= 1e7) {
-            while (m > 1) {
-                pfs[spf[m]]++;
-                m /= spf[m];
-            }
             return;
         }
 
@@ -97,11 +90,12 @@ vector<pair<long long, int>> factorize(long long n, vector<int> &spf) {
     return {pfs.begin(), pfs.end()};
 }
 
-vector<long long> divisors(long long n, vector<int> &spf) {
-    auto pfs = factorize(n, spf);
-    vector<long long> divs{1};
+template <typename T>
+vector<T> divisors(T n) {
+    auto pfs = factorize(n);
+    vector<T> divs{1};
 
-    auto dfs = [&](auto &&self, long long d = 1, int i = 0) {
+    auto dfs = [&](auto &&self, T d = 1, int i = 0) {
         if (i == pfs.size()) return;
 
         self(self, d, i + 1);
@@ -113,23 +107,17 @@ vector<long long> divisors(long long n, vector<int> &spf) {
         }
     };
     dfs(dfs);
+    
     return divs;
 }
 
-long long phi(long long n, vector<pair<long long, int>> pfs) {
-    auto count = n;
-    for (auto [pf, pow] : pfs) count -= count / pf;
-    return count;
-}
+template <typename T>
+T totient(T n) {
+    auto pfs = factorize(n);
 
-vector<int> sieve(int n) {
-    vector<int> spf(n + 1, 0);
-    for (int i = 2; i <= n; i++)
-        if (!spf[i])
-            for (int j = i; j <= n; j += i)
-                if (!spf[j]) spf[j] = i;
-
-    return spf;
+    auto phi = n;
+    for (auto [pf, pow] : pfs) phi -= phi / pf;
+    return phi;
 }
 
 int main() {
@@ -139,13 +127,12 @@ int main() {
     int t;
     cin >> t;
 
-    auto spf = sieve(1e7);
     while (t--) {
         long long n;
         cin >> n;
 
         auto sum = 0LL;
-        for (auto d : divisors(n, spf)) sum += phi(d + 1, factorize(d + 1, spf));
+        for (auto d : divisors(n)) sum += totient(d + 1);
         cout << sum << "\n";
     }
 }
