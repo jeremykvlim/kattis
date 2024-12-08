@@ -1,20 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-long long phi_inv(vector<long long> &pd, int i, long long n, long long curr, long long totient) {
-    if (totient == 1) return min(n, curr);
-    if (i < 0) return n;
-
-    n = phi_inv(pd, i - 1, n, curr, totient);
-    if (!(totient % (pd[i] - 1))) {
-        totient /= pd[i] - 1;
-        while (!(totient % pd[i])) totient /= pd[i];
-        n = phi_inv(pd, i - 1, n, curr  / (pd[i] - 1) * pd[i], totient);
-    }
-
-    return n;
-}
-
 template <typename T, typename U, typename V>
 T mul(U x, V y, T mod) {
     return ((unsigned __int128) x * y) % mod;
@@ -48,15 +34,29 @@ bool isprime(unsigned long long n) {
     return true;
 }
 
-vector<long long> prime_divisors(long long n) {
-    vector<long long> pd;
-    for (int i = 1; i <= sqrt(n); i++)
-        if (!(n % i)) {
-            if (isprime(i + 1)) pd.emplace_back(i + 1);
-            if (n / i != i && isprime(n / i + 1)) pd.emplace_back(n / i + 1);
+long long phi_inv(long long totient) {
+    vector<long long> primes;
+    for (int i = 1; i <= sqrt(totient); i++)
+        if (!(totient % i)) {
+            if (isprime(i + 1)) primes.emplace_back(i + 1);
+            if (totient / i != i && isprime(totient / i + 1)) primes.emplace_back(totient / i + 1);
+        }
+    sort(primes.begin(), primes.end());
+
+    auto dfs = [&](auto &&self, int i, auto n, auto m, long long phi) {
+        if (phi == 1) return min(n, m);
+        if (!~i) return n;
+
+        n = self(self, i - 1, n, m, phi);
+        if (!(phi % (primes[i] - 1))) {
+            phi /= primes[i] - 1;
+            while (!(phi % primes[i])) phi /= primes[i];
+            n = self(self, i - 1, n, m / (primes[i] - 1) * primes[i], phi);
         }
 
-    return pd;
+        return n;
+    };
+    return dfs(dfs, primes.size() - 1, LLONG_MAX, totient, totient);
 }
 
 int main() {
@@ -69,10 +69,7 @@ int main() {
     if (totient == 1) cout << 1;
     else if (totient & 1) cout << -1;
     else {
-        auto pd = prime_divisors(totient);
-        sort(pd.begin(), pd.end());
-
-        auto n = phi_inv(pd, pd.size() - 1, LLONG_MAX, totient, totient);
+        auto n = phi_inv(totient);
         cout << (n == LLONG_MAX ? -1 : n);
     }
 }
