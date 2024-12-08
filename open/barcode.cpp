@@ -300,8 +300,8 @@ T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
     return fact[n] * fact_inv[k] * fact_inv[n - k];
 }
 
-template <typename T>
-pair<T, T> fib(long long n, T mod = 1) {
+template <typename T, typename U>
+pair<T, T> fib(U n, T mod = 1) {
     if (!n) return {0, 1};
     else {
         auto [f1, f2] = fib(n >> 1, mod);
