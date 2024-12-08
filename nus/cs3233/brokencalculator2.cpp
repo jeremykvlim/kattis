@@ -95,29 +95,26 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n;
-    long long a, b, c;
-    cin >> n >> a >> b >> c;
+    int n, m;
+    cin >> n >> m;
 
-    vector<long long> x(n + 1, 0);
-    for (int i = 1; i <= n; i++) cin >> x[i];
+    vector<pair<int, int>> b(n), c(m);
+    pair<int, int> r;
+    for (auto &[x, y] : b) cin >> x >> y;
+    for (auto &[x, y] : c) cin >> x >> y;
+    cin >> r.first >> r.second;
 
-    auto time = [&](auto &&self, long long x, long long y) -> long long {
-        if (x == y) return 0;
-
-        auto t = x ? self(self, 0, y) + c : LLONG_MAX;
-        if (x > y) return t;
-
-        if (LLONG_MAX >= (__int128) a * (y - x)) t = min(t, a * (y - x));
-        if (x <= y / 2) t = min(t, self(self, x, y / 2) + (y & 1 ? a : 0) + (y > 1 ? b : 0));
-
-        return t;
+    auto diff = [&](pair<int, int> x, pair<int, int> y) {
+        return abs(x.first - y.first) + abs(x.second - y.second);
     };
 
-    vector<vector<long long>> adj_matrix(n + 1, vector<long long>(n + 1));
-    for (int i = 0; i <= n; i++)
-        for (int j = 0; j <= n; j++)
-            adj_matrix[i][j] = i == j ? LLONG_MAX : time(time, x[i], x[j]);
+    vector<vector<int>> adj_matrix(n + m - 1, vector<int>(n + m - 1, 1e7));
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) adj_matrix[i][j] = min(adj_matrix[i][j], diff(b[i], c[j]));
+        for (int j = m; j < n + m - 1; j++) adj_matrix[i][j] = min(adj_matrix[i][j], diff(b[i], r));
+    }
 
-    cout << hungarian(adj_matrix, c);
+    auto cost = hungarian(adj_matrix, (long long) 1e7 * (m - 1));
+    for (auto bi : b) cost += diff(bi, r);
+    cout << cost;
 }
