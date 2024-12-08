@@ -11,15 +11,13 @@ struct Hash {
     }
 };
 
-template <typename T>
-T mul(T x, T y, T mod) {
-    long long px = x, py = y, pmod = mod;
-    auto product = px * py - pmod * (long long) (1.L / pmod * px * py);
-    return product + pmod * (product < 0) - pmod * (product >= pmod);
+template <typename T, typename U, typename V>
+T mul(U x, V y, T mod) {
+    return ((unsigned __int128) x * y) % mod;
 }
 
-template <typename T>
-T pow(T base, T exponent, T mod) {
+template <typename T, typename U>
+T pow(T base, U exponent, T mod) {
     T value = 1;
     while (exponent) {
         if (exponent & 1) value = mul(value, base, mod);
@@ -60,19 +58,20 @@ bool isprime(unsigned long long n) {
     return true;
 }
 
-long long brent(long long n) {
+template <typename T>
+T brent(T n) {
     if (!(n & 1)) return 2;
 
     mt19937_64 rng(random_device{}());
     for (;;) {
-        auto x = 2LL, y = 2LL, g = 1LL, q = 1LL, xs = 1LL, c = (long long) rng() % (n - 1) + 1;
+        T x = 2, y = 2, g = 1, q = 1, xs = 1, c = rng() % (n - 1) + 1;
         for (int i = 1; g == 1; i <<= 1, y = x) {
             for (int j = 1; j < i; j++) x = mul(x, x, n) + c;
             for (int j = 0; j < i && g == 1; j += 128) {
                 xs = x;
                 for (int k = 0; k < min(128, i - j); k++) {
                     x = mul(x, x, n) + c;
-                    q = mul(q, abs(x - y), n);
+                    q = mul(q, max(x, y) - min(x, y), n);
                 }
                 g = __gcd(q, n);
             }
@@ -81,7 +80,7 @@ long long brent(long long n) {
         if (g == n) g = 1;
         while (g == 1) {
             xs = mul(xs, xs, n) + c;
-            g = __gcd(abs(xs - y), n);
+            g = __gcd(max(xs, y) - min(xs, y), n);
         }
         if (g != n) return isprime(g) ? g : brent(g);
     }

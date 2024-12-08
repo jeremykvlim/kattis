@@ -1,15 +1,13 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T>
-T mul(T x, T y, T mod) {
-    long long px = x, py = y, pmod = mod;
-    auto product = px * py - pmod * (long long) (1.L / pmod * px * py);
-    return product + pmod * (product < 0) - pmod * (product >= pmod);
+template <typename T, typename U, typename V>
+T mul(U x, V y, T mod) {
+    return ((unsigned __int128) x * y) % mod;
 }
 
-template <typename T>
-T pow(T base, T exponent, T mod) {
+template <typename T, typename U>
+T pow(T base, U exponent, T mod) {
     T value = 1;
     while (exponent) {
         if (exponent & 1) value = mul(value, base, mod);
@@ -58,8 +56,7 @@ struct ModInt {
     static T normalize(const U &x) {
         T v = x;
         if (!(-mod() <= x && x < mod())) v = (T) (x % mod());
-        if (v < 0) v += mod();
-        return v;
+        return v < 0 ? v + mod() : v;
     }
 
     const T & operator()() const {
@@ -76,12 +73,12 @@ struct ModInt {
     }
 
     inline auto & operator+=(const ModInt &v) {
-        if ((value += v.value) >= mod()) value -= mod();
+        if ((long long) (value += v.value) >= mod()) value -= mod();
         return *this;
     }
 
     inline auto & operator-=(const ModInt &v) {
-        if ((value -= v.value) < 0) value += mod();
+        if ((long long) (value -= v.value) < 0) value += mod();
         return *this;
     }
 
@@ -116,13 +113,13 @@ struct ModInt {
     }
 
     template <typename U = M>
-    typename enable_if<is_same<typename ModInt<U>::T, int>::value, ModInt>::type &operator*=(const ModInt &v) {
-        value = normalize((long long) value * (long long) v.value);
+    typename enable_if<is_same<typename ModInt<U>::T, unsigned int>::value, ModInt>::type &operator*=(const ModInt &v) {
+        value = normalize((unsigned long long) value * v.value);
         return *this;
     }
 
     template <typename U = M>
-    typename enable_if<is_same<typename ModInt<U>::T, long long>::value, ModInt>::type &operator*=(const ModInt &v) {
+    typename enable_if<is_same<typename ModInt<U>::T, unsigned long long>::value, ModInt>::type &operator*=(const ModInt &v) {
         value = normalize(mul(value, v.value, mod()));
         return *this;
     }
@@ -286,8 +283,8 @@ struct MODULO {
 template <typename T>
 T MODULO<T>::value;
 
-auto &m = MODULO<long long>::value;
-using modint = ModInt<MODULO<long long>>;
+auto &m = MODULO<unsigned long long>::value;
+using modint = ModInt<MODULO<unsigned long long>>;
 
 template <typename T>
 struct Matrix {
@@ -379,6 +376,6 @@ int main() {
                 if (fsm[i][c] < s) count[i][fsm[i][c]]++;
 
         count = matpow(count, n);
-        cout << pow(26LL, n, m) - accumulate(count[0].begin(), count[0].end(), (modint) 0) << "\n";
+        cout << pow(26, n, m) - accumulate(count[0].begin(), count[0].end(), (modint) 0) << "\n";
     }
 }

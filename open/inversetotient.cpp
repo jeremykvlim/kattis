@@ -15,15 +15,13 @@ long long phi_inv(vector<long long> &pd, int i, long long n, long long curr, lon
     return n;
 }
 
-template <typename T>
-T mul(T x, T y, T mod) {
-    long long px = x, py = y, pmod = mod;
-    auto product = px * py - pmod * (long long) (1.L / pmod * px * py);
-    return product + pmod * (product < 0) - pmod * (product >= pmod);
+template <typename T, typename U, typename V>
+T mul(U x, V y, T mod) {
+    return ((unsigned __int128) x * y) % mod;
 }
 
-template <typename T>
-T pow(T base, T exponent, T mod) {
+template <typename T, typename U>
+T pow(T base, U exponent, T mod) {
     T value = 1;
     while (exponent) {
         if (exponent & 1) value = mul(value, base, mod);
