@@ -21,7 +21,6 @@ def isprime(n):
 
 def brent(n):
     if n & 1 == 0: return 2
-    if isprime(n): return n
 
     while True:
         x, y, g, q, xs, c, i = 2, 2, 1, 1, 1, random.randint(1, n - 1), 1
