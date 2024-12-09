@@ -23,12 +23,12 @@ int main() {
     auto [n2, c2, s2, f2, sigma2, final2, table2] = read();
 
     int n = n1 + n2;
-    vector<vector<int>> merged(n, vector<int>(c1, 0));
+    vector<vector<int>> table(n, vector<int>(c1, 0));
     for (int i = 0; i < n1; i++)
-        for (int j = 0; j < c1; j++) merged[i][j] = table1[i][j];
+        for (int j = 0; j < c1; j++) table[i][j] = table1[i][j];
 
     for (int i = 0; i < n2; i++)
-        for (int j = 0; j < c1; j++) merged[i + n1][j] = table2[i][j] + n1;
+        for (int j = 0; j < c1; j++) table[i + n1][j] = table2[i][j] + n1;
 
     vector<vector<int>> adj_list_epsilon(n + 1);
     for (int fi : final1) adj_list_epsilon[fi].emplace_back(s2 + n1);
@@ -65,7 +65,7 @@ int main() {
     };
     final_states.emplace_back(check(start));
 
-    vector<vector<int>> table{vector<int>(c1, 0)};
+    vector<vector<int>> temp{vector<int>(c1, 0)};
     queue<int> q;
     q.emplace(1);
     while (!q.empty()) {
@@ -77,7 +77,7 @@ int main() {
         for (int j = 0; j < c1; j++) {
             int next = 0;
             for (int i = 1; i <= n; i++)
-                if (curr & (1 << i)) next |= 1 << merged[i - 1][j];
+                if (curr & (1 << i)) next |= 1 << table[i - 1][j];
 
             next = epsilon_closure(next);
             if (!indices.count(next)) {
@@ -86,11 +86,11 @@ int main() {
                 states.emplace_back(next);
                 q.emplace(u);
 
-                table.emplace_back(vector<int>(c1));
+                temp.emplace_back(vector<int>(c1));
                 final_states.emplace_back(check(next));
             }
 
-            table[v - 1][j] = indices[next];
+            temp[v - 1][j] = indices[next];
         }
     }
     n = states.size();
@@ -98,6 +98,8 @@ int main() {
     for (int i = 0; i < n; i++)
         if (final_states[i]) final.emplace_back(i + 1);
     int f = final.size();
+    table = temp;
+    
     cout << n << " " << c1 << " " << 1 << " " << f << "\n" << sigma1 << "\n";
     for (int fi : final) cout << fi << " ";
     cout << "\n";
