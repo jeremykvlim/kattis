@@ -1,50 +1,48 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T>
-struct SparseTable {
-    vector<vector<T>> ST;
-    function<T(T, T)> f;
+struct DisjointSet {
+    vector<int> sets;
 
-    SparseTable() {}
-    SparseTable(vector<T> v, function<T(T, T)> func) : f(move(func)) {
-        if (v.empty()) return;
-        int n = __lg(v.size()) + 1;
-        ST.resize(n);
-        ST.front() = v;
-        for (int i = 1; i < n; i++) {
-            ST[i].resize(v.size() - (1 << i) + 1);
-            for (int j = 0; j <= v.size() - (1 << i); j++)
-                ST[i][j] = f(ST[i - 1][j], ST[i - 1][j + (1 << (i - 1))]);
-        }
+    int find(int p) {
+        return (sets[p] == p) ? p : (sets[p] = find(sets[p]));
     }
 
-    T range_query(int l, int r) {
-        int i = __lg(r - l + 1);
-        return f(ST[i][l], ST[i][r - (1 << i) + 1]);
+    bool unite(int p, int q) {
+        int p_set = find(p), q_set = find(q);
+        if (p_set != q_set) {
+            sets[q_set] = p_set;
+            return true;
+        }
+        return false;
+    }
+
+    DisjointSet(int n) : sets(n) {
+        iota(sets.begin(), sets.end(), 0);
     }
 };
 
-tuple<SparseTable<int>, vector<int>, vector<int>> lca_st(int n, vector<vector<int>> &adj_list) {
-    vector<int> euler_tour, order(n + 1, 0), depth(2 * n);
-    auto dfs = [&](auto &&self, int v = 0, int prev = -1, int d = 0) -> void {
-        euler_tour.emplace_back(v);
-        depth[order[v] = euler_tour.size()] = d;
+vector<int> tarjan_lca(int n, vector<vector<int>> &adj_list, vector<vector<pair<int, int>>> &queries) {
+    DisjointSet dsu(n);
+    vector<bool> visited(n, false);
+    vector<int> lca(n, -1), ancestor(n, -1);
+
+    auto dfs = [&](auto &&self, int v = 0) -> void {
+        visited[v] = true;
+        ancestor[v] = v;
+
         for (int u : adj_list[v])
-            if (u != prev) {
-                self(self, u, v, d + 1);
-                euler_tour.emplace_back(v);
-                depth[euler_tour.size()] = d;
+            if (!visited[u]) {
+                self(self, u);
+                dsu.unite(v, u);
+                ancestor[dsu.find(v)] = v;
             }
+
+        for (auto &[u, i] : queries[v])
+            if (visited[u]) lca[i] = ancestor[dsu.find(u)];
     };
     dfs(dfs);
-
-    return {SparseTable<int>(depth, [](int x, int y) {return min(x, y);}), order, depth};
-}
-
-int lca(int u, int v, SparseTable<int> &st, vector<int> &order) {
-    auto [l, r] = minmax(order[u], order[v]);
-    return st.range_query(l, r);
+    return lca;
 }
 
 int main() {
@@ -54,9 +52,9 @@ int main() {
     int n;
     cin >> n;
 
-    vector<int> id(n + 1, 0), parent(n + 1, 0), op(n + 1, -1);
+    vector<int> id(n + 1, 0), parent(n + 1, 0), op(n + 1, -1), depth(n + 1, 0);
     vector<vector<int>> adj_list(n + 1);
-    vector<array<int, 3>> queries;
+    vector<vector<pair<int, int>>> queries(n + 1);
     for (int i = 1; i <= n; i++) {
         char c;
         int v;
@@ -64,7 +62,7 @@ int main() {
 
         if (c == 'a') {
             id[i] = i;
-            parent[i] = id[v];
+            depth[i] = depth[parent[i] = id[v]] + 1;
             adj_list[id[v]].emplace_back(i);
         } else if (c == 'b') {
             id[i] = parent[id[v]];
@@ -74,13 +72,15 @@ int main() {
             cin >> w;
 
             id[i] = id[v];
-            queries.push_back({id[v], id[w], i});
+            queries[id[v]].push_back({id[w], i});
+            queries[id[w]].push_back({id[v], i});
         }
     }
 
-    auto [st, order, _] = lca_st(n, adj_list);
-    for (auto [v, w, i] : queries) op[i] = lca(v, w, st, order);
+    auto lca = tarjan_lca(n + 1, adj_list, queries);
+    for (int i = 0; i <= n; i++)
+        if (~lca[i]) op[i] = depth[lca[i]];
 
     for (int i = 1; i <= n; i++)
-        if (op[i] != -1) cout << op[i] << "\n";
+        if (~op[i]) cout << op[i] << "\n";
 }
