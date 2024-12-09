@@ -41,7 +41,7 @@ struct SegmentTree {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
-    auto query(int l, int r) {
+    auto range_query(int l, int r) {
         Segment seg;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
             if (l & 1) seg += ST[l++];
@@ -163,7 +163,7 @@ int main() {
             for (auto [r, u, v, i] : subranges[l]) {
                 if (u >= v) continue;
                 for (int j = 0; j < 3; j++) {
-                    auto s = sts[j].query(u, v);
+                    auto s = sts[j].range_query(u, v);
                     for (int k = 0; k < s.size(); k++)
                         if (s[k] < r) OR[i][j] |= 1 << k;
                 }

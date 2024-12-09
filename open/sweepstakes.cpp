@@ -88,16 +88,16 @@ struct SegmentTree {
         return min(l + i - 1, r - (i >> 1));
     }
 
-    Segment query(int i, vector<int> &indices, int li, int ri, int l, int r) {
+    Segment range_query(int i, vector<int> &indices, int li, int ri, int l, int r) {
         if (li == ri) return ST[i];
         if (l == r) return {};
 
         int m = midpoint(l, r), mi = upper_bound(indices.begin() + li, indices.begin() + ri, m) - indices.begin();
-        return query(i << 1, indices, li, mi, l, m) + query(i << 1 | 1, indices, mi, ri, m + 1, r);
+        return range_query(i << 1, indices, li, mi, l, m) + range_query(i << 1 | 1, indices, mi, ri, m + 1, r);
     }
 
-    Segment query(vector<int> &indices) {
-        return query(1, indices, 0, indices.size(), 1, n);
+    Segment range_query(vector<int> &indices) {
+        return range_query(1, indices, 0, indices.size(), 1, n);
     }
 
     auto & operator[](int i) {
@@ -152,7 +152,7 @@ int main() {
             for (int j = 0; j < s - i; j += i << 1) dp[j] = convolve(dp[j], dp[i + j]);
 
         sort(indices.begin(), indices.end());
-        auto seg = st.query(indices);
+        auto seg = st.range_query(indices);
         for (int i = 0; i <= s; i++) {
             if (!(0 <= t - i - seg.offset && t - i - seg.offset < seg.poly.size())) {
                 cout << "0 ";

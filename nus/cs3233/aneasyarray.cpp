@@ -41,7 +41,7 @@ struct SegmentTree {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
-    auto query(int l, int r) {
+    auto range_query(int l, int r) {
         Segment seg;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
             if (l & 1) seg += ST[l++];
@@ -77,7 +77,7 @@ int main() {
         cin >> l >> r;
 
         auto v = (long long) a[l - 1] * a[r - 1];
-        auto s = st.query(l, r - 1);
+        auto s = st.range_query(l, r - 1);
         cout << max({v * s.min1 * s.min2, v * s.min1 * s.max1, v * s.max1 * s.max2}) << "\n";
     }
 }

@@ -49,17 +49,17 @@ struct PersistentSegmentTree {
         return ST.size() - 1;
     }
 
-    Segment query(int l, int r, int i) {
-        return query(l, r, 1, n, roots[i]);
+    Segment range_query(int l, int r, int i) {
+        return range_query(l, r, 1, n, roots[i]);
     }
 
-    Segment query(int l, int r, int tl, int tr, int i) {
+    Segment range_query(int l, int r, int tl, int tr, int i) {
         if (!i || r <= tl || tr <= l) return {};
         if (l <= tl && tr <= r) return ST[i];
 
         auto [cl, cr] = children[i];
         int tm = tl + (tr - tl) / 2;
-        return query(l, r, tl, tm, cl) + query(l, r, tm, tr, cr);
+        return range_query(l, r, tl, tm, cl) + range_query(l, r, tm, tr, cr);
     }
 };
 
@@ -246,7 +246,7 @@ int main() {
             int r = 1 + (upper_bound(weights.begin() + 1, weights.end(), h - c) - weights.begin() - 1),
                 i = m - (lower_bound(weights.begin() + 1, weights.end(), l - c) - weights.begin() - 1);
 
-            c = pst.query(1, r, i + offset[i]).sum;
+            c = pst.range_query(1, r, i + offset[i]).sum;
             cout << c << "\n";
         }
     }

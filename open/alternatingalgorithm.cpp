@@ -34,7 +34,7 @@ struct SegmentTree {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
-    auto query(int l, int r) {
+    auto range_query(int l, int r) {
         Segment sl, sr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
             if (l & 1) sl = sl + ST[l++];
@@ -74,7 +74,7 @@ int main() {
         st.assign(sorted[i].second, {1, sorted[i].second + !(sorted[i].second & 1)});
         if (i < n && sorted[i].first == sorted[i + 1].first) continue;
         while (j <= n && a[j].first <= sorted[i].first) j++;
-        rounds = max(rounds, st.query(j, n + 1).r - j);
+        rounds = max(rounds, st.range_query(j, n + 1).r - j);
     }
 
     cout << rounds;
