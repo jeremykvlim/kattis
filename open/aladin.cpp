@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-long long floor_division_sum(long long n, int a, int c, int d) {
+long long floor_sum(long long n, int a, int c, int d) {
     auto sum = 0LL;
     while (n) {
         if (a >= d) {
@@ -23,7 +23,7 @@ long long floor_division_sum(long long n, int a, int c, int d) {
 }
 
 __int128 linear_mod_sum(int a, int n, int mod) {
-    return (__int128) a * n * (n - 1) / 2 - (__int128) mod * floor_division_sum(n, a, 0, mod);
+    return (__int128) a * n * (n - 1) / 2 - (__int128) mod * floor_sum(n, a, 0, mod);
 }
 
 int main() {
