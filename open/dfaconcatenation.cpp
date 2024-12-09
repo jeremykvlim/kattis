@@ -54,7 +54,7 @@ int main() {
     unordered_map<int, int> indices;
     vector<int> states;
     int start = epsilon_closure(1 << s1);
-    indices[start] = 1;
+    indices[start] = 0;
     states.emplace_back(start);
 
     vector<bool> final_states;
@@ -67,12 +67,12 @@ int main() {
 
     vector<vector<int>> temp{vector<int>(c1, 0)};
     queue<int> q;
-    q.emplace(1);
+    q.emplace(0);
     while (!q.empty()) {
         int v = q.front();
         q.pop();
 
-        int curr = states[v - 1];
+        int curr = states[v];
 
         for (int j = 0; j < c1; j++) {
             int next = 0;
@@ -81,7 +81,7 @@ int main() {
 
             next = epsilon_closure(next);
             if (!indices.count(next)) {
-                int u = states.size() + 1;
+                int u = states.size();
                 indices[next] = u;
                 states.emplace_back(next);
                 q.emplace(u);
@@ -90,7 +90,7 @@ int main() {
                 final_states.emplace_back(check(next));
             }
 
-            temp[v - 1][j] = indices[next];
+            temp[v][j] = indices[next];
         }
     }
     n = states.size();
@@ -99,12 +99,12 @@ int main() {
         if (final_states[i]) final.emplace_back(i + 1);
     int f = final.size();
     table = temp;
-    
+
     cout << n << " " << c1 << " " << 1 << " " << f << "\n" << sigma1 << "\n";
     for (int fi : final) cout << fi << " ";
     cout << "\n";
     for (auto row : table) {
-        for (int symb : row) cout << symb << " ";
+        for (int symb : row) cout << symb + 1 << " ";
         cout << "\n";
     }
 }
