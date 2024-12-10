@@ -89,31 +89,19 @@ int main() {
     int n;
     cin >> n;
 
-    vector<int> seen(1e5 + 1, -1);
-    vector<long long> gcd;
-    for (int i = 0; i < n; i++) {
+    unordered_set<long long> seen;
+    while (n--) {
         long long a;
         cin >> a;
 
         auto pfs = factorize(a);
-        for (auto p : pfs) {
-            if (p <= (int) 1e5) {
-                if (seen[p] != -1 && seen[p] != i) {
-                    cout << "YES";
-                    exit(0);
-                }
-
-                seen[p] = i;
-            } else gcd.emplace_back(p);
-        }
+        sort(pfs.begin(), pfs.end());
+        pfs.erase(unique(pfs.begin(), pfs.end()), pfs.end());
+        for (auto pf : pfs)
+            if (!seen.emplace(pf).second) {
+                cout << "YES";
+                exit(0);
+            }
     }
-    sort(gcd.begin(), gcd.end());
-
-    for (int i = 1; i < gcd.size(); i++)
-        if (gcd[i - 1] == gcd[i]) {
-            cout << "YES";
-            exit(0);
-        }
-
     cout << "NO";
 }
