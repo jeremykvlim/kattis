@@ -44,9 +44,7 @@ int main() {
             for (auto n = 0LL, p = 1LL, z = 1LL;; n++) {
                 p = p * a + b;
 
-                if (!isprime(p) || (__int128) p * z > 1e15) break;
-
-                z *= p;
+                if (!isprime(p) || __builtin_mul_overflow(z, p, &z)) break;
                 if (n > 1) zeisel.emplace_back(z);
             }
         }
