@@ -66,18 +66,18 @@ template <typename T>
 vector<T> factorize(T n) {
     vector<T> pfs;
 
-    auto dnc = [&](auto &&self, T m) -> void {
+    auto dfs = [&](auto &&self, T m) -> void {
         if (m < 2) return;
         if (isprime(m)) {
             pfs.emplace_back(m);
             return;
         }
 
-        auto d = brent(m);
-        self(self, d);
-        self(self, m / d);
+        auto pf = brent(m);
+        pfs.emplace_back(pf);
+        self(self, m / pf);
     };
-    dnc(dnc, n);
+    dfs(dfs, n);
 
     return pfs;
 }

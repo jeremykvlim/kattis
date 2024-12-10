@@ -74,18 +74,18 @@ template <typename T>
 vector<pair<T, int>> factorize(T n) {
     gp_hash_table<T, int, Hash> pfs;
 
-    auto dnc = [&](auto &&self, T m) -> void {
+    auto dfs = [&](auto &&self, T m) -> void {
         if (m < 2) return;
         if (isprime(m)) {
             pfs[m]++;
             return;
         }
 
-        auto d = brent(m);
-        self(self, d);
-        self(self, m / d);
+        auto pf = brent(m);
+        pfs[pf]++;
+        self(self, m / pf);
     };
-    dnc(dnc, n);
+    dfs(dfs, n);
 
     return {pfs.begin(), pfs.end()};
 }
