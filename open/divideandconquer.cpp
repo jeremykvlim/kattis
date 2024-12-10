@@ -1,11 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T>
-T mul(T x, T y, T mod) {
-    __int128 px = x, py = y, pmod = mod;
-    auto product = px * py - pmod * (long long) (1.L / pmod * px * py);
-    return product + pmod * (product < 0) - pmod * (product >= pmod);
+template <typename T, typename U, typename V>
+T mul(U x, V y, T mod) {
+    return ((unsigned __int128) x * y) % mod;
 }
 
 template <typename T>
