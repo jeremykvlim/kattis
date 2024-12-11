@@ -7,6 +7,12 @@ int main() {
 
     int n;
     cin >> n;
+    
+    auto print = [&](auto lamps) {
+        vector<string> grid(n, string(n, '0'));
+        for (auto [r, c] : lamps) grid[r][c] = '1';
+        for (auto row : grid) cout << row << "\n" << flush;
+    };
 
     mt19937 rng(random_device{}());
     vector<unsigned long long> states{0};
@@ -66,9 +72,7 @@ int main() {
         }
 
         cout << "?\n";
-        vector<string> grid(n, string(n, '0'));
-        for (auto [r, c] : lamps) grid[r][c] = '1';
-        for (auto row : grid) cout << row << "\n" << flush;
+        print(lamps);
 
         int l;
         cin >> l;
@@ -122,11 +126,6 @@ int main() {
         unknowns = temp;
     }
 
-    auto answer = [&](auto lamps) {
-        cout << "!\n";
-        vector<string> grid(n, string(n, '0'));
-        for (auto [r, c] : lamps) grid[r][c] = '1';
-        for (auto row : grid) cout << row << "\n" << flush;
-    };
-    answer(h_lamps.size() == n ? h_lamps : v_lamps);
+    cout << "!\n";
+    print(h_lamps.size() == n ? h_lamps : v_lamps);
 }
