@@ -20,7 +20,7 @@ int main() {
     vector<vector<bool>> lit_squares(n, vector<bool>(n));
     vector<vector<int>> dir(n, vector<int>(n, -1)), indices(n, vector<int>(n, -1));
     while (h_lamps.size() < n && v_lamps.size() < n) {
-        while (states.size() <= 256 && unknowns.size() < min(64, (int) ((n - h_lamps.size()) * (n - v_lamps.size())))) {
+        while (states.size() <= 64 && unknowns.size() < min(64, (int) ((n - h_lamps.size()) * (n - v_lamps.size())))) {
             int r = -1, c = -1;
             vector<pair<int, int>> valid;
             for (int i = 0; i < n; i++)
@@ -44,7 +44,7 @@ int main() {
 
         vector<pair<int, int>> lamps;
         double H = -1;
-        for (int _ = 0; _ < 100; _++) {
+        for (int _ = 0; _ < 130; _++) {
             int p = rng() % 100 + 1;
             vector<pair<int, int>> temp;
             auto add = [&](auto l) {
