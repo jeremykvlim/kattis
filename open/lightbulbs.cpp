@@ -44,7 +44,7 @@ int main() {
 
         vector<pair<int, int>> lamps;
         double H = -1;
-        for (int _ = 0; _ < 130; _++) {
+        for (int _ = 0; _ < 150; _++) {
             int p = rng() % 100 + 1;
             vector<pair<int, int>> temp;
             auto add = [&](auto l) {
