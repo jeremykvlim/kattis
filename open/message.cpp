@@ -443,6 +443,6 @@ int main() {
                 if (fsm[i][c] < s) count[i][fsm[i][c]]++;
 
         count = matpow(count, n);
-        cout << pow(26, n, m) - accumulate(count[0].begin(), count[0].end(), (modint) 0) << "\n";
+        cout << pow(26ULL, n, m) - accumulate(count[0].begin(), count[0].end(), (modint) 0) << "\n";
     }
 }
