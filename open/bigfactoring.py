@@ -25,6 +25,7 @@ def isprime(n):
     def jacobi_symbol(D, n):
         jacobi = 1
         a = D % n
+        
         while a:
             while not a & 1:
                 a >>= 1
