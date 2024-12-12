@@ -5,19 +5,54 @@ def ctz(n):
 
 def isprime(n):
     if n < 2: return False
+    if n in (2, 5, 11): return True
     if n % 6 % 4 != 1: return (n | 1) == 3
 
-    bases = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41]
-    s = ctz(n - 1)
-    d = n >> s
-    for a in bases:
-        p = pow(a % n, d, n)
-        i = s
-        while 1 < p < n - 1 and (a % n) != 0 and i > 0:
-            p = (p * p) % n
-            i -= 1
-        if p != n - 1 and i != s: return False
-    return True
+    def miller_rabin(a):
+        s = ctz(n - 1)
+        d = n >> s
+        x = pow(a % n, d, n)
+        if x == 1 or x == n - 1: return True
+
+        for _ in range(s):
+            x = (x * x) % n
+            if x == n - 1: return True
+
+        return False
+
+    if not miller_rabin(2) or not miller_rabin(3): return False
+
+    def jacobi_symbol(D, n):
+        jacobi = 1
+        a = D % n
+        while a:
+            while not a & 1:
+                a >>= 1
+                if n & 7 in (3, 5): jacobi = -jacobi
+            if a & 3 == 3 and n & 3 == 3: jacobi = -jacobi
+            a, n = n % a, a
+        return jacobi if n == 1 else 0
+
+    def lucas_pseudoprime(n):
+        D = -3
+        while True:
+            D += 2 if D > 0 else -2
+            D *= -1
+
+            jacobi = jacobi_symbol(D, n)
+            if jacobi == 0: return False
+            if jacobi == -1: break
+
+        def div2mod(x):
+            return ((x + n) >> 1 if x & 1 else x >> 1) % n
+
+        U, V = 1, 1
+        for b in bin(n + 1)[3:]:
+            U, V = (U * V) % n, div2mod(V * V + D * U * U)
+            if b == "1": U, V = div2mod(U + V), div2mod(D * U + V)
+        return U == 0
+
+    return lucas_pseudoprime(n)
 
 def brent(n):
     if n & 1 == 0: return 2
