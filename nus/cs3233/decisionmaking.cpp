@@ -405,14 +405,14 @@ struct Trie {
             int v = q.front();
             q.pop();
 
-            int p = T[v].link;
-            for (int c = 0; c < 2; c++) {
+            int l = T[v].link;
+            for (int c = 0; c < r; c++) {
                 int u = T[v].next[c];
 
                 if (u != -1) {
-                    T[u].link = (p == -1) ? 0 : T[p].next[c];
+                    T[u].link = (l == -1) ? 0 : T[l].next[c];
                     q.emplace(u);
-                } else T[v].next[c] = (p == -1) ? 0 : T[p].next[c];
+                } else T[v].next[c] = (l == -1) ? 0 : T[l].next[c];
             }
         }
     }
@@ -517,9 +517,9 @@ int main() {
             int w = trie[v].next[0] ^ trie[v].next[1];
             for (int u : trie[v].next)
                 if (!visited[u]) {
-                    if (!visited[u ^ w]) p[u][count++] = 1;
-                    else
+                    if (visited[u ^ w])
                         for (int i = 0; i < n; i++) p[u][i] = 2 * p[v][i] - p[w ^ u][i];
+                    else p[u][count++] = 1;
 
                     visited[u] = true;
                     q.emplace(u);
