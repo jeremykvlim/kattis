@@ -3,7 +3,7 @@ using namespace std;
 
 template <typename T, typename U, typename V>
 T mul(U x, V y, T mod) {
-    return ((unsigned __int128) x * y) % mod;
+    return (unsigned __int128) x * y % mod;
 }
 
 template <typename T, typename U>
@@ -19,19 +19,86 @@ T pow(T base, U exponent, T mod) {
 
 bool isprime(unsigned long long n) {
     if (n < 2) return false;
+    if (n == 2 || n == 5 || n == 11) return true;
     if (n % 6 % 4 != 1) return (n | 1) == 3;
 
-    vector<int> bases{2, 325, 9375, 28178, 450775, 9780504, 1795265022};
-    int s = __builtin_ctzll(n - 1);
-    auto d = n >> s;
-    for (int a : bases) {
-        auto p = pow(a % n, d, n);
-        int i = s;
-        while (1 < p && p < n - 1 && a % n && i--) p = mul(p, p, n);
-        if (p != n - 1 && i != s) return false;
-    }
+    auto miller_rabin = [&](int a) {
+        int s = __builtin_ctzll(n - 1);
+        auto d = n >> s, x = pow(a % n, d, n);
+        if (x == 1 || x == n - 1) return true;
 
-    return true;
+        while (s--) {
+            x = mul(x, x, n);
+            if (x == n - 1) return true;
+        }
+        return false;
+    };
+    if (!miller_rabin(2) || !miller_rabin(3)) return false;
+
+    auto adjust = [&](__int128 &x) {
+        if (x < 0) x += ((-x / n) + 1) * n;
+    };
+
+    auto lucas_pseudoprime = [&]() {
+        __int128 D = -3;
+        for (;;) {
+            D += D > 0 ? 2 : -2;
+            D *= -1;
+
+            int jacobi = 1;
+            auto jacobi_symbol = [&](__int128 n) {
+                auto a = D;
+                adjust(a);
+
+                while (a) {
+                    while (!(a & 1)) {
+                        a >>= 1;
+                        if ((n & 7) == 3 || (n & 7) == 5) jacobi = -jacobi;
+                    }
+                    if (((a & 3) == 3) && ((n & 3) == 3)) jacobi = -jacobi;
+
+                    swap(a, n);
+                    a %= n;
+                }
+                return n == 1;
+            };
+            if (!jacobi_symbol(n)) return false;
+            if (jacobi == -1) break;
+        }
+
+        string bits;
+        auto temp = n + 1;
+        while (temp) {
+            bits += (temp & 1) ? '1' : '0';
+            temp >>= 1;
+        }
+        bits.pop_back();
+        reverse(bits.begin(), bits.end());
+
+        auto div2mod = [&](__int128 x) -> unsigned long long {
+            if (x & 1) x += n;
+            x >>= 1;
+
+            adjust(x);
+            return x % n;
+        };
+
+        __int128 U = 1, V = 1;
+        for (char b : bits) {
+            auto U_2k = mul(U, V, n), V_2k = div2mod(mul(V, V, n) + D * mul(U, U, n));
+            U = U_2k;
+            V = V_2k;
+
+            if (b == '1') {
+                auto U_2k_plus_1 = div2mod(U + V), V_2k_plus_1 = div2mod(D * U + V);
+                U = U_2k_plus_1;
+                V = V_2k_plus_1;
+            }
+        }
+
+        return !U;
+    };
+    return lucas_pseudoprime();
 }
 
 long long phi_inv(long long totient) {
