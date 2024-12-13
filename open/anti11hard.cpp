@@ -34,12 +34,12 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-
-    auto adjust = [&](__int128 &x) {
-        if (x < 0) x += ((-x / n) + 1) * n;
-    };
-
+    
     auto lucas_pseudoprime = [&]() {
+        auto normalize = [&](__int128 &x) {
+            if (x < 0) x += ((-x / n) + 1) * n;
+        };
+
         __int128 D = -3;
         for (;;) {
             D += D > 0 ? 2 : -2;
@@ -48,7 +48,7 @@ bool isprime(unsigned long long n) {
             int jacobi = 1;
             auto jacobi_symbol = [&](__int128 n) {
                 auto a = D;
-                adjust(a);
+                normalize(a);
 
                 while (a) {
                     while (!(a & 1)) {
@@ -77,22 +77,21 @@ bool isprime(unsigned long long n) {
 
         auto div2mod = [&](__int128 x) -> unsigned long long {
             if (x & 1) x += n;
-            x >>= 1;
+            normalize(x >>= 1);
 
-            adjust(x);
             return x % n;
         };
 
         __int128 U = 1, V = 1;
         for (char b : bits) {
             auto U_2k = mul(U, V, n), V_2k = div2mod(mul(V, V, n) + D * mul(U, U, n));
-            U = U_2k;
-            V = V_2k;
 
-            if (b == '1') {
-                auto U_2k_plus_1 = div2mod(U + V), V_2k_plus_1 = div2mod(D * U + V);
-                U = U_2k_plus_1;
-                V = V_2k_plus_1;
+            if (b == '0') {
+                U = U_2k;
+                V = V_2k;
+            } else {
+                U = div2mod(U_2k + V_2k);
+                V = div2mod(D * U_2k + V_2k);
             }
         }
 
@@ -191,7 +190,7 @@ struct MontgomeryModInt {
 
     template <typename V = M>
     typename enable_if<is_same<typename MontgomeryModInt<V>::T, unsigned long long>::value, MontgomeryModInt>::type & operator*=(const MontgomeryModInt &v) {
-        value = reduce((__uint128_t) value * v.value);
+        value = reduce((unsigned __int128) value * v.value);
         return *this;
     }
 
