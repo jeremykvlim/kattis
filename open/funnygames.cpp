@@ -9,37 +9,47 @@ int main() {
     cin >> n;
 
     while (n--) {
-        double x;
+        double X;
         int k;
-        cin >> x >> k;
+        cin >> X >> k;
 
-        vector<double> factor(k);
-        for (auto &f : factor) cin >> f;
-        sort(factor.begin(), factor.end());
+        vector<double> f(k);
+        for (auto &fi : f) cin >> fi;
+        sort(f.begin(), f.end());
 
-        priority_queue<pair<double, double>, vector<pair<double, double>>, greater<>> pq;
-        vector<pair<double, double>> ranges{{0.0, 1.0 / factor.front()}};
-        while (ranges.back().second <= x) {
-            auto &[l1, r1] = ranges.back();
-            if (pq.empty())
-                for (auto f : factor) pq.emplace(r1 / f, (r1 / factor.back()) / f);
+        vector<int> indices(k, 0);
+        vector<pair<double, bool>> states{{1, true}, {1e3, false}};
+        for (double x = 1; x <= X;) {
+            bool change;
+            do {
+                change = false;
+                for (int i = 0; i < k; i++) {
+                    auto xf = x * f[i];
+                    for (; xf > states[indices[i]].first + (states[indices[i]].second ? 1e-9 : -1e-9); indices[i]++);
 
-            auto [l2, r2] = pq.top();
-            pq.pop();
+                    auto [size, win] = states[indices[i]];
+                    if (win && xf < size - 1e-9) {
+                        x = size / f[i];
+                        change = true;
+                    }
+                }
+            } while (change);
 
-            if (l2 <= r1) r1 = max(r1, r2);
-            else {
-                for (auto f : factor) pq.emplace(r1 / f, min(l2, r1 / factor.back()) / f);
+            states.pop_back();
+            states.emplace_back(x, false);
+            states.emplace_back(1e3, true);
 
-                auto [l3, r3] = pq.top();
-                if (l2 > l3) {
-                    pq.pop();
-                    pq.emplace(l2, r2);
-                    ranges.emplace_back(l3, r3);
-                } else ranges.emplace_back(l2, r2);
-            }
+            for (int &i : indices)
+                if (states[i].second) i++;
+
+            x = states[indices[0]].first / f[0];
+            for (int i = 1; i < k; i++) x = min(x, states[indices[i]].first / f[i]);
+
+            states.pop_back();
+            states.emplace_back(x, true);
+            states.emplace_back(1e3, false);
         }
 
-        cout << (any_of(ranges.begin(), ranges.end(), [x](auto p) {return p.first < x && x <= p.second;}) ? "Nils\n" : "Mikael\n");
+        cout << ((lower_bound(states.begin(), states.end(), pair<double, bool>(X - 1e-9, false))->second) ? "Mikael\n" : "Nils\n");
     }
 }
