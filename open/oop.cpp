@@ -11,6 +11,7 @@ struct Trie {
 
     struct TrieNode {
         vector<int> next;
+        int depth = 0, count = 0, link = -1;
 
         TrieNode(int range = 26) : next(range, -1) {}
     };
@@ -18,26 +19,68 @@ struct Trie {
     vector<TrieNode> T;
     ascii a;
     int r;
+    vector<int> order;
 
     Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
 
-    void add(string &s) {
+    int add(string &s) {
         int node = 0;
         for (char c : s) {
-            int pos = c - a;
+            int pos = c - 'a';
 
             if (T[node].next[pos] == -1) {
                 T[node].next[pos] = T.size();
                 T.emplace_back(TrieNode(r));
+                T.back().depth = T[node].depth + 1;
             }
             node = T[node].next[pos];
         }
+
+        return node;
+    }
+
+    void build_links() {
+        queue<int> q;
+        q.emplace(0);
+        while (!q.empty()) {
+            int v = q.front();
+            q.pop();
+
+            order.emplace_back(v);
+
+            int l = T[v].link;
+            for (int c = 0; c < r; c++) {
+                int u = T[v].next[c];
+
+                if (u != -1) {
+                    T[u].link = (l == -1) ? 0 : T[l].next[c];
+                    q.emplace(u);
+                } else T[v].next[c] = (l == -1) ? 0 : T[l].next[c];
+            }
+        }
+        T[0].link = 0;
+    }
+    
+    void match(const vector<string> &strings) {
+        for (auto s : strings) {
+            int node = 0;
+            for (char c : s) {
+                int pos = c - 'a';
+
+                node = T[node].next[pos];
+                while (T[node].depth > s.size() / 2 + 1) node = T[node].link;
+                T[node].count++;
+            }
+        }
+
+        for (int i = order.size() - 1; ~i; i--) T[T[order[i]].link].count += T[order[i]].count;
     }
 
     auto & operator[](int i) {
         return T[i];
     }
 };
+
 
 int main() {
     ios::sync_with_stdio(false);
@@ -46,79 +89,35 @@ int main() {
     int n, q;
     cin >> n >> q;
 
-    Trie trie;
-    vector<string> words(n);
-    int longest = 0;
+    vector<string> words(n), patterns(q);
     for (auto &w : words) {
         cin >> w;
 
-        trie.add(w);
-        longest = max(longest, (int) w.size());
+        w = w + '{' + w;
     }
 
-    unordered_map<int, vector<long long>> word_hash;
-    vector<long long> hash(longest + 1, 0);
-    auto b = (long long) 1e16 + 61, mod = (1LL << 62) + 135;
-    for (auto w : words) {
-        hash[w.size()] = 0;
-        for (int i = w.size() - 1; ~i; i--)
-            hash[i] = (hash[i + 1] * b % mod + w[i] - 'a' + 1) % mod;
-
-        int node = 0;
-        word_hash[node].emplace_back(hash[0]);
-        for (int i = 0; i < w.size(); i++) {
-            int pos = w[i] - 'a';
-            node = trie[node].next[pos];
-            word_hash[node].emplace_back(hash[i + 1]);
-        }
-    }
-
-    vector<string> pref(q);
-    vector<long long> suff_hash(q, 0);
-    unordered_set<long long> hashes;
+    Trie trie(1, Trie::ascii::LOWER, 27);
+    vector<int> nodes(q);
     for (int i = 0; i < q; i++) {
-        string s;
-        cin >> s;
+        string p;
+        cin >> p;
 
-        pref[i] = s.substr(0, s.find('*'));
-        auto suff = s.substr(s.find('*') + 1);
-        reverse(suff.begin(), suff.end());
-
-        for (char c : suff)
-            suff_hash[i] = (suff_hash[i] * b % mod + c - 'a' + 1) % mod;
-
-        hashes.emplace(suff_hash[i]);
-    }
-
-    unordered_map<int, int> start, end;
-    map<long long, vector<int>> shared;
-    int count = 0;
-    auto dfs = [&](auto &&self, int curr = 0) -> void {
-        start[curr] = ++count;
-
-        for (auto h : word_hash[curr])
-            if (hashes.count(h)) shared[h].emplace_back(start[curr]);
-
-        for (int c : trie[curr].next)
-            if (c != -1) self(self, c);
-
-        end[curr] = ++count;
-    };
-    dfs(dfs);
-
-    for (int i = 0; i < q; i++) {
-        int node = 0;
-        for (char c : pref[i]) {
-            int pos = c - 'a';
-            if (trie[node].next[pos] == -1) {
-                cout << "0\n";
-                goto next;
+        string pref, suff;
+        bool swap = false;
+        for (char c : p) {
+            if (c == '*') {
+                swap = true;
+                continue;
             }
-            node = trie[node].next[pos];
-        }
 
-        cout << upper_bound(shared[suff_hash[i]].begin(), shared[suff_hash[i]].end(), end[node]) -
-                lower_bound(shared[suff_hash[i]].begin(), shared[suff_hash[i]].end(), start[node]) << "\n";
-        next:;
+            if (!swap) pref += c;
+            else suff += c;
+        }
+        p = suff + '{' + pref;
+        nodes[i] = trie.add(p);
     }
+
+    trie.build_links();
+    trie.match(words);
+    for (int v : nodes) cout << trie[v].count << "\n";
 }
