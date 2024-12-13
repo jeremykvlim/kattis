@@ -103,17 +103,14 @@ int main() {
         cin >> p;
 
         string pref, suff;
-        bool swap = false;
         for (char c : p) {
             if (c == '*') {
-                swap = true;
+                swap(pref, suff);
                 continue;
             }
-
-            if (!swap) pref += c;
-            else suff += c;
+            pref += c;
         }
-        p = suff + '{' + pref;
+        p = pref + '{' + suff;
         nodes[i] = trie.add(p);
     }
 
