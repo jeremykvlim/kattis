@@ -414,6 +414,7 @@ struct Trie {
                 } else T[v].next[c] = (l == -1) ? 0 : T[l].next[c];
             }
         }
+        T[0].link = 0;
     }
 
     auto size() {
