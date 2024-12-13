@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -371,7 +371,7 @@ struct Trie {
 
     struct TrieNode {
         vector<int> next;
-        int index = -1, link = -1;
+        int link = -1;
 
         TrieNode(int range = 26) : next(range, -1) {}
     };
@@ -382,7 +382,7 @@ struct Trie {
 
     Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
 
-    void add(string &s, int i) {
+    int add(string &s) {
         int node = 0;
         for (char c : s) {
             int pos = c == 'T';
@@ -394,7 +394,7 @@ struct Trie {
             node = T[node].next[pos];
         }
 
-        if (T[node].index == -1) T[node].index = i;
+        return node;
     }
 
     void build_links() {
@@ -493,11 +493,13 @@ int main() {
     cin >> n;
 
     Trie trie(1, Trie::NA, 2);
+    unordered_map<int, int> indices;
     for (int i = 0; i < n; i++) {
         string s;
         cin >> s;
 
-        trie.add(s, i);
+        int node = trie.add(s);
+        if (!indices.count(node)) indices[node] = i;
     }
     trie.build_links();
 
@@ -512,7 +514,7 @@ int main() {
         int v = q.front();
         q.pop();
 
-        if (trie[v].index != -1) a[trie[v].index] = p[v];
+        if (indices.count(v)) a[indices[v]] = p[v];
         else {
             int w = trie[v].next[0] ^ trie[v].next[1];
             for (int u : trie[v].next)
