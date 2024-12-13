@@ -98,7 +98,7 @@ int main() {
 
     Trie trie(1, Trie::ascii::LOWER, 27);
     vector<int> nodes(q);
-    for (int i = 0; i < q; i++) {
+    for (int &v : nodes) {
         string p;
         cin >> p;
 
@@ -111,7 +111,7 @@ int main() {
             pref += c;
         }
         p = pref + '{' + suff;
-        nodes[i] = trie.add(p);
+        v = trie.add(p);
     }
 
     trie.build_links();
