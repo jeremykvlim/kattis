@@ -65,7 +65,7 @@ bool isprime(unsigned long long n) {
                         a >>= 1;
                         if ((n & 7) == 3 || (n & 7) == 5) jacobi = -jacobi;
                     }
-                    if (((a & 3) == 3) && ((n & 3) == 3)) jacobi = -jacobi;
+                    if ((a & 3) == 3 && (n & 3) == 3) jacobi = -jacobi;
 
                     swap(a, n);
                     a %= n;
