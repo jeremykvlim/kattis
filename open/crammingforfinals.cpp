@@ -37,7 +37,7 @@ int main() {
                 freq[j2 + 1] -= n + 1;
             }
 
-            auto j1 = match[abs(i1 - i2)];
+            int j1 = match[abs(i1 - i2)];
             freq[max(j2 - j1, 0)]++;
             freq[min(j2 + j1, c - 1) + 1]--;
         }
