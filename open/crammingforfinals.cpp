@@ -20,10 +20,10 @@ int main() {
         for (auto &[i, j] : students) swap(i, j);
     }
 
-    vector<int> match(d + 1);
+    vector<int> col(d + 1);
     for (int i = 0; i <= d; i++)
         for (int j = 0; j <= d; j++)
-            if (i * i + j * j <= d * d) match[i] = j;
+            if (i * i + j * j <= d * d) col[i] = j;
 
     int count = n;
     for (int i1 = 0; i1 < r; i1++) {
@@ -37,7 +37,7 @@ int main() {
                 freq[j2 + 1] -= n + 1;
             }
 
-            int j1 = match[abs(i1 - i2)];
+            int j1 = col[abs(i1 - i2)];
             freq[max(j2 - j1, 0)]++;
             freq[min(j2 + j1, c - 1) + 1]--;
         }
