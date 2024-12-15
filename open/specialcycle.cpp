@@ -86,23 +86,22 @@ pair<int, vector<int>> micali_vazirani(int n, vector<pair<int, int>> edges) {
                         order.emplace_back(a);
 
                         auto dual_traversal = [&](bool rev) {
-                            int x = !rev ? v : u, y = !rev ? u : v;
+                            int e = !rev ? v : u, f = !rev ? u : v;
+                            for (int e_set = dsu.find(e); e_set != a;) {
+                                int f_set = dsu.find(f), g = parent[e_set][0], g_set = dsu.find(g), h = parent[e_set][1];
 
-                            for (int x_set = dsu.find(x); x_set != a;) {
-                                int z = parent[x_set][0], z_set = dsu.find(z);
+                                if (state[e_set] == 1) s.emplace(e_set);
 
-                                if (state[x_set] == 1) s.emplace(x_set);
+                                dir[e_set] = state[e_set] ^ rev;
+                                anc[e_set] = a;
+                                fw[e_set] = {g_set, g, h};
+                                bw[e_set] = {f_set, f, e};
 
-                                dir[x_set] = state[x_set] ^ rev;
-                                anc[x_set] = a;
-                                fw[x_set] = {z_set, z, parent[x_set][1]};
-                                bw[x_set] = {dsu.find(y), y, x};
+                                if (rev) swap(fw[e_set], bw[e_set]);
 
-                                if (rev) swap(fw[x_set], bw[x_set]);
-
-                                x = z;
-                                y = parent[x_set][1];
-                                x_set = z_set;
+                                e = g;
+                                f = h;
+                                e_set = g_set;
                             }
                         };
                         dual_traversal(false);
@@ -124,11 +123,11 @@ pair<int, vector<int>> micali_vazirani(int n, vector<pair<int, int>> edges) {
                             }
                         }
 
-                        list<pair<int, int>> path;
-                        for (int v_set = p; parent[v_set][0] != -1; v_set = dsu.find(parent[v_set][0])) path.emplace_front(parent[v_set][0], parent[v_set][1]);
+                        deque<pair<int, int>> path;
+                        for (int r = p; parent[r][0] != -1; r = dsu.find(parent[r][0])) path.emplace_front(parent[r][0], parent[r][1]);
                         path.emplace_front(-1, parent[p][0] == -1 ? p : dsu.find(path.front().first));
                         path.emplace_back(v, u);
-                        for (int u_set = q; parent[u_set][0] != -1; u_set = dsu.find(parent[u_set][0])) path.emplace_back(parent[u_set][1], parent[u_set][0]);
+                        for (int r = q; parent[r][0] != -1; r = dsu.find(parent[r][0])) path.emplace_back(parent[r][1], parent[r][0]);
                         path.emplace_back(parent[q][0] == -1 ? q : dsu.find(path.back().second), -1);
 
                         for (auto it = next(path.begin()); it != path.end();) {
@@ -147,9 +146,9 @@ pair<int, vector<int>> micali_vazirani(int n, vector<pair<int, int>> edges) {
                             }
                             while (level[anc[g]] < level[f]) g = level[lift[g]] < level[f] ? lift[g] : anc[g];
 
-                            list<pair<int, int>> temp;
-                            auto add = [&](auto &w) {
-                                for (int i = g; i != f; i = w[i][0]) temp.emplace_front(w[i][1], w[i][2]);
+                            deque<pair<int, int>> temp;
+                            auto add = [&](auto d) {
+                                for (int i = g; i != f; i = d[i][0]) temp.emplace_front(d[i][1], d[i][2]);
                             };
                             add(!dir[g] ? fw : bw);
 
