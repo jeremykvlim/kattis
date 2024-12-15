@@ -161,49 +161,48 @@ pair<int, vector<int>> micali_vazirani(int n, vector<pair<int, int>> edges) {
                     match[v] = u;
                 };
 
-                function<void(int, int)> find_path;
-                auto dfs = [&](auto &&self, int v, int v_set, int x) {
-                    if (v_set == x) {
-                        find_path(v, v_set);
-                        return true;
-                    }
-
-                    for (auto [u, u_set] : children[v_set])
-                        if ((u_set == x || mark[u_set] == mark[v_set]) && self(self, u, u_set, x)) {
-                            find_path(v, v_set);
-                            augment(v_set, u);
-                            return true;
-                        }
-                    return false;
-                };
-
-                bool started = false;
-                find_path = [&](int x, int y) {
+                bool first = true;
+                function<void(int, int)> find_path = [&](int x, int y) {
                     if (x == y) return;
 
-                    if (started && odd[x] > even[x]) {
+                    if (!first && odd[x] > even[x]) {
                         int p = predecessors[x][0], k = 0;
                         while (dsu.find(predecessors[p][k]) != dsu.find(p)) k++;
                         x = predecessors[p][k];
-                        augment(x, p);
+                        augment(p, x);
                         find_path(x, y);
                     } else {
-                        started = true;
+                        first = false;
 
-                        auto [s, t] = support_bridge[x].first;
-                        auto [s_set, t_set] = support_bridge[x].second;
-                        if (mark[x] == (mark[s_set] ^ 1) || mark[x] == mark[t_set]) {
-                            swap(s_set, t_set);
-                            swap(s, t);
+                        auto [a, b] = support_bridge[x].first;
+                        auto [a_set, b_set] = support_bridge[x].second;
+                        if (mark[x] == (mark[a_set] ^ 1) || mark[x] == mark[b_set]) {
+                            swap(a, b);
+                            swap(a_set, b_set);
                         }
+                        augment(a, b);
 
-                        augment(s, t);
-                        dfs(dfs, s, s_set, x);
+                        auto dfs = [&](auto &&self, int v, int v_set) {
+                            if (v_set == x) {
+                                find_path(v, v_set);
+                                return true;
+                            }
+
+                            for (auto [u, u_set] : children[v_set])
+                                if ((u_set == x || mark[u_set] == mark[v_set]) && self(self, u, u_set)) {
+                                    find_path(v, v_set);
+                                    augment(v_set, u);
+                                    return true;
+                                }
+                            return false;
+                        };
+                        dfs(dfs, a, a_set);
                         x = dsu.parent[x];
-                        dfs(dfs, t, t_set, x);
+                        dfs(dfs, b, b_set);
                         find_path(x, y);
                     }
                 };
+
                 find_path(x, y);
                 change = true;
                 while (!q.empty()) {
