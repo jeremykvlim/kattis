@@ -258,10 +258,10 @@ int main() {
     for (int v = 0; v < n; v++)
         for (int u : adj_list[v]) next[u] = v;
 
-    for (auto [V, U] : edges) {
+    for (auto [U, V] : edges) {
         vector<pair<int, int>> e;
-        for (auto [v, u] : edges)
-            if (v != V && u != U) e.emplace_back(v, u);
+        for (auto [u, v] : edges)
+            if (u != U && v != V) e.emplace_back(u, v);
 
         for (int i = k; i < m; i++)
             if (degree[a[i]] < 2 && degree[b[i]] < 2)
@@ -280,19 +280,19 @@ int main() {
                     link[adj_list[i][1]] = adj_list[i][0];
                 }
 
-            for (auto [v, u] : edges) {
-                link[v] = u;
+            for (auto [u, v] : edges) {
                 link[u] = v;
+                link[v] = u;
             }
 
             vector<int> full;
-            int curr = V;
+            int curr = U;
             do {
                 full.emplace_back(next[curr]);
                 curr = match[curr];
                 full.emplace_back(next[curr]);
                 curr = link[curr];
-            } while (curr != V);
+            } while (curr != U);
 
             vector<int> special;
             for (int v : full) {
