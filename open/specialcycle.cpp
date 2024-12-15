@@ -36,7 +36,6 @@ pair<int, vector<int>> micali_vazirani(int n, vector<pair<int, int>> edges) {
     do {
         change = false;
         DisjointSet dsu(n);
-        stack<int> s;
         vector<array<int, 2>> parent(n, {-1, -1});
         vector<array<int, 3>> fw(n, {-1, -1, -1}), bw(n, {-1, -1, -1});
         vector<int> order(n), anc(n), dir(n, -1), level(n, -1), depth(n, -1), lift(n, -1), state(n, -1);
@@ -44,10 +43,10 @@ pair<int, vector<int>> micali_vazirani(int n, vector<pair<int, int>> edges) {
         iota(anc.begin(), anc.end(), 0);
         int count = 0;
 
+        stack<int> s;
         for (int i = 0; i < n; i++)
             if (match[i] == -1) {
-                state[i] = 0;
-                level[i] = count;
+                state[i] = level[i] = 0;
                 s.emplace(i);
             }
 
