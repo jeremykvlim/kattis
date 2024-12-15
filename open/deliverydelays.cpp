@@ -42,7 +42,6 @@ int main() {
     vector<array<int, 3>> orders(k);
     for (auto &[s, u, t] : orders) {
         cin >> s >> u >> t;
-
         u--;
     }
 
