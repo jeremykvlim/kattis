@@ -162,7 +162,7 @@ pair<int, vector<int>> micali_vazirani(int n, vector<pair<int, int>> edges) {
                 };
 
                 bool first = true;
-                function<void(int, int)> find_path = [&](int x, int y) {
+                auto find_path = [&](auto &&self1, int x, int y) {
                     if (x == y) return;
 
                     if (!first && odd[x] > even[x]) {
@@ -170,7 +170,7 @@ pair<int, vector<int>> micali_vazirani(int n, vector<pair<int, int>> edges) {
                         while (dsu.find(predecessors[p][k]) != dsu.find(p)) k++;
                         x = predecessors[p][k];
                         augment(p, x);
-                        find_path(x, y);
+                        self1(self1, x, y);
                     } else {
                         first = false;
 
@@ -182,15 +182,15 @@ pair<int, vector<int>> micali_vazirani(int n, vector<pair<int, int>> edges) {
                         }
                         augment(a, b);
 
-                        auto dfs = [&](auto &&self, int v, int v_set) {
+                        auto dfs = [&](auto &&self2, int v, int v_set) {
                             if (v_set == x) {
-                                find_path(v, v_set);
+                                self1(self1, v, v_set);
                                 return true;
                             }
 
                             for (auto [u, u_set] : children[v_set])
-                                if ((u_set == x || mark[u_set] == mark[v_set]) && self(self, u, u_set)) {
-                                    find_path(v, v_set);
+                                if ((u_set == x || mark[u_set] == mark[v_set]) && self2(self2, u, u_set)) {
+                                    self1(self1, v, v_set);
                                     augment(v_set, u);
                                     return true;
                                 }
@@ -199,11 +199,10 @@ pair<int, vector<int>> micali_vazirani(int n, vector<pair<int, int>> edges) {
                         dfs(dfs, a, a_set);
                         x = dsu.parent[x];
                         dfs(dfs, b, b_set);
-                        find_path(x, y);
+                        self1(self1, x, y);
                     }
                 };
-
-                find_path(x, y);
+                find_path(find_path, x, y);
                 change = true;
                 while (!q.empty()) {
                     int v = q.front();
