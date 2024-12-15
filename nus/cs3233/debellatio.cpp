@@ -2,7 +2,7 @@
 using namespace std;
 
 struct DisjointSet {
-    vector<int> sets;
+    vector<int> sets, parent;
 
     int find(int p) {
         return (sets[p] == p) ? p : (sets[p] = find(sets[p]));
@@ -12,164 +12,210 @@ struct DisjointSet {
         int p_set = find(p), q_set = find(q);
         if (p_set != q_set) {
             sets[q_set] = p_set;
+            parent[q] = p;
             return true;
         }
         return false;
     }
 
-    DisjointSet(int n) : sets(n) {
+    DisjointSet(int n) : sets(n), parent(n, -1) {
         iota(sets.begin(), sets.end(), 0);
     }
 };
 
 pair<int, vector<int>> micali_vazirani(int n, vector<pair<int, int>> edges) {
     vector<int> match(n, -1);
-    vector<vector<int>> adj_list(n);
+
+    vector<vector<array<int, 3>>> adj_list(n);
     for (auto [u, v] : edges) {
-        adj_list[u].emplace_back(v);
-        adj_list[v].emplace_back(u);
+        adj_list[u].push_back({v, (int) adj_list[v].size(), 0});
+        adj_list[v].push_back({u, (int) adj_list[u].size() - 1, 0});
     }
 
-    vector<int> visited(n, -1);
-    int t = -1;
     bool change;
     do {
         change = false;
+        for (auto &al : adj_list)
+            for (auto &[u, index, label] : al) label = 0;
+
+        vector<int> even(n, 1e9), odd(n, 1e9);
+        vector<vector<int>> vertices(n);
+        auto set_level = [&](int v, int level) {
+            if (level & 1) odd[v] = level;
+            else even[v] = level;
+
+            vertices[level].emplace_back(v);
+        };
+
+        for (int u = 0; u < n; u++)
+            if (match[u] == -1) set_level(u, 0);
+
+        auto min_level = [&](int v) {
+            return min(even[v], odd[v]);
+        };
+
+        auto tenacity = [&](int u, int v) {
+            if (match[u] == v) return odd[u] + odd[v] + 1;
+            return even[u] + even[v] + 1;
+        };
+
         DisjointSet dsu(n);
-        vector<array<int, 2>> parent(n, {-1, -1});
-        vector<array<int, 3>> fw(n, {-1, -1, -1}), bw(n, {-1, -1, -1});
-        vector<int> order(n), anc(n), dir(n, -1), level(n, -1), depth(n, -1), lift(n, -1), state(n, -1);
-        iota(order.begin(), order.end(), 0);
-        iota(anc.begin(), anc.end(), 0);
-        int count = 0;
+        int mark_count = 1;
+        vector<int> count(n, 0), mark(n, 0), indices(n, 0);
+        vector<bool> visited(n, false);
+        vector<vector<int>> predecessors(n);
+        vector<vector<pair<int, int>>> children(n), bridges(2 * (n + 1));
+        vector<pair<pair<int, int>, pair<int, int>>> support_bridge(n);
+        for (int i = 0; i < n && !change; i++) {
+            for (int v : vertices[i])
+                for (auto &[u, index, label] : adj_list[v])
+                    if (!label && !((odd[v] == i) ^ (match[v] == u))) {
+                        if (min_level(u) >= i + 1) {
+                            label = 1;
+                            adj_list[u][index][2] = 1;
 
-        stack<int> s;
-        for (int i = 0; i < n; i++)
-            if (match[i] == -1) {
-                state[i] = level[i] = 0;
-                s.emplace(i);
-            }
+                            if (min_level(u) > i + 1) set_level(u, i + 1);
+                            predecessors[u].emplace_back(v);
+                        } else {
+                            label = 2;
+                            adj_list[u][index][2] = 2;
 
-        while (!s.empty() && !change) {
-            int v = s.top();
-            s.pop();
-
-            for (int u : adj_list[v]) {
-                int p = dsu.find(v), q = dsu.find(u);
-                if (p == q || state[q] == 1) continue;
-
-                if (state[q] == -1) {
-                    int m = match[q];
-                    state[q] = 1;
-                    state[m] = 0;
-                    parent[q] = {v, u};
-                    parent[m] = {u, m};
-                    s.emplace(m);
-                } else {
-                    auto lca = [&]() {
-                        t++;
-                        int p_set = dsu.find(p), q_set = dsu.find(q);
-                        while (p_set >= 0 || q_set >= 0) {
-                            if (p_set != -1) {
-                                if (visited[p_set] == t) return p_set;
-                                visited[p_set] = t;
-                                p_set = parent[p_set][0] >= 0 ? dsu.find(parent[p_set][0]) : parent[p_set][0];
-                            }
-                            swap(p_set, q_set);
+                            int j = tenacity(u, v);
+                            if (j < 2 * (n + 1)) bridges[j].emplace_back(v, u);
                         }
-                        return -1;
-                    };
-
-                    int a = lca();
-                    if (a != -1) {
-                        level[a] = ++count;
-                        order.emplace_back(a);
-
-                        auto dual_traversal = [&](bool rev) {
-                            int e = !rev ? v : u, f = !rev ? u : v;
-                            for (int e_set = dsu.find(e); e_set != a;) {
-                                int f_set = dsu.find(f), g = parent[e_set][0], g_set = dsu.find(g), h = parent[e_set][1];
-
-                                if (state[e_set] == 1) s.emplace(e_set);
-
-                                dir[e_set] = state[e_set] ^ rev;
-                                anc[e_set] = a;
-                                fw[e_set] = {g_set, g, h};
-                                bw[e_set] = {f_set, f, e};
-
-                                if (rev) swap(fw[e_set], bw[e_set]);
-
-                                e = g;
-                                f = h;
-                                e_set = g_set;
-                            }
-                        };
-                        dual_traversal(false);
-                        dual_traversal(true);
-
-                        auto contract = [&](int r) {
-                            for (int b = r; b != a; b = dsu.find(parent[b][0])) dsu.unite(a, b);
-                        };
-                        contract(p);
-                        contract(q);
-                    } else {
-                        for (int i = order.size() - 1; ~i; i--) {
-                            int r = order[i];
-                            if (depth[r] == -1) {
-                                a = anc[r];
-                                depth[r] = depth[a] + 1;
-                                lift[r] = a;
-                                if (depth[r] > 1 && depth[a] - depth[lift[a]] == depth[lift[a]] - depth[lift[lift[a]]]) lift[r] = lift[lift[a]];
-                            }
-                        }
-
-                        deque<pair<int, int>> path;
-                        for (int r = p; parent[r][0] != -1; r = dsu.find(parent[r][0])) path.emplace_front(parent[r][0], parent[r][1]);
-                        path.emplace_front(-1, parent[p][0] == -1 ? p : dsu.find(path.front().first));
-                        path.emplace_back(v, u);
-                        for (int r = q; parent[r][0] != -1; r = dsu.find(parent[r][0])) path.emplace_back(parent[r][1], parent[r][0]);
-                        path.emplace_back(parent[q][0] == -1 ? q : dsu.find(path.back().second), -1);
-
-                        for (auto it = next(path.begin()); it != path.end();) {
-                            auto [e, f] = *prev(it);
-                            auto [g, h] = *it;
-
-                            if (f == g) {
-                                it++;
-                                continue;
-                            }
-
-                            bool rev = h == -1 || match[g] == h;
-                            if (rev) {
-                                swap(e, h);
-                                swap(f, g);
-                            }
-                            while (level[anc[g]] < level[f]) g = level[lift[g]] < level[f] ? lift[g] : anc[g];
-
-                            deque<pair<int, int>> temp;
-                            auto add = [&](auto d) {
-                                for (int i = g; i != f; i = d[i][0]) temp.emplace_front(d[i][1], d[i][2]);
-                            };
-                            add(!dir[g] ? fw : bw);
-
-                            if (!rev) it = path.insert(it, temp.begin(), temp.end());
-                            else {
-                                for (auto &[x, y] : temp) swap(x, y);
-                                it = path.insert(it, temp.rbegin(), temp.rend());
-                            }
-                        }
-                        path.pop_front();
-                        path.pop_back();
-
-                        for (auto it = path.begin();; it = next(it, 2)) {
-                            match[it->first] = it->second;
-                            match[it->second] = it->first;
-                            if (next(it) == path.end()) break;
-                        }
-                        change = true;
                     }
+
+            for (auto [s, t] : bridges[2 * i + 1]) {
+                int vl = dsu.find(s), vr = dsu.find(t);
+                if (visited[vl] || visited[vr] || vl == vr) continue;
+
+                vector<int> support;
+                auto double_dfs = [&]() -> pair<int, int> {
+                    vector<int> tl{vl}, tr{vr};
+                    support.emplace_back(vl);
+                    support.emplace_back(vr);
+
+                    mark[vl] = ++mark_count;
+                    mark[vr] = ++mark_count;
+                    for (;;) {
+                        if (!min_level(tl.back()) && !min_level(tr.back())) return {tl.back(), tr.back()};
+
+                        auto dfs = [&](bool left) {
+                            auto &t1 = left ? tl : tr, &t2 = left ? tr : tl;
+                            int m = left ? mark[vl] : mark[vr], v = t1.back();
+                            for (int &k = indices[v]; k < predecessors[v].size(); k++) {
+                                int u = predecessors[v][k];
+                                if (visited[u]) continue;
+
+                                int u_set = dsu.find(u);
+                                if (!mark[u_set]) {
+                                    mark[u_set] = m;
+                                    t1.emplace_back(u_set);
+                                    support.emplace_back(u_set);
+                                    children[v].emplace_back(u, u_set);
+                                    return -1;
+                                } else if (u_set == t2.back()) children[v].emplace_back(u, u_set);
+                            }
+                            t1.pop_back();
+
+                            if (t1.empty()) {
+                                if (t2.size() == 1) {
+                                    mark[t2[0]] = 0;
+                                    return t2[0];
+                                }
+
+                                mark[t2.back()] = m;
+                                t1.emplace_back(t2.back());
+                                t2.pop_back();
+                            }
+                            return -1;
+                        };
+
+                        int bottleneck = min_level(tl.back()) >= min_level(tr.back()) ? dfs(true) : dfs(false);
+                        if (bottleneck != -1) return {bottleneck, bottleneck};
+                    }
+                };
+                auto [x, y] = double_dfs();
+
+                for (int v : support) {
+                    if (v == y) continue;
+                    support_bridge[v] = {{s, t}, {vl, vr}};
+                    dsu.unite(y, v);
+
+                    set_level(v, 2 * i + 1 - min_level(v));
+                    for (auto [u, index, label] : adj_list[v])
+                        if (even[v] > odd[v] && label == 2 && match[v] != u) {
+                            int j = tenacity(u, v);
+                            if (j < 2 * (n + 1)) bridges[j].emplace_back(v, u);
+                        }
                 }
-                if (change) break;
+                if (x == y) continue;
+
+                queue<int> q;
+                auto augment = [&](int u, int v) {
+                    if (visited[u] || visited[v] || match[u] == v || match[v] == u) return;
+                    visited[u] = visited[v] = true;
+                    q.emplace(u);
+                    q.emplace(v);
+                    match[u] = v;
+                    match[v] = u;
+                };
+
+                function<void(int, int)> find_path;
+                auto dfs = [&](auto &&self, int v, int v_set, int x) {
+                    if (v_set == x) {
+                        find_path(v, v_set);
+                        return true;
+                    }
+
+                    for (auto [u, u_set] : children[v_set])
+                        if ((u_set == x || mark[u_set] == mark[v_set]) && self(self, u, u_set, x)) {
+                            find_path(v, v_set);
+                            augment(v_set, u);
+                            return true;
+                        }
+                    return false;
+                };
+
+                bool started = false;
+                find_path = [&](int x, int y) {
+                    if (x == y) return;
+
+                    if (started && odd[x] > even[x]) {
+                        int p = predecessors[x][0], k = 0;
+                        while (dsu.find(predecessors[p][k]) != dsu.find(p)) k++;
+                        x = predecessors[p][k];
+                        augment(x, p);
+                        find_path(x, y);
+                    } else {
+                        started = true;
+
+                        auto [s, t] = support_bridge[x].first;
+                        auto [s_set, t_set] = support_bridge[x].second;
+                        if (mark[x] == (mark[s_set] ^ 1) || mark[x] == mark[t_set]) {
+                            swap(s_set, t_set);
+                            swap(s, t);
+                        }
+
+                        augment(s, t);
+                        dfs(dfs, s, s_set, x);
+                        x = dsu.parent[x];
+                        dfs(dfs, t, t_set, x);
+                        find_path(x, y);
+                    }
+                };
+                find_path(x, y);
+                change = true;
+                while (!q.empty()) {
+                    int v = q.front();
+                    q.pop();
+
+                    for (auto [u, index, label] : adj_list[v])
+                        if (label == 1 && min_level(u) > min_level(v) && !visited[u] && ++count[u] == predecessors[u].size()) {
+                            visited[u] = true;
+                            q.emplace(u);
+                        }
+                }
             }
         }
     } while (change);
