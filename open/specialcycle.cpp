@@ -64,7 +64,7 @@ pair<int, vector<int>> micali_vazirani(int n, vector<pair<int, int>> edges) {
         vector<int> count(n, 0), mark(n, 0), indices(n, 0);
         vector<bool> visited(n, false);
         vector<vector<int>> predecessors(n);
-        vector<vector<pair<int, int>>> children(n), bridges(2 * (n + 1));
+        vector<vector<pair<int, int>>> bridges(2 * (n + 1)), children(n);
         vector<pair<pair<int, int>, pair<int, int>>> support_bridge(n);
         for (int i = 0; i < n && !change; i++) {
             for (int v : vertices[i])
@@ -89,11 +89,9 @@ pair<int, vector<int>> micali_vazirani(int n, vector<pair<int, int>> edges) {
                 int vl = dsu.find(s), vr = dsu.find(t);
                 if (visited[vl] || visited[vr] || vl == vr) continue;
 
-                vector<int> support;
+                vector<int> support{vl, vr};
                 auto double_dfs = [&]() -> pair<int, int> {
                     vector<int> tl{vl}, tr{vr};
-                    support.emplace_back(vl);
-                    support.emplace_back(vr);
 
                     mark[vl] = ++mark_count;
                     mark[vr] = ++mark_count;
@@ -139,8 +137,10 @@ pair<int, vector<int>> micali_vazirani(int n, vector<pair<int, int>> edges) {
 
                 for (int v : support) {
                     if (v == y) continue;
+
                     support_bridge[v] = {{s, t}, {vl, vr}};
                     dsu.unite(y, v);
+                    if (x != y) continue;
 
                     set_level(v, 2 * i + 1 - min_level(v));
                     for (auto [u, index, label] : adj_list[v])
@@ -154,6 +154,7 @@ pair<int, vector<int>> micali_vazirani(int n, vector<pair<int, int>> edges) {
                 queue<int> q;
                 auto augment = [&](int u, int v) {
                     if (visited[u] || visited[v] || match[u] == v || match[v] == u) return;
+
                     visited[u] = visited[v] = true;
                     q.emplace(u);
                     q.emplace(v);
@@ -170,7 +171,6 @@ pair<int, vector<int>> micali_vazirani(int n, vector<pair<int, int>> edges) {
                         while (dsu.find(predecessors[p][k]) != dsu.find(p)) k++;
                         x = predecessors[p][k];
                         augment(p, x);
-                        self1(self1, x, y);
                     } else {
                         first = false;
 
@@ -199,11 +199,12 @@ pair<int, vector<int>> micali_vazirani(int n, vector<pair<int, int>> edges) {
                         dfs(dfs, a, a_set);
                         x = dsu.parent[x];
                         dfs(dfs, b, b_set);
-                        self1(self1, x, y);
                     }
+                    self1(self1, x, y);
                 };
                 find_path(find_path, x, y);
                 change = true;
+                
                 while (!q.empty()) {
                     int v = q.front();
                     q.pop();
