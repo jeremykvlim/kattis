@@ -78,8 +78,7 @@ def brent(n):
             xs = (xs * xs) % n + c
             g = math.gcd(abs(xs - y), n)
 
-        if g != n:
-            return g if isprime(g) else brent(g)
+        if g != n: return g if isprime(g) else brent(g)
 
 def factorize(n):
     pfs = []
