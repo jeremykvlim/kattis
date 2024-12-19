@@ -35,8 +35,7 @@ public class planks {
             weights.remove(w);
 
             if (weights.isEmpty()) planks.remove(l);
-        }
-        else weights.put(w, weights.get(w) - 1);
+        } else weights.put(w, weights.get(w) - 1);
 
         return new int[]{l, w};
     }
