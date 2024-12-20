@@ -11,9 +11,9 @@ struct Trie {
 
     struct TrieNode {
         vector<int> next;
-        int depth = 0, count = 0, link = -1;
+        int depth, count, link;
 
-        TrieNode(int range = 26) : next(range, -1) {}
+        TrieNode(int range = 26, int d = 0) : next(range, -1), depth(d), count(0), link(-1) {}
     };
 
     vector<TrieNode> T;
@@ -30,8 +30,7 @@ struct Trie {
 
             if (T[node].next[pos] == -1) {
                 T[node].next[pos] = T.size();
-                T.emplace_back(TrieNode(r));
-                T.back().depth = T[node].depth + 1;
+                T.emplace_back(TrieNode(r, T[node].depth + 1));
             }
             node = T[node].next[pos];
         }
@@ -39,7 +38,7 @@ struct Trie {
         return node;
     }
 
-    void build_links() {
+    void aho_corasick() {
         queue<int> q;
         q.emplace(0);
         while (!q.empty()) {
@@ -60,7 +59,7 @@ struct Trie {
         }
         T[0].link = 0;
     }
-    
+
     void match(const vector<string> &strings) {
         for (auto s : strings) {
             int node = 0;
@@ -114,7 +113,7 @@ int main() {
         v = trie.add(p);
     }
 
-    trie.build_links();
+    trie.aho_corasick();
     trie.match(words);
     for (int v : nodes) cout << trie[v].count << "\n";
 }
