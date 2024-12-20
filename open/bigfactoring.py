@@ -1,14 +1,14 @@
 import random, math
 
-def ctz(n):
-    return (n & -n).bit_length() - 1
-
 def isprime(n):
     if n < 2: return False
     if n in (2, 5, 11): return True
     if n % 6 % 4 != 1: return (n | 1) == 3
 
     def miller_rabin(a):
+        def ctz(n):
+            return (n & -n).bit_length() - 1
+            
         s = ctz(n - 1)
         d = n >> s
         x = pow(a % n, d, n)
