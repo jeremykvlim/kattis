@@ -371,9 +371,9 @@ struct Trie {
 
     struct TrieNode {
         vector<int> next;
-        int link = -1;
+        int link;
 
-        TrieNode(int range = 26) : next(range, -1) {}
+        TrieNode(int range = 26) : next(range, -1), link(-1) {}
     };
 
     vector<TrieNode> T;
@@ -397,7 +397,7 @@ struct Trie {
         return node;
     }
 
-    void build_links() {
+    void aho_corasick() {
         queue<int> q;
         q.emplace(0);
         while (!q.empty()) {
@@ -501,7 +501,7 @@ int main() {
         int node = trie.add(s);
         if (!indices.count(node)) indices[node] = i;
     }
-    trie.build_links();
+    trie.aho_corasick();
 
     Matrix<modint> a(n), p(trie.size(), n);
     p[0][0] = 1;
