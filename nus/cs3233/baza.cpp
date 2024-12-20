@@ -11,9 +11,9 @@ struct Trie {
 
     struct TrieNode {
         vector<int> next;
-        int count = 0;
+        int count;
 
-        TrieNode(int range = 26) : next(range, -1) {}
+        TrieNode(int range = 26) : next(range, -1), count(0) {}
     };
 
     vector<TrieNode> T;
