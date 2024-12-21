@@ -42,7 +42,7 @@ int main() {
                 }
 
                 for (int j = 1; j < k; j++)
-                    while (p[j] - p[j - 1] >= 4 && count[j]) {
+                    while (p[j] - p[j - 1] > 3 && count[j]) {
                         p[j - 1]++;
                         p[j]--;
                         count[j]--;
@@ -50,7 +50,7 @@ int main() {
                         sum--;
                     }
 
-                while (p[k - 1] <= n - 2 && count[k]) {
+                while (p[k - 1] < n - 1 && count[k]) {
                     p[k - 1]++;
                     count[k]--;
                     c++;
