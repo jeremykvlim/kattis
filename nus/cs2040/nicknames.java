@@ -5,18 +5,18 @@ public class nicknames {
     static class Trie {
         static class TrieNode {
             int[] next = new int[26];
-            int count = 0;
+            int count;
 
             TrieNode() {
                 Arrays.fill(next, -1);
+                count = 0;
             }
         }
 
         ArrayList<TrieNode> T;
 
         Trie() {
-            T = new ArrayList<>();
-            T.add(new TrieNode());
+            T = new ArrayList<>(List.of(new TrieNode()));
         }
 
         void add(String s) {
@@ -52,10 +52,10 @@ public class nicknames {
 
         var trie = new Trie();
         int a = Integer.parseInt(br.readLine());
-        for (int i = 0; i < a; i++) trie.add(br.readLine());
+        while (a-- > 0) trie.add(br.readLine());
 
         int b = Integer.parseInt(br.readLine());
-        for (int i = 0; i < b; i++) pw.println(trie.occurrences(br.readLine()));
+        while (b-- > 0) pw.println(trie.occurrences(br.readLine()));
         pw.flush();
     }
 }
