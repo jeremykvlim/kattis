@@ -11,7 +11,7 @@ int main() {
     auto reduce = [&](long long n) {
         if (n == 1) return n;
 
-        string s = to_string(n);
+        auto s = to_string(n);
         for (int i = 1; i < s.size(); i++)
             if (s[i] != '0') goto next;
         return n - 1;
