@@ -28,10 +28,19 @@ T manhattan_dist(Point<T> a, Point<T> b) {
 }
 
 struct Hash {
+    static uint64_t h(uint64_t key) {
+        auto hash = key + 0x9e3779b97f4a7c15;
+        hash = (hash ^ (hash >> 30)) * 0xbf58476d1ce4e5b9;
+        hash = (hash ^ (hash >> 27)) * 0x94d049bb133111eb;
+        hash = hash ^ (hash >> 31);
+        return hash;
+    }
+
     size_t operator()(Point<int> p) const {
-        auto h = hash<int>()(p.x);
-        h ^= hash<int>()(p.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        return h;
+        static uint64_t SEED = chrono::steady_clock::now().time_since_epoch().count();
+        auto key = hash<int>()(p.x);
+        key ^= hash<int>()(p.y) + 0x9e3779b9 + (key << 6) + (key >> 2);
+        return h(key + SEED);
     }
 };
 
@@ -105,10 +114,10 @@ int main() {
                 else step(3);
             }
 
-            while (curr.x > P.x) step(2);
             while (curr.x < P.x) step(0);
-            while (curr.y > P.y) step(3);
+            while (curr.x > P.x) step(2);
             while (curr.y < P.y) step(1);
+            while (curr.y > P.y) step(3);
         }
         return true;
     };
