@@ -9,8 +9,7 @@ public class detaileddifferences {
             String first = br.readLine(), second = br.readLine();
             System.out.println(first + "\n" + second);
             
-            for (int i = 0; i < first.length(); i++)
-                System.out.print(first.charAt(i) != second.charAt(i) ? "*" : ".");
+            for (int i = 0; i < first.length(); i++) System.out.print(first.charAt(i) != second.charAt(i) ? "*" : ".");
             System.out.println("\n");
         }
     }
