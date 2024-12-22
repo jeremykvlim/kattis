@@ -47,7 +47,7 @@ int main() {
         if (x - d > a[2]) diffs.emplace_back(x - d);
         if (x + d <= 1e18) diffs.emplace_back(x + d);
     };
-    for (int _ = 0; _ < 100; _++) {
+    while (2 * diffs.size() < n) {
         auto x = rng() % (long long) 1e18;
         add(x);
     }
