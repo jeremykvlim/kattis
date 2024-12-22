@@ -63,7 +63,7 @@ int main() {
 
         l = max(prev, (a[i - 1] + a[i - 2]) / 2), r = 1e18;
         for (auto [x, p] : memo) {
-            tie(d, m) = p;
+            q = p;
 
             if (x - d > a[i - 2] && x - d < a[i - 1]) {
                 a[i] = x + d;
@@ -109,7 +109,7 @@ int main() {
 
             if (it != memo.begin()) {
                 auto [x, p] = *--it;
-                tie(d, m) = p;
+                q = p;
                 if (x - d > a[i - 2]) return self(self, l, mid - 1);
             }
 
