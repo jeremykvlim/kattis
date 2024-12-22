@@ -51,10 +51,8 @@ int main() {
         auto x = rng() % (long long) 1e18;
         add(x);
     }
-    for (int i = diffs.size() - 1; ~i; i--) {
-        auto x = diffs[i];
-        add(x);
-    }
+    for (int i = 0; i < diffs.size() && diffs.size() < n; i++) add(diffs[i]);
+    
     sort(diffs.rbegin(), diffs.rend());
 
     auto prev = l;
