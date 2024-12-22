@@ -52,7 +52,6 @@ int main() {
         add(x);
     }
     for (int i = 0; i < diffs.size() && diffs.size() < n; i++) add(diffs[i]);
-    
     sort(diffs.rbegin(), diffs.rend());
 
     auto prev = l;
