@@ -36,7 +36,6 @@ int main() {
         if (a[2] >= mid + d) l = mid;
         else r = mid;
     }
-
     query(l);
     a[1] = 2 * l - a[2] + (m == 1);
 
