@@ -125,8 +125,8 @@ struct BarrettModInt {
 
     template <typename V>
     static I normalize(const V &x) {
-        I v = x;
-        if (!(-mod() <= x && x < mod())) v = (I) (x % mod());
+        V v = x;
+        if (!(-mod() <= x && x < mod())) v %= mod();
         return v < 0 ? v + mod() : v;
     }
 

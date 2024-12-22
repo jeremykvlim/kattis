@@ -120,8 +120,8 @@ struct ModInt {
 
     template <typename U>
     static T normalize(const U &x) {
-        T v = x;
-        if (!(-mod() <= x && x < mod())) v = (T) (x % mod());
+        U v = x;
+        if (!(-mod() <= x && x < mod())) v %= mod();
         return v < 0 ? v + mod() : v;
     }
 
