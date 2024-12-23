@@ -26,7 +26,7 @@ template <typename T>
 vector<int> rref(Matrix<T> &matrix) {
     int n = matrix.r, m = matrix.c;
 
-    vector<int> match(n, -1);
+    vector<int> match(m, -1);
     int rank = 0;
     for (int c = 0; c < m && rank < n; c++) {
         int pivot = rank;
@@ -70,7 +70,7 @@ int main() {
                 goto next;
             }
 
-        if (all_of(match.begin(), match.end(), [&](int r) {return r != -1;}))
+        if (all_of(match.begin(), match.begin() + n, [&](int r) {return r != -1;}))
             for (int c = 0; c < n; c++) cout << fixed << setprecision(3) << A[match[c]][n] << " ";
         else {
             vector<int> cols;
