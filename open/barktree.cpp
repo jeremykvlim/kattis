@@ -60,15 +60,15 @@ int sgn(T v) {
 }
 
 template <typename T>
-bool point_inside_polygon(vector<Point<T>> polygon, Point<T> p) {
-    bool inside = false;
+pair<bool, bool> point_in_polygon(vector<Point<T>> polygon, Point<T> p) {
+    bool in = false;
     for (int i = 0; i < polygon.size(); i++) {
         auto a = polygon[i] - p, b = polygon[(i + 1) % polygon.size()] - p;
         if (a.y > b.y) swap(a, b);
-        if (sgn(a.y) <= 0 && 0 < sgn(b.y) && sgn(cross(a, b)) < 0) inside = !inside;
-        if (!sgn(cross(a, b)) && sgn(dot(a, b)) <= 0) return false;
+        if (sgn(a.y) <= 0 && 0 < sgn(b.y) && sgn(cross(a, b)) < 0) in = !in;
+        if (!sgn(cross(a, b)) && sgn(dot(a, b)) <= 0) return {false, true};
     }
-    return inside;
+    return {in, false};
 }
 
 template <typename T>
@@ -131,7 +131,7 @@ int main() {
             Point<double> tree(0, 0);
             auto smallest = 2 * M_PI;
             for (auto t : trees)
-                if (point_inside_polygon({prev, spot, toy}, t)) {
+                if (point_in_polygon({prev, spot, toy}, t).first) {
                     auto b = t - prev;
 
                     auto theta = acos(dot(a, b) / (dist(a) * dist(b)));
