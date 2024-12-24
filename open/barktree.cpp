@@ -27,6 +27,10 @@ struct Point {
     Point operator*(T c) {
         return {c * x, c * y};
     }
+    
+    Point operator/(T c) {
+        return {x / c, y / c};
+    }
 };
 
 template <typename T>
@@ -95,18 +99,8 @@ struct Line {
 };
 
 template <typename T>
-T area_of_parallelogram(const Line<T> l1, const Line<T> l2) {
-    return cross(l1.b - l1.a, l2.b - l2.a);
-}
-
-template <typename T>
-Point<T> line_intersection_point(Line<T> l1, Line<T> l2) {
-    T area = area_of_parallelogram(l1, l2), pos = cross(l1.b - l1.a, l1.b - l2.a);
-
-    if (!sgn(area) && !sgn(pos)) return l2.a;
-    if (!sgn(area)) return {numeric_limits<T>::epsilon(), numeric_limits<T>::epsilon()};
-
-    return l2.a + (l2.b - l2.a) * (pos / area);
+Point<T> non_parallel_intersection(Line<T> l1, Line<T> l2) {
+    return l2.a + (l2.b - l2.a) * cross(l1.b - l1.a, l1.b - l2.a) / cross(l1.b - l1.a, l2.b - l2.a);
 }
 
 int main() {
@@ -140,11 +134,11 @@ int main() {
                         tree = t;
                     }
                 }
-            auto curr = tree != Point(0., 0.) ? line_intersection_point(Line(prev, tree), Line(spot, toy)) : toy, b = curr - prev;
+            auto curr = tree != Point(0., 0.) ? non_parallel_intersection(Line(prev, tree), Line(spot, toy)) : toy, b = curr - prev;
 
             auto theta = fmod(angle(a) - angle(b) + 3 * M_PI, 2 * M_PI) - M_PI;
             if (wrapped.size() > 1 && ((angles.back() < 0) ^ (angles.back() < -theta))) {
-                spot = line_intersection_point(Line(wrapped[wrapped.size() - 2], prev), Line(spot, toy));
+                spot = non_parallel_intersection(Line(wrapped[wrapped.size() - 2], prev), Line(spot, toy));
                 wrapped.pop_back();
                 angles.pop_back();
             } else {
