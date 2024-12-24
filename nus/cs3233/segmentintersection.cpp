@@ -107,7 +107,7 @@ vector<Point<T>> collinear_overlap(Line<T> l1, Line<T> l2) {
 }
 
 template <typename T>
-Point<T> non_parallel_intersection(Line<T> l1, Line<T> l2) {
+Point<T> non_collinear_intersection(Line<T> l1, Line<T> l2) {
     return l2.a + (l2.b - l2.a) * cross(l1.b - l1.a, l1.b - l2.a) / cross(l1.b - l1.a, l2.b - l2.a);
 }
 
@@ -153,7 +153,7 @@ int main() {
                     cout << "\n";
                 }
             } else {
-                auto i = non_parallel_intersection(l1, l2), l = max(min(p1, p2), min(p3, p4)), r = min(max(p1, p2), max(p3, p4));
+                auto i = non_collinear_intersection(l1, l2), l = max(min(p1, p2), min(p3, p4)), r = min(max(p1, p2), max(p3, p4));
                 if (l <= i && i <= r) cout << fixed << setprecision(2) << i.x << " " << i.y << "\n";
                 else cout << "none\n";
             }
