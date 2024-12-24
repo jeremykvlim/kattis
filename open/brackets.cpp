@@ -9,7 +9,6 @@ int main() {
     cin >> s;
 
     vector<int> l(s.size() + 2, 0), r(s.size() + 2, 0);
-
     for (int i = 1; i <= s.size(); i++) {
         l[i] = l[i - 1] + (s[i - 1] == '(' ? 1 : -1);
         if (l[i] < 0) l[i] = -2;
