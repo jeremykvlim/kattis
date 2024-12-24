@@ -52,11 +52,6 @@ struct Line {
     }
 };
 
-template <typename T>
-T area_of_parallelogram(const Line<T> l1, const Line<T> l2) {
-    return cross(l1.b - l1.a, l2.b - l2.a);
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -71,7 +66,7 @@ int main() {
     vector<Line<long long>> lines;
     for (int i = 0; i < n; i++)
         for (int j = i + 1; j < n; j++) lines.emplace_back(points[i], points[j], i, j);
-    sort(lines.begin(), lines.end(), [&](auto l1, auto l2) {return area_of_parallelogram(l1, l2) < 0;});
+    sort(lines.begin(), lines.end(), [&](auto l1, auto l2) {return cross(l1.b - l1.a, l2.b - l2.a) < 0;});
 
     vector<int> indices(n);
     iota(indices.begin(), indices.end(), 0);
