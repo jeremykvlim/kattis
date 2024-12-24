@@ -27,7 +27,7 @@ struct Point {
     Point operator*(T c) {
         return {c * x, c * y};
     }
-    
+
     Point operator/(T c) {
         return {x / c, y / c};
     }
@@ -99,7 +99,7 @@ struct Line {
 };
 
 template <typename T>
-Point<T> non_parallel_intersection(Line<T> l1, Line<T> l2) {
+Point<T> non_collinear_intersection(Line<T> l1, Line<T> l2) {
     return l2.a + (l2.b - l2.a) * cross(l1.b - l1.a, l1.b - l2.a) / cross(l1.b - l1.a, l2.b - l2.a);
 }
 
@@ -134,11 +134,11 @@ int main() {
                         tree = t;
                     }
                 }
-            auto curr = tree != Point(0., 0.) ? non_parallel_intersection(Line(prev, tree), Line(spot, toy)) : toy, b = curr - prev;
+            auto curr = tree != Point(0., 0.) ? non_collinear_intersection(Line(prev, tree), Line(spot, toy)) : toy, b = curr - prev;
 
             auto theta = fmod(angle(a) - angle(b) + 3 * M_PI, 2 * M_PI) - M_PI;
             if (wrapped.size() > 1 && ((angles.back() < 0) ^ (angles.back() < -theta))) {
-                spot = non_parallel_intersection(Line(wrapped[wrapped.size() - 2], prev), Line(spot, toy));
+                spot = non_collinear_intersection(Line(wrapped[wrapped.size() - 2], prev), Line(spot, toy));
                 wrapped.pop_back();
                 angles.pop_back();
             } else {
