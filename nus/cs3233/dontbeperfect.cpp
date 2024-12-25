@@ -416,27 +416,27 @@ int main() {
         vector<pair<pair<int, int>, vector<int>>> added{{{1, 0}, {}}}, unadded{{{0, 1}, {}}};
         for (int u : adj_list[v]) {
             vector<pair<pair<int, int>, vector<int>>> temp1, temp2;
-            for (auto [p1, cliques1] : added)
-                for (auto [p2, cliques2] : dp[u]) {
-                    vector<int> cliques;
-                    for (int size : cliques1) cliques.emplace_back(size);
-                    for (int size : cliques2) cliques.emplace_back(size);
+            for (auto [p1, clique_sizes1] : added)
+                for (auto [p2, clique_sizes2] : dp[u]) {
+                    vector<int> clique_sizes;
+                    for (int size : clique_sizes1) clique_sizes.emplace_back(size);
+                    for (int size : clique_sizes2) clique_sizes.emplace_back(size);
 
                     auto [S_size1, add1] = p1;
                     auto [S_size2, add2] = p2;
-                    if (add2) cliques.emplace_back(add2);
-                    temp1.emplace_back(make_pair(S_size1 + S_size2, 0), cliques);
+                    if (add2) clique_sizes.emplace_back(add2);
+                    temp1.emplace_back(make_pair(S_size1 + S_size2, 0), clique_sizes);
                 }
 
-            for (auto [p1, cliques1] : unadded)
-                for (auto [p2, cliques2] : dp[u]) {
-                    vector<int> cliques;
-                    for (int size : cliques1) cliques.emplace_back(size);
-                    for (int size : cliques2) cliques.emplace_back(size);
+            for (auto [p1, clique_sizes1] : unadded)
+                for (auto [p2, clique_sizes2] : dp[u]) {
+                    vector<int> clique_sizes;
+                    for (int size : clique_sizes1) clique_sizes.emplace_back(size);
+                    for (int size : clique_sizes2) clique_sizes.emplace_back(size);
 
                     auto [S_size1, add1] = p1;
                     auto [S_size2, add2] = p2;
-                    temp2.emplace_back(make_pair(S_size1 + S_size2, add1 + add2), cliques);
+                    temp2.emplace_back(make_pair(S_size1 + S_size2, add1 + add2), clique_sizes);
                 }
 
             added = temp1;
@@ -457,31 +457,31 @@ int main() {
 
     modint count = 0;
     vector<unordered_set<vector<int>, Hash>> visited(n + 1);
-    for (auto [p, cliques] : dp[1]) {
+    for (auto [p, clique_sizes] : dp[1]) {
         auto [S_size, add] = p;
         if (!S_size) continue;
 
-        auto dfs3 = [&](auto &&self, vector<int> cliques) {
-            sort(cliques.begin(), cliques.end());
-            if (visited[S_size].count(cliques)) return;
-            visited[S_size].emplace(cliques);
+        auto dfs3 = [&](auto &&self, vector<int> clique_sizes) {
+            sort(clique_sizes.begin(), clique_sizes.end());
+            if (visited[S_size].count(clique_sizes)) return;
+            visited[S_size].emplace(clique_sizes);
 
-            for (int &size : cliques)
+            for (int &size : clique_sizes)
                 if (!(size & 1)) {
-                    swap(size, cliques.back());
+                    swap(size, clique_sizes.back());
 
-                    int s = cliques.back();
-                    cliques.pop_back();
+                    int s = clique_sizes.back();
+                    clique_sizes.pop_back();
 
-                    for (int j = 0; j < cliques.size(); j++) {
-                        cliques[j] += s;
-                        self(self, cliques);
-                        cliques[j] -= s;
+                    for (int j = 0; j < clique_sizes.size(); j++) {
+                        clique_sizes[j] += s;
+                        self(self, clique_sizes);
+                        clique_sizes[j] -= s;
                     }
                     return;
                 }
 
-            int odd = cliques.size();
+            int odd = clique_sizes.size();
             if (odd == S_size + 2) {
                 count++;
                 return;
@@ -491,15 +491,15 @@ int main() {
                 for (int j = 0; j < i; j++) {
                     vector<int> merged;
                     for (int k = 0; k < odd; k++)
-                        if (i != k && j != k) merged.emplace_back(cliques[k]);
-                    merged.emplace_back(cliques[i] + cliques[j]);
+                        if (i != k && j != k) merged.emplace_back(clique_sizes[k]);
+                    merged.emplace_back(clique_sizes[i] + clique_sizes[j]);
 
                     self(self, merged);
                 }
         };
 
-        if (add) cliques.emplace_back(add);
-        dfs3(dfs3, cliques);
+        if (add) clique_sizes.emplace_back(add);
+        dfs3(dfs3, clique_sizes);
     }
     cout << count;
 }
