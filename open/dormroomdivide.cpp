@@ -10,6 +10,11 @@ struct Point {
 };
 
 template <typename T>
+T cross(Point<T> a, Point<T> b) {
+    return (a.x * b.y) - (a.y * b.x);
+}
+
+template <typename T>
 T area_of_parallelogram(Point<T> a, Point<T> b, Point<T> c) {
     return abs(a.x * b.y + b.x * c.y + c.x * a.y - b.x * a.y - c.x * b.y - a.x * c.y);
 }
@@ -36,7 +41,7 @@ int main() {
         }
 
     auto calc = [&](int i) -> array<double, 3> {
-        return {points[i].x - points[0].x, points[0].y - points[i].y, (double) sum / 2 - pref[i - 1] + points[i].x * points[0].y - points[0].x * points[i].y};
+        return {points[i].x - points[0].x, points[0].y - points[i].y, (double) sum / 2 - pref[i - 1] + cross(points[i], points[0])};
     };
 
     auto [x1, y1, a1] = calc(half);
