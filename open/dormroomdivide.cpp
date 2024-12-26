@@ -10,8 +10,8 @@ struct Point {
 };
 
 template <typename T>
-double area_of_triangle(Point<T> a, Point<T> b, Point<T> c) {
-    return 0.5 * fabs(a.x * b.y + b.x * c.y + c.x * a.y - b.x * a.y - c.x * b.y - a.x * c.y);
+T area_of_parallelogram(Point<T> a, Point<T> b, Point<T> c) {
+    return abs(a.x * b.y + b.x * c.y + c.x * a.y - b.x * a.y - c.x * b.y - a.x * c.y);
 }
 
 int main() {
@@ -24,25 +24,23 @@ int main() {
     vector<Point<double>> points(n);
     for (auto &[x, y] : points) cin >> x >> y;
 
-    vector<double> pref(n - 1, 0);
-    double sum = 0;
-    for (int i = 1; i < n - 1; i++) pref[i] = sum += area_of_triangle(points[0], points[i], points[i + 1]);
+    vector<long long> pref(n - 1, 0);
+    auto sum = 0LL;
+    for (int i = 1; i < n - 1; i++) pref[i] = sum += area_of_parallelogram(points[0], points[i], points[i + 1]);
 
-    int j;
-    for (int i = 0; i < n - 1; i++)
+    int half;
+    for (int i = 0;; i++)
         if (sum <= 2 * pref[i]) {
-            j = i;
+            half = i;
             break;
         }
 
     auto calc = [&](int i) -> array<double, 3> {
-        return {points[i].x - points[0].x, points[0].y - points[i].y,
-                sum - 2 * pref[i - 1] + points[i].x * points[0].y - points[0].x * points[i].y};
+        return {points[i].x - points[0].x, points[0].y - points[i].y, (double) sum / 2 - pref[i - 1] + points[i].x * points[0].y - points[0].x * points[i].y};
     };
 
-    auto [x1, y1, a1] = calc(j);
-    auto [x2, y2, a2] = calc(j + 1);
+    auto [x1, y1, a1] = calc(half);
+    auto [x2, y2, a2] = calc(half + 1);
     auto x = (x1 * a2 - x2 * a1) / (x1 * y2 - x2 * y1), y = (a1 - y1 * x) / x1;
-
     cout << fixed << setprecision(6) << x << " " << y;
 }
