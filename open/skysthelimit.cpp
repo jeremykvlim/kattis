@@ -79,8 +79,8 @@ int main() {
         while (j < convex_hull.size() && points[convex_hull[j].second].first.x < i) j++;
         if (points[convex_hull[j].second].first.x == i) continue;
 
-        auto lx = points[convex_hull[j - 1].second].first.x, rx = points[convex_hull[j].second].first.x;
-        h[i] = h[lx] + (h[rx] - h[lx]) / (rx - lx) * (i - lx);
+        int l = points[convex_hull[j - 1].second].first.x, r = points[convex_hull[j].second].first.x;
+        h[i] = h[l] + (h[r] - h[l]) / (r - l) * (i - l);
     }
 
     double height = 0;
