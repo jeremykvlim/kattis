@@ -24,31 +24,37 @@ double dist(Point<T> a, Point<T> b) {
 
 template <typename T>
 T cross(Point<T> a, Point<T> b, Point<T> c) {
-    return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
+    return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
 template <typename T>
-deque<Point<T>> monotone(vector<Point<T>> &points) {
+vector<Point<T>> monotone_chain(vector<Point<T>> points, bool collinear = false) {
     sort(points.begin(), points.end());
     points.erase(unique(points.begin(), points.end()), points.end());
 
-    if (points.size() < 3) return deque<Point<T>>(points.begin(), points.end());
+    if (points.size() < 3) return points;
 
-    deque<Point<T>> convex_hull;
+    vector<Point<T>> convex_hull;
+
+    auto clockwise = [&](auto p) {
+        auto cross_product = cross(convex_hull[convex_hull.size() - 2], convex_hull.back(), p);
+        return collinear ? cross_product <= 0 : cross_product < 0;
+    };
+
     for (auto p : points) {
-        while (convex_hull.size() > 1 && cross(convex_hull[1], convex_hull[0], p) <= 0) convex_hull.pop_front();
-        convex_hull.emplace_front(p);
+        while (convex_hull.size() > 1 && clockwise(p)) convex_hull.pop_back();
+        convex_hull.emplace_back(p);
     }
 
     int s = convex_hull.size();
     points.pop_back();
     reverse(points.begin(), points.end());
     for (auto p : points) {
-        while (convex_hull.size() > s && cross(convex_hull[1], convex_hull[0], p) <= 0) convex_hull.pop_front();
-        convex_hull.emplace_front(p);
+        while (convex_hull.size() > s && clockwise(p)) convex_hull.pop_back();
+        convex_hull.emplace_back(p);
     }
 
-    convex_hull.pop_front();
+    convex_hull.pop_back();
     return convex_hull;
 }
 
@@ -67,12 +73,11 @@ int main() {
     for (int i = 0; i < 1 << n; i++) {
         vector<Point<long long>> enclosure;
         for (int j = 0; j < n; j++)
-            if (i & (1 << j)) enclosure.emplace_back(points[j]);
+            if ((i >> j) & 1) enclosure.emplace_back(points[j]);
         if (enclosure.empty()) continue;
 
-        auto convex_hull = monotone(enclosure);
-        for (int j = convex_hull.size() - 1, k = 0; k < convex_hull.size(); j = k++)
-            d[i] += dist(convex_hull[j], convex_hull[k]);
+        auto convex_hull = monotone_chain(enclosure);
+        for (int j = convex_hull.size() - 1, k = 0; k < convex_hull.size(); j = k++) d[i] += dist(convex_hull[j], convex_hull[k]);
     }
 
     for (int i = 1; i < 1 << n; i++)
