@@ -36,11 +36,6 @@ T cross(Point<T> a, Point<T> b) {
 }
 
 template <typename T>
-T cross(Point<T> a, Point<T> b, Point<T> c) {
-    return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
-}
-
-template <typename T>
 bool collinear(Point<T> c, Point<T> a, Point<T> b) {
     return cross(a - b, a - c) == 0;
 }
@@ -51,27 +46,38 @@ bool between(Point<T> c, Point<T> a, Point<T> b) {
 }
 
 template <typename T>
-deque<Point<T>> monotone(vector<Point<T>> &points) {
+T cross(Point<T> a, Point<T> b, Point<T> c) {
+    return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+}
+
+template <typename T>
+vector<Point<T>> monotone_chain(vector<Point<T>> points, bool collinear = false) {
     sort(points.begin(), points.end());
     points.erase(unique(points.begin(), points.end()), points.end());
 
-    if (points.size() < 3) return deque<Point<T>>(points.begin(), points.end());
+    if (points.size() < 3) return points;
 
-    deque<Point<T>> convex_hull;
+    vector<Point<T>> convex_hull;
+
+    auto clockwise = [&](auto p) {
+        auto cross_product = cross(convex_hull[convex_hull.size() - 2], convex_hull.back(), p);
+        return collinear ? cross_product <= 0 : cross_product < 0;
+    };
+
     for (auto p : points) {
-        while (convex_hull.size() > 1 && cross(convex_hull[1], convex_hull[0], p) <= 0) convex_hull.pop_front();
-        convex_hull.emplace_front(p);
+        while (convex_hull.size() > 1 && clockwise(p)) convex_hull.pop_back();
+        convex_hull.emplace_back(p);
     }
 
     int s = convex_hull.size();
     points.pop_back();
     reverse(points.begin(), points.end());
     for (auto p : points) {
-        while (convex_hull.size() > s && cross(convex_hull[1], convex_hull[0], p) <= 0) convex_hull.pop_front();
-        convex_hull.emplace_front(p);
+        while (convex_hull.size() > s && clockwise(p)) convex_hull.pop_back();
+        convex_hull.emplace_back(p);
     }
 
-    convex_hull.pop_front();
+    convex_hull.pop_back();
     return convex_hull;
 }
 
@@ -84,7 +90,7 @@ int main() {
         vector<Point<long long>> points(n);
         for (auto &[x, y] : points) cin >> x >> y;
 
-        auto convex_hull = monotone(points);
+        auto convex_hull = monotone_chain(points, true);
         int size = convex_hull.size();
 
         if (size <= 2) {
@@ -133,21 +139,19 @@ int main() {
             for (int k = next(j); k != i; k = next(k)) count++;
             if (count <= 1) return true;
             if (count >= 4) return false;
-            
+
             if (count == 2) {
                 if (on_side[next(j)] && (on_side[next(j + 1)] || cross(convex_hull[next(j + 1)] - convex_hull[next(j)], convex_hull[next(i)] - convex_hull[i]) <= 0) ||
                     on_side[next(j + 1)] && cross(convex_hull[next(j)] - convex_hull[j], convex_hull[next(j + 2)] - convex_hull[next(j + 1)]) <= 0) return false;
 
                 return true;
             }
-            
-            if (count == 3) {
-                if (on_side[next(j)] || on_side[next(j + 2)]) return false;
-                if (cross(convex_hull[next(j)] - convex_hull[j], convex_hull[next(j + 2)] - convex_hull[next(j + 1)]) > 0 &&
-                    cross(convex_hull[next(j + 2)] - convex_hull[next(j + 1)], convex_hull[next(i)] - convex_hull[i]) > 0) return true;
 
-                return false;
-            }
+            if (on_side[next(j)] || on_side[next(j + 2)]) return false;
+            if (cross(convex_hull[next(j)] - convex_hull[j], convex_hull[next(j + 2)] - convex_hull[next(j + 1)]) > 0 &&
+                cross(convex_hull[next(j + 2)] - convex_hull[next(j + 1)], convex_hull[next(i)] - convex_hull[i]) > 0)
+                return true;
+            return false;
         };
 
         for (int i = 0; i < size; i++)
