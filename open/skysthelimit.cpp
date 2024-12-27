@@ -11,12 +11,17 @@ struct Point {
 
 template <typename T>
 T cross(Point<T> a, Point<T> b, Point<T> c) {
-    return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
+    return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
 template <typename T>
-void add(deque<Point<T>> &half_hull, Point<T> p) {
-    while (half_hull.size() > 1 && cross(half_hull[1], p, half_hull[0]) > 0) half_hull.pop_front();
+void add(deque<Point<T>> &half_hull, Point<T> p, bool collinear = false) {
+    auto clockwise = [&]() {
+        auto cross_product = cross(half_hull[1], p, half_hull[0]);
+        return collinear ? cross_product <= 0 : cross_product < 0;
+    };
+
+    while (half_hull.size() > 1 && clockwise()) half_hull.pop_front();
     half_hull.emplace_front(p);
 }
 
@@ -41,6 +46,7 @@ int main() {
 
     deque<Point<double>> half_hull;
     for (auto p : points) add(half_hull, p);
+
     for (int i = half_hull.size() - 1; i; i--) {
         int l = half_hull[i].x, r = half_hull[i - 1].x;
 
