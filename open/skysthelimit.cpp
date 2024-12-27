@@ -7,6 +7,14 @@ struct Point {
 
     Point() {}
     Point(T x, T y) : x(x), y(y) {}
+
+    auto operator<(const Point &p) const {
+        return x != p.x ? x < p.x : y < p.y;
+    }
+
+    auto operator==(const Point &p) const {
+        return x == p.x && y == p.y;
+    }
 };
 
 template <typename T>
@@ -15,14 +23,34 @@ T cross(Point<T> a, Point<T> b, Point<T> c) {
 }
 
 template <typename T>
-void add(deque<Point<T>> &half_hull, Point<T> p, bool collinear = false) {
-    auto clockwise = [&]() {
-        auto cross_product = cross(half_hull[1], p, half_hull[0]);
+vector<pair<Point<T>, int>> monotone_chain(vector<pair<Point<T>, int>> points, bool collinear = false) {
+    sort(points.begin(), points.end());
+    points.erase(unique(points.begin(), points.end()), points.end());
+
+    if (points.size() < 3) return points;
+
+    vector<pair<Point<T>, int>> convex_hull;
+
+    auto clockwise = [&](auto p) {
+        auto cross_product = cross(convex_hull[convex_hull.size() - 2].first, convex_hull.back().first, p.first);
         return collinear ? cross_product <= 0 : cross_product < 0;
     };
 
-    while (half_hull.size() > 1 && clockwise()) half_hull.pop_front();
-    half_hull.emplace_front(p);
+    for (auto p : points) {
+        while (convex_hull.size() > 1 && clockwise(p)) convex_hull.pop_back();
+        convex_hull.emplace_back(p);
+    }
+
+    int s = convex_hull.size();
+    points.pop_back();
+    reverse(points.begin(), points.end());
+    for (auto p : points) {
+        while (convex_hull.size() > s && clockwise(p)) convex_hull.pop_back();
+        convex_hull.emplace_back(p);
+    }
+
+    convex_hull.pop_back();
+    return convex_hull;
 }
 
 int main() {
@@ -33,31 +61,32 @@ int main() {
     double k;
     cin >> n >> k;
 
-    vector<double> houses(n + 2, 0);
-    vector<Point<double>> points(n + 2);
-    points[0] = {0, 0};
-    points[n + 1] = {(double) n + 1, 0};
+    vector<double> h(n + 1);
+    vector<pair<Point<double>, int>> points;
+    points.emplace_back(Point<double>(0, 0), 0);
     for (int i = 1; i <= n; i++) {
-        cin >> houses[i];
+        cin >> h[i];
 
-        houses[i] -= k * i * (n + 1 - i);
-        points[i] = {(double) i, houses[i]};
+        h[i] += k * i * (i - n - 1);
+        if (h[i] >= 0) points.emplace_back(Point<double>(i, h[i]), points.size());
     }
+    points.emplace_back(Point<double>(n + 1, 0), points.size());
 
-    deque<Point<double>> half_hull;
-    for (auto p : points) add(half_hull, p);
+    auto convex_hull = monotone_chain(points);
+    sort(convex_hull.begin(), convex_hull.end(), [&](auto p1, auto p2) {return p1.second < p2.second;});
 
-    for (int i = half_hull.size() - 1; i; i--) {
-        int l = half_hull[i].x, r = half_hull[i - 1].x;
+    for (int i = 1, j = 0; i <= n; i++) {
+        while (j < convex_hull.size() && points[convex_hull[j].second].first.x < i) j++;
+        if (points[convex_hull[j].second].first.x == i) continue;
 
-        for (int j = l; j < r; j++) houses[j] = (houses[l] * (r - j) + houses[r] * (j - l)) / (r - l);
+        auto lx = points[convex_hull[j - 1].second].first.x, rx = points[convex_hull[j].second].first.x;
+        h[i] = h[lx] + (h[rx] - h[lx]) / (rx - lx) * (i - lx);
     }
 
     double height = 0;
     for (int i = 1; i <= n; i++) {
-        houses[i] += k * i * (n + 1 - i);
-        height = max(height, houses[i]);
+        h[i] -= k * i * (i - n - 1);
+        height = max(height, h[i]);
     }
-
     cout << fixed << setprecision(6) << height;
 }
