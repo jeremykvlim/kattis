@@ -8,30 +8,30 @@ struct Point {
     Point() {}
     Point(T x, T y) : x(x), y(y) {}
 
-    auto operator<(const Point &p) const {
+    auto operator<(Point &p) const {
         return x != p.x ? x < p.x : y < p.y;
     }
 
-    auto operator==(const Point &p) const {
+    auto operator==(Point &p) const {
         return x == p.x && y == p.y;
     }
 };
 
 template <typename T>
 T cross(Point<T> a, Point<T> b, Point<T> c) {
-    return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
+    return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
 template <typename T>
-deque<Point<T>> monotone(vector<Point<T>> &points) {
+deque<Point<T>> monotone(vector<Point<T>> points) {
     sort(points.begin(), points.end());
     points.erase(unique(points.begin(), points.end()), points.end());
 
     if (points.size() < 3) return deque<Point<T>>(points.begin(), points.end());
-        
+
     deque<Point<T>> convex_hull;
     for (auto p : points) {
-        while (convex_hull.size() > 1 && cross(convex_hull[1], convex_hull[0], p) > 0) convex_hull.pop_front();
+        while (convex_hull.size() > 1 && cross(convex_hull[1], convex_hull[0], p) < 0) convex_hull.pop_front();
         convex_hull.emplace_front(p);
     }
 
@@ -39,7 +39,7 @@ deque<Point<T>> monotone(vector<Point<T>> &points) {
     points.pop_back();
     reverse(points.begin(), points.end());
     for (auto p : points) {
-        while (convex_hull.size() > s && cross(convex_hull[1], convex_hull[0], p) > 0) convex_hull.pop_front();
+        while (convex_hull.size() > s && cross(convex_hull[1], convex_hull[0], p) < 0) convex_hull.pop_front();
         convex_hull.emplace_front(p);
     }
 
