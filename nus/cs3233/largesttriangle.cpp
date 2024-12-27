@@ -19,31 +19,37 @@ struct Point {
 
 template <typename T>
 T cross(Point<T> a, Point<T> b, Point<T> c) {
-    return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
+    return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
 template <typename T>
-deque<Point<T>> monotone(vector<Point<T>> &points) {
+vector<Point<T>> monotone_chain(vector<Point<T>> points, bool collinear = false) {
     sort(points.begin(), points.end());
     points.erase(unique(points.begin(), points.end()), points.end());
 
-    if (points.size() < 3) return deque<Point<T>>(points.begin(), points.end());
+    if (points.size() < 3) return points;
 
-    deque<Point<T>> convex_hull;
+    vector<Point<T>> convex_hull;
+
+    auto clockwise = [&](auto p) {
+        auto cross_product = cross(convex_hull[convex_hull.size() - 2], convex_hull.back(), p);
+        return collinear ? cross_product <= 0 : cross_product < 0;
+    };
+
     for (auto p : points) {
-        while (convex_hull.size() > 1 && cross(convex_hull[1], convex_hull[0], p) <= 0) convex_hull.pop_front();
-        convex_hull.emplace_front(p);
+        while (convex_hull.size() > 1 && clockwise(p)) convex_hull.pop_back();
+        convex_hull.emplace_back(p);
     }
 
     int s = convex_hull.size();
     points.pop_back();
     reverse(points.begin(), points.end());
     for (auto p : points) {
-        while (convex_hull.size() > s && cross(convex_hull[1], convex_hull[0], p) <= 0) convex_hull.pop_front();
-        convex_hull.emplace_front(p);
+        while (convex_hull.size() > s && clockwise(p)) convex_hull.pop_back();
+        convex_hull.emplace_back(p);
     }
 
-    convex_hull.pop_front();
+    convex_hull.pop_back();
     return convex_hull;
 }
 
@@ -57,8 +63,7 @@ int main() {
     vector<Point<double>> points(n);
     for (auto &[x, y] : points) cin >> x >> y;
 
-    auto convex_hull = monotone(points);
-    reverse(convex_hull.begin(), convex_hull.end());
+    auto convex_hull = monotone_chain(points, true);
 
     int size = convex_hull.size();
     if (size < 3) {
