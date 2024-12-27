@@ -23,7 +23,7 @@ T cross(Point<T> a, Point<T> b, Point<T> c) {
 }
 
 template <typename T>
-vector<Point<T>> monotone(vector<Point<T>> points, bool collinear = false) {
+vector<Point<T>> monotone_chain(vector<Point<T>> points, bool collinear = false) {
     sort(points.begin(), points.end());
     points.erase(unique(points.begin(), points.end()), points.end());
 
@@ -69,7 +69,7 @@ int main() {
         if (c == 'Y') points.emplace_back(x, y);
     }
 
-    auto convex_hull = monotone(points);
+    auto convex_hull = monotone_chain(points);
     cout << convex_hull.size() << "\n";
     for (auto [x, y] : convex_hull) cout << x << " " << y << "\n";
 }
