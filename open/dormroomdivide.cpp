@@ -7,6 +7,10 @@ struct Point {
 
     Point() {}
     Point(T x, T y) : x(x), y(y) {}
+
+    Point operator-(Point p) const {
+        return {x - p.x, y - p.y};
+    }
 };
 
 template <typename T>
@@ -16,7 +20,8 @@ T cross(Point<T> a, Point<T> b) {
 
 template <typename T>
 T area_of_parallelogram(Point<T> a, Point<T> b, Point<T> c) {
-    return abs(a.x * b.y + b.x * c.y + c.x * a.y - b.x * a.y - c.x * b.y - a.x * c.y);
+    Point<T> u = b - a, v = c - a;
+    return abs(cross(u, v));
 }
 
 int main() {
