@@ -33,12 +33,17 @@ double dist(Point<T> a, Point<T> b) {
 
 template <typename T>
 T cross(Point<T> a, Point<T> b, Point<T> c) {
-    return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
+    return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
 template <typename T>
-void add(deque<pair<Point<T>, int>> &half_hull, vector<vector<int>> &adj_list, pair<Point<T>, int> p) {
-    while (half_hull.size() > 1 && cross(half_hull[1].first, half_hull[0].first, p.first) > 0) half_hull.pop_front();
+void add(deque<pair<Point<T>, int>> &half_hull, vector<vector<int>> &adj_list, pair<Point<T>, int> p, bool collinear = false) {
+    auto clockwise = [&]() {
+        auto cross_product = cross(half_hull[1].first, half_hull[0].first, p.first);
+        return collinear ? cross_product <= 0 : cross_product < 0;
+    };
+
+    while (half_hull.size() > 1 && clockwise()) half_hull.pop_front();
     adj_list[half_hull[0].second].emplace_back(p.second);
     half_hull.emplace_front(p);
 }
@@ -52,8 +57,7 @@ int main() {
     cin >> n >> d;
 
     bool collide = false;
-    vector<Point<long long>> coords(n + 1);
-    coords[0] = {0, 0};
+    vector<Point<long long>> coords(n + 1, {0, 0});
     for (int i = 1; i <= n; i++) {
         cin >> coords[i].x >> coords[i].y;
 
