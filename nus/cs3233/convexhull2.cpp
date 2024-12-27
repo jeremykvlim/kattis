@@ -8,11 +8,11 @@ struct Point {
     Point() {}
     Point(T x, T y) : x(x), y(y) {}
 
-    auto operator<(Point &p) const {
+    auto operator<(const Point &p) const {
         return x != p.x ? x < p.x : y < p.y;
     }
 
-    auto operator==(Point &p) const {
+    auto operator==(const Point &p) const {
         return x == p.x && y == p.y;
     }
 };
@@ -23,27 +23,33 @@ T cross(Point<T> a, Point<T> b, Point<T> c) {
 }
 
 template <typename T>
-deque<Point<T>> monotone(vector<Point<T>> points) {
+vector<Point<T>> monotone(vector<Point<T>> points, bool collinear = false) {
     sort(points.begin(), points.end());
     points.erase(unique(points.begin(), points.end()), points.end());
 
-    if (points.size() < 3) return deque<Point<T>>(points.begin(), points.end());
+    if (points.size() < 3) return points;
 
-    deque<Point<T>> convex_hull;
+    vector<Point<T>> convex_hull;
+
+    auto clockwise = [&](auto p) {
+        auto cross_product = cross(convex_hull[convex_hull.size() - 2], convex_hull.back(), p);
+        return collinear ? cross_product <= 0 : cross_product < 0;
+    };
+
     for (auto p : points) {
-        while (convex_hull.size() > 1 && cross(convex_hull[1], convex_hull[0], p) < 0) convex_hull.pop_front();
-        convex_hull.emplace_front(p);
+        while (convex_hull.size() > 1 && clockwise(p)) convex_hull.pop_back();
+        convex_hull.emplace_back(p);
     }
 
     int s = convex_hull.size();
     points.pop_back();
     reverse(points.begin(), points.end());
     for (auto p : points) {
-        while (convex_hull.size() > s && cross(convex_hull[1], convex_hull[0], p) < 0) convex_hull.pop_front();
-        convex_hull.emplace_front(p);
+        while (convex_hull.size() > s && clockwise(p)) convex_hull.pop_back();
+        convex_hull.emplace_back(p);
     }
 
-    convex_hull.pop_front();
+    convex_hull.pop_back();
     return convex_hull;
 }
 
@@ -64,7 +70,6 @@ int main() {
     }
 
     auto convex_hull = monotone(points);
-    reverse(convex_hull.begin(), convex_hull.end());
     cout << convex_hull.size() << "\n";
     for (auto [x, y] : convex_hull) cout << x << " " << y << "\n";
 }
