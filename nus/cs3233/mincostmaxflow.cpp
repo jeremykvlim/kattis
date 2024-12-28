@@ -133,19 +133,18 @@ struct FlowNetwork {
         auto discharge = [&](int v) {
             T delta = inf;
 
-            for (int i = 0; i < network[v].size(); i++) {
-                Arc &a = network[v][i];
-                if (a.cap <= 0) continue;
+            for (auto a = network[v].begin(); a != network[v].end(); a++) {
+                if (a->cap <= 0) continue;
 
-                if (scaled_cost(v, a) < 0) {
-                    if (check(a.u)) {
-                        i--;
+                if (scaled_cost(v, *a) < 0) {
+                    if (check(a->u)) {
+                        a--;
                         continue;
                     }
 
-                    push(v, a, excess[v], true);
+                    push(v, *a, excess[v], true);
                     if (abs(excess[v]) <= 0) return;
-                } else delta = min(delta, scaled_cost(v, a));
+                } else delta = min(delta, scaled_cost(v, *a));
             }
 
             relabel(v, delta);
