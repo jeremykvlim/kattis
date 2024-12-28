@@ -36,7 +36,6 @@ double squared_dist(Point<T> p) {
     return p.x * p.x + p.y * p.y;
 }
 
-
 template <typename T>
 double squared_dist(Point<T> a, Point<T> b) {
     return (double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y);
