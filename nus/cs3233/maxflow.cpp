@@ -11,7 +11,6 @@ struct FlowNetwork {
 
     int n;
     vector<vector<Arc>> network;
-    vector<bool> cut;
     FlowNetwork(int n) : n(n), network(n) {}
 
     void add_arc(int u, int v, T cap_uv, T cap_vu = 0) {
@@ -22,8 +21,6 @@ struct FlowNetwork {
     }
 
     T max_flow(int s, int t) {
-        cut.assign(n, false);
-
         if (s == t) return 0;
 
         vector<T> excess(n, 0);
@@ -72,7 +69,6 @@ struct FlowNetwork {
                 while (h >= 0 && active[h].empty()) h--;
             }
 
-        for (int v = 0; v < n; v++) cut[v] = height[v] >= n;
         return -excess[s];
     }
 
