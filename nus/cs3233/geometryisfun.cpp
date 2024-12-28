@@ -471,47 +471,48 @@ vector<Point<T>> monotone_chain(vector<Point<T>> points, bool collinear = false)
 
 template <typename T>
 struct FlowNetwork {
-    struct Edge {
+    struct Arc {
         int u, v;
         T cap;
-        Edge(int u, int v, T cap) : u(u), v(v), cap(cap) {}
+        Arc(int u, int v, T cap) : u(u), v(v), cap(cap) {}
     };
 
     int n;
-    vector<vector<Edge>> adj_list;
+    vector<vector<Arc>> network;
     vector<bool> cut;
-    FlowNetwork(int n) : n(n), adj_list(n) {}
+    FlowNetwork(int n) : n(n), network(n) {}
 
-    void add_edge(int u, int v, T cap_uv, T cap_vu = 0) {
+    void add_arc(int u, int v, T cap_uv, T cap_vu = 0) {
         if (u == v) return;
 
-        adj_list[u].emplace_back(v, adj_list[v].size(), cap_uv);
-        adj_list[v].emplace_back(u, adj_list[u].size() - 1, cap_vu);
+        network[u].emplace_back(v, network[v].size(), cap_uv);
+        network[v].emplace_back(u, network[u].size() - 1, cap_vu);
     }
 
     T max_flow(int s, int t) {
         cut.assign(n, false);
+
         if (s == t) return 0;
 
         vector<T> excess(n, 0);
         vector<int> height(n, 0), height_count(2 * n, 0);
-        vector<typename vector<Edge>::iterator> curr(n);
+        vector<typename vector<Arc>::iterator> curr(n);
         excess[t] = 1;
         height[s] = n;
         height_count[0] = n - 1;
-        for (int v = 0; v < n; v++) curr[v] = adj_list[v].begin();
+        for (int v = 0; v < n; v++) curr[v] = network[v].begin();
 
         vector<vector<int>> active(2 * n);
-        auto push = [&](int v, Edge &e, T delta) {
+        auto push = [&](int v, Arc &e, T delta) {
             int u = e.u;
             if (!abs(excess[u]) && delta > 0) active[height[u]].emplace_back(u);
             e.cap -= delta;
-            adj_list[u][e.v].cap += delta;
+            network[u][e.v].cap += delta;
             excess[v] -= delta;
             excess[u] += delta;
         };
 
-        for (auto &&e : adj_list[s]) push(s, e, e.cap);
+        for (auto &&e : network[s]) push(s, e, e.cap);
 
         if (!active[0].empty())
             for (int h = 0; h >= 0;) {
@@ -519,10 +520,10 @@ struct FlowNetwork {
                 active[h].pop_back();
 
                 while (excess[v] > 0)
-                    if (curr[v] == adj_list[v].end()) {
+                    if (curr[v] == network[v].end()) {
                         height[v] = INT_MAX;
 
-                        for (auto e = adj_list[v].begin(); e != adj_list[v].end(); e++)
+                        for (auto e = network[v].begin(); e != network[v].end(); e++)
                             if (e->cap > 0 && height[v] > height[e->u] + 1) height[v] = height[(curr[v] = e)->u] + 1;
 
                         height_count[height[v]]++;
@@ -535,7 +536,7 @@ struct FlowNetwork {
                         h = height[v];
                     } else if (curr[v]->cap > 0 && height[v] == height[curr[v]->u] + 1) push(v, *curr[v], min(excess[v], curr[v]->cap));
                     else curr[v]++;
-                    
+
                 while (h >= 0 && active[h].empty()) h--;
             }
 
@@ -626,16 +627,16 @@ int main() {
     }
 
     FlowNetwork<long long> fn(2 * n + 2);
-    for (int i = 0; i < n; i++) fn.add_edge(i, i + n, c[i]);
+    for (int i = 0; i < n; i++) fn.add_arc(i, i + n, c[i]);
 
     modint cost = 0;
     for (int t = 1; t <= m; t++) {
         for (auto [i, j] : time[t])
-            if (j == n) fn.add_edge(2 * n, i, 1e18);
-            else if (j == n + 1) fn.add_edge(i + n, 2 * n + 1, 1e18);
+            if (j == n) fn.add_arc(2 * n, i, 1e18);
+            else if (j == n + 1) fn.add_arc(i + n, 2 * n + 1, 1e18);
             else {
-                fn.add_edge(i + n, j, 1e18);
-                fn.add_edge(j + n, i, 1e18);
+                fn.add_arc(i + n, j, 1e18);
+                fn.add_arc(j + n, i, 1e18);
             }
 
         if (!time[t].empty()) cost += fn.max_flow(2 * n, 2 * n + 1);
