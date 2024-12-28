@@ -503,16 +503,16 @@ struct FlowNetwork {
         for (int v = 0; v < n; v++) curr[v] = network[v].begin();
 
         vector<vector<int>> active(2 * n);
-        auto push = [&](int v, Arc &e, T delta) {
-            int u = e.u;
+        auto push = [&](int v, Arc &a, T delta) {
+            int u = a.u;
             if (!abs(excess[u]) && delta > 0) active[height[u]].emplace_back(u);
-            e.cap -= delta;
-            network[u][e.v].cap += delta;
+            a.cap -= delta;
+            network[u][a.v].cap += delta;
             excess[v] -= delta;
             excess[u] += delta;
         };
 
-        for (auto &&e : network[s]) push(s, e, e.cap);
+        for (auto &&a : network[s]) push(s, a, a.cap);
 
         if (!active[0].empty())
             for (int h = 0; h >= 0;) {
@@ -523,8 +523,8 @@ struct FlowNetwork {
                     if (curr[v] == network[v].end()) {
                         height[v] = INT_MAX;
 
-                        for (auto e = network[v].begin(); e != network[v].end(); e++)
-                            if (e->cap > 0 && height[v] > height[e->u] + 1) height[v] = height[(curr[v] = e)->u] + 1;
+                        for (auto a = network[v].begin(); a != network[v].end(); a++)
+                            if (a->cap > 0 && height[v] > height[a->u] + 1) height[v] = height[(curr[v] = a)->u] + 1;
 
                         height_count[height[v]]++;
                         if (!--height_count[h] && h < n)
