@@ -491,7 +491,6 @@ struct FlowNetwork {
 
     T max_flow(int s, int t) {
         cut.assign(n, false);
-
         if (s == t) return 0;
 
         vector<T> excess(n, 0);
