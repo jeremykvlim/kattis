@@ -496,18 +496,16 @@ struct FlowNetwork {
 
         vector<T> excess(n, 0);
         vector<int> height(n, 0), height_count(2 * n, 0);
-        vector<vector<int>> active(2 * n);
         vector<typename vector<Edge>::iterator> curr(n);
+        excess[t] = 1;
         height[s] = n;
         height_count[0] = n - 1;
-        excess[t] = 1;
-
         for (int v = 0; v < n; v++) curr[v] = adj_list[v].begin();
 
+        vector<vector<int>> active(2 * n);
         auto push = [&](int v, Edge &e, T delta) {
             int u = e.u;
-
-            if (!abs(excess[u]) && delta > 0) active[height[u]].push_back(u);
+            if (!abs(excess[u]) && delta > 0) active[height[u]].emplace_back(u);
             e.cap -= delta;
             adj_list[u][e.v].cap += delta;
             excess[v] -= delta;
@@ -521,7 +519,7 @@ struct FlowNetwork {
                 int v = active[h].back();
                 active[h].pop_back();
 
-                while (excess[v] > 0) {
+                while (excess[v] > 0)
                     if (curr[v] == adj_list[v].end()) {
                         height[v] = INT_MAX;
 
@@ -538,8 +536,7 @@ struct FlowNetwork {
                         h = height[v];
                     } else if (curr[v]->cap > 0 && height[v] == height[curr[v]->u] + 1) push(v, *curr[v], min(excess[v], curr[v]->cap));
                     else curr[v]++;
-                }
-
+                    
                 while (h >= 0 && active[h].empty()) h--;
             }
 
