@@ -1,20 +1,21 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T>
+template <typename T, typename U>
 struct FlowNetwork {
     struct Arc {
         int u, v;
-        T cap, cost;
-        Arc(int u, int v, T cap, T cost) : u(u), v(v), cap(cap), cost(cost) {}
+        T cap;
+        U cost;
+        Arc(int u, int v, T cap, U cost) : u(u), v(v), cap(cap), cost(cost) {}
     };
 
     int n;
     vector<vector<Arc>> network;
-    T inf;
-    FlowNetwork(int n) : n(n), network(n), inf(numeric_limits<T>::max()) {}
+    U inf;
+    FlowNetwork(int n) : n(n), network(n), inf(numeric_limits<U>::max()) {}
 
-    void add_arc(int u, int v, T cap_uv, T cost, T cap_vu = 0) {
+    void add_arc(int u, int v, T cap_uv, U cost, T cap_vu = 0) {
         if (u == v) return;
 
         network[u].emplace_back(v, network[v].size(), cap_uv, cost);
@@ -35,7 +36,7 @@ struct FlowNetwork {
 
         auto push = [&](int v, Arc &a, T delta) {
             int u = a.u;
-            if (!abs(excess[u]) && delta > 0) active_stacks[height[u]].emplace(u);
+            if (!excess[u] && delta) active_stacks[height[u]].emplace(u);
             a.cap -= delta;
             network[u][a.v].cap += delta;
             excess[v] -= delta;
@@ -80,8 +81,9 @@ struct FlowNetwork {
         return -excess[s];
     }
 
-    pair<T, T> max_flow_min_cost(int s, int t) {
-        T cost = 0, bound = 0, shift = min(3, __lg(n));
+    pair<T, U> max_flow_min_cost(int s, int t) {
+        U cost = 0, bound = 0;
+        int shift = min(3, __lg(n));
         for (int v = 0; v < n; v++)
             for (auto &&a : network[v]) {
                 cost += a.cost * a.cap;
@@ -91,22 +93,22 @@ struct FlowNetwork {
 
         T flow = max_flow(s, t);
 
-        vector<T> phi(n, 0), excess(n, 0);
+        vector<U> phi(n, 0), excess(n, 0);
         vector<int> count(n, 0);
         deque<int> active_stack;
 
-        auto push = [&](int v, Arc &a, T delta, bool active) {
-            delta = min(delta, a.cap);
+        auto push = [&](int v, Arc &a, U delta, bool active) {
+            if (delta > a.cap) delta = a.cap;
             int u = a.u;
             a.cap -= delta;
             network[u][a.v].cap += delta;
             excess[v] -= delta;
             excess[u] += delta;
 
-            if (active && 0 < excess[a.u] && excess[a.u] <= delta) active_stack.emplace_front(a.u);
+            if (active && 0 < excess[u] && excess[u] <= delta) active_stack.emplace_front(u);
         };
 
-        auto relabel = [&](int v, T delta) {
+        auto relabel = [&](int v, U delta) {
             if (delta < inf) phi[v] -= delta + bound;
             else {
                 phi[v] -= bound;
@@ -117,20 +119,20 @@ struct FlowNetwork {
         auto scaled_cost = [&](int v, const Arc &a) {
             int diff = count[v] - count[a.u];
             if (diff > 0) return inf;
-            else if (diff < 0) return -inf;
-            else return a.cost + phi[v] - phi[a.u];
+            if (diff < 0) return -inf;
+            return a.cost + phi[v] - phi[a.u];
         };
 
         auto check = [&](int v) {
-            if (abs(excess[v]) > 0) return false;
+            if (excess[v]) return false;
 
-            T delta = inf;
+            U delta = inf;
             for (auto &&a : network[v]) {
                 if (a.cap <= 0) continue;
 
-                T c = scaled_cost(v, a);
+                U c = scaled_cost(v, a);
                 if (c < 0) return false;
-                else delta = min(delta, c);
+                delta = min(delta, c);
             }
 
             relabel(v, delta);
@@ -138,7 +140,7 @@ struct FlowNetwork {
         };
 
         auto discharge = [&](int v) {
-            T delta = inf;
+            U delta = inf;
 
             for (auto a = network[v].begin(); a != network[v].end(); a++) {
                 if (a->cap <= 0) continue;
@@ -150,7 +152,7 @@ struct FlowNetwork {
                     }
 
                     push(v, *a, excess[v], true);
-                    if (abs(excess[v]) <= 0) return;
+                    if (!excess[v]) return;
                 } else delta = min(delta, scaled_cost(v, *a));
             }
 
@@ -159,7 +161,7 @@ struct FlowNetwork {
         };
 
         while (bound > 1) {
-            bound = max(bound >> shift, (T) 1);
+            bound = max(bound >> shift, (U) 1);
             active_stack.clear();
 
             for (int v = 0; v < n; v++)
@@ -183,7 +185,7 @@ struct FlowNetwork {
                 cost -= a.cost * a.cap;
             }
 
-        return {flow, cost /= 2};
+        return {flow, cost / 2};
     }
 };
 
@@ -194,7 +196,7 @@ int main() {
     int n, m, s, t;
     cin >> n >> m >> s >> t;
 
-    FlowNetwork<long long> fn(n);
+    FlowNetwork<int, long long> fn(n);
     while (m--) {
         int u, v, c, w;
         cin >> u >> v >> c >> w;

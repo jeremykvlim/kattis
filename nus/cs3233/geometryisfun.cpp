@@ -502,7 +502,7 @@ struct FlowNetwork {
 
         auto push = [&](int v, Arc &a, T delta) {
             int u = a.u;
-            if (!abs(excess[u]) && delta > 0) active_stacks[height[u]].emplace(u);
+            if (!excess[u] && delta) active_stacks[height[u]].emplace(u);
             a.cap -= delta;
             network[u][a.v].cap += delta;
             excess[v] -= delta;
