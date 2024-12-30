@@ -112,20 +112,13 @@ T manhattan_dist(const Point<T> &a, const Point<T> &b) {
     return abs(a.x - b.x) + abs(a.y - b.y);
 }
 
+template <typename T>
 struct Hash {
-    static uint64_t h(uint64_t key) {
-        auto hash = key + 0x9e3779b97f4a7c15;
-        hash = (hash ^ (hash >> 30)) * 0xbf58476d1ce4e5b9;
-        hash = (hash ^ (hash >> 27)) * 0x94d049bb133111eb;
-        hash = hash ^ (hash >> 31);
-        return hash;
-    }
-
-    size_t operator()(Point<int> p) const {
-        static uint64_t SEED = chrono::steady_clock::now().time_since_epoch().count();
-        auto key = hash<int>()(p.x);
-        key ^= hash<int>()(p.y) + 0x9e3779b9 + (key << 6) + (key >> 2);
-        return h(key + SEED);
+    size_t operator()(Point<T> p) const {
+        auto h = 0ULL;
+        h ^= hash<T>()(p.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        h ^= hash<T>()(p.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        return h;
     }
 };
 
@@ -143,7 +136,7 @@ int main() {
     auto move = [&](bool flip) {
         Point<int> curr{0, 0};
         int curr_k = 0;
-        unordered_set<Point<int>, Hash> visited;
+        unordered_set<Point<int>, Hash<int>> visited;
         visited.emplace(curr);
 
         vector<int> dx{1, 0, -1, 0}, dy{0, 1, 0, -1};
