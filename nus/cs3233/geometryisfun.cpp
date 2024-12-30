@@ -345,6 +345,11 @@ constexpr unsigned long long MODULO = 1e10 + 3233;
 using modint = ModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
 template <typename T>
+bool approximately_equal(const T &v1, const T &v2) {
+    return fabs(v1 - v2) <= 1e-8;
+}
+
+template <typename T>
 struct Point {
     T x, y;
 
@@ -354,40 +359,104 @@ struct Point {
     template <typename U>
     Point(const Point<U> &p) : x((T) p.x), y((T) p.y) {}
 
-    auto operator<(const Point &p) const {
-        return x != p.x ? x < p.x : y < p.y;
+    Point operator-() const {
+        return {-x, -y};
     }
 
-    auto operator==(const Point &p) const {
+    bool operator<(const Point &p) const {
+        return !approximately_equal(x, p.x) ? x < p.x : y < p.y;
+    }
+
+    bool operator>(const Point &p) const {
+        return !approximately_equal(x, p.x) ? x > p.x : y > p.y;
+    }
+
+    bool operator==(const Point &p) const {
+        if constexpr (is_floating_point_v<T>) return approximately_equal(x, p.x) && approximately_equal(y, p.y);
         return x == p.x && y == p.y;
     }
 
-    Point operator+(Point p) const {
+    bool operator!=(const Point &p) const {
+        if constexpr (is_floating_point_v<T>) return !approximately_equal(x, p.x) || !approximately_equal(y, p.y);
+        return x != p.x || y != p.y;
+    }
+
+    bool operator<=(const Point &p) const {
+        return *this < p || *this == p;
+    }
+
+    bool operator>=(const Point &p) const {
+        return *this > p || *this == p;
+    }
+
+    Point operator+(const Point &p) const {
         return {x + p.x, y + p.y};
     }
 
-    Point operator-(Point p) const {
+    Point operator+(const T &v) const {
+        return {x + v, y + v};
+    }
+
+    Point & operator+=(const Point &p) {
+        x += p.x;
+        y += p.y;
+        return *this;
+    }
+
+    Point & operator+=(const T &v) {
+        x += v;
+        y += v;
+        return *this;
+    }
+
+    Point operator-(const Point &p) const {
         return {x - p.x, y - p.y};
     }
 
-    Point operator*(T c) const {
-        return {c * x, c * y};
+    Point operator-(const T &v) const {
+        return {x - v, y - v};
     }
 
-    Point & operator*=(T c) {
-        x *= c;
-        y *= c;
+    Point & operator-=(const Point &p) {
+        x -= p.x;
+        y -= p.y;
+        return *this;
+    }
+
+    Point & operator-=(const T &v) {
+        x -= v;
+        y -= v;
+        return *this;
+    }
+
+    Point operator*(const T &v) const {
+        return {x * v, y * v};
+    }
+
+    Point & operator*=(const T &v) {
+        x *= v;
+        y *= v;
+        return *this;
+    }
+
+    Point operator/(const T &v) const {
+        return {x / v, y / v};
+    }
+
+    Point & operator/=(const T &v) {
+        x /= v;
+        y /= v;
         return *this;
     }
 };
 
 template <typename T>
-T cross(Point<T> a, Point<T> b) {
+T cross(const Point<T> &a, const Point<T> &b) {
     return (a.x * b.y) - (a.y * b.x);
 }
 
 template <typename T>
-T area_of_parallelogram(Point<T> a, Point<T> b, Point<T> c) {
+T area_of_parallelogram(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
     Point<T> u = b - a, v = c - a;
     return abs(cross(u, v));
 }
@@ -434,7 +503,7 @@ T distance_between_polygons(vector<Point<T>> P, vector<Point<T>> Q) {
 }
 
 template <typename T>
-T cross(Point<T> a, Point<T> b, Point<T> c) {
+T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
     return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
