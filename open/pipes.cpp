@@ -107,10 +107,12 @@ struct Point {
     }
 };
 
+template <typename T>
 struct Hash {
-    size_t operator()(Point<int> p) const {
-        auto h = hash<int>()(p.x);
-        h ^= hash<int>()(p.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
+    size_t operator()(Point<T> p) const {
+        auto h = 0ULL;
+        h ^= hash<T>()(p.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        h ^= hash<T>()(p.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
         return h;
     }
 };
@@ -194,8 +196,8 @@ int main() {
         for (int i : order) {
             auto s = tile(connect[i].x, m, n), d = tile(connect[i].y, m, n);
 
-            unordered_map<Point<int>, Point<int>, Hash> prev;
-            unordered_map<Point<int>, int, Hash> dist;
+            unordered_map<Point<int>, Point<int>, Hash<int>> prev;
+            unordered_map<Point<int>, int, Hash<int>> dist;
             dist[s] = 0;
             stack<Point<int>> st;
             st.emplace(s);
