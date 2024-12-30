@@ -11,7 +11,7 @@ struct Point {
 
 template <typename T>
 double dist(Point<T> a, Point<T> b) {
-    return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+    return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
 int main() {
