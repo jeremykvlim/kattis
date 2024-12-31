@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-
+    
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -101,61 +101,65 @@ bool isprime(unsigned long long n) {
 }
 
 template <typename M>
-struct ModInt {
+struct MontgomeryModInt {
     using T = typename decay<decltype(M::value)>::type;
+    using U = typename conditional<is_same<T, unsigned int>::value, unsigned long long, typename conditional<is_same<T, unsigned long long>::value, unsigned __int128, void>::type>::type;
+    using I = typename conditional<is_same<T, unsigned int>::value, int, typename conditional<is_same<T, unsigned long long>::value, long long, void>::type>::type;
+    using J = typename conditional<is_same<T, unsigned int>::value, long long, typename conditional<is_same<T, unsigned long long>::value, __int128, void>::type>::type;
 
     T value;
+    static pair<T, U> r;
     static bool prime_mod;
+    static constexpr int bit_length = sizeof(T) * 8;
 
     static void init() {
         prime_mod = mod() == 998244353 || mod() == (unsigned long long) 1e9 + 7 || mod() == (unsigned long long) 1e9 + 9 || mod() == (unsigned long long) 1e6 + 69 || mod() == 2524775926340780033 || isprime(mod());
+        r = {mod(), - (U) mod() % mod()};
+        while (mod() * r.first != 1) r.first *= (T) 2 - mod() * r.first;
     }
 
-    constexpr ModInt() : value() {}
+    constexpr MontgomeryModInt() : value() {}
 
-    template <typename U>
-    ModInt(const U &x) {
-        value = normalize(x);
+    MontgomeryModInt(const J &x) {
+        value = reduce((U) x * r.second);
     }
 
-    template <typename U>
-    static T normalize(const U &x) {
-        U v = x;
-        if (!(-mod() <= x && x < mod())) v = x % mod();
-        return v < 0 ? v + mod() : v;
+    static T reduce(const U &x) {
+        T q = (U) x * r.first, v = (x >> bit_length) + mod() - (((U) q * mod()) >> bit_length);
+        return v >= mod() ? v - mod() : v;
     }
 
-    const T & operator()() const {
-        return value;
+    T operator()() const {
+        return reduce((U) value);
     }
 
-    template <typename U>
-    explicit operator U() const {
-        return (U) value;
+    template <typename V>
+    explicit operator V() const {
+        return (V) value;
     }
 
     constexpr static T mod() {
         return M::value;
     }
 
-    inline auto & operator+=(const ModInt &v) {
-        if ((long long) (value += v.value) >= mod()) value -= mod();
+    inline auto & operator+=(const MontgomeryModInt &v) {
+        if ((I) (value += v.value) >= mod()) value -= mod();
         return *this;
     }
 
-    inline auto & operator-=(const ModInt &v) {
-        if ((long long) (value -= v.value) < 0) value += mod();
+    inline auto & operator-=(const MontgomeryModInt &v) {
+        if ((I) (value -= v.value) < 0) value += mod();
         return *this;
     }
 
     template <typename U>
     inline auto & operator+=(const U &v) {
-        return *this += ModInt(v);
+        return *this += (MontgomeryModInt) v;
     }
 
     template <typename U>
     inline auto & operator-=(const U &v) {
-        return *this -= ModInt(v);
+        return *this -= (MontgomeryModInt) v;
     }
 
     auto & operator++() {
@@ -175,34 +179,34 @@ struct ModInt {
     }
 
     auto operator-() const {
-        return (ModInt) 0 - *this;
+        return (MontgomeryModInt) 0 - *this;
     }
 
-    template <typename U = M>
-    typename enable_if<is_same<typename ModInt<U>::T, unsigned int>::value, ModInt>::type &operator*=(const ModInt &v) {
-        value = normalize((unsigned long long) value * v.value);
+    template <typename V = M>
+    typename enable_if<is_same<typename MontgomeryModInt<V>::T, unsigned int>::value, MontgomeryModInt>::type & operator*=(const MontgomeryModInt &v) {
+        value = reduce((unsigned long long) value * v.value);
         return *this;
     }
 
-    template <typename U = M>
-    typename enable_if<is_same<typename ModInt<U>::T, unsigned long long>::value, ModInt>::type &operator*=(const ModInt &v) {
-        value = normalize(mul(value, v.value, mod()));
+    template <typename V = M>
+    typename enable_if<is_same<typename MontgomeryModInt<V>::T, unsigned long long>::value, MontgomeryModInt>::type & operator*=(const MontgomeryModInt &v) {
+        value = reduce((unsigned __int128) value * v.value);
         return *this;
     }
 
-    template <typename U = M>
-    typename enable_if<!is_integral<typename ModInt<U>::T>::value, ModInt>::type &operator*=(const ModInt &v) {
-        value = normalize(value * v.value);
+    template <typename V = M>
+    typename enable_if<!is_integral<typename MontgomeryModInt<V>::T>::value, MontgomeryModInt>::type & operator*=(const MontgomeryModInt &v) {
+        value = reduce(value * v.value);
         return *this;
     }
 
-    auto & operator/=(const ModInt &v) {
+    auto & operator/=(const MontgomeryModInt &v) {
         return *this *= inv(v);
     }
 
-    ModInt inv(const ModInt &v) {
+    MontgomeryModInt inv(const MontgomeryModInt &v) {
         if (prime_mod) {
-            ModInt inv = 1, base = v;
+            MontgomeryModInt inv = 1, base = v;
             T n = mod() - 2;
             while (n) {
                 if (n & 1) inv *= base;
@@ -221,133 +225,141 @@ struct ModInt {
             swap(x, y);
         }
 
-        return (ModInt) x;
+        return (MontgomeryModInt) x;
     }
 };
 
 template <typename T>
-bool operator==(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+bool operator==(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
     return lhs.value == rhs.value;
 }
 
 template <typename T, typename U>
-bool operator==(const ModInt<T> &lhs, U rhs) {
-    return lhs == ModInt<T>(rhs);
+bool operator==(const MontgomeryModInt<T> &lhs, U rhs) {
+    return lhs == MontgomeryModInt<T>(rhs);
 }
 
 template <typename T, typename U>
-bool operator==(U lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) == rhs;
+bool operator==(U lhs, const MontgomeryModInt<T> &rhs) {
+    return MontgomeryModInt<T>(lhs) == rhs;
 }
 
 template <typename T>
-bool operator!=(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+bool operator!=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
     return !(lhs == rhs);
 }
 
 template <typename T, typename U>
-bool operator!=(const ModInt<T> &lhs, U rhs) {
+bool operator!=(const MontgomeryModInt<T> &lhs, U rhs) {
     return !(lhs == rhs);
 }
 
 template <typename T, typename U>
-bool operator!=(U lhs, const ModInt<T> &rhs) {
+bool operator!=(U lhs, const MontgomeryModInt<T> &rhs) {
     return !(lhs == rhs);
 }
 
 template <typename T>
-bool operator>(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-    return lhs.value > rhs.value;
+bool operator>(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return lhs() > rhs();
 }
 
 template <typename T>
-bool operator<(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-    return lhs.value < rhs.value;
+bool operator<(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return lhs() < rhs();
 }
 
 template <typename T>
-ModInt<T> operator+(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) += rhs;
-}
-
-template <typename T, typename U>
-ModInt<T> operator+(const ModInt<T> &lhs, U rhs) {
-    return ModInt<T>(lhs) += rhs;
-}
-
-template <typename T, typename U>
-ModInt<T> operator+(U lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) += rhs;
+bool operator>=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return lhs > rhs || lhs == rhs;
 }
 
 template <typename T>
-ModInt<T> operator-(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) -= rhs;
-}
-
-template <typename T, typename U>
-ModInt<T> operator-(const ModInt<T> &lhs, U rhs) {
-    return ModInt<T>(lhs) -= rhs;
-}
-
-template <typename T, typename U>
-ModInt<T> operator-(U lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) -= rhs;
+bool operator<=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return lhs < rhs || lhs == rhs;
 }
 
 template <typename T>
-ModInt<T> operator*(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) *= rhs;
+MontgomeryModInt<T> operator+(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return MontgomeryModInt<T>(lhs) += rhs;
 }
 
 template <typename T, typename U>
-ModInt<T> operator*(const ModInt<T> &lhs, U rhs) {
-    return ModInt<T>(lhs) *= rhs;
+MontgomeryModInt<T> operator+(const MontgomeryModInt<T> &lhs, U rhs) {
+    return MontgomeryModInt<T>(lhs) += rhs;
 }
 
 template <typename T, typename U>
-ModInt<T> operator*(U lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) *= rhs;
+MontgomeryModInt<T> operator+(U lhs, const MontgomeryModInt<T> &rhs) {
+    return MontgomeryModInt<T>(lhs) += rhs;
 }
 
 template <typename T>
-ModInt<T> operator/(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) /= rhs;
+MontgomeryModInt<T> operator-(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return MontgomeryModInt<T>(lhs) -= rhs;
 }
 
 template <typename T, typename U>
-ModInt<T> operator/(const ModInt<T> &lhs, U rhs) {
-    return ModInt<T>(lhs) /= rhs;
+MontgomeryModInt<T> operator-(const MontgomeryModInt<T> &lhs, U rhs) {
+    return MontgomeryModInt<T>(lhs) -= rhs;
 }
 
 template <typename T, typename U>
-ModInt<T> operator/(U lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) /= rhs;
+MontgomeryModInt<T> operator-(U lhs, const MontgomeryModInt<T> &rhs) {
+    return MontgomeryModInt<T>(lhs) -= rhs;
+}
+
+template <typename T>
+MontgomeryModInt<T> operator*(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return MontgomeryModInt<T>(lhs) *= rhs;
+}
+
+template <typename T, typename U>
+MontgomeryModInt<T> operator*(const MontgomeryModInt<T> &lhs, U rhs) {
+    return MontgomeryModInt<T>(lhs) *= rhs;
+}
+
+template <typename T, typename U>
+MontgomeryModInt<T> operator*(U lhs, const MontgomeryModInt<T> &rhs) {
+    return MontgomeryModInt<T>(lhs) *= rhs;
+}
+
+template <typename T>
+MontgomeryModInt<T> operator/(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return MontgomeryModInt<T>(lhs) /= rhs;
+}
+
+template <typename T, typename U>
+MontgomeryModInt<T> operator/(const MontgomeryModInt<T> &lhs, U rhs) {
+    return MontgomeryModInt<T>(lhs) /= rhs;
+}
+
+template <typename T, typename U>
+MontgomeryModInt<T> operator/(U lhs, const MontgomeryModInt<T> &rhs) {
+    return MontgomeryModInt<T>(lhs) /= rhs;
 }
 
 template <typename U, typename T>
-U & operator<<(U &stream, const ModInt<T> &v) {
+U & operator<<(U &stream, const MontgomeryModInt<T> &v) {
     return stream << v();
 }
 
 template <typename U, typename T>
-U & operator>>(U &stream, ModInt<T> &v) {
-    typename common_type<typename ModInt<T>::T, long long>::type x;
+U & operator>>(U &stream, MontgomeryModInt<T> &v) {
+    typename common_type<typename MontgomeryModInt<T>::T, long long>::type x;
     stream >> x;
-    v = ModInt<T>(x);
+    v = MontgomeryModInt<T>(x);
     return stream;
 }
 
 template <typename M>
-bool ModInt<M>::prime_mod;
+pair<typename MontgomeryModInt<M>::T, typename MontgomeryModInt<M>::U> MontgomeryModInt<M>::r;
+
+template <typename M>
+bool MontgomeryModInt<M>::prime_mod;
 
 constexpr unsigned long long MODULO = 1e10 + 3233;
-using modint = ModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
-
-template <typename T>
-bool approximately_equal(const T &v1, const T &v2) {
-    return fabs(v1 - v2) <= 1e-8;
-}
+using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
 template <typename T>
 struct Point {
@@ -359,104 +371,40 @@ struct Point {
     template <typename U>
     Point(const Point<U> &p) : x((T) p.x), y((T) p.y) {}
 
-    Point operator-() const {
-        return {-x, -y};
+    auto operator<(const Point &p) const {
+        return x != p.x ? x < p.x : y < p.y;
     }
 
-    bool operator<(const Point &p) const {
-        return !approximately_equal(x, p.x) ? x < p.x : y < p.y;
-    }
-
-    bool operator>(const Point &p) const {
-        return !approximately_equal(x, p.x) ? x > p.x : y > p.y;
-    }
-
-    bool operator==(const Point &p) const {
-        if constexpr (is_floating_point_v<T>) return approximately_equal(x, p.x) && approximately_equal(y, p.y);
+    auto operator==(const Point &p) const {
         return x == p.x && y == p.y;
     }
 
-    bool operator!=(const Point &p) const {
-        if constexpr (is_floating_point_v<T>) return !approximately_equal(x, p.x) || !approximately_equal(y, p.y);
-        return x != p.x || y != p.y;
-    }
-
-    bool operator<=(const Point &p) const {
-        return *this < p || *this == p;
-    }
-
-    bool operator>=(const Point &p) const {
-        return *this > p || *this == p;
-    }
-
-    Point operator+(const Point &p) const {
+    Point operator+(Point p) const {
         return {x + p.x, y + p.y};
     }
 
-    Point operator+(const T &v) const {
-        return {x + v, y + v};
-    }
-
-    Point & operator+=(const Point &p) {
-        x += p.x;
-        y += p.y;
-        return *this;
-    }
-
-    Point & operator+=(const T &v) {
-        x += v;
-        y += v;
-        return *this;
-    }
-
-    Point operator-(const Point &p) const {
+    Point operator-(Point p) const {
         return {x - p.x, y - p.y};
     }
 
-    Point operator-(const T &v) const {
-        return {x - v, y - v};
+    Point operator*(T c) const {
+        return {c * x, c * y};
     }
 
-    Point & operator-=(const Point &p) {
-        x -= p.x;
-        y -= p.y;
-        return *this;
-    }
-
-    Point & operator-=(const T &v) {
-        x -= v;
-        y -= v;
-        return *this;
-    }
-
-    Point operator*(const T &v) const {
-        return {x * v, y * v};
-    }
-
-    Point & operator*=(const T &v) {
-        x *= v;
-        y *= v;
-        return *this;
-    }
-
-    Point operator/(const T &v) const {
-        return {x / v, y / v};
-    }
-
-    Point & operator/=(const T &v) {
-        x /= v;
-        y /= v;
+    Point & operator*=(T c) {
+        x *= c;
+        y *= c;
         return *this;
     }
 };
 
 template <typename T>
-T cross(const Point<T> &a, const Point<T> &b) {
+T cross(Point<T> a, Point<T> b) {
     return (a.x * b.y) - (a.y * b.x);
 }
 
 template <typename T>
-T area_of_parallelogram(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
+T area_of_parallelogram(Point<T> a, Point<T> b, Point<T> c) {
     Point<T> u = b - a, v = c - a;
     return abs(cross(u, v));
 }
@@ -503,7 +451,7 @@ T distance_between_polygons(vector<Point<T>> P, vector<Point<T>> Q) {
 }
 
 template <typename T>
-T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
+T cross(Point<T> a, Point<T> b, Point<T> c) {
     return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
