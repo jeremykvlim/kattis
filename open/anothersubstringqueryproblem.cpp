@@ -151,31 +151,31 @@ struct SuffixArray {
 template <typename T>
 struct WaveletTree {
     vector<T> WT, temp;
-    vector<int> pref_even, pref_odd;
-    int b;
+    vector<int> pref_zeroes, pref_ones;
+    int h;
 
-    void select(vector<array<int, 3>> &queries) {
-        for (int bit = b; ~bit; bit--) {
+    void select(vector<array<int, 3>> &k_order_statistics) {
+        for (int b = h; ~b; b--) {
             for (int i = 0; i < WT.size(); i++) {
-                pref_even[i + 1] = pref_even[i] + !((WT[i] >> bit) & 1);
-                pref_odd[i + 1] = pref_odd[i] + ((WT[i] >> bit) & 1);
+                pref_zeroes[i + 1] = pref_zeroes[i] + !((WT[i] >> b) & 1);
+                pref_ones[i + 1] = pref_ones[i] + ((WT[i] >> b) & 1);
             }
 
-            int even = 0, odd = pref_even.back();
-            for (int e : WT) temp[!((e >> bit) & 1) ? even++ : odd++] = e;
+            int zeroes = 0, ones = pref_zeroes.back();
+            for (int e : WT) temp[!((e >> b) & 1) ? zeroes++ : ones++] = e;
             swap(WT, temp);
 
-            for (auto &[l, r, k] : queries) {
+            for (auto &[l, r, k] : k_order_statistics) {
                 if (r - l < k || !k) continue;
 
-                int K = pref_even[r] - pref_even[l];
+                int K = pref_zeroes[r] - pref_zeroes[l];
                 if (k <= K) {
-                    l = pref_even[l];
-                    r = pref_even[r];
+                    l = pref_zeroes[l];
+                    r = pref_zeroes[r];
                 } else {
                     k -= K;
-                    l = pref_even.back() + pref_odd[l];
-                    r = pref_even.back() + pref_odd[r];
+                    l = pref_zeroes.back() + pref_ones[l];
+                    r = pref_zeroes.back() + pref_ones[r];
                 }
             }
         }
@@ -186,8 +186,8 @@ struct WaveletTree {
     }
 
     WaveletTree(vector<T> a, vector<array<int, 3>> &k_order_statistics) : WT(a.begin(), a.end()), temp(a.size()),
-                                                                          pref_even(a.size() + 1), pref_odd(a.size() + 1) {
-        b = __lg(*max_element(a.begin(), a.end()));
+                                                                          pref_zeroes(a.size() + 1), pref_ones(a.size() + 1) {
+        h = __lg(*max_element(a.begin(), a.end()));
         select(k_order_statistics);
     }
 };
