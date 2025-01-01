@@ -337,7 +337,7 @@ struct VoronoiDiagram {
                 splice(symm(edges[i]), j);
 
                 T cross_product = cross(v[1], v[2], v[0]);
-                int k = !sgn(cross_product) ? connect(j, i) : -1;
+                int k = !sgn(cross_product) ? -1 : connect(j, i);
                 if (cross_product < 0) return {symm(edges[k]), k};
                 return {i, symm(edges[j])};
             }
