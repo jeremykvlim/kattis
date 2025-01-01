@@ -150,19 +150,19 @@ Point<T> circumcenter(const array<Point<T>, 3> &triangle) {
 }
 
 template <typename T>
+int sgn(const T &v) {
+    return approximately_equal(v, (T) 0) ? 0 : (v > 0) - (v < 0);
+}
+
+template <typename T>
 pair<bool, bool> point_in_circumcircle(const array<Point<T>, 3> &triangle, const Point<T> &p) {
     Point<T> a = triangle[0], b = triangle[1], c = triangle[2];
     T pa = dot(a - p, a - p), pb = dot(b - p, b - p), pc = dot(c - p, c - p);
 
     T det = cross(a, b, p) * pc + cross(b, c, p) * pa + cross(c, a, p) * pb;
-    if (det > 0) return {true, false};
-    if (approximately_equal(det, (T) 0)) return {false, true};
+    if (sgn(det) > 0) return {true, false};
+    if (!sgn(det)) return {false, true};
     return {false, false};
-}
-
-template <typename T>
-int sgn(const T &v) {
-    return approximately_equal(v, (T) 0) ? 0 : (v > 0) - (v < 0);
 }
 
 template <typename T>
@@ -337,7 +337,7 @@ struct VoronoiDiagram {
                 splice(symm(edges[i]), j);
 
                 T cross_product = cross(v[1], v[2], v[0]);
-                int k = !approximately_equal(cross_product, (T) 0) ? connect(j, i) : -1;
+                int k = !sgn(cross_product) ? connect(j, i) : -1;
                 if (cross_product < 0) return {symm(edges[k]), k};
                 return {i, symm(edges[j])};
             }
