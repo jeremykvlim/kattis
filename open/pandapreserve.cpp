@@ -295,6 +295,7 @@ struct VoronoiDiagram {
     }
 
     int n;
+    bool super_triangle;
     vector<bool> visited;
     vector<Point<T>> points, voronoi_vertices;
     vector<array<int, 3>> triangles;
@@ -302,7 +303,8 @@ struct VoronoiDiagram {
     vector<int> edge_match;
 
     VoronoiDiagram(vector<Point<T>> p, bool add_super_triangle = false) : n(p.size()) {
-        if (add_super_triangle) {
+        super_triangle = add_super_triangle;
+        if (super_triangle) {
             T xl = p[0].x, xr = p[0].x, yl = p[0].y, yr = p[0].y;
             for (auto [x, y] : p) {
                 xl = min(xl, x);
@@ -430,31 +432,33 @@ struct VoronoiDiagram {
     }
 
     void build_diagram() {
+        vector<bool> remove;
+        if (super_triangle) remove.resize(triangles.size(), false);
         voronoi_vertices.resize(triangles.size());
-        vector<bool> remove(triangles.size(), false);
         for (int i = 0; i < triangles.size(); i++) {
             auto [a, b, c] = triangles[i];
-            remove[i] = !(a < n && b < n && c < n);
+            if (super_triangle) remove[i] = !(a < n && b < n && c < n);
             voronoi_vertices[i] = circumcenter(array<Point<T>, 3>{points[a], points[b], points[c]});
         }
 
-        unordered_map<pair<int, int>, vector<int>, Hash> edge_to_triangles;
+        unordered_map<pair<int, int>, vector<int>, Hash> edge_freq;
         for (int i = 0; i < triangles.size(); i++)
             for (int j = 0; j < 3; j++) {
                 int a = triangles[i][j], b = triangles[i][(j + 1) % 3];
                 if (a < n && b < n) {
                     if (a > b) swap(a, b);
-                    edge_to_triangles[{a, b}].emplace_back(i);
+                    edge_freq[{a, b}].emplace_back(i);
                 }
             }
 
-        for (auto [edge, indices] : edge_to_triangles)
+        for (auto [edge, indices] : edge_freq)
             if (indices.size() == 2) {
                 auto [a, b] = edge;
                 voronoi_edges.emplace_back(voronoi_vertices[indices[0]], voronoi_vertices[indices[1]]);
                 edge_match.emplace_back(a);
             }
 
+        if (!super_triangle) return;
         voronoi_vertices.erase(remove_if(voronoi_vertices.begin(), voronoi_vertices.end(), [i = 0, &remove](const auto &) mutable {return remove[i++];}));
         triangles.erase(remove_if(triangles.begin(), triangles.end(), [i = 0, &remove](const auto &) mutable {return remove[i++];}));
     }
