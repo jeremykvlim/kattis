@@ -105,22 +105,21 @@ struct Point {
         y /= v;
         return *this;
     }
+
+    struct Hash {
+        size_t operator()(Point<T> p) const {
+            auto h = 0ULL;
+            h ^= hash<T>()(p.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
+            h ^= hash<T>()(p.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
+            return h;
+        }
+    };
 };
 
 template <typename T>
 T manhattan_dist(const Point<T> &a, const Point<T> &b) {
     return abs(a.x - b.x) + abs(a.y - b.y);
 }
-
-template <typename T>
-struct Hash {
-    size_t operator()(Point<T> p) const {
-        auto h = 0ULL;
-        h ^= hash<T>()(p.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        h ^= hash<T>()(p.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        return h;
-    }
-};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -136,7 +135,7 @@ int main() {
     auto move = [&](bool flip) {
         Point<int> curr{0, 0};
         int curr_k = 0;
-        unordered_set<Point<int>, Hash<int>> visited;
+        unordered_set<Point<int>, Point<int>::Hash> visited;
         visited.emplace(curr);
 
         vector<int> dx{1, 0, -1, 0}, dy{0, 1, 0, -1};
