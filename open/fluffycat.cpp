@@ -108,7 +108,7 @@ struct Point {
 };
 
 template <typename T>
-double squared_dist(const Point<T> &p) {
+T squared_dist(const Point<T> &p) {
     return p.x * p.x + p.y * p.y;
 }
 
@@ -140,7 +140,7 @@ int main() {
             else if (!(rng() % 3)) i = rng() % 8 + 4;
             else {
                 Point<int> mouse_ave(0, 0);
-                for (auto pos: prev) mouse_ave += pos;
+                for (auto pos : prev) mouse_ave += pos;
                 mouse_ave /= prev.size();
 
                 double dist = 1e20;
