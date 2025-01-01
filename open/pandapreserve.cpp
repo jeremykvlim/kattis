@@ -435,28 +435,24 @@ struct VoronoiDiagram {
         vector<bool> remove;
         if (super_triangle) remove.resize(triangles.size(), false);
         voronoi_vertices.resize(triangles.size());
+        unordered_map<pair<int, int>, int, Hash> seen;
         for (int i = 0; i < triangles.size(); i++) {
             auto [a, b, c] = triangles[i];
             if (super_triangle) remove[i] = !(a < n && b < n && c < n);
             voronoi_vertices[i] = circumcenter(array<Point<T>, 3>{points[a], points[b], points[c]});
-        }
 
-        unordered_map<pair<int, int>, vector<int>, Hash> edge_freq;
-        for (int i = 0; i < triangles.size(); i++)
-            for (int j = 0; j < 3; j++) {
-                int a = triangles[i][j], b = triangles[i][(j + 1) % 3];
-                if (a < n && b < n) {
-                    if (a > b) swap(a, b);
-                    edge_freq[{a, b}].emplace_back(i);
+            vector<pair<int, int>> triangle_edges{{a, b}, {b, c}, {c, a}};
+            for (auto [u, v] : triangle_edges) {
+                if (u < n && v < n) {
+                    if (u > v) swap(u, v);
+                    if (seen.count({u, v})) {
+                        int j = seen[{u, v}];
+                        voronoi_edges.emplace_back(voronoi_vertices[i], voronoi_vertices[j]);
+                        edge_match.emplace_back(u);
+                    } else seen[{u, v}] = i;
                 }
             }
-
-        for (auto [edge, indices] : edge_freq)
-            if (indices.size() == 2) {
-                auto [a, b] = edge;
-                voronoi_edges.emplace_back(voronoi_vertices[indices[0]], voronoi_vertices[indices[1]]);
-                edge_match.emplace_back(a);
-            }
+        }
 
         if (!super_triangle) return;
         voronoi_vertices.erase(remove_if(voronoi_vertices.begin(), voronoi_vertices.end(), [i = 0, &remove](const auto &) mutable {return remove[i++];}));
