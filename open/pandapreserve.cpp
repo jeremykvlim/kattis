@@ -278,7 +278,7 @@ struct VoronoiDiagram {
         };
 
         auto oprev = [&](int i) {
-            return edges[edges[edges[i].rotate].o].rotate;
+            return edges[onext(edges[i].rotate)].rotate;
         };
 
         auto lnext = [&](int i) {
@@ -286,7 +286,7 @@ struct VoronoiDiagram {
         };
 
         auto rprev = [&](int i) {
-            return edges[symm(i)].o;
+            return onext(symm(i));
         };
 
         auto src = [&](int i) {
@@ -294,7 +294,7 @@ struct VoronoiDiagram {
         };
 
         auto dest = [&](int i) {
-            return edges[symm(i)].s;
+            return src(symm(i));
         };
 
         auto splice = [&](int i, int j) {
@@ -322,7 +322,9 @@ struct VoronoiDiagram {
         };
 
         auto connect = [&](int i, int j) {
-            int k = add_edge(dest(i), src(j));
+            Point<T> a = dest(i), b = src(j);
+
+            int k = add_edge(a, b);
             splice(k, lnext(i));
             splice(symm(k), j);
             return k;
