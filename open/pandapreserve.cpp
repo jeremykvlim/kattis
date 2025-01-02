@@ -323,9 +323,7 @@ struct VoronoiDiagram {
         };
 
         auto connect = [&](int i, int j) {
-            Point<T> a = dest(i), b = src(j);
-
-            int k = add_edge(a, b);
+            int k = add_edge(dest(i), src(j));
             splice(k, lnext(i));
             splice(symm(k), j);
             return k;
