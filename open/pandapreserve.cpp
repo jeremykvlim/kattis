@@ -438,7 +438,7 @@ struct VoronoiDiagram {
             voronoi_vertices[i] = circumcenter(array<Point<T>, 3>{points[a], points[b], points[c]});
 
             vector<pair<int, int>> triangle_edges{{a, b}, {b, c}, {c, a}};
-            for (auto [u, v] : triangle_edges) {
+            for (auto [u, v] : triangle_edges) 
                 if (u < n && v < n) {
                     if (u > v) swap(u, v);
                     if (seen.count({u, v})) {
@@ -447,7 +447,6 @@ struct VoronoiDiagram {
                         edge_match.emplace_back(u);
                     } else seen[{u, v}] = i;
                 }
-            }
         }
 
         if (!super_triangle) return;
