@@ -252,6 +252,11 @@ struct VoronoiDiagram {
         return i;
     }
 
+    void delete_edge(int c, QuadEdge e) {
+        splice(c, oprev(e));
+        splice(symm(e), oprev(edges[symm(e)]));
+    }
+
     void splice(int i, int j) {
         swap(edges[edges[edges[i].o].rotate].o, edges[edges[edges[j].o].rotate].o);
         swap(edges[i].o, edges[j].o);
@@ -294,6 +299,14 @@ struct VoronoiDiagram {
         return edges[symm(e)].s;
     }
 
+    bool left_of(int i, const Point<T> &p) const {
+        return cross(dest(edges[i]), src(edges[i]), p) < 0;
+    }
+
+    bool right_of(int i, const Point<T> &p) const {
+        return cross(dest(edges[i]), src(edges[i]), p) > 0;
+    }
+
     int n;
     bool super_triangle;
     vector<bool> visited;
@@ -328,63 +341,48 @@ struct VoronoiDiagram {
         for (int i = 0; i < p.size(); i++) indices[p[i]] = i;
 
         sort(p.begin(), p.end());
-        auto guibas_stolfi = [&](auto &&self, const vector<Point<T>> &v) -> pair<int, int> {
-            int size = v.size();
+        auto guibas_stolfi = [&](auto &&self, const vector<Point<T>> &s) -> pair<int, int> {
+            int size = s.size();
             if (size <= 3) {
-                int i = add_edge(v[0], v[1]), j = add_edge(v[1], v.back());
+                int i = add_edge(s[0], s[1]), j = add_edge(s[1], s.back());
                 if (size == 2) return {i, symm(edges[i])};
 
                 splice(symm(edges[i]), j);
 
-                T cross_product = cross(v[1], v[2], v[0]);
+                T cross_product = cross(s[1], s[2], s[0]);
                 int k = !sgn(cross_product) ? -1 : connect(j, i);
                 if (cross_product < 0) return {symm(edges[k]), k};
                 return {i, symm(edges[j])};
             }
 
-            auto [ll, lr] = self(self, {v.begin(), v.begin() + size / 2});
-            auto [rl, rr] = self(self, {v.begin() + size / 2, v.end()});
+            auto [ldo, ldi] = self(self, {s.begin(), s.begin() + size / 2});
+            auto [rdo, rdi] = self(self, {s.begin() + size / 2, s.end()});
 
-            auto lowest_common_tangent = [&]() {
-                for (;;) {
-                    if (cross(dest(edges[lr]), src(edges[lr]), src(edges[rl])) < 0) {
-                        lr = lnext(edges[lr]);
-                        continue;
-                    }
+            for (;;) {
+                if (left_of(ldi, src(edges[rdo]))) ldi = lnext(edges[ldi]);
+                else if (right_of(rdo, src(edges[ldi]))) rdo = rprev(edges[rdo]);
+                else break;
+            }
 
-                    if (cross(dest(edges[rl]), src(edges[rl]), src(edges[lr])) > 0) {
-                        rl = rprev(edges[rl]);
-                        continue;
-                    }
-                    break;
-                }
-            };
-            lowest_common_tangent();
-
-            int base = connect(symm(edges[rl]), lr);
-            if (src(edges[ll]) == src(edges[lr])) ll = symm(edges[base]);
-            if (src(edges[rl]) == src(edges[rr])) rr = base;
+            int base = connect(symm(edges[rdo]), ldi);
+            if (src(edges[ldo]) == src(edges[ldi])) ldo = symm(edges[base]);
+            if (src(edges[rdo]) == src(edges[rdi])) rdi = base;
 
             for (;;) {
                 auto &be = edges[base];
                 auto valid = [&](int i) {
-                    return cross(dest(be), src(be), dest(edges[i])) > 0;
+                    return right_of(base, dest(edges[i]));
                 };
 
                 int lc = onext(edges[symm(be)]), rc = oprev(be);
                 bool vl = valid(lc), vr = valid(rc);
                 if (!vl && !vr) break;
 
-                auto remove = [&](int c, auto e) {
-                    splice(c, oprev(e));
-                    splice(symm(e), oprev(edges[symm(e)]));
-                };
-
                 if (vl)
                     while (point_in_circumcircle({dest(be), src(be), dest(edges[lc])}, dest(edges[onext(edges[lc])])).first) {
                         auto &e = edges[lc];
                         int temp = onext(e);
-                        remove(lc, e);
+                        delete_edge(lc, e);
                         lc = temp;
                     }
 
@@ -392,7 +390,7 @@ struct VoronoiDiagram {
                     while (point_in_circumcircle({dest(be), src(be), dest(edges[rc])}, dest(edges[oprev(edges[rc])])).first) {
                         auto &e = edges[rc];
                         int temp = oprev(e);
-                        remove(rc, e);
+                        delete_edge(rc, e);
                         rc = temp;
                     }
 
@@ -400,16 +398,16 @@ struct VoronoiDiagram {
                 if (!vl || (vr && point_in_circumcircle({src(re), dest(le), src(le)}, dest(re)).first)) base = connect(rc, symm(be));
                 else base = connect(symm(be), symm(le));
             }
-            return {ll, rr};
+            return {ldo, rdi};
         };
 
         int l = guibas_stolfi(guibas_stolfi, p).first;
-        visited.resize(edges.size(), false);
         queue<int> q;
         q.emplace(l);
 
-        while (cross(dest(edges[l]), src(edges[l]), dest(edges[onext(edges[l])])) < 0) l = onext(edges[l]);
+        while (left_of(l, dest(edges[onext(edges[l])]))) l = onext(edges[l]);
 
+        visited.resize(edges.size(), false);
         vector<Point<T>> all;
         auto left_from_edge = [&](int start, bool add) {
             int e = start;
@@ -467,24 +465,24 @@ int main() {
     int n;
     cin >> n;
 
-    vector<Point<double>> coords(n);
-    for (auto &[x, y] : coords) cin >> x >> y;
+    vector<Point<double>> polygon(n);
+    for (auto &[x, y] : polygon) cin >> x >> y;
 
-    VoronoiDiagram<double> vd(coords, true);
+    VoronoiDiagram<double> vd(polygon, true);
     double range = 0;
     for (int i = 0; i < vd.voronoi_vertices.size(); i++) {
         auto cc = vd.voronoi_vertices[i];
-        auto [in, on] = point_in_polygon(coords, cc);
-        if (in || on) range = max(range, dist(cc, coords[vd.triangles[i][0]]));
+        auto [in, on] = point_in_polygon(polygon, cc);
+        if (in || on) range = max(range, dist(cc, polygon[vd.triangles[i][0]]));
     }
 
     for (int i = 0; i < vd.voronoi_edges.size(); i++) {
         auto l1 = vd.voronoi_edges[i];
         for (int j = 0; j < n; j++) {
-            auto l2 = Line(coords[j], coords[(j + 1) % n]);
+            auto l2 = Line(polygon[j], polygon[(j + 1) % n]);
             if (intersects(l1, l2) && !collinear(l1, l2)) {
                 auto p = non_collinear_intersection(l1, l2), l = max(min(l1.a, l1.b), min(l2.a, l2.b)), r = min(max(l1.a, l1.b), max(l2.a, l2.b));
-                if (l <= p && p <= r) range = max(range, dist(p, coords[vd.edge_match[i]]));
+                if (l <= p && p <= r) range = max(range, dist(p, polygon[vd.edge_match[i]]));
             }
         }
     }
