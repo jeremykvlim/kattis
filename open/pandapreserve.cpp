@@ -230,7 +230,6 @@ template <typename T>
 struct VoronoiDiagram {
     int n;
     bool super_triangle;
-    vector<bool> visited;
     vector<Point<T>> points, voronoi_vertices;
     vector<array<int, 3>> triangles;
     vector<Line<T>> voronoi_edges;
@@ -399,7 +398,7 @@ struct VoronoiDiagram {
 
         while (left_of(l, dest(onext(l)))) l = onext(l);
 
-        visited.resize(edges.size(), false);
+        vector<bool> visited(edges.size(), false);
         vector<Point<T>> all;
         auto left_from_edge = [&](int start, bool add) {
             int e = start;
