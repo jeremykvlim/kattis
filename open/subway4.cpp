@@ -9,7 +9,7 @@ struct Hash {
     }
 };
 
-struct DisjointSet {
+struct DisjointSets {
     vector<int> sets;
 
     int find(int p) {
@@ -25,7 +25,7 @@ struct DisjointSet {
         return false;
     }
 
-    DisjointSet(int n) : sets(n) {
+    DisjointSets(int n) : sets(n) {
         iota(sets.begin(), sets.end(), 0);
     }
 };
@@ -64,7 +64,7 @@ int main() {
     };
     dfs(dfs);
 
-    DisjointSet dsu(n);
+    DisjointSets dsu(n);
     for (int a = 0; a < n; a++)
         for (int b : adj_list[a]) {
             if (a > b) continue;

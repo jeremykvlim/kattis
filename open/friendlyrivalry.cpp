@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct DisjointSet {
+struct DisjointSets {
     vector<int> sets;
 
     int find(int p) {
@@ -17,7 +17,7 @@ struct DisjointSet {
         return false;
     }
 
-    DisjointSet(int n) : sets(n) {
+    DisjointSets(int n) : sets(n) {
         iota(sets.begin(), sets.end(), 0);
     }
 };
@@ -165,7 +165,7 @@ int main() {
     while (l + 1 < r) {
         mid = l + (r - l) / 2;
 
-        DisjointSet dsu(c);
+        DisjointSets dsu(c);
         for (int i = 0; i < c; i++)
             for (int j = i + 1; j < c; j++)
                 if (dist(coords[i], coords[j]) + 1e-9 < d[mid]) dsu.unite(i, j);

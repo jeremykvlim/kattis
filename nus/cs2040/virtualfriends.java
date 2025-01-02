@@ -9,7 +9,7 @@ public class virtualfriends {
         int t = Integer.parseInt(br.readLine());
         while (t-- > 0) {
             int f = Integer.parseInt(br.readLine()), i = 0;
-            var dsu = new DisjointSet(2 * f + 1);
+            var dsu = new DisjointSets(2 * f + 1);
             var compress = new HashMap<String, Integer>();
 
             while (f-- > 0) {
@@ -30,10 +30,10 @@ public class virtualfriends {
         pw.flush();
     }
 
-    static class DisjointSet {
+    static class DisjointSets {
         int[] sets, size;
 
-        DisjointSet(int n) {
+        DisjointSets(int n) {
             sets = new int[n];
             size = new int[n];
             for (int i = 0; i < n; i++) {

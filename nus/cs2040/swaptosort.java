@@ -7,7 +7,7 @@ public class swaptosort {
         var input = br.readLine().split(" ");
         int n = Integer.parseInt(input[0]), k = Integer.parseInt(input[1]);
 
-        var dsu = new DisjointSet(n + 1);
+        var dsu = new DisjointSets(n + 1);
 
         while (k-- > 0) {
             var pair = br.readLine().split(" ");
@@ -24,10 +24,10 @@ public class swaptosort {
         System.out.println("Yes");
     }
 
-    static class DisjointSet {
+    static class DisjointSets {
         int[] sets, size;
 
-        DisjointSet(int n) {
+        DisjointSets(int n) {
             sets = new int[n];
             size = new int[n];
             for (int i = 0; i < n; i++) {

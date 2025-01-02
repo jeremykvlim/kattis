@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct DisjointSet {
+struct DisjointSets {
     vector<int> sets, size;
 
     int find(int p) {
@@ -18,7 +18,7 @@ struct DisjointSet {
         return false;
     }
 
-    DisjointSet(int n) : sets(n), size(n, 1) {
+    DisjointSets(int n) : sets(n), size(n, 1) {
         iota(sets.begin(), sets.end(), 0);
     }
 };
@@ -74,7 +74,7 @@ int main() {
             if (!--indegree[lover[lover[v]]]) q.emplace(lover[lover[v]]);
     }
 
-    DisjointSet dsu(n);
+    DisjointSets dsu(n);
     vector<int> sets(n), size(n, 1);
     iota(sets.begin(), sets.end(), 0);
     for (int i = 0; i < n; i++)

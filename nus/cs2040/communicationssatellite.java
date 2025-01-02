@@ -18,7 +18,7 @@ public class communicationssatellite {
                 pq.add(new Edge(i, j, Math.hypot(satellites[i].first - satellites[j].first, satellites[i].second - satellites[j].second) - satellites[i].third - satellites[j].third));
 
         var sum = 0.0;
-        var dsu = new DisjointSet(n);
+        var dsu = new DisjointSets(n);
         while (n > 1 && !pq.isEmpty()) {
             var e = pq.poll();
             
@@ -58,10 +58,10 @@ public class communicationssatellite {
         }
     }
     
-    static class DisjointSet {
+    static class DisjointSets {
         int[] sets;
 
-        DisjointSet(int n) {
+        DisjointSets(int n) {
             sets = new int[n];
             for (int i = 0; i < n; i++) sets[i] = i;
         }

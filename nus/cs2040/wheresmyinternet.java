@@ -8,7 +8,7 @@ public class wheresmyinternet {
         var input = br.readLine().split(" ");
         int n = Integer.parseInt(input[0]), m = Integer.parseInt(input[1]);
 
-        var dsu = new DisjointSet(n + 1);
+        var dsu = new DisjointSets(n + 1);
         while (m-- > 0) {
             var line = br.readLine().split(" ");
             int a = Integer.parseInt(line[0]), b = Integer.parseInt(line[1]);
@@ -26,10 +26,10 @@ public class wheresmyinternet {
         pw.flush();
     }
 
-    static class DisjointSet {
+    static class DisjointSets {
         int[] sets;
 
-        DisjointSet(int n) {
+        DisjointSets(int n) {
             sets = new int[n];
             for (int i = 0; i < n; i++) sets[i] = i;
         }

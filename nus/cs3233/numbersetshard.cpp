@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct DisjointSet {
+struct DisjointSets {
     vector<int> sets;
 
     int find(int p) {
@@ -17,7 +17,7 @@ struct DisjointSet {
         return false;
     }
 
-    DisjointSet(int n) : sets(n) {
+    DisjointSets(int n) : sets(n) {
         iota(sets.begin(), sets.end(), 0);
     }
 };
@@ -48,7 +48,7 @@ int main() {
         cin >> a >> b >> p;
 
         int size = b - a + 1;
-        DisjointSet dsu(size);
+        DisjointSets dsu(size);
 
         for (int i = primes.size() - 1; ~i && primes[i] >= p; i--) {
             int l = (primes[i] - a % primes[i]) % primes[i];

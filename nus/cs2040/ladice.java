@@ -7,7 +7,7 @@ public class ladice {
 
         var input = br.readLine().split(" ");
         int n = Integer.parseInt(input[0]), l = Integer.parseInt(input[1]);
-        var dsu = new DisjointSet(l + 1);
+        var dsu = new DisjointSets(l + 1);
         var count = new int[l + 1];
         while (n-- > 0) {
             var pair = br.readLine().split(" ");
@@ -24,10 +24,10 @@ public class ladice {
         pw.flush();
     }
 
-    static class DisjointSet {
+    static class DisjointSets {
         int[] sets, size;
 
-        DisjointSet(int n) {
+        DisjointSets(int n) {
             sets = new int[n];
             size = new int[n];
             for (int i = 0; i < n; i++) {

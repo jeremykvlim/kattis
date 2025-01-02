@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct PersistentDisjointSet {
+struct PersistentDisjointSets {
     vector<int> sets;
     stack<pair<int, int>> history;
 
@@ -30,7 +30,7 @@ struct PersistentDisjointSet {
         }
     }
 
-    PersistentDisjointSet(int n) : sets(n) {
+    PersistentDisjointSets(int n) : sets(n) {
         iota(sets.begin(), sets.end(), 0);
     }
 };
@@ -52,7 +52,7 @@ int main() {
     vector<pair<int, int>> junctions(q);
     for (auto &[s, t] : junctions) cin >> s >> t;
 
-    PersistentDisjointSet pdsu(n + 1);
+    PersistentDisjointSets pdsu(n + 1);
     vector<int> all(q), cost(q);
     iota(all.begin(), all.end(), 0);
     auto dfs = [&](auto &&self, int curr, int lg, vector<int> &days) {

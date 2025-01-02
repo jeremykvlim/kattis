@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct DisjointSet {
+struct DisjointSets {
     vector<int> sets;
 
     int find(int p) {
@@ -17,7 +17,7 @@ struct DisjointSet {
         return false;
     }
 
-    DisjointSet(int n) : sets(n) {
+    DisjointSets(int n) : sets(n) {
         iota(sets.begin(), sets.end(), 0);
     }
 };
@@ -33,7 +33,7 @@ int main() {
         int n;
         cin >> n;
 
-        DisjointSet dsu(2 * (n + 1));
+        DisjointSets dsu(2 * (n + 1));
         vector<bool> visited(2 * (n + 1), false);
 
         bool possible = true;

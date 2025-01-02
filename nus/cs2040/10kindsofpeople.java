@@ -12,7 +12,7 @@ public class 10kindsofpeople {
         var world = new char[r][c];
         for (int i = 0; i < r; i++) world[i] = br.readLine().toCharArray();
 
-        var dsu = new DisjointSet(r * c);
+        var dsu = new DisjointSets(r * c);
 
         for (int i = 0; i < r; i++)
             for (int j = 0; j < c; j++) {
@@ -32,10 +32,10 @@ public class 10kindsofpeople {
         pw.flush();
     }
 
-    static class DisjointSet {
+    static class DisjointSets {
         int[] sets;
 
-        DisjointSet(int n) {
+        DisjointSets(int n) {
             sets = new int[n];
             for (int i = 0; i < n; i++) sets[i] = i;
         }

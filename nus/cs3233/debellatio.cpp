@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct DisjointSet {
+struct DisjointSets {
     vector<int> sets, parent;
 
     int find(int p) {
@@ -18,7 +18,7 @@ struct DisjointSet {
         return false;
     }
 
-    DisjointSet(int n) : sets(n), parent(n, -1) {
+    DisjointSets(int n) : sets(n), parent(n, -1) {
         iota(sets.begin(), sets.end(), 0);
     }
 };
@@ -59,7 +59,7 @@ pair<int, vector<int>> micali_vazirani(int n, vector<pair<int, int>> edges) {
             return even[u] + even[v] + 1;
         };
 
-        DisjointSet dsu(n);
+        DisjointSets dsu(n);
         int mark_count = 1;
         vector<int> count(n, 0), mark(n, 0), indices(n, 0);
         vector<bool> visited(n, false);

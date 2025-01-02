@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct DisjointSet {
+struct DisjointSets {
     vector<int> sets;
 
     int find(int p) {
@@ -17,7 +17,7 @@ struct DisjointSet {
         return false;
     }
 
-    DisjointSet(int n) : sets(n) {
+    DisjointSets(int n) : sets(n) {
         iota(sets.begin(), sets.end(), 0);
     }
 };
@@ -52,7 +52,7 @@ int main() {
                             }
 
                     vector<int> degree(n * n, 0);
-                    DisjointSet dsu(n * n);
+                    DisjointSets dsu(n * n);
                     degree[r * n + c]++;
                     for (auto [u, v] : edges) {
                         degree[u]++;

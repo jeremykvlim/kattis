@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct DisjointSet {
+struct DisjointSets {
     vector<int> sets;
 
     int find(int p) {
@@ -17,7 +17,7 @@ struct DisjointSet {
         return false;
     }
 
-    DisjointSet(int n) : sets(n) {
+    DisjointSets(int n) : sets(n) {
         iota(sets.begin(), sets.end(), 0);
     }
 };
@@ -29,7 +29,7 @@ pair<vector<int>, vector<long long>> edmonds(vector<vector<pair<int, int>>> adj_
     for (int v = 0; v < n; v++)
         for (auto [u, w] : adj_list_transpose[v]) dist[v][u] = min(dist[v][u], (long long) w);
 
-    DisjointSet dsu(n);
+    DisjointSets dsu(n);
     stack<int> path;
     vector<int> state(n, 0), prev(n);
     state[0] = 2;

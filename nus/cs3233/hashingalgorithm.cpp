@@ -361,7 +361,7 @@ bool MontgomeryModInt<M>::prime_mod;
 constexpr unsigned long long MODULO = 998244353;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
-struct DisjointSet {
+struct DisjointSets {
     vector<int> sets, size;
 
     int find(int p) {
@@ -378,7 +378,7 @@ struct DisjointSet {
         return false;
     }
 
-    DisjointSet(int n) : sets(n), size(n, 1) {
+    DisjointSets(int n) : sets(n), size(n, 1) {
         iota(sets.begin(), sets.end(), 0);
     }
 };
@@ -515,7 +515,7 @@ int main() {
         sort(indices.begin(), indices.end(), [&](int i, int j) {return lcp[i] > lcp[j];});
         for (int i = 0; i < n; i++) len[i] = n - i;
 
-        DisjointSet dsu(n);
+        DisjointSets dsu(n);
         modint h = (long long) n * n * *min_element(lcp.begin(), lcp.end());
 
         auto compute = [&](auto &&self, int i = 0) -> void {

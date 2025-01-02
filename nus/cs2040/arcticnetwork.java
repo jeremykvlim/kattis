@@ -23,7 +23,7 @@ public class arcticnetwork {
 
             var output = 0.0;
             var visited = new boolean[p];
-            var dsu = new DisjointSet(p);
+            var dsu = new DisjointSets(p);
             while (p > s && !pq.isEmpty()) {
                 var e = pq.poll();
                 if (!visited[e.source] || !visited[e.destination] || dsu.find(e.source) != dsu.find(e.destination)) {
@@ -63,10 +63,10 @@ public class arcticnetwork {
         }
     }
 
-    static class DisjointSet {
+    static class DisjointSets {
         int[] sets;
 
-        DisjointSet(int n) {
+        DisjointSets(int n) {
             sets = new int[n];
             for (int i = 0; i < n; i++) sets[i] = i;
         }

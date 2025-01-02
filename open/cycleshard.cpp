@@ -361,7 +361,7 @@ bool MontgomeryModInt<M>::prime_mod;
 constexpr unsigned int MODULO = 9901;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
-struct DisjointSet {
+struct DisjointSets {
     vector<int> sets;
 
     int find(int p) {
@@ -377,7 +377,7 @@ struct DisjointSet {
         return false;
     }
 
-    DisjointSet(int n) : sets(n) {
+    DisjointSets(int n) : sets(n) {
         iota(sets.begin(), sets.end(), 0);
     }
 };
@@ -403,7 +403,7 @@ int main() {
 
         auto y = fact[n - 1] * (MODULO / 2 + 1);
         for (int i = 1; i < 1 << k; i++) {
-            DisjointSet dsu(n + 1);
+            DisjointSets dsu(n + 1);
             vector<int> degree(n + 1, 0), degree_count(4, 0);
 
             int cycles = 0;
