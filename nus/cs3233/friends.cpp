@@ -1,28 +1,34 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-bool bron_kerbosch(int depth, vector<vector<bool>> &friends, int all, int some, int none, vector<vector<int>> &r, vector<vector<int>> &p, vector<vector<int>> &x, int &count) {
-    if (!some && !none) count++;
-    for (int i = 0, pivot = p[depth][0]; i < some; i++) {
-        int v = p[depth][i]; 
-        if (friends[pivot][v]) continue;
-        
-        r[depth + 1] = r[depth];
-        r[depth + 1][all] = v;
+int bron_kerbosch(int n, vector<unsigned __int128> adj_list) {
+    int cliques = 0;
 
-        int next_some = 0, next_none = 0;
-        for (int j = 0; j < some; j++)
-            if (friends[v][p[depth][j]]) p[depth + 1][next_some++] = p[depth][j];
-        for (int j = 0; j < none; j++)
-            if (friends[v][x[depth][j]]) x[depth + 1][next_none++] = x[depth][j];
-        if (!bron_kerbosch(depth + 1, friends, all + 1, next_some, next_none, r, p, x, count)) return false;
-        
-        p[depth][i] = 0;
-        x[depth][none++] = v;
-        if (count > 1e3) return false;
-    }
-    
-    return true;
+    auto dfs = [&](auto &&self, unsigned __int128 p, unsigned __int128 x = 0, unsigned __int128 r = 0) {
+        if (!p && !x) {
+            cliques++;
+            return;
+        }
+
+        auto lsb = [&](unsigned __int128 v) {
+            return v ? ((v & ULLONG_MAX) ? __builtin_ctzll(v) : 64 + __builtin_ctzll(v >> 64)) : 0;
+        };
+        int pivot = lsb(p | x);
+        if (pivot >= n) return;
+
+        auto candidates = p & ~adj_list[pivot];
+        while (candidates && cliques <= 1e3) {
+            int v = lsb(candidates);
+            r |= (unsigned __int128) 1 << v;
+            self(self, p & adj_list[v], x & adj_list[v], r);
+            p &= ~((unsigned __int128) 1 << v);
+            x |= (unsigned __int128) 1 << v;
+            candidates &= ~((unsigned __int128) 1 << v);
+        }
+    };
+    dfs(dfs, ((unsigned __int128) 1 << n) - 1);
+
+    return cliques;
 }
 
 int main() {
@@ -31,17 +37,17 @@ int main() {
 
     int n, m;
     while (cin >> n >> m) {
-        vector<vector<bool>> friends(n + 2, vector<bool>(n + 2, false));
-        vector<vector<int>> r(n + 2, vector<int>(n + 2, 0)), p(n + 2, vector<int>(n + 2 , 0)), x(n + 2, vector<int>(n + 2, 0));
+        vector<unsigned __int128> adj_list(n, 0);
         while (m--) {
             int a, b;
             cin >> a >> b;
-            
-            friends[a][b] = friends[b][a] = true;
+
+            adj_list[a - 1] |= (unsigned __int128) 1 << (b - 1);
+            adj_list[b - 1] |= (unsigned __int128) 1 << (a - 1);
         }
-        iota(p[1].begin(), p[1].end(), 1);
-        
-        int count = 0;
-        cout << (bron_kerbosch(1, friends, 0, n, 0, r, p, x, count) ? to_string(count) + "\n" : "Too many maximal sets of friends.\n");
+
+        int cliques = bron_kerbosch(n, adj_list);
+        if (cliques <= 1e3) cout << cliques << "\n";
+        else cout << "Too many maximal sets of friends.\n";
     }
 }
