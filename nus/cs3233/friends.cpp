@@ -19,11 +19,12 @@ int bron_kerbosch(int n, vector<unsigned __int128> adj_list) {
         auto candidates = p & ~adj_list[pivot];
         while (candidates && cliques <= 1e3) {
             int v = lsb(candidates);
-            r |= (unsigned __int128) 1 << v;
+            auto mask = (unsigned __int128) 1 << v;
+            r |= mask;
             self(self, p & adj_list[v], x & adj_list[v], r);
-            p &= ~((unsigned __int128) 1 << v);
-            x |= (unsigned __int128) 1 << v;
-            candidates &= ~((unsigned __int128) 1 << v);
+            p &= ~mask;
+            x |= mask;
+            candidates &= ~mask;
         }
     };
     dfs(dfs, ((unsigned __int128) 1 << n) - 1);
