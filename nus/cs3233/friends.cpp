@@ -14,7 +14,6 @@ int bron_kerbosch(int n, vector<unsigned __int128> adj_list) {
             return v ? ((v & ULLONG_MAX) ? __builtin_ctzll(v) : 64 + __builtin_ctzll(v >> 64)) : 0;
         };
         int pivot = lsb(p | x);
-        if (pivot >= n) return;
 
         auto candidates = p & ~adj_list[pivot];
         while (candidates && cliques <= 1e3) {
