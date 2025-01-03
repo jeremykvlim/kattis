@@ -247,8 +247,8 @@ struct VoronoiDiagram {
             }
 
             T delta = 20 * max(xr - xl, yr - yl), xm = xl + (xr - xl) / 2, ym = yl + (yr - yl) / 2;
-            p.emplace_back(xm + delta, ym + delta);
-            p.emplace_back(xm, ym - delta);
+            p.emplace_back(xm + delta, ym - delta);
+            p.emplace_back(xm, ym + delta);
             p.emplace_back(xm - delta, ym);
         }
         points = p;
