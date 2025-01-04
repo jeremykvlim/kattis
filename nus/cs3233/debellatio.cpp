@@ -298,7 +298,7 @@ int main() {
     else {
         cout << "1\n" << flush;
         for (int a = 1; a <= n; a++)
-            if (match[a] == 0) {
+            if (!match[a]) {
                 cout << a << "\n" << flush;
                 break;
             }
