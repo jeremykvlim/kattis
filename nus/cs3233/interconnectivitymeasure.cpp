@@ -3,7 +3,7 @@ using namespace std;
 
 struct PersistentDisjointSets {
     vector<int> sets;
-    stack<pair<int, int>> history;
+    deque<pair<int, int>> history;
 
     int find(int p) {
         return (sets[p] == p) ? p : (sets[p] = find(sets[p]));
@@ -13,7 +13,7 @@ struct PersistentDisjointSets {
         int p_set = find(p), q_set = find(q);
         if (p_set != q_set) {
             sets[q_set] = p_set;
-            history.emplace(q_set, q_set);
+            history.emplace_back(q_set, q_set);
             return true;
         }
         return false;
@@ -25,11 +25,15 @@ struct PersistentDisjointSets {
 
     void undo(int version = 0) {
         while (record() > version) {
-            sets[history.top().first] = history.top().second;
-            history.pop();
+            sets[history.back().first] = history.back().second;
+            history.pop_back();
         }
     }
 
+    void delete_history(int version = 0) {
+        history.resize(version);
+    }
+    
     PersistentDisjointSets(int n) : sets(n) {
         iota(sets.begin(), sets.end(), 0);
     }
@@ -73,7 +77,7 @@ int main() {
             (pdsu.find(s) == pdsu.find(t) ? same : diff).emplace_back(d);
         }
         pdsu.undo(version);
-        
+
         self(self, next, lg - 1, same);
         self(self, curr, lg - 1, diff);
     };
