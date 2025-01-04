@@ -23,7 +23,7 @@ struct PersistentDisjointSets {
         return history.size();
     }
 
-    void undo(int version = 0) {
+    void restore(int version = 0) {
         while (record() > version) {
             sets[history.back().first] = history.back().second;
             history.pop_back();
@@ -191,7 +191,7 @@ pair<int, vector<int>> gabow(int n, vector<pair<int, int>> edges) {
         }
         pdsu.reset();
         pdsu.delete_history(version);
-        pdsu.undo();
+        pdsu.restore();
 
         for (int u = 1; u <= n; u++) {
             label[u] = 0;
