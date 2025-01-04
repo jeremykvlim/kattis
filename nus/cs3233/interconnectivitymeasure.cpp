@@ -23,7 +23,7 @@ struct PersistentDisjointSets {
         return history.size();
     }
 
-    void undo(int version) {
+    void undo(int version = 0) {
         while (record() > version) {
             sets[history.top().first] = history.top().second;
             history.pop();
