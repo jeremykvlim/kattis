@@ -23,7 +23,7 @@ struct PersistentDisjointSets {
         return history.size();
     }
 
-    void undo(int version = 0) {
+    void restore(int version = 0) {
         while (record() > version) {
             sets[history.back().first] = history.back().second;
             history.pop_back();
@@ -76,7 +76,7 @@ int main() {
             auto [s, t] = junctions[d];
             (pdsu.find(s) == pdsu.find(t) ? same : diff).emplace_back(d);
         }
-        pdsu.undo(version);
+        pdsu.restore(version);
 
         self(self, next, lg - 1, same);
         self(self, curr, lg - 1, diff);
