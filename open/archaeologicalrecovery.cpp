@@ -48,15 +48,13 @@ int main() {
     unordered_map<int, char> itoc{{0, '0'}, {1, '+'}, {2, '-'}};
 
     vector<long long> f(t_max, 0);
-    vector<int> ids;
-    while (t--) {
+    vector<int> ids(t, 0);
+    for (int &i : ids) {
         string s;
         cin >> s;
 
-        int i = 0;
         for (int K = 0; K < k; K++) i += ctoi[s[K]] * p3[K];
         cin >> f[i];
-        ids.emplace_back(i);
     }
 
     vector<complex<long long>> F(t_max, 0), w{{1, 0}, {0, 1}, {-1, -1}};
