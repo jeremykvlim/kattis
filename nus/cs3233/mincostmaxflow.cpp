@@ -83,7 +83,7 @@ struct FlowNetwork {
 
     pair<T, U> max_flow_min_cost(int s, int t) {
         U cost = 0, bound = 0;
-        int shift = min(3, __lg(n));
+        int shift = __lg(n);
         for (int v = 0; v < n; v++)
             for (auto &&a : network[v]) {
                 cost += a.cost * a.cap;
