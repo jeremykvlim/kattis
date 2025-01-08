@@ -212,6 +212,7 @@ int main() {
 
         fn.add_arc(v - 1, v, m, 0);
         auto [flow, cost] = fn.max_flow_min_cost(0, v);
+        
         if (cost == -e) r = m;
         else l = m;
 
