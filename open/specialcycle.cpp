@@ -79,13 +79,12 @@ pair<int, vector<int>> gabow(int n, vector<pair<int, int>> edges) {
     while (2 * matches < n - 1) {
         int outer = 1, p_augment = INT_MAX, p_curr = 0, count = -2, version = 0;
         queue<int> q;
-        for (int u = 1; u <= n; u++) {
+        for (int u = 1; u <= n; u++)
             if (!match[u]) {
                 q.emplace(u);
                 label[u] = u;
             } else label[u] = 0;
-        }
-
+            
         auto make_outer = [&](int x, int y, int z, int p) {
             link[z] = {x, y};
             label[z] = label[x];
