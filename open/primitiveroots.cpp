@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -148,7 +148,8 @@ vector<T> factorize(T n) {
     return pfs;
 }
 
-long long primitive_root(long long m) {
+template <typename T>
+T primitive_root(T m) {
     if (m == 1 || m == 2 || m == 4) return m - 1;
     if (!(m & 3)) return -1;
 
@@ -162,8 +163,8 @@ long long primitive_root(long long m) {
     sort(pfs.begin(), pfs.end());
     pfs.erase(unique(pfs.begin(), pfs.end()), pfs.end());
     for (auto g = 2LL; g < m; g++)
-        if (gcd(g, m) == 1 && all_of(pfs.begin(), pfs.end(), [&](auto pf) {return pow(g, phi / pf, m) != 1;})) return g;
-    
+        if (gcd(g, m) == 1 && all_of(pfs.begin(), pfs.end(), [&](auto pf) {return pow((T) g, phi / pf, m) != 1;})) return g;
+
     return -1;
 }
 
