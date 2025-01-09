@@ -70,7 +70,7 @@ pair<int, vector<int>> gabow(int n, vector<pair<int, int>> edges) {
     degree[0] = 0;
 
     int h = n / 2;
-    vector<int> match(n + 1, 0), potential(n + 1, 1), label(n + 1, 0);
+    vector<int> match(n + 1, 0), label(n + 1, 0), potential(n + 1, 1);
     vector<pair<int, int>> link(n + 1, {0, 0});
     ForwardStar list(h + 1, adj_list.size()), blossom(n + 1, n + 1);
     PersistentDisjointSets pdsu(n + 1);
@@ -202,7 +202,7 @@ pair<int, vector<int>> gabow(int n, vector<pair<int, int>> edges) {
         stack<int> s;
         auto dfs = [&](auto &&self1, int x, int base_x) -> bool {
             int l_base_x = label[base_x], p_x = potential[x];
-            for (int i = degree[x]; i < degree[x + 1]; ++i) {
+            for (int i = degree[x]; i < degree[x + 1]; i++) {
                 int y = adj_list[i].second, p_y = potential[y];
                 if (p_x != -p_y) continue;
 
