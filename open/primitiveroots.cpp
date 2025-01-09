@@ -149,7 +149,7 @@ vector<T> factorize(T n) {
 }
 
 template <typename T>
-T primitive_root(T m) {
+long long primitive_root(T m) {
     if (m == 1 || m == 2 || m == 4) return m - 1;
     if (!(m & 3)) return -1;
 
