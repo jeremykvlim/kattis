@@ -86,7 +86,6 @@ pair<int, vector<int>> gabow(int n, vector<pair<int, int>> edges) {
             } else label[u] = 0;
         }
 
-
         auto make_outer = [&](int x, int y, int z, int p) {
             link[z] = {x, y};
             label[z] = label[x];
