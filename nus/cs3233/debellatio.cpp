@@ -77,7 +77,7 @@ pair<int, vector<int>> gabow(int n, vector<pair<int, int>> edges) {
 
     int matches = 0;
     while (2 * matches < n - 1) {
-        int outer = 1, p_augment = INT_MAX, p_curr = 0, count = -2, version = 0;
+        int outer = 1, p_augment = INT_MAX, p_curr = 0, l = -2, version = 0;
         queue<int> q;
         for (int u = 1; u <= n; u++)
             if (!match[u]) {
@@ -99,8 +99,8 @@ pair<int, vector<int>> gabow(int n, vector<pair<int, int>> edges) {
         };
 
         auto contract = [&](int x, int y) {
-            int base_x = pdsu.find(x), base_y = pdsu.find(y), l = count--;
-            label[match[base_x]] = label[match[base_y]] = l;
+            int base_x = pdsu.find(x), base_y = pdsu.find(y);
+            label[match[base_x]] = label[match[base_y]] = --l;
 
             int lca;
             for (;;) {
