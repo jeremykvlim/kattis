@@ -70,19 +70,22 @@ pair<int, vector<int>> gabow(int n, vector<pair<int, int>> edges) {
     degree[0] = 0;
 
     int h = n / 2;
-    vector<int> match(n + 1, 0), label(n + 1, 0), potential(n + 1, 1);
+    vector<int> match(n + 1, 0), potential(n + 1, 1), label(n + 1, 0);
     vector<pair<int, int>> link(n + 1, {0, 0});
     ForwardStar list(h + 1, adj_list.size()), blossom(n + 1, n + 1);
     PersistentDisjointSets pdsu(n + 1);
+
     int matches = 0;
     while (2 * matches < n - 1) {
-        int outer = 1, p_augment = INT_MAX, p_curr = 0, count = 0, version = 0;
+        int outer = 1, p_augment = INT_MAX, p_curr = 0, count = -2, version = 0;
         queue<int> q;
-        for (int u = 1; u <= n; u++)
+        for (int u = 1; u <= n; u++) {
             if (!match[u]) {
                 q.emplace(u);
                 label[u] = u;
             } else label[u] = 0;
+        }
+
 
         auto make_outer = [&](int x, int y, int z, int p) {
             link[z] = {x, y};
@@ -98,7 +101,7 @@ pair<int, vector<int>> gabow(int n, vector<pair<int, int>> edges) {
         };
 
         auto contract = [&](int x, int y) {
-            int base_x = pdsu.find(x), base_y = pdsu.find(y), l = -(++count + 1);
+            int base_x = pdsu.find(x), base_y = pdsu.find(y), l = count--;
             label[match[base_x]] = label[match[base_y]] = l;
 
             int lca;
@@ -158,7 +161,7 @@ pair<int, vector<int>> gabow(int n, vector<pair<int, int>> edges) {
                 for (int i = list.head[p_curr]; ~i; i = list.next[i]) {
                     auto [x, y] = adj_list[i];
                     int l_x = label[x], p_x = potential[x], base_x = pdsu.find(x),
-                            l_y = label[y], p_y = potential[y], base_y = pdsu.find(y);
+                        l_y = label[y], p_y = potential[y], base_y = pdsu.find(y);
 
                     if (l_y > 0) {
                         if (p_curr != (p_x + p_y) / 2 || base_x == base_y) continue;
@@ -200,7 +203,7 @@ pair<int, vector<int>> gabow(int n, vector<pair<int, int>> edges) {
         stack<int> s;
         auto dfs = [&](auto &&self1, int x, int base_x) -> bool {
             int l_base_x = label[base_x], p_x = potential[x];
-            for (int i = degree[x]; i < degree[x + 1]; i++) {
+            for (int i = degree[x]; i < degree[x + 1]; ++i) {
                 int y = adj_list[i].second, p_y = potential[y];
                 if (p_x != -p_y) continue;
 
@@ -276,8 +279,8 @@ pair<int, vector<int>> gabow(int n, vector<pair<int, int>> edges) {
         pdsu.reset();
         pdsu.delete_history();
         fill(potential.begin(), potential.end(), 1);
-        fill(list.head.begin(), list.head.end(), -1);
         fill(blossom.head.begin(), blossom.head.end(), -1);
+        fill(list.head.begin(), list.head.end(), -1);
     }
     return {matches, match};
 }
