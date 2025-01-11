@@ -7,17 +7,17 @@ struct SegmentTree {
 
         Segment() : value(INT_MAX) {}
 
-        auto & operator=(int v) {
+        auto & operator=(const int &v) {
             value = v;
             return *this;
         }
 
-        auto operator+=(Segment seg) {
+        auto operator+=(const Segment &seg) {
             value = min(value, seg.value);
             return *this;
         }
 
-        friend auto operator+(Segment sl, Segment sr) {
+        friend auto operator+(Segment sl, const Segment &sr) {
             return sl += sr;
         }
     };
@@ -29,7 +29,7 @@ struct SegmentTree {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
     }
 
-    void assign(int i, int v) {
+    void assign(int i, const int &v) {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
