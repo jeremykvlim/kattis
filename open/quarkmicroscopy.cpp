@@ -104,7 +104,7 @@ int main() {
             }
 
             if (it != memo.begin()) {
-                auto [x, p] = *--it;
+                auto [x, p] = *(--it);
                 q = p;
                 if (x - d > a[i - 2]) return self(self, l, mid - 1);
             }
