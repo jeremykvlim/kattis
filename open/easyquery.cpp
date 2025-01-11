@@ -9,7 +9,7 @@ struct SegmentTree {
             return s.size();
         }
 
-        auto & operator=(vector<int> &v) {
+        auto & operator=(const vector<int> &v) {
             s = v;
             return *this;
         }
@@ -18,15 +18,15 @@ struct SegmentTree {
             return s[i];
         }
 
-        auto operator+=(Segment seg) {
+        auto operator+=(const Segment &seg) {
             if (s.empty()) s = seg.s;
             else if (!seg.s.empty())
                 for (int i = 0; i < s.size(); i++) s[i] = min(s[i], seg.s[i]);
             return *this;
         }
 
-        friend auto operator+(Segment sl, Segment sr) {
-            return sl += move(sr);
+        friend auto operator+(Segment sl, const Segment &sr) {
+            return sl += sr;
         }
     };
 
@@ -37,7 +37,7 @@ struct SegmentTree {
         ST[p] = ST[p << 1] + ST[p << 1 | 1];
     }
 
-    void assign(int i, vector<int> &v) {
+    void assign(int i, const vector<int> &v) {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
