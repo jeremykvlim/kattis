@@ -38,17 +38,17 @@ int main() {
         int c, l, r;
         cin >> c >> l >> r;
 
-        auto split = [&](int x) -> void {
-            if (x > n) return;
+        auto split = [&](int i) -> void {
+            if (i > n) return;
 
-            auto it = intervals.upper_bound(x);
+            auto it = intervals.upper_bound(i);
             if (it == intervals.begin()) return;
 
             auto [L, interval] = *(--it);
-            if (L == x || x > interval[0]) return;
+            if (L == i || i > interval[0]) return;
 
-            it->second[0] = x - 1;
-            intervals[x] = interval;
+            it->second[0] = i - 1;
+            intervals[i] = interval;
         };
         split(l);
         split(r + 1);
