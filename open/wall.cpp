@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -370,12 +370,12 @@ struct SegmentTree {
 
         Segment() : size(0), pref(0), suff(0), product(0) {}
 
-        auto & operator=(int v) {
+        auto & operator=(const int &v) {
             pref = suff = (product += v);
             return *this;
         }
 
-        friend auto operator+(Segment &sl, Segment &sr) {
+        friend auto operator+(const Segment &sl, const Segment &sr) {
             Segment seg;
 
             seg.size = sl.size + sr.size;
@@ -397,7 +397,7 @@ struct SegmentTree {
         for (int i = n - 1; i; i--) pull(i);
     }
 
-    void assign(int i, int v) {
+    void assign(int i, const int &v) {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
