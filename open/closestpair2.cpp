@@ -153,7 +153,7 @@ int main() {
             auto it = ms.upper_bound(sorted[i]);
             if (it != ms.begin()) {
                 update(*prev(it), sorted[i]);
-                for (auto p = prev(it); p != ms.begin() && sq(sorted[i].first.y - p->first.y) < d;) update(*--p, sorted[i]);
+                for (auto p = prev(it); p != ms.begin() && sq(sorted[i].first.y - p->first.y) < d;) update(*(--p), sorted[i]);
             }
             for (; it != ms.end() && sq(it->first.y - sorted[i].first.y) < d; it++) update(*it, sorted[i]);
             its[i] = ms.emplace_hint(ms.upper_bound(sorted[i]), sorted[i]);
