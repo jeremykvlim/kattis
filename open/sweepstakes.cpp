@@ -9,13 +9,13 @@ struct Hash {
     }
 };
 
-void update(pair<vector<double>, int> &distribution, double P) {
+void update(pair<vector<double>, int> &distribution, double p) {
     auto &[poly, offset] = distribution;
-    auto Q = 1 - P;
     poly.emplace_back(0);
+    auto q = 1 - p;
     for (int i = poly.size() - 1; ~i; i--) {
-        poly[i] *= Q;
-        if (i) poly[i] += poly[i - 1] * P;
+        poly[i] *= q;
+        if (i) poly[i] += poly[i - 1] * p;
     }
 
     int l = find_if(poly.begin(), poly.end(), [](auto value) {return value > 1e-14;}) - poly.begin(),
