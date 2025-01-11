@@ -50,12 +50,12 @@ struct SegmentTree {
     }
 
     int midpoint(int l, int r) {
-        int i = 1 << __lg(r - l + 1);
-        return min(l + i - 1, r - (i >> 1));
+        int i = 1 << __lg(r - l);
+        return min(l + i, r - (i >> 1));
     }
 
     void modify(const int &v, const int &pos) {
-        modify(1, v, pos, 1, n);
+        modify(1, v, pos, 0, n);
     }
 
     void modify(int i, const int &v, const int &pos, int l, int r) {
