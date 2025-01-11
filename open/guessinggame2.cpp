@@ -7,13 +7,13 @@ struct SegmentTree {
 
         Segment() : sum(1), height(1) {}
 
-        auto & operator=(Segment s) {
+        auto & operator=(const Segment &s) {
             sum = s.sum;
             height = s.height;
             return *this;
         }
 
-        friend auto operator+(Segment &sl, Segment &sr) {
+        friend auto operator+(const Segment &sl, const Segment &sr) {
             Segment seg;
             seg.sum = sl.sum + sr.sum;
             seg.height = sl.height + 1;
@@ -37,16 +37,16 @@ struct SegmentTree {
         return min(l + i - 1, r - (i >> 1));
     }
 
-    int range_query(int pos) {
-        return range_query(1, pos, 1, n);
+    int query(int pos) {
+        return query(1, pos, 1, n);
     }
 
-    int range_query(int i, int pos, int l, int r) {
+    int query(int i, int pos, int l, int r) {
         if (!--ST[i].sum) return ST[i].height;
 
         int m = midpoint(l, r);
-        if (pos < m) return range_query(i << 1, pos, l, m);
-        else return range_query(i << 1 | 1, pos, m, r);
+        if (pos < m) return query(i << 1, pos, l, m);
+        else return query(i << 1 | 1, pos, m, r);
     }
 
     auto & operator[](int i) {
@@ -89,7 +89,7 @@ int main() {
             int i;
             cin >> i;
 
-            int ai = st.range_query(id[i]);
+            int ai = st.query(id[i]);
             if (ai == 1 && ~id[i])
                 if ((sum >> (id[i] / 2)) & 1) ai = 6;
             cout << ai << "\n" << flush;
