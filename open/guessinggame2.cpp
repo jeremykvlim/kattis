@@ -33,12 +33,12 @@ struct SegmentTree {
     }
 
     int midpoint(int l, int r) {
-        int i = 1 << __lg(r - l + 1);
-        return min(l + i - 1, r - (i >> 1));
+        int i = 1 << __lg(r - l);
+        return min(l + i, r - (i >> 1));
     }
 
     int query(int pos) {
-        return query(1, pos, 1, n);
+        return query(1, pos, 0, n);
     }
 
     int query(int i, int pos, int l, int r) {
