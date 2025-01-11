@@ -19,7 +19,7 @@ void update(pair<vector<double>, int> &distribution, double p) {
     }
 
     int l = find_if(poly.begin(), poly.end(), [](auto value) {return value > 1e-14;}) - poly.begin(),
-        r = find_if(poly.rbegin(), poly.rend(), [](auto value) {return value > 1e-14;}) - poly.rbegin();
+            r = find_if(poly.rbegin(), poly.rend(), [](auto value) {return value > 1e-14;}) - poly.rbegin();
 
     poly = {poly.begin() + l, poly.end() - r};
     offset += l;
@@ -59,27 +59,27 @@ struct SegmentTree {
     }
 
     int midpoint(int l, int r) {
-        int i = 1 << __lg(r - l + 1);
-        return min(l + i - 1, r - (i >> 1));
+        int i = 1 << __lg(r - l);
+        return min(l + i, r - (i >> 1));
     }
 
-    void query(const pair<vector<double>, int> &distribution1, int k, int l, int r) {
-        if (l == r) {
+    void query(const pair<vector<double>, int> &distribution1, int i, int l, int r) {
+        if (l + 1 == r) {
             auto distribution2 = make_pair(vector<double>{1}, 0);
-            for (auto [i, j] : ST[k].squares) update(distribution2, p[i] + q[j]);
+            for (auto [I, J] : ST[i].squares) update(distribution2, p[I] + q[J]);
 
             auto [poly1, offset1] = distribution1;
             auto [poly2, offset2] = distribution2;
-            auto valid = [&](int i) {
-                return 0 <= i - offset2 && i - offset2 < poly2.size() && 0 <= t - i - offset1 && t - i - offset1 < poly1.size();
+            auto valid = [&](int j) {
+                return 0 <= j - offset2 && j - offset2 < poly2.size() && 0 <= t - j - offset1 && t - j - offset1 < poly1.size();
             };
 
             double sum = 0;
-            for (int i = 0; i <= ST[k].queries; i++)
-                if (valid(i)) sum += poly2[i - offset2] * poly1[t - i - offset1];
+            for (int j = 0; j <= ST[i].queries; j++)
+                if (valid(j)) sum += poly2[j - offset2] * poly1[t - j - offset1];
 
-            for (int i = 0; i <= ST[k].queries; i++) {
-                if (valid(i)) cout << fixed << setprecision(7) << poly2[i - offset2] * poly1[t - i - offset1] / sum << " ";
+            for (int j = 0; j <= ST[i].queries; j++) {
+                if (valid(j)) cout << fixed << setprecision(7) << poly2[j - offset2] * poly1[t - j - offset1] / sum << " ";
                 else cout << "0 ";
             }
             cout << "\n";
@@ -89,16 +89,16 @@ struct SegmentTree {
         int m = midpoint(l, r);
         auto range_query = [&](int c, int l, int r) {
             auto temp = distribution1;
-            for (auto [i, j] : ST[k].squares)
-                if (!ST[c].squares.count({i, j})) update(temp, p[i] + q[j]);
+            for (auto [I, J] : ST[i].squares)
+                if (!ST[c].squares.count({I, J})) update(temp, p[I] + q[J]);
             query(temp, c, l, r);
         };
-        range_query(k << 1, l, m);
-        range_query(k << 1 | 1, m + 1, r);
+        range_query(i << 1, l, m);
+        range_query(i << 1 | 1, m, r);
     }
 
     void query(const pair<vector<double>, int> &distribution) {
-        return query(distribution, 1, 1, n);
+        return query(distribution, 1, 0, n);
     }
 
     auto & operator[](int i) {
