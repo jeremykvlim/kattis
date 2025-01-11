@@ -38,11 +38,11 @@ struct SegmentTree {
         }
 
         friend auto operator+(const Segment &sl, const Segment &sr) {
-            Segment sm;
-            sm.queries = sl.queries + sr.queries;
-            for (auto [i, j] : sl.squares) sm.squares.emplace(i, j);
-            for (auto [i, j] : sr.squares) sm.squares.emplace(i, j);
-            return sm;
+            Segment seg;
+            seg.queries = sl.queries + sr.queries;
+            for (auto [i, j] : sl.squares) seg.squares.emplace(i, j);
+            for (auto [i, j] : sr.squares) seg.squares.emplace(i, j);
+            return seg;
         }
     };
 
