@@ -153,7 +153,7 @@ int main() {
         auto it = ms.upper_bound(points[i]);
         if (it != ms.begin()) {
             update(*prev(it), points[i]);
-            for (auto p = prev(it); p != ms.begin() && sq(points[i].y - p->y) < d;) update(*--p, points[i]);
+            for (auto p = prev(it); p != ms.begin() && sq(points[i].y - p->y) < d;) update(*(--p), points[i]);
         }
         for (; it != ms.end() && sq(it->y - points[i].y) < d; it++) update(*it, points[i]);
         its[i] = ms.emplace_hint(ms.upper_bound(points[i]), points[i]);
