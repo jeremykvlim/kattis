@@ -8,19 +8,19 @@ struct SegmentTree {
 
         Segment() : even(0), odd(0), count(0) {}
 
-        auto & operator+=(int v) {
+        auto & operator+=(const int &v) {
             even = (long long) count / 2 * v;
             odd = (long long) (count + 1) / 2 * v;
             return *this;
         }
 
-        auto & operator=(Segment s) {
+        auto & operator=(const Segment &s) {
             even = s.even;
             odd = s.odd;
             return *this;
         }
 
-        friend auto operator+(Segment &sl, Segment &sr) {
+        friend auto operator+(const Segment &sl, const Segment &sr) {
             Segment seg;
             seg.even = sl.even + (sl.count & 1 ? sr.odd : sr.even);
             seg.odd = sl.odd + (sl.count & 1 ? sr.even : sr.odd);
@@ -36,7 +36,7 @@ struct SegmentTree {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
     }
 
-    void apply(int i, int v) {
+    void apply(int i, const int &v) {
         ST[i] += v;
         if (i < n) lazy[i] += v;
     }
@@ -54,11 +54,11 @@ struct SegmentTree {
         return min(l + i - 1, r - (i >> 1));
     }
 
-    void modify(int v, int pos) {
+    void modify(const int &v, const int &pos) {
         modify(1, v, pos, 1, n);
     }
 
-    void modify(int i, int v, int pos, int l, int r) {
+    void modify(int i, const int &v, const int &pos, int l, int r) {
         ST[i].count++;
         if (l + 1 == r) {
             apply(i, v);
