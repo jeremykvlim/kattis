@@ -7,12 +7,12 @@ struct SegmentTree {
 
         Segment() : min1(INT_MAX), min2(INT_MAX), max1(INT_MIN), max2(INT_MIN) {}
 
-        auto & operator=(int v) {
+        auto & operator=(const int &v) {
             min1 = max1 = v;
             return *this;
         }
 
-        auto operator+=(Segment seg) {
+        auto operator+=(const Segment &seg) {
             min2 = min({max(min1, seg.min1), min2, seg.min2});
             min1 = min(min1, seg.min1);
             max2 = max({min(max1, seg.max1), max2, seg.max2});
@@ -21,7 +21,7 @@ struct SegmentTree {
             return *this;
         }
 
-        friend auto operator+(Segment sl, Segment sr) {
+        friend auto operator+(Segment sl, const Segment &sr) {
             return sl += sr;
         }
     };
@@ -55,7 +55,7 @@ struct SegmentTree {
         return ST[i];
     }
 
-    SegmentTree(int n, vector<int> &a) : n(n), ST(2 * n) {
+    SegmentTree(int n, const vector<int> &a) : n(n), ST(2 * n) {
         for (int i = 0; i < a.size(); i++) assign(i, a[i]);
         build();
     }
