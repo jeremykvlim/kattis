@@ -19,7 +19,7 @@ void update(pair<vector<double>, int> &distribution, double p) {
     }
 
     int l = find_if(poly.begin(), poly.end(), [](auto value) {return value > 1e-14;}) - poly.begin(),
-            r = find_if(poly.rbegin(), poly.rend(), [](auto value) {return value > 1e-14;}) - poly.rbegin();
+        r = find_if(poly.rbegin(), poly.rend(), [](auto value) {return value > 1e-14;}) - poly.rbegin();
 
     poly = {poly.begin() + l, poly.end() - r};
     offset += l;
