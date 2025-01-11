@@ -1,78 +1,53 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-vector<double> convolve(const vector<double> &a, const vector<double> &b) {
-    int n = bit_ceil(a.size() + b.size() - 1);
-    vector<int> rev(n, 0);
-    for (int i = 0; i < n; i++) rev[i] = (rev[i >> 1] | (i & 1) << __lg(n)) >> 1;
+struct Hash {
+    size_t operator()(pair<int, int> p) const {
+        auto h = hash<int>()(p.first);
+        h ^= hash<int>()(p.second) + 0x9e3779b9 + (h << 6) + (h >> 2);
+        return h;
+    }
+};
 
-    vector<complex<double>> twiddles(n, 1);
-    for (int k = 2; k < n; k <<= 1) {
-        auto w = polar(1., M_PI / k);
-        for (int i = k; i < k << 1; i++) twiddles[i] = i & 1 ? twiddles[i >> 1] * w : twiddles[i >> 1];
+void update(pair<vector<double>, int> &distribution, double P) {
+    auto &[poly, offset] = distribution;
+    auto Q = 1 - P;
+    poly.emplace_back(0);
+    for (int i = poly.size() - 1; ~i; i--) {
+        poly[i] *= Q;
+        if (i) poly[i] += poly[i - 1] * P;
     }
 
-    auto fft = [&](vector<complex<double>> &v) {
-        for (int i = 0; i < n; i++)
-            if (i < rev[i]) swap(v[i], v[rev[i]]);
+    int l = find_if(poly.begin(), poly.end(), [](auto value) {return value > 1e-14;}) - poly.begin(),
+        r = find_if(poly.rbegin(), poly.rend(), [](auto value) {return value > 1e-14;}) - poly.rbegin();
 
-        for (int k = 1; k < n; k <<= 1)
-            for (int i = 0; i < n; i += k << 1)
-                for (int j = 0; j < k; j++) {
-                    auto t = v[i + j + k] * twiddles[j + k];
-                    v[i + j + k] = v[i + j] - t;
-                    v[i + j] += t;
-                }
-    };
-    vector<complex<double>> dft(n);
-    for (int i = 0; i < a.size(); i++) dft[i].real(a[i]);
-    for (int i = 0; i < b.size(); i++) dft[i].imag(b[i]);
-    fft(dft);
-
-    for (auto &d : dft) d *= d;
-    fft(dft);
-    reverse(dft.begin() + 1, dft.end());
-
-    vector<double> c(a.size() + b.size() - 1, 0.5);
-    for (int i = 0; i < c.size(); i++) c[i] *= dft[i].imag() / n;
-    return c;
+    poly = {poly.begin() + l, poly.end() - r};
+    offset += l;
 }
 
 struct SegmentTree {
     struct Segment {
-        vector<double> poly;
-        int offset;
+        int queries;
+        unordered_set<pair<int, int>, Hash> squares;
+        Segment() : queries(0) {}
 
-        Segment() : poly{1, 0}, offset(0) {}
-
-        bool operator==(const Segment &seg) const {
-            return poly == seg.poly && offset == seg.offset;
-        }
-
-        auto & operator=(double v) {
-            poly = {1 - v, v};
+        auto & operator=(const vector<pair<int, int>> &v) {
+            queries = v.size();
+            for (auto [i, j] : v) squares.emplace(i, j);
             return *this;
         }
 
-        auto operator+=(const Segment &seg) {
-            auto p = convolve(poly, seg.poly);
-
-            int l = find_if(p.begin(), p.end(), [](auto value) {return value > 1e-11;}) - p.begin(),
-                r = find_if(p.rbegin(), p.rend(), [](auto value) {return value > 1e-11;}) - p.rbegin();
-
-            poly = {p.begin() + l, p.end() - r};
-            offset += seg.offset + l;
-            return *this;
-        }
-
-        friend auto operator+(Segment sl, Segment sr) {
-            if (sl == Segment()) return sr;
-            if (sr == Segment()) return sl;
-            return sl += sr;
+        friend auto operator+(const Segment &sl, const Segment &sr) {
+            Segment sm;
+            sm.queries = sl.queries + sr.queries;
+            for (auto [i, j] : sl.squares) sm.squares.emplace(i, j);
+            for (auto [i, j] : sr.squares) sm.squares.emplace(i, j);
+            return sm;
         }
     };
 
-    int n;
+    int n, t;
+    vector<double> p, q;
     vector<Segment> ST;
 
     void pull(int i) {
@@ -88,23 +63,49 @@ struct SegmentTree {
         return min(l + i - 1, r - (i >> 1));
     }
 
-    Segment range_query(int i, vector<int> &indices, int li, int ri, int l, int r) {
-        if (li == ri) return ST[i];
-        if (l == r) return {};
+    void query(const pair<vector<double>, int> &distribution1, int k, int l, int r) {
+        if (l == r) {
+            auto distribution2 = make_pair(vector<double>{1}, 0);
+            for (auto [i, j] : ST[k].squares) update(distribution2, p[i] + q[j]);
 
-        int m = midpoint(l, r), mi = upper_bound(indices.begin() + li, indices.begin() + ri, m) - indices.begin();
-        return range_query(i << 1, indices, li, mi, l, m) + range_query(i << 1 | 1, indices, mi, ri, m + 1, r);
+            auto [poly1, offset1] = distribution1;
+            auto [poly2, offset2] = distribution2;
+            auto valid = [&](int i) {
+                return 0 <= i - offset2 && i - offset2 < poly2.size() && 0 <= t - i - offset1 && t - i - offset1 < poly1.size();
+            };
+
+            double sum = 0;
+            for (int i = 0; i <= ST[k].queries; i++)
+                if (valid(i)) sum += poly2[i - offset2] * poly1[t - i - offset1];
+
+            for (int i = 0; i <= ST[k].queries; i++) {
+                if (valid(i)) cout << fixed << setprecision(7) << poly2[i - offset2] * poly1[t - i - offset1] / sum << " ";
+                else cout << "0 ";
+            }
+            cout << "\n";
+            return;
+        }
+
+        int m = midpoint(l, r);
+        auto range_query = [&](int c, int l, int r) {
+            auto temp = distribution1;
+            for (auto [i, j] : ST[k].squares)
+                if (!ST[c].squares.count({i, j})) update(temp, p[i] + q[j]);
+            query(temp, c, l, r);
+        };
+        range_query(k << 1, l, m);
+        range_query(k << 1 | 1, m + 1, r);
     }
 
-    Segment range_query(vector<int> &indices) {
-        return range_query(1, indices, 0, indices.size(), 1, n);
+    void query(const pair<vector<double>, int> &distribution) {
+        return query(distribution, 1, 1, n);
     }
 
     auto & operator[](int i) {
         return ST[i];
     }
 
-    SegmentTree(int n, vector<double> &a) : n(n), ST(2 * n) {
+    SegmentTree(int n, const vector<vector<pair<int, int>>> &a, int t, const vector<double> &p, const vector<double> &q) : n(n), t(t), p(p), q(q), ST(2 * n) {
         int m = bit_ceil(a.size());
         for (int i = 0; i < a.size(); i++) ST[(i + m) % n + n] = a[i];
         build();
@@ -118,49 +119,29 @@ int main() {
     int m, n, t, Q;
     cin >> m >> n >> t >> Q;
 
-    vector<double> p(m), q(n);
-    for (auto &pi : p) cin >> pi;
-    for (auto &qj : q) cin >> qj;
+    if (!Q) exit(0);
 
-    vector<double> prob(m * n);
-    for (int i = 0; i < m; i++)
-        for (int j = 0; j < n; j++) prob[i * n + j] = p[i] + q[j];
+    vector<double> p(m + 1), q(n + 1);
+    for (int i = 1; i <= m; i++) cin >> p[i];
+    for (int i = 1; i <= n; i++) cin >> q[i];
 
-    SegmentTree st(m * n, prob);
-    while (Q--) {
+    vector<vector<pair<int, int>>> queries(Q);
+    for (auto &sq : queries) {
         int s;
         cin >> s;
 
-        if (!s) {
-            cout << "1\n";
-            continue;
-        }
-
-        vector<vector<double>> dp(s);
-        vector<int> indices(s);
-        for (int k = 0; k < s; k++) {
+        while (s--) {
             int i, j;
             cin >> i >> j;
-            i--;
-            j--;
 
-            dp[k] = {1 - prob[i * n + j], prob[i * n + j]};
-            indices[k] = i * n + j + 1;
+            sq.emplace_back(i, j);
         }
-
-        for (int i = 1; i < s; i <<= 1)
-            for (int j = 0; j < s - i; j += i << 1) dp[j] = convolve(dp[j], dp[i + j]);
-
-        sort(indices.begin(), indices.end());
-        auto seg = st.range_query(indices);
-        for (int i = 0; i <= s; i++) {
-            if (!(0 <= t - i - seg.offset && t - i - seg.offset < seg.poly.size())) {
-                cout << "0 ";
-                continue;
-            }
-
-            cout << fixed << setprecision(7) << seg.poly[t - i - seg.offset] * dp[0][i] / st[1].poly[t - st[1].offset] << " ";
-        }
-        cout << "\n";
     }
+    SegmentTree st(Q, queries, t, p, q);
+
+    auto distribution = make_pair(vector<double>{1}, 0);
+    for (int i = 1; i <= m; i++)
+        for (int j = 1; j <= n; j++)
+            if (!st[1].squares.count({i, j})) update(distribution, p[i] + q[j]);
+    st.query(distribution);
 }
