@@ -7,18 +7,18 @@ struct SegmentTree {
 
         Segment() : count(0), r(0) {}
 
-        auto & operator=(pair<int, int> v) {
+        auto & operator=(const pair<int, int> &v) {
             tie(count, r) = v;
             return *this;
         }
 
-        auto operator+=(Segment seg) {
+        auto operator+=(const Segment &seg) {
             r = max(r + seg.count, seg.r - count);
             count += seg.count;
             return *this;
         }
 
-        friend auto operator+(Segment sl, Segment sr) {
+        friend auto operator+(Segment sl, const Segment &sr) {
             return sl += sr;
         }
     };
@@ -30,7 +30,7 @@ struct SegmentTree {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
     }
 
-    void assign(int i, pair<int, int> v) {
+    void assign(int i, const pair<int, int> &v) {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
@@ -76,6 +76,5 @@ int main() {
         while (j <= n && a[j].first <= sorted[i].first) j++;
         rounds = max(rounds, st.range_query(j, n + 1).r - j);
     }
-
     cout << rounds;
 }
