@@ -7,17 +7,17 @@ struct SegmentTree {
 
         Segment() : value(INT_MAX), freq(1) {}
 
-        auto & operator=(int v) {
+        auto & operator=(const int &v) {
             value = v;
             return *this;
         }
 
-        auto operator+=(int v) {
+        auto operator+=(const int &v) {
             value += v;
             return *this;
         }
 
-        auto operator+=(Segment seg) {
+        auto operator+=(const Segment &seg) {
             if (value < seg.value) return *this;
             else if (value > seg.value) return seg;
             else freq += seg.freq;
@@ -25,7 +25,7 @@ struct SegmentTree {
             return *this;
         }
 
-        friend auto operator+(Segment sl, Segment sr) {
+        friend auto operator+(Segment sl, const Segment &sr) {
             return sl += sr;
         }
     };
@@ -58,11 +58,11 @@ struct SegmentTree {
         for (int i = n - 1; i; i--) pull(i);
     }
 
-    void assign(int i, int v) {
+    void assign(int i, const int &v) {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
-    void modify(int l, int r, int v) {
+    void modify(int l, int r, const int &v) {
         push(l + n);
         push(r + n - 1);
         bool cl = false, cr = false;
@@ -89,7 +89,7 @@ struct SegmentTree {
         return ST[i];
     }
 
-    SegmentTree(int n, vector<int> &a) : n(n), h(__lg(n)), ST(2 * n), lazy(n, 0) {
+    SegmentTree(int n, const vector<int> &a) : n(n), h(__lg(n)), ST(2 * n), lazy(n, 0) {
         for (int i = 0; i < a.size(); i++) assign(i, a[i]);
         build();
     }
