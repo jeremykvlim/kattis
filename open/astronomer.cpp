@@ -137,7 +137,7 @@ struct Line {
 template <typename T>
 Line<T> perpendicular_bisector(const Point<T> &a, const Point<T> &b) {
     Point<T> midpoint{a.x + (b.x - a.x) / 2, a.y + (b.y - a.y) / 2}, dir{a.y - b.y, b.x - a.x};
-    return {midpoint, dir};
+    return {midpoint, dir + midpoint};
 }
 
 int main() {
@@ -171,9 +171,9 @@ int main() {
             for (int j = 0; j < n; j++) {
                 if (i == j) continue;
 
-                auto [midpoint, dir] = perpendicular_bisector(coords[i], coords[j]);
+                auto [a, b] = perpendicular_bisector(coords[i], coords[j]);
                 auto cost = [&](auto m) {
-                    auto p = midpoint + dir * m;
+                    auto p = a + (b - a) * m;
                     return s * dist(p) + t * dist(p - coords[i]);
                 };
 
@@ -202,7 +202,7 @@ int main() {
                     else rr = rm;
                 }
 
-                auto a1 = angle(midpoint + dir * ll - coords[i]) + M_PI, a2 = angle(midpoint + dir * rl - coords[i]) + M_PI;
+                auto a1 = angle(a + (b - a) * ll - coords[i]) + M_PI, a2 = angle(a + (b - a) * rl - coords[i]) + M_PI;
                 if (a1 > a2) swap(a1, a2);
                 if (a1 + M_PI < a2) {
                     angles.emplace_back(a2, 1);
