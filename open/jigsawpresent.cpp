@@ -34,22 +34,22 @@ int main() {
     };
     auto subsets_l = meet_in_the_middle(0, n / 2), subsets_r = meet_in_the_middle(n / 2, n);
 
-    for (auto it1 = subsets_l.begin(), it2 = subsets_r.begin(); it1 != subsets_l.end(); it1++) {
-        while (it2 != subsets_r.end() && it2->first < it1->first) it2++;
-        if (it2 == subsets_r.end()) break;
+    for (int i = 0, j = 0; i < subsets_l.size(); i++) {
+        while (j < subsets_r.size() && subsets_l[i].first > subsets_r[j].first) j++;
+        if (j == subsets_r.size()) break;
 
-        if (it1->first == it2->first && (it1->second || it2->second)) {
+        if (subsets_l[i].first == subsets_r[j].first && (subsets_l[i].second || subsets_r[j].second)) {
             vector<int> present1, present2;
-            auto mask = it1->second | it2->second;
-            for (int i = 0; i < n; i++) {
-                int p = (mask >> (i << 1)) & 3;
-                if (p == 1) (i < n / 2 ? present1 : present2).emplace_back(i + 1);
-                else if (p == 2) (i < n / 2 ? present2 : present1).emplace_back(i + 1);
+            auto mask = subsets_l[i].second | subsets_r[j].second;
+            for (int k = 0; k < n; k++) {
+                int p = (mask >> (k << 1)) & 3;
+                if (p == 1) (k < n / 2 ? present1 : present2).emplace_back(k + 1);
+                else if (p == 2) (k < n / 2 ? present2 : present1).emplace_back(k + 1);
             }
             cout << "no\n";
             auto print = [&](vector<int> &present) {
                 cout << present.size() << " ";
-                for (int x : present) cout << x << " ";
+                for (int k : present) cout << k << " ";
                 cout << "\n";
             };
             print(present1);
