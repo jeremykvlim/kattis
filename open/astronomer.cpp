@@ -136,7 +136,7 @@ struct Line {
 
 template <typename T>
 Line<T> perpendicular_bisector(const Point<T> &a, const Point<T> &b) {
-    Point<T> midpoint{a.x + (b.x - a.x) / 2, a.y + (b.y - a.y) / 2}, ab = b - a, dir{-ab.y, ab.x};
+    Point<T> midpoint{a.x + (b.x - a.x) / 2, a.y + (b.y - a.y) / 2}, dir{a.y - b.y, b.x - a.x};
     return {midpoint, dir};
 }
 
