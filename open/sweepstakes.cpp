@@ -79,7 +79,7 @@ struct SegmentTree {
                 if (valid(j)) sum += poly2[j - offset2] * poly1[t - j - offset1];
 
             for (int j = 0; j <= ST[i].queries; j++) {
-                if (valid(j)) cout << fixed << setprecision(7) << poly2[j - offset2] * poly1[t - j - offset1] / sum << " ";
+                if (valid(j)) cout << fixed << setprecision(6) << poly2[j - offset2] * poly1[t - j - offset1] / sum << " ";
                 else cout << "0 ";
             }
             cout << "\n";
