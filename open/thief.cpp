@@ -9,7 +9,7 @@ int main() {
     cin >> n >> k;
 
     vector<vector<int>> jewels(301);
-    for (int i = 0; i < n; i++) {
+    while (n--) {
         int s, v;
         cin >> s >> v;
 
