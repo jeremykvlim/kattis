@@ -211,9 +211,9 @@ int main() {
         m = l + (r - l) / 2;
 
         fn.add_arc(v - 1, v, m, 0);
-        auto [flow, cost] = fn.max_flow_min_cost(0, v);
+        auto [f, c] = fn.max_flow_min_cost(0, v);
         
-        if (cost == -e) r = m;
+        if (c == -e) r = m;
         else l = m;
 
         fn = temp;
