@@ -1,48 +1,66 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void dnc(int l, int r, int lower, int upper, int offset, int size, vector<long long> &total, vector<long long> &dp, vector<long long> &temp) {
-    if (l > r) return;
-
-    int m = l + (r - l) / 2;
-    auto p = make_pair(LLONG_MIN, 0);
-    for (int i = lower; i <= min(m, upper); i++) p = max(p, {total[(m - i) * size] + dp[i * size + offset], i});
-    temp[m * size + offset] = p.first;
-
-    dnc(l, m - 1, lower, p.second, offset, size, total, dp, temp);
-    dnc(m + 1, r, p.second, upper, offset, size, total, dp, temp);
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n, k;
-    cin >> n >> k;
+	int n, k;
+	cin >> n >> k;
 
     vector<vector<int>> jewels(301);
-    for (int i = 1; i <= n; i++) {
-        int s, v;
-        cin >> s >> v;
+	for (int i = 0; i < n; i++) {
+		int s, v;
+		cin >> s >> v;
 
-        jewels[s].emplace_back(v);
+		jewels[s].emplace_back(v);
+	}
+	for (int s = 1; s <= 300; s++) sort(jewels[s].rbegin(), jewels[s].rend());
+
+    vector<long long> dp(k + 1, -1e18);
+	dp[0] = 0;
+	for (int s = 1; s <= 300; s++)
+        if (!jewels[s].empty())
+            for (int r = 0; r < s; r++)
+                if (r <= k) {
+                    int size = (k - r) / s + 1;
+                    vector<long long> prev(size);
+                    for (int i = 0; i < size; i++) prev[i] = dp[i * s + r];
+
+                    int steal = min(size, (int) jewels[s].size() + 1);
+                    vector<long long> pref(steal, 0);
+                    for (int i = 1; i < steal; i++) pref[i] = pref[i - 1] + jewels[s][i - 1];
+
+                    auto search = [&](int i, int j) {
+                        int l = j - 1, r = i + steal - 1, mid;
+                        while (l + 1 < r) {
+                            mid = l + (r - l) / 2;
+
+                            if (prev[i] + pref[mid - i] > prev[j] + pref[mid - j]) l = mid;
+                            else r = mid;
+                        }
+                        return l;
+                    };
+
+                    vector<long long> temp(size, -1);
+                    deque<int> mono_indices;
+                    for (int i = 0; i < size; i++) {
+                        if (prev[i] >= 0) {
+                            while (mono_indices.size() > 1) {
+                                if (search(mono_indices[mono_indices.size() - 2], mono_indices.back()) >= search(mono_indices.back(), i)) mono_indices.pop_back();
+                                else break;
+                            }
+                            mono_indices.emplace_back(i);
+                        }
+                        while (!mono_indices.empty() && mono_indices[0] <= i - steal) mono_indices.pop_front();
+                        while (mono_indices.size() > 1 && prev[mono_indices[0]] + pref[i - mono_indices[0]] <= prev[mono_indices[1]] + pref[i - mono_indices[1]]) mono_indices.pop_front();
+                        if (!mono_indices.empty()) temp[i] = prev[mono_indices[0]] + pref[i - mono_indices[0]];
+                    }
+                    for (int i = 0; i < size; i++) dp[i * s + r] = temp[i];
+                }
+
+	for (int i = 1; i <= k; i++) {
+        dp[i] = max(dp[i], dp[i - 1]);
+        cout << dp[i] << " ";
     }
-    for (auto &j : jewels) sort(j.rbegin(), j.rend());
-
-    vector<long long> total(k + 1, 0), dp(k + 1), temp(k + 1);
-    for (int i = 1; i < jewels.size(); i++) {
-        if (jewels[i].empty()) continue;
-
-        auto sum = 0LL;
-        for (int j = 0; i * (j + 1) <= k; j++) {
-            if (j < jewels[i].size()) sum += jewels[i][j];
-            total[i * (j + 1)] = sum;
-        }
-        if (!sum) break;
-
-        for (int j = 0; j < i; j++) dnc(0, (k - j) / i, 0, (k - j) / i, j, i, total, dp, temp);
-        dp = temp;
-    }
-
-    for (int i = 1; i <= k; i++) cout << dp[i] << " ";
 }
