@@ -209,13 +209,13 @@ int main() {
         for (auto &row : v)
             for (int &cost : row) cin >> cost;
 
-        int num = 0;
-        FlowNetwork<long long, long long> fn(3 * m * n + 2);
+        int count = 0;
+        FlowNetwork<int, int> fn(3 * m * n + 2);
         vector<int> dr{1, 0, -1, 0}, dc{0, 1, 0, -1};
         for (int i = 0; i < m; i++)
             for (int j = 0; j < n; j++)
                 if (grid[i][j] != '#') {
-                    num++;
+                    count++;
                     int x = i * n + j + 1;
                     if ((i + j) & 1) {
                         fn.add_arc(0, x, 2, 0);
@@ -242,7 +242,7 @@ int main() {
                 }
 
         auto [f, c] = fn.max_flow_min_cost(0, 3 * m * n + 1);
-        if (f < num) cout << "NO\n";
+        if (f < count) cout << "NO\n";
         else cout << "YES " << c << "\n";
     }
 }
