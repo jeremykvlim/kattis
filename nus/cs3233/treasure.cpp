@@ -18,7 +18,7 @@ int main() {
             if (grid[r][c] == 'G') e = {r, c};
         }
 
-    vector<int> dr{0, 0, 1, -1}, dc{1, -1, 0, 0};
+    vector<int> dr{1, 0, -1, 0}, dc{0, 1, 0, -1};
     vector<vector<vector<int>>> dist(n, vector<vector<int>>(m, vector<int>(k + 1, -1)));
     dist[s.first][s.second][k] = 1;
     priority_queue<array<int, 4>, vector<array<int, 4>>, greater<>> pq;
