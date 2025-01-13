@@ -164,21 +164,6 @@ struct Line {
 
     Line() {}
     Line(Point<T> a, Point<T> b) : a(a), b(b) {}
-    Line(T &a, T &b, T &c) {
-        if (fabs(a) < 1e-8 && fabs(b) > 1e-8) {
-            a = {0, c / b};
-            b = {1, c / b};
-        } else if (fabs(b) < 1e-8) {
-            a = {c / a, 0};
-            b = {c / a, 1};
-        } else if (fabs(c) < 1e-8) {
-            a = {0, c / b};
-            b = {1, (c - a) / b};
-        } else {
-            a = {0, c / b};
-            b = {c / a, 0};
-        }
-    }
 };
 
 template <typename T>
