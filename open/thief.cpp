@@ -5,21 +5,21 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-	int n, k;
-	cin >> n >> k;
+    int n, k;
+    cin >> n >> k;
 
     vector<vector<int>> jewels(301);
-	for (int i = 0; i < n; i++) {
-		int s, v;
-		cin >> s >> v;
+    for (int i = 0; i < n; i++) {
+        int s, v;
+        cin >> s >> v;
 
-		jewels[s].emplace_back(v);
-	}
-	for (int s = 1; s <= 300; s++) sort(jewels[s].rbegin(), jewels[s].rend());
+        jewels[s].emplace_back(v);
+    }
+    for (int s = 1; s <= 300; s++) sort(jewels[s].rbegin(), jewels[s].rend());
 
     vector<long long> dp(k + 1, -1e18);
-	dp[0] = 0;
-	for (int s = 1; s <= 300; s++)
+    dp[0] = 0;
+    for (int s = 1; s <= 300; s++)
         if (!jewels[s].empty())
             for (int r = 0; r < s; r++)
                 if (r <= k) {
@@ -47,19 +47,22 @@ int main() {
                     for (int i = 0; i < size; i++) {
                         if (prev[i] >= 0) {
                             while (mono_indices.size() > 1) {
-                                if (search(mono_indices[mono_indices.size() - 2], mono_indices.back()) >= search(mono_indices.back(), i)) mono_indices.pop_back();
+                                if (search(mono_indices[mono_indices.size() - 2], mono_indices.back()) >=
+                                    search(mono_indices.back(), i))
+                                    mono_indices.pop_back();
                                 else break;
                             }
                             mono_indices.emplace_back(i);
                         }
                         while (!mono_indices.empty() && mono_indices[0] <= i - steal) mono_indices.pop_front();
-                        while (mono_indices.size() > 1 && prev[mono_indices[0]] + pref[i - mono_indices[0]] <= prev[mono_indices[1]] + pref[i - mono_indices[1]]) mono_indices.pop_front();
+                        while (mono_indices.size() > 1 && 
+			       prev[mono_indices[0]] + pref[i - mono_indices[0]] <= prev[mono_indices[1]] + pref[i - mono_indices[1]]) mono_indices.pop_front();
                         if (!mono_indices.empty()) temp[i] = prev[mono_indices[0]] + pref[i - mono_indices[0]];
                     }
                     for (int i = 0; i < size; i++) dp[i * s + r] = temp[i];
                 }
 
-	for (int i = 1; i <= k; i++) {
+    for (int i = 1; i <= k; i++) {
         dp[i] = max(dp[i], dp[i - 1]);
         cout << dp[i] << " ";
     }
