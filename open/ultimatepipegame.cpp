@@ -1,9 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-#define Rep(i,n) for(int i = 0; i < (n); ++i)
-#define maxn 22
-
 template <typename T, typename U>
 struct FlowNetwork {
     struct Arc {
