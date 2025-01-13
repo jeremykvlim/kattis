@@ -64,12 +64,12 @@ int main() {
 
     int words = 0;
     vector<vector<bool>> visited(h, vector<bool>(w, false));
+    vector<int> dr{1, 0, -1, 0}, dc{0, 1, 0, -1};
     auto dfs = [&](auto &&self, int i, int j, int node) -> int {
         visited[i][j] = true;
         int words = trie[node].count;
         trie[node].count = 0;
 
-        vector<int> dr{1, -1, 0, 0}, dc{0, 0, 1, -1};
         for (int k = 0; k < 4; k++) {
             int r = i + dr[k], c = j + dc[k];
             if (0 <= r && r < grid.size() && 0 <= c && c < grid[0].size() && !visited[r][c]) {
