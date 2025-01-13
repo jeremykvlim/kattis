@@ -40,8 +40,8 @@ struct SegmentTree {
         friend auto operator+(const Segment &sl, const Segment &sr) {
             Segment seg;
             seg.queries = sl.queries + sr.queries;
-            for (auto [i, j] : sl.squares) seg.squares.emplace(i, j);
-            for (auto [i, j] : sr.squares) seg.squares.emplace(i, j);
+            seg.squares.insert(sl.squares.begin(), sl.squares.end());
+            seg.squares.insert(sr.squares.begin(), sr.squares.end());
             return seg;
         }
     };
