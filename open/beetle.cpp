@@ -15,8 +15,7 @@ int main() {
     int water = 0;
     vector<vector<pair<int, int>>> dp(n + 1, vector<pair<int, int>>(n + 1));
     for (int r = 1; r <= n; r++) {
-        for (auto &row : dp)
-            for (auto &p : row) p = {0, 0};
+        for (auto &row : dp) fill(row.begin(), row.end(), make_pair(0, 0));
 
         for (int i = 1; i <= n; i++) {
             dp[i][i].first = dp[i][i].second = m - abs(x[i]) * r;
