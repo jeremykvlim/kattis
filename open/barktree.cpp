@@ -168,7 +168,7 @@ struct Line {
 
 template <typename T>
 Point<T> non_collinear_intersection(const Line<T> &l1, const Line<T> &l2) {
-    return l2.a + (l2.b - l2.a) * cross(l1.b - l1.a, l1.b - l2.a) / cross(l1.b - l1.a, l2.b - l2.a);
+    return l1.a + (l1.b - l1.a) * cross(l2.a - l1.a, l2.b - l2.a) / cross(l1.b - l1.a, l2.b - l2.a);
 }
 
 int main() {
