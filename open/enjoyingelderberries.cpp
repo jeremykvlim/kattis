@@ -90,7 +90,7 @@ int main() {
                         overlap[i] |= 1 << j;
                         continue;
                     }
-                    
+
                     auto it = lower_bound(controlled[x].begin(), controlled[x].end(), in[leaf_branch[y]]);
                     if (it != controlled[x].end() && *it < out[leaf_branch[y]]) overlap[i] |= 1 << j;
                 }
@@ -100,9 +100,8 @@ int main() {
         for (int i = 1; i < 1 << m; i++) {
             int changes = 0;
             for (int j = 0; j < m; j++)
-                if ((i >> j) & 1) {
-                    if (i & overlap[j]) goto next;
-                } else changes += controlled[vertices[j]].size() + 1;
+                if (!((i >> j) & 1)) changes += controlled[vertices[j]].size() + 1;
+                else if (i & overlap[j]) goto next;
 
             if (least > changes) {
                 least = changes;
