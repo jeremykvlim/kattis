@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -433,14 +433,13 @@ int main() {
         exit(0);
     }
 
-    Matrix<modint> dp1(m);
+    Matrix<modint> dp(m);
     for (int i = 0; i < m; i++)
-        for (int j = 0; j < m; j++) 
-            dp1[i][j] = !(valid[i] & valid[j]);
+        for (int j = 0; j < m; j++) dp[i][j] = !(valid[i] & valid[j]);
 
-    auto dp2 = matpow(dp1, n - 1);
+    dp = matpow(dp, n - 1);
     modint ways = 0;
-    for (auto row : dp2)
+    for (auto row : dp)
         for (auto e : row) ways += e;
     cout << ways;
 }
