@@ -22,8 +22,7 @@ int main() {
         sort(islands.begin(), islands.end());
         islands.erase(unique(islands.begin(), islands.end()), islands.end());
         if (islands[0]) all[i] = islands;
-        else {
-            all[i].reserve(n - islands.size());
+        else
             for (int j = 0, x = 0; x < n; x++) {
                 if (j < islands.size() && islands[j] == x) {
                     j++;
@@ -31,7 +30,6 @@ int main() {
                 }
                 all[i].emplace_back(x);
             }
-        }
     }
 
     vector<int> indices(m);
@@ -65,4 +63,3 @@ int main() {
     }
     cout << 1;
 }
-
