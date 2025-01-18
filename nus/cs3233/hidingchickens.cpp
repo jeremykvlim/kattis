@@ -136,11 +136,11 @@ int main() {
     dp[0] = 0;
     for (int mask = 1; mask < 1 << n; mask++)
         for (int i = 0; i < n; i++) {
-            if (!(mask & 1 << i)) continue;
+            if (!((mask >> i) & 1)) continue;
             for (int j = 0; j <= i; j++) {
-                if (!(mask & 1 << j)) continue;
+                if (!((mask >> j) & 1)) continue;
 
-                int submask = 1 << i | 1 << j;
+                int submask = (1 << i) | (1 << j);
                 auto d = dist(points[i], points[j]);
                 d += (submask == mask) ? min(dist(points[i], roost), dist(points[j], roost)) : dist(points[i], roost) + dist(points[j], roost);
 
