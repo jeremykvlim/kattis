@@ -460,7 +460,7 @@ int main() {
     vector<vector<int>> submasks(1 << n);
     for (int mask1 = 1; mask1 < 1 << n; mask1++)
         for (int mask2 = 1; mask2 <= mask1; mask2++)
-            if ((mask1 & mask2) == mask2) submasks[mask1].emplace_back(mask2);
+            if (!(~mask1 & mask2)) submasks[mask1].emplace_back(mask2);
 
     vector<vector<modint>> dp(1 << n, vector<modint>(1 << n));
     for (int mask = 1; mask < 1 << n; mask++) dp[mask][mask] = alice_losing[mask];
