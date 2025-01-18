@@ -457,17 +457,17 @@ int main() {
         alice_losing[mask] = p / q * ways_0_nim_sum(ways_0_nim_sum, valid) / total_ways;
     }
 
-    vector<vector<int>> masks(1 << n);
+    vector<vector<int>> submasks(1 << n);
     for (int mask1 = 1; mask1 < 1 << n; mask1++)
         for (int mask2 = 1; mask2 <= mask1; mask2++)
-            if ((mask1 & mask2) == mask2) masks[mask1].emplace_back(mask2);
+            if ((mask1 & mask2) == mask2) submasks[mask1].emplace_back(mask2);
 
     vector<vector<modint>> dp(1 << n, vector<modint>(1 << n));
     for (int mask = 1; mask < 1 << n; mask++) dp[mask][mask] = alice_losing[mask];
     for (int mask1 = 1; mask1 < 1 << n; mask1++)
-        for (int mask2 : masks[mask1])
+        for (int mask2 : submasks[mask1])
             if (dp[mask1][mask2])
-                for (int mask3 : masks[mask1 ^ ((1 << n) - 1)]) {
+                for (int mask3 : submasks[mask1 ^ ((1 << n) - 1)]) {
                     auto temp = dp[mask1][mask2];
                     for (int i = 0; i < n; i++)
                         if ((mask3 >> i) & 1) temp *= no_in_maybe_out[i][mask1 ^ mask2] * no_in_yes_out[i][mask2];
