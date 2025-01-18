@@ -19,7 +19,7 @@ int main() {
 
     vector<vector<vector<bool>>> visited(m_max + 1, vector<vector<bool>>(m_max + 1, vector<bool>(n + 1, false)));
     vector<vector<vector<long long>>> memo(m_max + 1, vector<vector<long long>>(m_max + 1, vector<long long>(n + 1, 1e10)));
-    auto dp = [&](auto &&self, int l, int r, int i) -> long long {
+    auto dp = [&](auto &&self, int l, int r, int i = 0) -> long long {
         if (l >= r) return 0;
         if (visited[l][r][i]) return memo[l][r][i];
         visited[l][r][i] = true;
@@ -32,5 +32,5 @@ int main() {
             }
         return memo[l][r][i];
     };
-    cout << dp(dp, 0, m_max, 0);
+    cout << dp(dp, 0, m_max);
 }
