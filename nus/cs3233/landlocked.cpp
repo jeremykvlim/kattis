@@ -48,5 +48,5 @@ int main() {
         for (int j = 0; j < m; j++) letters[countries[i][j] - 'A'] = min(letters[countries[i][j] - 'A'], dist[i][j]);
 
     for (int i = 0; i < 26; i++)
-        if (0 <= letters[i] && letters[i] < INT_MAX) cout << char('A' + i) << " " << letters[i] << "\n";
+        if (0 <= letters[i] && letters[i] < INT_MAX) cout << (char) ('A' + i) << " " << letters[i] << "\n";
 }
