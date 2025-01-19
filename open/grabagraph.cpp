@@ -34,7 +34,7 @@ int main() {
         for (int i = 86; ~i; i--)
             if (a >= fib[i]) {
                 a -= fib[i];
-                c.push_back({1, i + 2, 86 - i + 1});
+                c.push_back({1, i + 2, 87 - i});
             }
 
         print(62, b);
