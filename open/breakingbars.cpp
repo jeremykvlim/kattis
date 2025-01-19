@@ -17,8 +17,8 @@ int main() {
     vector<vector<int>> indices(7, vector<int>(7));
     vector<int> a(22), b(22);
     int id = 0;
-    for (int i = 6; i >= 1; i--)
-        for (int j = i; j >= 1; j--) {
+    for (int i = 6; i; i--)
+        for (int j = i; j; j--) {
             indices[i][j] = indices[j][i] = ++id;
             a[id] = i;
             b[id] = j;
