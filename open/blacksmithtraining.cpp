@@ -17,12 +17,10 @@ int main() {
         m_max = max(m_max, m[i]);
     }
 
-    vector<vector<vector<bool>>> visited(m_max + 1, vector<vector<bool>>(m_max + 1, vector<bool>(n + 1, false)));
     vector<vector<vector<long long>>> memo(m_max + 1, vector<vector<long long>>(m_max + 1, vector<long long>(n + 1, 1e10)));
     auto dp = [&](auto &&self, int l, int r, int i = 0) -> long long {
         if (l >= r) return 0;
-        if (visited[l][r][i]) return memo[l][r][i];
-        visited[l][r][i] = true;
+        if (memo[l][r][i] < 1e10) return memo[l][r][i];
 
         if (e[i] <= l && r <= m[i]) memo[l][r][i] = min(memo[l][r][i], d[i] * (r - l));
         for (int j = 1; j <= n; j++)
