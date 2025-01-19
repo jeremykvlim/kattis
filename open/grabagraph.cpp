@@ -23,7 +23,7 @@ int main() {
     long long a;
     while (cin >> a && ~a) {
         auto print = [&](int n, const auto &edges) {
-            cout << "YES\n\n" << n << " " << edges.size() << "\n";
+            cout << "YES\n" << n << " " << edges.size() << "\n";
             for (auto [u, v, c] : edges) cout << u << " " << v << " " << c << "\n";
         };
 
