@@ -63,6 +63,10 @@ struct SegmentTree {
         return min(l + i, r - (i >> 1));
     }
 
+    void query(const pair<vector<double>, int> &distribution) {
+        return query(distribution, 1, 0, n);
+    }
+
     void query(const pair<vector<double>, int> &distribution1, int i, int l, int r) {
         if (l + 1 == r) {
             auto distribution2 = make_pair(vector<double>{1}, 0);
@@ -95,10 +99,6 @@ struct SegmentTree {
         };
         range_query(i << 1, l, m);
         range_query(i << 1 | 1, m, r);
-    }
-
-    void query(const pair<vector<double>, int> &distribution) {
-        return query(distribution, 1, 0, n);
     }
 
     auto & operator[](int i) {
