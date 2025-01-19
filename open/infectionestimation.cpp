@@ -1,36 +1,43 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-constexpr int POP = 1e7;
-
-double probability(vector<double> &pref_log, int k, int i, bool result) {
-    if (result) return log(1 - exp(probability(pref_log, k, i, false)));
-    return pref_log[POP - i] - pref_log[POP - i - k] - pref_log[POP] + pref_log[POP - k];
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    vector<double> p(5e6 + 1, 0), pref_log(POP + 1, 0);
-    for (int i = 1; i <= POP; i++) pref_log[i] = pref_log[i - 1] + log(i);
-    int t = 50, x = 100;
-    while (t--) {
-        int k = POP / x;
-        cout << "test " << k << "\n" << flush;
+    vector<int> candidates;
+    for (int x = 100; x <= 5e6; x *= 1.01) candidates.emplace_back(x);
 
-        bool result;
-        cin >> result;
+    int n = candidates.size(), pop = 1e7;
+    vector<double> distribution(n, 1. / n), log_fact(pop + 1, 0);
+    for (int i = 1; i <= pop; i++) log_fact[i] = log_fact[i - 1] + log(i);
 
-        double P = -1e15;
-        for (int i = 100; i <= 5e6; i *= 1.1) {
-            p[i] += probability(pref_log, k, i, result);
-            if (P < p[i]) {
-                P = p[i];
-                x = i;
+    for (int _ = 0; _ < 50; _++) {
+        vector<double> prob(n);
+        auto pr = [&](int k) {
+            double prob_positive = 0;
+            for (int i = 0; i < n; i++) {
+                if (pop - candidates[i] >= k) prob[i] = 1 - exp(log_fact[pop - candidates[i]] - log_fact[pop - candidates[i] - k] - log_fact[pop] + log_fact[pop - k]);
+                else prob[i] = 1;
+                
+                prob_positive += prob[i] * distribution[i];
             }
-        }
-    }
+            return prob_positive;
+        };
+        int l = 0, r = pop;
+        while (l + 1 < r) {
+            int m = l + (r - l) / 2;
 
-    cout << "estimate " << x << "\n";
+            if (pr(m) >= 0.5) r = m;
+            else l = m;
+        }
+        cout << "test " << l << "\n" << flush;
+
+        bool y;
+        cin >> y;
+
+        auto prob_positive = pr(l);
+        for (int i = 0; i < n; i++) distribution[i] *= (y ? prob[i] / prob_positive : (1 - prob[i]) / (1 - prob_positive));
+    }
+    cout << "estimate " << candidates[max_element(distribution.begin(), distribution.end()) - distribution.begin()] << "\n" << flush;
 }
