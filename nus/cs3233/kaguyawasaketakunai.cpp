@@ -107,7 +107,7 @@ int main() {
 
     vector<long long> dist(n + 1, 1e18);
     dist[s] = 0;
-    priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<pair<long long, int>>> pq;
+    priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<>> pq;
     pq.emplace(0, s);
     while (!pq.empty()) {
         auto [di, u] = pq.top();
