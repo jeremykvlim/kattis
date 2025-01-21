@@ -7,7 +7,7 @@ struct QueryDecomposition {
 
     QueryDecomposition(int n, const vector<array<int, 3>> &queries) : size(ceil(sqrt(n))), queries(queries) {}
 
-    vector<int> mo(vector<int> a, vector<int> b, int k) {
+    vector<int> mo(const vector<int> &a, const vector<int> &b, int k) {
         vector<int> answers(queries.size());
         sort(queries.begin(), queries.end(), [&](auto q1, auto q2) {return make_pair(q1[0] / size, q1[1]) < make_pair(q2[0] / size, q2[1]);});
 
@@ -62,6 +62,7 @@ int main() {
 
         i = j;
     }
+    
     QueryDecomposition qd(n, queries);
     for (int couples : qd.mo(a, b, k)) cout << couples << "\n";
 }
