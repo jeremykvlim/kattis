@@ -9,7 +9,7 @@ int main() {
     cin >> n >> m;
 
     vector<int> weights(n);
-    priority_queue<pair<int, pair<int, int>>, vector<pair<int, pair<int, int>>>, greater<pair<int, pair<int, int>>>> pq;
+    priority_queue<pair<int, pair<int, int>>, vector<pair<int, pair<int, int>>>, greater<>> pq;
     for (int i = 0; i < n; i++) {
         cin >> weights[i];
 
@@ -40,7 +40,7 @@ int main() {
         visited[v] = visited[v] == -1 ? s : -2;
 
         if (s != v) pq.emplace(d + weights[v], pair<int, int>{-1, -1});
-        
+
         for (auto [u, w] : adj_list[v]) pq.emplace(d + w, pair<int, int>{s, u});
     }
 }
