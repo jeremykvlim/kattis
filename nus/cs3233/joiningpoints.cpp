@@ -162,7 +162,8 @@ int main() {
 
     for (int i = 0; i < s; i++)
         if (possible[i]) {
-            cout << candidates[i][0] << " " << candidates[i][1] << " " << candidates[i][2] << " " << candidates[i][3];
+            auto [x1, x2, y1, y2] = candidates[i];
+            cout << x1 << " " << x2 << " " << y1 << " " << y2;
             exit(0);
         }
 }
