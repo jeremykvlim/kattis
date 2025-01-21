@@ -5,18 +5,7 @@ struct QueryDecomposition {
     int size;
     vector<array<int, 3>> queries;
 
-    QueryDecomposition(int n, int q) : size(ceil(sqrt(n))), queries(q) {
-        read();
-    }
-
-    void read() {
-        for (int j = 0; j < queries.size(); j++) {
-            auto &[l, r, i] = queries[j];
-
-            cin >> l >> r;
-            i = j;
-        }
-    }
+    QueryDecomposition(int n, const vector<array<int, 3>> &queries) : size(ceil(sqrt(n))), queries(queries) {}
 
     vector<int> mo(vector<int> a, vector<int> b, int k) {
         vector<int> answers(queries.size());
@@ -66,6 +55,13 @@ int main() {
     for (int &ai : a) cin >> ai;
     for (int &bi : b) cin >> bi;
 
-    QueryDecomposition qd(n, m);
+    vector<array<int, 3>> queries(m);
+    for (int j = 0; j < m; j++) {
+        auto &[l, r, i] = queries[j];
+        cin >> l >> r;
+
+        i = j;
+    }
+    QueryDecomposition qd(n, queries);
     for (int couples : qd.mo(a, b, k)) cout << couples << "\n";
 }
