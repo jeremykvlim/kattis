@@ -10,12 +10,11 @@ int main() {
 
     vector<pair<int, int>> delivs(n);
     for (auto &[t, d] : delivs) cin >> t >> d;
-    sort(delivs.begin(), delivs.end(), greater<>());
+    sort(delivs.rbegin(), delivs.rend());
 
     auto money = 0LL;
     multiset<int> payments;
-    int curr;
-
+    int curr = 1e9;
     auto deliver = [&](int t) {
         while (!payments.empty() && curr > t) {
             money += *payments.rbegin();
