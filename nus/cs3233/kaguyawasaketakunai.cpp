@@ -107,18 +107,18 @@ int main() {
 
     vector<long long> dist(n + 1, 1e18);
     dist[s] = 0;
-    priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<>> pq;
+    priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<pair<long long, int>>> pq;
     pq.emplace(0, s);
     while (!pq.empty()) {
-        auto [di, u] = pq.top();
+        auto [di, v] = pq.top();
         pq.pop();
 
-        if (di > dist[u]) continue;
+        if (di > dist[v]) continue;
 
-        for (auto [v, w] : adj_list[u])
-            if (dist[v] > dist[u] + w) {
-                dist[v] = dist[u] + w;
-                pq.emplace(dist[v], v);
+        for (auto [u, w] : adj_list[v])
+            if (dist[u] > di + w) {
+                dist[u] = di + w;
+                pq.emplace(dist[u], u);
             }
     }
 
