@@ -96,7 +96,7 @@ int main() {
         if (q == 1) {
             updates.push_back({a, b, temp[a]});
             temp[a] = b;
-        } else if (q == 2) queries.push_back({a, b, (int) updates.size(), (int) queries.size()});
+        } else queries.push_back({a, b, (int) updates.size(), (int) queries.size()});
     }
 
     QueryDecomposition qd(n, queries);
