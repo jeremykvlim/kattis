@@ -389,9 +389,8 @@ int main() {
         for (auto [u, count] : adj_list[v])
             if (!state[u]) {
                 if (self(self, u)) return true;
-            }
-            else if (state[u] == 1) return true;
-
+            } else if (state[u] == 1) return true;
+        
         state[v] = 2;
         return false;
     };
