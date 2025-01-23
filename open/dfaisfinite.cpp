@@ -73,11 +73,11 @@ int main() {
 
     auto dfs = [&](auto &&self, int v) -> bool {
         state[v] = 1;
-        for (int u : adj_list[v]) {
+        for (int u : adj_list[v]) 
             if (!state[u]) {
                 if (self(self, u)) return true;
             } else if (state[u] == 1) return true;
-        }
+        
         state[v] = 2;
         return false;
     };
