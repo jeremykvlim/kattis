@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct DisjointSets {
+struct DisjointSet {
     vector<int> sets;
 
     int find(int p) {
@@ -17,13 +17,13 @@ struct DisjointSets {
         return false;
     }
 
-    DisjointSets(int n) : sets(n) {
+    DisjointSet(int n) : sets(n) {
         iota(sets.begin(), sets.end(), 0);
     }
 };
 
 vector<int> tarjan_lca(int n, vector<vector<int>> &adj_list, vector<vector<pair<int, int>>> &queries) {
-    DisjointSets dsu(n);
+    DisjointSet dsu(n);
     vector<bool> visited(n, false);
     vector<int> lca(n, -1), ancestor(n, -1);
 
@@ -78,9 +78,8 @@ int main() {
     }
 
     auto lca = tarjan_lca(n + 1, adj_list, queries);
-    for (int i = 0; i <= n; i++)
+    for (int i = 1; i <= n; i++) {
         if (~lca[i]) op[i] = depth[lca[i]];
-
-    for (int i = 1; i <= n; i++)
         if (~op[i]) cout << op[i] << "\n";
+    }
 }
