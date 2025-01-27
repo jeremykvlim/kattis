@@ -142,26 +142,26 @@ int main() {
         vector<double> dp(1 << n, INT_MAX);
         dp[0] = 0;
         int eggs = 0;
-        for (int mask = 0; mask < 1 << n; mask++) {
+        for (int m1 = 0; m1 < 1 << n; m1++) {
             for (int i = 0; i < n; i++) {
-                if ((mask >> i) & 1) continue;
+                if ((m1 >> i) & 1) continue;
 
                 auto ti = time[i][n];
-                if (dp[mask] + 2 * ti < sun[i]) dp[mask | (1 << i)] = min(dp[mask | (1 << i)], dp[mask] + 3 * ti);
+                if (dp[m1] + 2 * ti < sun[i]) dp[m1 | (1 << i)] = min(dp[m1 | (1 << i)], dp[m1] + 3 * ti);
                 for (int j = 0; j < i; j++) {
-                    if ((mask >> j) & 1) continue;
+                    if ((m1 >> j) & 1) continue;
 
-                    int submask = (1 << i) | (1 << j);
+                    int m2 = (1 << i) | (1 << j);
                     auto tj = time[j][n];
-                    if (dp[mask] + 4 * ti < sun[i] && dp[mask] + 4 * ti + time[i][j] * 2 < sun[j])
-                        dp[mask | submask] = min(dp[mask | submask], dp[mask] + (4 * ti + tj + time[i][j] * 2));
+                    if (dp[m1] + 4 * ti < sun[i] && dp[m1] + 4 * ti + time[i][j] * 2 < sun[j])
+                        dp[m1 | m2] = min(dp[m1 | m2], dp[m1] + (4 * ti + tj + time[i][j] * 2));
 
-                    if (dp[mask] + 4 * tj < sun[j] && dp[mask] + 4 * tj + time[j][i] * 2 < sun[i])
-                        dp[mask | submask] = min(dp[mask | submask], dp[mask] + (4 * tj + ti + time[j][i] * 2));
+                    if (dp[m1] + 4 * tj < sun[j] && dp[m1] + 4 * tj + time[j][i] * 2 < sun[i])
+                        dp[m1 | m2] = min(dp[m1 | m2], dp[m1] + (4 * tj + ti + time[j][i] * 2));
                 }
             }
 
-            if (dp[mask] != INT_MAX) eggs = max(eggs, __builtin_popcount(mask));
+            if (dp[m1] != INT_MAX) eggs = max(eggs, __builtin_popcount(m1));
         }
 
         cout << eggs << "\n";

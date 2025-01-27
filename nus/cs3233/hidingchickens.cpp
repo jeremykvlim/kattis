@@ -134,17 +134,17 @@ int main() {
 
     vector<double> dp(1 << n, DBL_MAX);
     dp[0] = 0;
-    for (int mask = 1; mask < 1 << n; mask++)
+    for (int m1 = 1; m1 < 1 << n; m1++)
         for (int i = 0; i < n; i++) {
-            if (!((mask >> i) & 1)) continue;
+            if (!((m1 >> i) & 1)) continue;
             for (int j = 0; j <= i; j++) {
-                if (!((mask >> j) & 1)) continue;
+                if (!((m1 >> j) & 1)) continue;
 
-                int submask = (1 << i) | (1 << j);
+                int m2 = (1 << i) | (1 << j);
                 auto d = dist(points[i], points[j]);
-                d += (submask == mask) ? min(dist(points[i], roost), dist(points[j], roost)) : dist(points[i], roost) + dist(points[j], roost);
+                d += (m2 == m1) ? min(dist(points[i], roost), dist(points[j], roost)) : dist(points[i], roost) + dist(points[j], roost);
 
-                dp[mask] = min(dp[mask], dp[mask ^ submask] + d);
+                dp[m1] = min(dp[m1], dp[m1 ^ m2] + d);
             }
         }
 

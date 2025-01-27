@@ -20,7 +20,7 @@ int main() {
     for (int i = 0; i < n + 2; i++) dist[i][i] = 0;
     for (int i = 0; i < n + 2; i++)
         for (int j = 0; j < n + 2; j++)
-            for (int k = 0; k < n + 2; k++) 
+            for (int k = 0; k < n + 2; k++)
                 dist[j][k] = min(dist[j][k], dist[j][i] + dist[i][k]);
 
     vector<long long> time(1 << n, INT_MAX);
@@ -38,9 +38,9 @@ int main() {
     dp[0] = 0;
     for (int i = 0; i < ceil((double) n / 5); i++) {
         auto temp = dp;
-        for (int j = 0; j < 1 << n; j++)
-            if (time[j] < INT_MAX)
-                for (int k = ((1 << n) - 1) & ~j; k >= 0; --k &= ~j) temp[j | k] = min(max(dp[k], time[j]), temp[j | k]);
+        for (int m1 = 0; m1 < 1 << n; m1++)
+            if (time[m1] < INT_MAX)
+                for (int m2 = ((1 << n) - 1) & ~m1; m2 >= 0; --m2 &= ~m1) temp[m1 | m2] = min(max(dp[m2], time[m1]), temp[m1 | m2]);
         dp = temp;
     }
 

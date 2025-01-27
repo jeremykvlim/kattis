@@ -30,10 +30,10 @@ int main() {
 
     vector<int> dp(1 << k, 1e9);
     dp[0] = 0;
-    for (int m = 0; m < 1 << k; m++)
+    for (int mask = 0; mask < 1 << k; mask++)
         for (int i = 0; i < k; i++) {
-            if ((m >> i) & 1) continue;
-            dp[m | (1 << i)] = min(dp[m | (1 << i)], dp[m] + clicks[m][i]);
+            if ((mask >> i) & 1) continue;
+            dp[mask | (1 << i)] = min(dp[mask | (1 << i)], dp[mask] + clicks[mask][i]);
         }
 
     cout << dp.back();

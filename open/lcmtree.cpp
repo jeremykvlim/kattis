@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -390,18 +390,18 @@ int main() {
     modint ways = 0;
     vector<modint> dp(1 << n, 0);
     dp[1 << (n - 1)] = dupes[n - 1];
-    for (int mask = 1 << (n - 1); ~mask; mask--)
-        if (dp[mask]) {
-            int b = __lg(mask), m = mask ^ (1 << b);
+    for (int m1 = 1 << (n - 1); ~m1; m1--)
+        if (dp[m1]) {
+            int b = __lg(m1), m2 = m1 ^ (1 << b);
             for (int i = b - 1; ~i; i--) {
-                if (((mask >> i) & 1) || (!((mask >> (i + 1)) & 1) && !unique[i]) || (i != b - 1 && !((mask >> (b - 1)) & 1))) continue;
+                if (((m1 >> i) & 1) || (!((m1 >> (i + 1)) & 1) && !unique[i]) || (i != b - 1 && !((m1 >> (b - 1)) & 1))) continue;
                 for (int j = i - 1; ~j; j--) {
-                    if (((mask >> j) & 1) || (!(i - 1 == j || ((mask >> (j + 1)) & 1)) && !unique[j]) || nodes[b] != LCM[i][j]) continue;
-                    dp[m | (1 << i) | (1 << j)] += dp[mask] * dupes[i] * dupes[j] / (i - 1 == j && nodes[i] == nodes[j] ? 2 : 1);
+                    if (((m1 >> j) & 1) || (!(i - 1 == j || ((m1 >> (j + 1)) & 1)) && !unique[j]) || nodes[b] != LCM[i][j]) continue;
+                    dp[m2 | (1 << i) | (1 << j)] += dp[m1] * dupes[i] * dupes[j] / (i - 1 == j && nodes[i] == nodes[j] ? 2 : 1);
                 }
             }
-            if (b && ((mask >> (b - 1)) & 1)) dp[m] += dp[mask];
-            if (!b && !m) ways += dp[mask];
+            if (b && ((m1 >> (b - 1)) & 1)) dp[m2] += dp[m1];
+            if (!b && !m2) ways += dp[m1];
         }
 
     cout << ways;
