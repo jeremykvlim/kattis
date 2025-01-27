@@ -32,15 +32,12 @@ int main() {
     for (int i = 1; i <= n; i++)
         for (int j = 0; j < intervals.size(); j++) {
             auto [a, b] = intervals[j];
+            int &k = l[j];
 
             if (a <= y[i] && y[i] <= b && a <= z[i] && z[i] <= b) {
-                while (l[j] < i) {
-                    if (a <= y[l[j] + 1] && y[l[j] + 1] <= b && a <= z[l[j] + 1] && z[l[j] + 1] <= b && t[i] - t[l[j] + 1] <= 1e4) break;
-                    l[j]++;
-                }
-
-                if (l[j] < i) dp[i] = min(dp[i], dp[l[j]] + 2 + b - a);
-            } else l[j] = i;
+                for (; k < i && (!(a <= y[k + 1] && y[k + 1] <= b && a <= z[k + 1] && z[k + 1] <= b) || t[i] - t[k + 1] > 1e4); k++);
+                if (k < i) dp[i] = min(dp[i], dp[k] + 2 + b - a);
+            } else k = i;
         }
     cout << dp[n];
 }
