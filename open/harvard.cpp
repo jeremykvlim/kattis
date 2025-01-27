@@ -104,7 +104,7 @@ int main() {
                     int i = __builtin_ctz(k);
                     dp2[k] = dp2[k & (k - 1)] - count[i][i];
                     for (int j = i + 1; j < v; j++)
-                        if (k & (1 << j)) dp2[k] -= count[i][j] + count[j][i];
+                        if ((k >> j) & 1) dp2[k] -= count[i][j] + count[j][i];
 
                     dp1[k] = dp2[k];
                 }

@@ -108,7 +108,7 @@ int main() {
         if (!~mask) continue;
 
         vector<int> levers(n);
-        for (int i = 0; i < n; i++) levers[i] = (mask & (1LL << i)) ? rev[configs[i]] : configs[i];
+        for (int i = 0; i < n; i++) levers[i] = ((mask >> i) & 1) ? rev[configs[i]] : configs[i];
 
         vector<long long> freq(t_max, 0);
         freq[0] = 1;

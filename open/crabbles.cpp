@@ -33,7 +33,7 @@ int main() {
             string s;
             int sum = 0;
             for (int i = 0; i < p; i++) 
-                if (mask & (1 << i)) {
+                if ((mask >> i) & 1) {
                     auto [c, v] = tiles[i];
                     s += c;
                     sum += v;

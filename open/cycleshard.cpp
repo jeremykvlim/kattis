@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -402,21 +402,21 @@ int main() {
         for (auto &[u, v] : edges) cin >> u >> v;
 
         auto y = fact[n - 1] * (MODULO / 2 + 1);
-        for (int i = 1; i < 1 << k; i++) {
+        for (int mask = 1; mask < 1 << k; mask++) {
             DisjointSets dsu(n + 1);
             vector<int> degree(n + 1, 0), degree_count(4, 0);
 
             int cycles = 0;
-            for (int j = 0; j < k; j++)
-                if (i & (1 << j)) {
-                    auto [u, v] = edges[j];
+            for (int i = 0; i < k; i++)
+                if ((mask >> i) & 1) {
+                    auto [u, v] = edges[i];
                     degree[u]++;
                     degree[v]++;
 
                     if (!dsu.unite(u, v)) cycles++;
                 }
 
-            int forbidden = __builtin_popcount(i);
+            int forbidden = __builtin_popcount(mask);
             for (int j = 1; j <= n; j++) degree_count[min(degree[j], 3)]++;
 
             if (degree_count[3]) continue;

@@ -24,14 +24,14 @@ int main() {
     auto epsilon_closure = [&](int state) {
         queue<int> q;
         for (int i = 0; i <= n; i++)
-            if (state & (1 << i)) q.emplace(i);
+            if ((state >> i) & 1) q.emplace(i);
 
         while (!q.empty()) {
             int v = q.front();
             q.pop();
 
             for (int u : adj_list_epsilon[v])
-                if (!(state & (1 << u))) {
+                if (!((state >> u) & 1)) {
                     state |= (1 << u);
                     q.emplace(u);
                 }
@@ -48,7 +48,7 @@ int main() {
     vector<bool> final_states;
     auto check = [&](int state) {
         for (int i = 0; i <= n; i++)
-            if (state & (1 << i))
+            if ((state >> i) & 1)
                 if (!i || binary_search(final.begin(), final.end(), i)) return true;
         return false;
     };
@@ -66,7 +66,7 @@ int main() {
         for (int j = 0; j < c; j++) {
             int next = 0;
             for (int i = 1; i <= n; i++)
-                if (curr & (1 << i)) next |= 1 << table[i - 1][j];
+                if ((curr >> i) & 1) next |= 1 << table[i - 1][j];
 
             next = epsilon_closure(next);
             if (!indices.count(next)) {

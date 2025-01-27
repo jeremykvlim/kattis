@@ -4,7 +4,7 @@ using namespace std;
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    
+
     int n, m;
     cin >> n >> m;
 
@@ -16,18 +16,18 @@ int main() {
         double p;
         cin >> i >> j >> p;
 
-        int state = 0;
-        while (state < 1 << n) {
-            state |= (1 << (i - 1)) | (1 << (j - 1));
-            alive[state & ~(1 << (j - 1))] += p * alive[state];
-            alive[state++] *= (1 - p);
+        int mask = 0;
+        while (mask < 1 << n) {
+            mask |= (1 << (i - 1)) | (1 << (j - 1));
+            alive[mask & ~(1 << (j - 1))] += p * alive[mask];
+            alive[mask++] *= (1 - p);
         }
     }
 
     vector<double> total(n, 0);
-    for (int state = 0; state < 1 << n; state++)
+    for (int mask = 0; mask < 1 << n; mask++)
         for (int i = 0; i < n; i++)
-            if (state & (1 << i)) total[i] += alive[state];
+            if ((mask >> i) & 1) total[i] += alive[mask];
 
     for (auto p : total) cout << fixed << setprecision(6) << p << "\n";
 }

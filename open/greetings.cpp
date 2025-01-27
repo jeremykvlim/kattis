@@ -12,17 +12,17 @@ int main() {
     for (auto &[w, h, q] : cards) cin >> w >> h >> q;
 
     vector<long long> waste(1 << n);
-    for (int i = 0; i < 1 << n; i++) {
+    for (int mask = 0; mask < 1 << n; mask++) {
         int w = 0, h = 0;
-        for (int j = 0; j < n; j++)
-            if (i & (1 << j)) {
-                w = max(w, cards[j][0]);
-                h = max(h, cards[j][1]);
+        for (int i = 0; i < n; i++)
+            if ((mask >> i) & 1) {
+                w = max(w, cards[i][0]);
+                h = max(h, cards[i][1]);
             }
 
-        waste[i] = 0;
-        for (int j = 0; j < n; j++)
-            if (i & (1 << j)) waste[i] += ((long long) w * h - (long long) cards[j][0] * cards[j][1]) * cards[j][2];
+        waste[mask] = 0;
+        for (int i = 0; i < n; i++)
+            if ((mask >> i) & 1) waste[mask] += ((long long) w * h - (long long) cards[i][0] * cards[i][1]) * cards[i][2];
     }
 
     vector<vector<long long>> dp(max(n, k) + 1, vector<long long>(1 << n, 1e13));

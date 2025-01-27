@@ -48,7 +48,7 @@ int main() {
     vector<unordered_set<pair<int, int>, Hash>> ranges_by_bits(bound);
     auto update_by_bits = [&](int l, int r, int g, bool add) {
         for (int b = 0; b < bound && (1 << b) <= g; b++)
-            if (g & (1 << b)) add ? (void) ranges_by_bits[b].emplace(l, r) : (void) ranges_by_bits[b].erase({l, r});
+            if ((g >> b) & 1) add ? (void) ranges_by_bits[b].emplace(l, r) : (void) ranges_by_bits[b].erase({l, r});
     };
 
     set<pair<int, int>> ranges_sorted;

@@ -17,21 +17,21 @@ int main() {
     }
 
     vector<int> dp1(1 << n, 0), dp2(1 << n);
-    for (int i = 1; i < 1 << n; i++)
-        for (int j = 0; j < 26; j++) {
+    for (int mask = 1; mask < 1 << n; mask++)
+        for (int c = 0; c < 26; c++) {
             int least = INT_MAX;
-            for (int k = 0; k < n; k++)
-                if (i & (1 << k)) least = min(least, freq[k][j]);
+            for (int i = 0; i < n; i++)
+                if ((mask >> i) & 1) least = min(least, freq[i][c]);
 
-            dp1[i] += least;
+            dp1[mask] += least;
         }
 
-    for (int i = 3; i < 1 << n; i++) {
-        if (__builtin_popcount(i) == 1) continue;
+    for (int m1 = 3; m1 < 1 << n; m1++) {
+        if (__builtin_popcount(m1) == 1) continue;
 
-        dp2[i] = INT_MAX;
-        for (int j = i ^ (1 << __lg(i)); j; j = i & (j - 1))
-            dp2[i] = min(dp2[i], dp2[j] + dp2[j ^ i] + dp1[j] + dp1[j ^ i] - 2 * dp1[i]);
+        dp2[m1] = INT_MAX;
+        for (int m2 = m1 ^ (1 << __lg(m1)); m2; m2 = m1 & (m2 - 1))
+            dp2[m1] = min(dp2[m1], dp2[m2] + dp2[m1 ^ m2] + dp1[m2] + dp1[m1 ^ m2] - 2 * dp1[m1]);
     }
 
     cout << dp1.back() + dp2.back() + 1;

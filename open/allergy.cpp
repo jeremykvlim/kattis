@@ -1,18 +1,18 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int shortest(int k, int d, vector<int> &days, vector<vector<int>> &dp) {
-    if (!k) return d;
-    if (dp[k][d] >= 0) return dp[k][d];
-    dp[k][d] = INT_MAX;
-    
+int shortest(int mask, int d, vector<int> &days, vector<vector<int>> &dp) {
+    if (!mask) return d;
+    if (dp[mask][d] >= 0) return dp[mask][d];
+    dp[mask][d] = INT_MAX;
+
     int prev = -1;
     for (int i = 0; i < days.size(); i++) {
-        if (!(k & (1 << i)) || days[i] == prev) continue;
+        if (!((mask >> i) & 1) || days[i] == prev) continue;
         prev = days[i];
-        dp[k][d] = min(dp[k][d], d + 1 + shortest(k - (1 << i), max(0, d + 1 - days[i]) + days[i] - (d + 1), days, dp));
+        dp[mask][d] = min(dp[mask][d], d + 1 + shortest(mask - (1 << i), max(0, d + 1 - days[i]) + days[i] - (d + 1), days, dp));
     }
-    return dp[k][d];
+    return dp[mask][d];
 }
 
 int main() {

@@ -21,16 +21,16 @@ int main() {
         for (auto &row : gold)
             for (int i = 0; i < n; i++) sum[i] += row[i];
 
-        auto dfs = [&](auto &&self, int v) -> void {
-            visited[v] = true;
+        auto dfs = [&](auto &&self, int mask) -> void {
+            visited[mask] = true;
             for (int i = 0; i < n; i++)
-                if ((v & (1 << i)) && sum[i] < 0 && !visited[v - (1 << i)]) {
+                if ((mask >> i) & 1 && sum[i] < 0 && !visited[mask - (1 << i)]) {
                     for (int j = 0; j < n; j++)
-                        if (v & (1 << j)) sum[j] -= gold[i][j];
+                        if ((mask >> j) & 1) sum[j] -= gold[i][j];
 
-                    self(self, v - (1 << i));
+                    self(self, mask - (1 << i));
                     for (int j = 0; j < n; j++)
-                        if (v & (1 << j)) sum[j] += gold[i][j];
+                        if ((mask >> j) & 1) sum[j] += gold[i][j];
                 }
         };
 

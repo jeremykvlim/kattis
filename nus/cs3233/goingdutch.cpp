@@ -16,16 +16,16 @@ int main() {
         balance[a] -= p;
         balance[b] += p;
     }
-    
+
     vector<int> dp(1 << m, 0);
-    for (int i = 1; i < 1 << m; i++) {
+    for (int mask = 1; mask < 1 << m; mask++) {
         int sum = 0;
-        for (int j = 0; j < m; j++)
-            if (i & (1 << j)) {
-                sum += balance[j];
-                dp[i] = max(dp[i], dp[i ^ (1 << j)]);
+        for (int i = 0; i < m; i++)
+            if ((mask >> i) & 1) {
+                sum += balance[i];
+                dp[mask] = max(dp[mask], dp[mask ^ (1 << i)]);
             }
-        if (!sum) dp[i]++;
+        if (!sum) dp[mask]++;
     }
 
     cout << m - dp.back();

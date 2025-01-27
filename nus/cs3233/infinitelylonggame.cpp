@@ -464,14 +464,14 @@ int main() {
 
     vector<vector<modint>> dp(1 << n, vector<modint>(1 << n));
     for (int mask = 1; mask < 1 << n; mask++) dp[mask][mask] = alice_losing[mask];
-    for (int mask1 = 1; mask1 < 1 << n; mask1++)
-        for (int mask2 : submasks[mask1])
-            if (dp[mask1][mask2])
-                for (int mask3 : submasks[mask1 ^ ((1 << n) - 1)]) {
-                    auto temp = dp[mask1][mask2];
+    for (int m1 = 1; m1 < 1 << n; m1++)
+        for (int m2 : submasks[m1])
+            if (dp[m1][m2])
+                for (int m3 : submasks[m1 ^ ((1 << n) - 1)]) {
+                    auto temp = dp[m1][m2];
                     for (int i = 0; i < n; i++)
-                        if ((mask3 >> i) & 1) temp *= no_in_maybe_out[i][mask1 ^ mask2] * no_in_yes_out[i][mask2];
-                    dp[mask1 ^ mask3][mask3] += temp * alice_losing[mask3];
+                        if ((m3 >> i) & 1) temp *= no_in_maybe_out[i][m1 ^ m2] * no_in_yes_out[i][m2];
+                    dp[m1 ^ m3][m3] += temp * alice_losing[m3];
                 }
 
     cout << accumulate(dp.back().begin(), dp.back().end(), (modint) 0);

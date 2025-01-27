@@ -37,11 +37,11 @@ int main() {
         int day = pq.top().second;
         pq.pop();
         if (hr[day]) continue;
-        
+
         hr[day] = 1;
-        while (awkward[day] & (1 << hr[day])) hr[day]++;
+        while ((awkward[day] >> hr[day]) & 1) hr[day]++;
         for (int d : fired[day])
-            if (!hr[d] && !(awkward[d] & (1 << hr[day]))) {
+            if (!hr[d] && !((awkward[day] >> hr[day]) & 1)) {
                 awkward[d] |= 1 << hr[day];
                 count[d]++;
                 pq.emplace(-count[d], d);

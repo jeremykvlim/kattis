@@ -144,12 +144,12 @@ int main() {
         int eggs = 0;
         for (int mask = 0; mask < 1 << n; mask++) {
             for (int i = 0; i < n; i++) {
-                if (mask & (1 << i)) continue;
+                if ((mask >> i) & 1) continue;
 
                 auto ti = time[i][n];
                 if (dp[mask] + 2 * ti < sun[i]) dp[mask | (1 << i)] = min(dp[mask | (1 << i)], dp[mask] + 3 * ti);
                 for (int j = 0; j < i; j++) {
-                    if (mask & (1 << j)) continue;
+                    if ((mask >> j) & 1) continue;
 
                     int submask = (1 << i) | (1 << j);
                     auto tj = time[j][n];

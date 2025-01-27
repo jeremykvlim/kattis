@@ -155,7 +155,7 @@ int main() {
             for (int j = 0; j < 3 && j < appearances[i].size(); j++) {
                 vector<int> s(wt.h + 1, INT_MAX);
                 for (int k = 0; k <= wt.h; k++)
-                    if (a[l] & (1 << k)) s[k] = appearances[i][appearances[i].size() - j - 1];
+                    if ((a[l] >> k) & 1) s[k] = appearances[i][appearances[i].size() - j - 1];
 
                 sts[j].assign(i, s);
             }

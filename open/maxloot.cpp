@@ -20,12 +20,12 @@ int main() {
         if (V > 1e6) {
             vector<pair<int, int>> chosen;
             set<pair<int, int>> s;
-            for (int i = 0; i < 1 << (n / 2); i++) {
+            for (int mask = 0; mask < 1 << (n / 2); mask++) {
                 int total_v = 0, total_c = 0;
-                for (int j = 0; j < n / 2; j++)
-                    if (i & (1 << j)) {
-                        total_v += values[j];
-                        total_c += costs[j];
+                for (int i = 0; i < n / 2; i++)
+                    if ((mask >> i) & 1) {
+                        total_v += values[i];
+                        total_c += costs[i];
                     }
 
                 if (total_c <= C) {
@@ -41,12 +41,12 @@ int main() {
                 s.emplace(chosen[i]);
             }
 
-            for (int i = 0; i < 1 << (n - (n / 2)); i++) {
+            for (int mask = 0; mask < 1 << (n - (n / 2)); mask++) {
                 int total_v = 0, total_c = 0;
-                for (int j = 0; j < n - n / 2; j++)
-                    if (i & (1 << j)) {
-                        total_v += values[j + n / 2];
-                        total_c += costs[j + n / 2];
+                for (int i = 0; i < n - n / 2; i++)
+                    if ((mask >> i) & 1) {
+                        total_v += values[i + n / 2];
+                        total_c += costs[i + n / 2];
                     }
 
                 if (total_c <= C) {

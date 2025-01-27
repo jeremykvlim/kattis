@@ -49,11 +49,11 @@ int main() {
         DisjointSets dsu(n);
         vector<int> fixed(n, -1), temp = color;
         string s;
-        for (int i = 1, j = n - 1; i <= n - 2; i++, j--) {
+        for (int i = 0, j = n - 1; i < n - 2; i++, j--) {
             if (!~P1[j]) continue;
 
             int p1 = P1[j], p2 = P2[j];
-            if (mask & (1 << (i - 1))) swap(p1, p2);
+            if ((mask >> i) & 1) swap(p1, p2);
 
             auto check = [&](int c, int p) -> bool {
                 if (c < color[p]) return false;

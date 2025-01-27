@@ -78,15 +78,15 @@ int main() {
 
         int d = 1e9;
         for (int u = 0; u < n; u++)
-            if ((curr & (1 << u)) && (count & (1 << u)))
+            if ((curr >> u) & 1 && (count >> u) & 1)
                 for (int v = 0; v < n; v++)
-                    if (u != v && dist[u][v] < 1e9 && (curr & (1 << v)) && (count & (1 << v)))
+                    if (u != v && dist[u][v] < 1e9 && (curr >> v) & 1 && (count >> v) & 1)
                         d = min(d, dist[u][v] + self(self, count ^ ((1 << u) | (1 << v)), curr));
 
         for (int u = 0; u < n; u++)
-            if (curr & (1 << u))
+            if ((curr >> u) & 1)
                 for (int v = 0; v < n; v++)
-                    if (u != v && dist[u][v] < 1e9 && !(curr & (1 << v)) && (all & (1 << v)))
+                    if (u != v && dist[u][v] < 1e9 && !((curr >> v) & 1) && (all >> v) & 1)
                         d = min(d, dist[u][v] + self(self, count ^ ((1 << u) | (1 << v)), curr | dsu.members[v]));
 
         return memo[curr | (count << n)] = d;

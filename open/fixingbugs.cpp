@@ -23,7 +23,7 @@ int main() {
         double prob = -1.0;
         int j;
         for (int i = 0; i < b; i++)
-            if (!(mask & (1 << i)) && p[i] * s[i] > prob) {
+            if (!((mask >> i) & 1) && p[i] * s[i] > prob) {
                 prob = p[i] * s[i];
                 j = i;
             }
