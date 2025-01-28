@@ -397,7 +397,7 @@ Matrix<T> matpow(Matrix<T> A, U exponent) {
     return B;
 }
 
-vector<int> prefix_function(string s) {
+vector<int> prefix_function(const string &s) {
     vector<int> pi(s.size());
     for (int i = 1; i < s.size(); i++) {
         int j = pi[i - 1];
@@ -409,7 +409,7 @@ vector<int> prefix_function(string s) {
     return pi;
 }
 
-vector<vector<int>> automaton(string s, vector<int> pi) {
+vector<vector<int>> automaton(const string &s, const vector<int> &pi) {
     vector<vector<int>> fsm(s.size(), vector<int>(26));
     for (int i = 0; i < s.size(); i++)
         for (int c = 0; c < 26; c++)
