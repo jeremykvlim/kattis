@@ -40,8 +40,8 @@ int main() {
         if (~memo[i][state][match][bound][zero]) return memo[i][state][match][bound][zero];
 
         auto count = 0LL;
-        int limit = bound ? n[i] - '0' : 9;
-        for (int d = 0; d <= limit; d++) {
+        int d_max = bound ? n[i] - '0' : 9;
+        for (int d = 0; d <= d_max; d++) {
             int s = state;
             bool m = match, b = bound && d == (n[i] - '0'), z = zero && !d;
             if (!z)
