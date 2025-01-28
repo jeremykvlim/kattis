@@ -409,8 +409,9 @@ vector<int> prefix_function(const string &s) {
     return pi;
 }
 
-vector<vector<int>> automaton(const string &s, const vector<int> &pi) {
-    vector<vector<int>> fsm(s.size(), vector<int>(26));
+vector<vector<int>> automaton(string s, const vector<int> &pi) {
+    s += '{';
+    vector<vector<int>> fsm(s.size(), vector<int>(26, 0));
     for (int i = 0; i < s.size(); i++)
         for (int c = 0; c < 26; c++)
             fsm[i][c] = (i && 'a' + c != s[i]) ? fsm[pi[i - 1]][c] : i + ('a' + c == s[i]);
