@@ -18,12 +18,11 @@ int main() {
 
     for (int i = 1; i < c.size(); i++) {
         int l = c[i - 1], r = c[i];
-        if (pref[r] - pref[l + 1] > 0) {
+        if (pref[r] > pref[l + 1]) 
             if (r - l < 2 * R + 2) {
                 cout << "IMPOSSIBLE";
                 exit(0);
             }
-        }
     }
     cout << "POSSIBLE";
 }
