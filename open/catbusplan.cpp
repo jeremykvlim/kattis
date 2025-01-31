@@ -182,7 +182,10 @@ int main() {
                 split = i;
                 break;
             }
-        if (!~split) break;
+        if (!~split) {
+            cout << "Impossible";
+            exit(0);
+        }
 
         vector<int> temp = routes[split], l, r;
         int half = (temp.size() - 1) / 2;
@@ -190,11 +193,6 @@ int main() {
         for (int i = half; i < temp.size(); i++) r.emplace_back(temp[i]);
         routes[split] = l;
         routes.emplace_back(r);
-    }
-
-    if (routes.size() != k) {
-        cout << "Impossible";
-        exit(0);
     }
 
     cout << "Possible\n";
