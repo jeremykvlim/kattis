@@ -464,17 +464,12 @@ int main() {
         if (!q) {
             int a, b, k;
             cin >> a >> b >> k;
-            a--;
-            b--;
-
-            cout << st.range_query(a, b + 1).poly[k] << "\n";
+            cout << st.range_query(a - 1, b).poly[k] << "\n";
         } else {
             int p, s, t;
             cin >> p >> s >> t;
-            p--;
-            s--;
-
-            st.modify(p, t - s);
+            
+            st.modify(p - 1, t - s + 1);
         }
     }
 }
