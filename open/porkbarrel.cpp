@@ -74,7 +74,7 @@ struct SplayTree {
 
     vector<SplayNode> ST;
 
-    SplayTree(int n) : ST(n) {}
+    SplayTree(int n) : ST(n + 1) {}
 
     auto & operator[](int i) {
         return ST[i];
@@ -100,7 +100,7 @@ struct SplayTree {
         if (!i) return;
         auto &[l, r, p] = ST[i].family;
         swap(l, r);
-        ST[i].flip ^= 1;
+        ST[i].flip ^= true;
     }
 
     void push(int i) {
@@ -150,7 +150,7 @@ struct SplayTree {
 };
 
 struct LinkCutTree : SplayTree {
-    LinkCutTree(int n) : SplayTree(n + 1) {}
+    LinkCutTree(int n) : SplayTree(n) {}
 
     void access(int i) {
         for (int prev = 0, curr = i; curr; prev = curr, curr = ST[curr].family[2]) {
