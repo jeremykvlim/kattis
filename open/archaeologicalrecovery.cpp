@@ -83,8 +83,7 @@ int main() {
     configs.resize(n);
 
     auto combine = [&](int i, int j) {
-        if (!i) return j;
-        if (!j) return i;
+        if (!i || !j) return i ^ j;
 
         int l = 0;
         for (int K = 0; K < k; K++) l += (tritsets[i][K] + tritsets[j][K]) % 3 * p3[K];
