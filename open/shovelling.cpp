@@ -15,7 +15,7 @@ int main() {
             for (int j = 0; j < n; j++)
                 if (isupper(grid[i][j])) houses.emplace_back(grid[i][j], make_pair(i, j));
         sort(houses.begin(), houses.end());
-        
+
         vector<vector<vector<array<int, 5>>>> dp(1 << 4, vector<vector<array<int, 5>>>(m, vector<array<int, 5>>(n, {(int) 1e9, -2, -1, -1, -1})));
         auto dreyfus_wagner = [&]() {
             for (int i = 0; i < 4; i++) {
@@ -46,17 +46,16 @@ int main() {
                     auto [i, j] = dq.front();
                     dq.pop_front();
 
-                    int w = dp[m1][i][j][0];
-                    for (int k = 0; k < 4; k++){
+                    for (int k = 0; k < 4; k++) {
                         int x = i + dx[k], y = j + dy[k];
                         if (!(0 <= x && x < m && 0 <= y && y < n) || grid[x][y] == '#') continue;
-                        int d = w + (grid[x][y] == 'o');
+                        int w = grid[x][y] == 'o', d = dp[m1][i][j][0] + w;
                         if (dp[m1][x][y][0] > d) {
                             dp[m1][x][y][0] = d;
                             dp[m1][x][y][1] = 1;
                             dp[m1][x][y][2] = i;
                             dp[m1][x][y][3] = j;
-                            if (grid[x][y] == 'o') dq.emplace_back(x, y);
+                            if (w) dq.emplace_back(x, y);
                             else dq.emplace_front(x, y);
                         }
                     }
