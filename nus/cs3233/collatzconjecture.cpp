@@ -19,11 +19,9 @@ int main() {
     while (n != 1) {
         for (int i = 1; i < n; i++) {
             a[i] = __gcd(a[i], a[i + 1]);
-
             f.emplace(a[i]);
         }
         n = unique(a.begin() + 1, a.begin() + n) - a.begin() - 1;
     }
-
     cout << f.size();
 }
