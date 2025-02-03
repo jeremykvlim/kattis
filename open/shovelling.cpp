@@ -6,23 +6,20 @@ int main() {
     cin.tie(nullptr);
 
     int n, m;
-    while (cin >> n >> m && n && m) {
+    while (cin >> n >> m && n && m){
         vector<string> grid(m);
         for (auto &row : grid) cin >> row;
 
-        vector<pair<char, pair<int, int>>> houses;
-        for (int i = 0; i < m; i++)
-            for (int j = 0; j < n; j++)
-                if (isupper(grid[i][j])) houses.emplace_back(grid[i][j], make_pair(i, j));
-        sort(houses.begin(), houses.end());
-
         vector<vector<vector<array<int, 5>>>> dp(1 << 4, vector<vector<array<int, 5>>>(m, vector<array<int, 5>>(n, {(int) 1e9, -2, -1, -1, -1})));
         auto dreyfus_wagner = [&]() {
-            for (int i = 0; i < 4; i++) {
-                auto [r, c] = houses[i].second;
-                dp[1 << i][r][c][0] = 0;
-                dp[1 << i][r][c][1] = -1;
-            }
+            int houses = 0;
+            for (int i = 0; i < m; i++)
+                for (int j = 0; j < n; j++)
+                    if (isupper(grid[i][j])) {
+                        dp[1 << houses][i][j][0] = 0;
+                        dp[1 << houses][i][j][1] = -1;
+                        houses++;
+                    }
 
             vector<int> dx{1, 0, -1, 0}, dy{0, 1, 0, -1};
             for (int m1 = 1; m1 < 1 << 4; m1++) {
