@@ -11,16 +11,12 @@ int main() {
         for (auto &row : grid) cin >> row;
         auto temp = grid;
 
-        vector<vector<vector<array<int, 5>>>> dp(1 << 4, vector<vector<array<int, 5>>>(m, vector<array<int, 5>>(n, {(int) 1e9, -2, -1, -1, -1})));
+        vector<vector<vector<array<int, 5>>>> dp(1 << 4, vector<vector<array<int, 5>>>(m, vector<array<int, 5>>(n, {(int) 1e9, -1, -1, -1, -1})));
         auto dreyfus_wagner = [&]() {
             int houses = 0;
             for (int i = 0; i < m; i++)
                 for (int j = 0; j < n; j++)
-                    if (isupper(grid[i][j])) {
-                        dp[1 << houses][i][j][0] = 0;
-                        dp[1 << houses][i][j][1] = -1;
-                        houses++;
-                    }
+                    if (isupper(grid[i][j])) dp[1 << houses++][i][j][0] = 0;
 
             vector<int> dx{1, 0, -1, 0}, dy{0, 1, 0, -1};
             for (int m1 = 1; m1 < 1 << 4; m1++) {
