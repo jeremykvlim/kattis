@@ -47,17 +47,16 @@ int main() {
                     auto [i, j] = dq.front();
                     dq.pop_front();
 
-                    int w = dp[m1][i][j][0];
-                    for (int k = 0; k < 4; k++){
+                    for (int k = 0; k < 4; k++) {
                         int x = i + dx[k], y = j + dy[k];
                         if (!(0 <= x && x < m && 0 <= y && y < n) || grid[x][y] == '#') continue;
-                        int d = w + (grid[x][y] == 'o');
+                        int w = grid[x][y] == 'o', d = dp[m1][i][j][0] + w;
                         if (dp[m1][x][y][0] > d) {
                             dp[m1][x][y][0] = d;
                             dp[m1][x][y][1] = 1;
                             dp[m1][x][y][2] = i;
                             dp[m1][x][y][3] = j;
-                            if (grid[x][y] == 'o') dq.emplace_back(x, y);
+                            if (w) dq.emplace_back(x, y);
                             else dq.emplace_front(x, y);
                         }
                     }
