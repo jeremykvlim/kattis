@@ -6,7 +6,7 @@ int main() {
     cin.tie(nullptr);
 
     int n, m;
-    while (cin >> n >> m && n && m){
+    while (cin >> n >> m && n && m) {
         vector<string> grid(m);
         for (auto &row : grid) cin >> row;
 
