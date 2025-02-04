@@ -204,11 +204,12 @@ int main() {
         }
 
         auto dtos = [&](double v) -> string {
-            if (isinf(v)) return v > 0 ? "positive-infinity" : "negative-infinity";
-            
             ostringstream oss;
             oss << fixed << setprecision(4) << v;
-            return oss.str();
+            auto s = oss.str();
+            if (s == "-inf") s = "negative-infinity";
+            if (s == "inf") s = "positive-infinity";
+            return s;
         };
         cout << dtos(y1) << " " << dtos(y2) << "\n";
     }
