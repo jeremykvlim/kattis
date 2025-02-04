@@ -206,10 +206,7 @@ int main() {
         auto dtos = [&](double v) -> string {
             ostringstream oss;
             oss << fixed << setprecision(4) << v;
-            auto s = oss.str();
-            if (s == "-inf") s = "negative-infinity";
-            if (s == "inf") s = "positive-infinity";
-            return s;
+            return !isalpha(oss.str().back()) ? oss.str() : (oss.str() == "inf" ? "positive-infinity" : "negative-infinity");
         };
         cout << dtos(y1) << " " << dtos(y2) << "\n";
     }
