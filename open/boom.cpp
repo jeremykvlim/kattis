@@ -133,6 +133,10 @@ int main() {
 
     int stumps = 0;
     vector<vector<vector<int>>> stump_bombs(n, vector<vector<int>>(n));
+    unordered_map<int, int> f1;
+    unordered_map<pair<int, int>, int, Hash> f2;
+    unordered_map<array<int, 3>, int, Hash> f3;
+    unordered_map<array<int, 4>, int, Hash> f4;
     for (int r = 0; r < n; r++)
         for (int c = 0; c < n; c++)
             if (grid[r][c] == 'S') {
@@ -141,17 +145,10 @@ int main() {
                 if (right[r][c] < n && right[r][c] - c <= R && grid[r][right[r][c]] == '*') stump_bombs[r][c].emplace_back(dsu.sets[indices[r][right[r][c]]]);
                 if (up[r][c] != -1 && r - up[r][c] <= R && grid[up[r][c]][c] == '*') stump_bombs[r][c].emplace_back(dsu.sets[indices[up[r][c]][c]]);
                 if (down[r][c] < n && down[r][c] - r <= R && grid[down[r][c]][c] == '*') stump_bombs[r][c].emplace_back(dsu.sets[indices[down[r][c]][c]]);
+                if (stump_bombs[r][c].empty()) continue;
+                
                 sort(stump_bombs[r][c].begin(), stump_bombs[r][c].end());
                 stump_bombs[r][c].erase(unique(stump_bombs[r][c].begin(), stump_bombs[r][c].end()), stump_bombs[r][c].end());
-            }
-
-    unordered_map<int, int> f1;
-    unordered_map<pair<int, int>, int, Hash> f2;
-    unordered_map<array<int, 3>, int, Hash> f3;
-    unordered_map<array<int, 4>, int, Hash> f4;
-    for (int r = 0; r < n; r++)
-        for (int c = 0; c < n; c++)
-            if (grid[r][c] == 'S' && !stump_bombs[r][c].empty()) {
                 int s = stump_bombs[r][c].size();
                 for (int i = 0; i < s; i++) f1[stump_bombs[r][c][i]]++;
 
