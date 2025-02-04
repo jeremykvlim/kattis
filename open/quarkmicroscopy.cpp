@@ -15,11 +15,11 @@ int main() {
         if (memo.count(x)) {
             q = memo[x];
             return;
-        } 
+        }
 
         cout << "? " << x << "\n" << flush;
         cin >> d >> m;
-        
+
         memo[x] = q;
     };
 
@@ -77,7 +77,7 @@ int main() {
 
         while (!diffs.empty()) {
             auto diff = diffs.back(), x = (a[i - 2] + diff) / 2;
-            
+
             query(x);
             if (x - d > a[i - 2] && diff > a[i - 1]) {
                 r = min(r, x - 1);
@@ -133,7 +133,7 @@ int main() {
         } else {
             prev = curr;
             query(curr);
-            a[i] += m - (a[i - 1] == curr + d) != 2;
+            if (m == 1 || a[i - 1] == curr + d) a[i]++;
         }
     }
 
