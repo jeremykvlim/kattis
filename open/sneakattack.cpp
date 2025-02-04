@@ -191,7 +191,7 @@ int main() {
         auto offset = slope * v3.x - v3.y;
         int sgn2 = sgn(offset);
         double y1, y2;
-        if (s.x > 0) {
+        if (sgn1 == 1) {
             y1 = y_intercept(s.x, s.y, l, m1.y);
             if (approximately_equal(r, s.x)) y2 = sgn2 * numeric_limits<double>::infinity();
             else y2 = y_intercept(s.x, s.y, r, m1.y);
