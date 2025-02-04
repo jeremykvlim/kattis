@@ -47,7 +47,6 @@ int main() {
             s[i] = threshold[i];
         }
 
-
     if (k < spend) {
         cout << 0;
         exit(0);
