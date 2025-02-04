@@ -53,11 +53,10 @@ int main() {
     }
 
     sort(gain.rbegin(), gain.rend());
-    for (int i = 0; i < gain.size() && spend < k; i++)
-        if (max_count < gain[i]) {
-            score += gain[i];
-            spend++;
-        } else break;
+    for (int i = 0; i < gain.size() && spend < k && max_count < gain[i]; i++) {
+        score += gain[i];
+        spend++;
+    }
 
     cout << score + (long long) max_count * (k - spend);
 }
