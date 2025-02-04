@@ -76,10 +76,10 @@ int main() {
             if (grid[r][c] == '*' || grid[r][c] == '#') prev = up[r][c] = r;
             else up[r][c] = prev;
 
-        prev = -1;
+        prev = n;
         for (int r = n - 1; ~r; r--)
             if (grid[r][c] == '*' || grid[r][c] == '#') prev = down[r][c] = r;
-            else down[r][c] = (prev == -1 ? n : prev);
+            else down[r][c] = prev;
     }
 
     for (int r = 0; r < n; r++) {
@@ -88,10 +88,10 @@ int main() {
             if (grid[r][c] == '*' || grid[r][c] == '#') prev = left[r][c] = c;
             else left[r][c] = prev;
 
-        prev = -1;
+        prev = n;
         for (int c = n - 1; ~c; c--)
             if (grid[r][c] == '*' || grid[r][c] == '#') prev = right[r][c] = c;
-            else right[r][c] = (prev == -1 ? n : prev);
+            else right[r][c] = prev;
     }
 
     int b = bombs.size();
@@ -133,10 +133,6 @@ int main() {
 
     int stumps = 0;
     vector<vector<vector<int>>> stump_bombs(n, vector<vector<int>>(n));
-    unordered_map<int, int> f1;
-    unordered_map<pair<int, int>, int, Hash> f2;
-    unordered_map<array<int, 3>, int, Hash> f3;
-    unordered_map<array<int, 4>, int, Hash> f4;
     for (int r = 0; r < n; r++)
         for (int c = 0; c < n; c++)
             if (grid[r][c] == 'S') {
@@ -145,27 +141,29 @@ int main() {
                 if (right[r][c] < n && right[r][c] - c <= R && grid[r][right[r][c]] == '*') stump_bombs[r][c].emplace_back(dsu.sets[indices[r][right[r][c]]]);
                 if (up[r][c] != -1 && r - up[r][c] <= R && grid[up[r][c]][c] == '*') stump_bombs[r][c].emplace_back(dsu.sets[indices[up[r][c]][c]]);
                 if (down[r][c] < n && down[r][c] - r <= R && grid[down[r][c]][c] == '*') stump_bombs[r][c].emplace_back(dsu.sets[indices[down[r][c]][c]]);
-                if (stump_bombs[r][c].empty()) continue;
-                
                 sort(stump_bombs[r][c].begin(), stump_bombs[r][c].end());
                 stump_bombs[r][c].erase(unique(stump_bombs[r][c].begin(), stump_bombs[r][c].end()), stump_bombs[r][c].end());
+            }
+
+    unordered_map<int, int> f1;
+    unordered_map<pair<int, int>, int, Hash> f2;
+    unordered_map<array<int, 3>, int, Hash> f3;
+    unordered_map<array<int, 4>, int, Hash> f4;
+    for (int r = 0; r < n; r++)
+        for (int c = 0; c < n; c++)
+            if (grid[r][c] == 'S' && !stump_bombs[r][c].empty()) {
                 int s = stump_bombs[r][c].size();
-                for (int i = 0; i < s; i++) f1[stump_bombs[r][c][i]]++;
-
-                if (s > 1)
-                    for (int i = 0; i < s; i++)
-                        for (int j = i + 1; j < s; j++) f2[{stump_bombs[r][c][i], stump_bombs[r][c][j]}]++;
-
-                if (s > 2)
-                    for (int i = 0; i < s; i++)
-                        for (int j = i + 1; j < s; j++)
-                            for (int k = j + 1; k < s; k++) f3[{stump_bombs[r][c][i], stump_bombs[r][c][j], stump_bombs[r][c][k]}]++;
-
-                if (s > 3)
-                    for (int i = 0; i < s; i++)
-                        for (int j = i + 1; j < s; j++)
-                            for (int k = j + 1; k < s; k++)
-                                for (int l = k + 1; l < s; l++) f4[{stump_bombs[r][c][i], stump_bombs[r][c][j], stump_bombs[r][c][k], stump_bombs[r][c][l]}]++;
+                for (int i = 0; i < s; i++) {
+                    f1[stump_bombs[r][c][i]]++;
+                    for (int j = i + 1; j < s; j++) {
+                        f2[{stump_bombs[r][c][i], stump_bombs[r][c][j]}]++;
+                        for (int k = j + 1; k < s; k++) {
+                            f3[{stump_bombs[r][c][i], stump_bombs[r][c][j], stump_bombs[r][c][k]}]++;
+                            for (int l = k + 1; l < s; l++)
+                                f4[{stump_bombs[r][c][i], stump_bombs[r][c][j], stump_bombs[r][c][k], stump_bombs[r][c][l]}]++;
+                        }
+                    }
+                }
             }
 
     int locations = 0;
@@ -183,22 +181,17 @@ int main() {
                 explode.erase(unique(explode.begin(), explode.end()), explode.end());
 
                 int s = explode.size();
-                for (int i = 0; i < s; i++) count += f1[explode[i]];
-
-                if (s > 1)
-                    for (int i = 0; i < s; i++)
-                        for (int j = i + 1; j < s; j++) count -= f2[{explode[i], explode[j]}];
-
-                if (s > 2)
-                    for (int i = 0; i < s; i++)
-                        for (int j = i + 1; j < s; j++)
-                            for (int k = j + 1; k < s; k++) count += f3[{explode[i], explode[j], explode[k]}];
-
-                if (s > 3)
-                    for (int i = 0; i < s; i++)
-                        for (int j = i + 1; j < s; j++)
-                            for (int k = j + 1; k < s; k++)
-                                for (int l = k + 1; l < s; l++) count -= f4[{explode[i], explode[j], explode[k], explode[l]}];
+                for (int i = 0; i < s; i++) {
+                    count += f1[explode[i]];
+                    for (int j = i + 1; j < s; j++) {
+                        count -= f2[{explode[i], explode[j]}];
+                        for (int k = j + 1; k < s; k++) {
+                            count += f3[{explode[i], explode[j], explode[k]}];
+                            for (int l = k + 1; l < s; l++)
+                                count -= f4[{explode[i], explode[j], explode[k], explode[l]}];
+                        }
+                    }
+                }
 
                 for (int col = max(left[r][c] + 1, c - R); col <= min(right[r][c] - 1, c + R); col++)
                     if (grid[r][col] == 'S') {
