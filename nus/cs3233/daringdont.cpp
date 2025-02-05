@@ -16,12 +16,6 @@ int main() {
         exit(0);
     };
 
-    if (((long long) R * C) & 1) impossible();
-
-    int diff = 0;
-    for (auto row : grid)
-        for (char c : row) diff += c == 'x' ? 1 : -1;
-
     array<int, 4> rainbow{1, 1, 1, 1}, daring{1, 1, 1, 1};
     auto print = [&]() {
         for (int rc : rainbow) cout << rc << " ";
@@ -29,10 +23,16 @@ int main() {
         for (int rc : daring) cout << rc << " ";
         exit(0);
     };
+
+    if (((long long) R * C) & 1) impossible();
+
+    int diff = 0;
+    for (auto row : grid)
+        for (char c : row) diff += c == 'x' ? 1 : -1;
+
     if ((R == 1 && C == 2) || (R == 2 && C == 1)) {
         if (diff) impossible();
-
-        if (R == 1) rainbow[3] = daring[3] = 2;
+        else if (R == 1) rainbow[3] = daring[3] = 2;
         else rainbow[2] = daring[2] = 2;
         print();
     }
