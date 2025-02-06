@@ -20,8 +20,8 @@ struct SparseTable {
     }
 
     T range_query(int l, int r) {
-        int i = __lg(r - l + 1);
-        return f(ST[i][l], ST[i][r - (1 << i) + 1]);
+        int i = __lg(r - l);
+        return f(ST[i][l], ST[i][r - (1 << i)]);
     }
 };
 
@@ -127,7 +127,7 @@ struct SuffixArray {
         if (i == j) return s.size() - i;
 
         auto [l, r] = minmax(SA_inv[i], SA_inv[j]);
-        return st.range_query(l, r - 1);
+        return st.range_query(l, r);
     }
 
     int & operator[](int i) {
