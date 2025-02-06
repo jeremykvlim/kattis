@@ -150,7 +150,6 @@ int main() {
 
     string S;
     vector<int> start(c), len(c);
-    vector<string> charm(c);
     for (int i = 0; i < c; i++) {
         string s;
         cin >> s;
@@ -166,18 +165,18 @@ int main() {
         cin >> k;
 
         bugs[i] = {i, vector<int>(k)};
-        for (int &pos : bugs[i].second) cin >> pos;
+        for (int &charm : bugs[i].second) cin >> charm;
     }
 
     SuffixArray sa(S);
     auto cmp = [&](auto &p1, auto &p2) {
-        auto ids1 = p1.second, ids2 = p2.second;
+        auto charms1 = p1.second, charms2 = p2.second;
         for (int i = 0, j = 0, off1 = 0, off2 = 0;;) {
-            if (i == ids1.size() && j == ids2.size()) return p1.first < p2.first;
-            if (i == ids1.size()) return true;
-            if (j == ids2.size()) return false;
+            if (i == charms1.size() && j == charms2.size()) return p1.first < p2.first;
+            if (i == charms1.size()) return true;
+            if (j == charms2.size()) return false;
 
-            int c1 = ids1[i] - 1, c2 = ids2[j] - 1,
+            int c1 = charms1[i] - 1, c2 = charms2[j] - 1,
                 l = min(len[c1] - off1, len[c2] - off2), lcp = sa.substring_lcp(start[c1] + off1, start[c2] + off2);
             if (l <= lcp) {
                 if (len[c1] - off1 < len[c2] - off2) {
