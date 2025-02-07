@@ -202,19 +202,19 @@ struct KDTree {
         return j;
     }
 
-    double query(const Point<T> &p) {
-        return query(0, p);
+    double nearest_neighbour_dist(const Point<T> &p) {
+        return nearest_neighbour_dist(0, p);
     }
 
-    double query(int i, const Point<T> &p) {
+    double nearest_neighbour_dist(int i, const Point<T> &p) {
         if (i == -1) return 1e30;
 
         auto dist = squared_dist(p, KDT[i].p);
         auto diff = !KDT[i].dir ? (p - KDT[i].p).x : (p - KDT[i].p).y;
 
         auto [cl, cr] = children[i];
-        dist = min(dist, query(diff <= 0 ? cl : cr, p));
-        if (diff * diff < dist) dist = min(dist, query(diff <= 0 ? cr : cl, p));
+        dist = min(dist, nearest_neighbour_dist(diff <= 0 ? cl : cr, p));
+        if (diff * diff < dist) dist = min(dist, nearest_neighbour_dist(diff <= 0 ? cr : cl, p));
         return dist;
     }
 };
@@ -246,7 +246,7 @@ int main() {
 
         KDTree<double> kdt(g1.size(), g1);
         auto d = 1e30;
-        for (auto p : g2) d = min(d, kdt.query(p));
+        for (auto p : g2) d = min(d, kdt.nearest_neighbour_dist(p));
         overlap = max(overlap, circle_intersection_area(sqrt(d), rf, rm));
     }
     cout << fixed << setprecision(5) << overlap;
