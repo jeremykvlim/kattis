@@ -173,10 +173,10 @@ template <typename T>
 struct KDTree {
     struct KDNode {
         Point<T> p;
-        bool dim;
+        bool dir;
 
         KDNode() {}
-        KDNode(const Point<T> &p, bool dim = false) : p(p), dim(dim) {}
+        KDNode(const Point<T> &p, bool dir = false) : p(p), dir(dir) {}
     };
 
     vector<Point<T>> points;
@@ -188,17 +188,17 @@ struct KDTree {
         build(i, 0, points.size());
     }
 
-    int build(int &i, int l, int r, bool dim = false) {
+    int build(int &i, int l, int r, bool dir = false) {
         if (l >= r) return -1;
 
         int m = l + (r - l) / 2;
-        nth_element(points.begin() + l, points.begin() + m, points.begin() + r, [dim](const auto &a, const auto &b) {return !dim ? a.x < b.x : a.y < b.y;});
+        nth_element(points.begin() + l, points.begin() + m, points.begin() + r, [dir](const auto &a, const auto &b) {return !dir ? a.x < b.x : a.y < b.y;});
 
         int j = i++;
-        KDT[j] = {points[m], dim};
+        KDT[j] = {points[m], dir};
         auto &[cl, cr] = children[j];
-        cl = build(i, l, m, !dim);
-        cr = build(i, m + 1, r, !dim);
+        cl = build(i, l, m, !dir);
+        cr = build(i, m + 1, r, !dir);
         return j;
     }
 
@@ -210,7 +210,7 @@ struct KDTree {
         if (i == -1) return 1e30;
 
         auto dist = squared_dist(p, KDT[i].p);
-        auto diff = !KDT[i].dim ? (p - KDT[i].p).x : (p - KDT[i].p).y;
+        auto diff = !KDT[i].dir ? (p - KDT[i].p).x : (p - KDT[i].p).y;
 
         auto [cl, cr] = children[i];
         dist = min(dist, query(diff <= 0 ? cl : cr, p));
