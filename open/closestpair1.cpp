@@ -117,17 +117,12 @@ struct Point {
 };
 
 template <typename T>
-double dist(const Point<T> &a, const Point<T> &b) {
-    return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
-}
-
-template <typename T>
 double squared_dist(const Point<T> &a, const Point<T> &b) {
     return (double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y);
 }
 
 template <typename T>
-pair<pair<int, int>, T> closest_pair(const vector<Point<T>> &points) {
+pair<pair<int, int>, double> closest_pair(const vector<Point<T>> &points) {
     int n = points.size();
 
     vector<pair<Point<T>, int>> sorted(n);
@@ -161,7 +156,7 @@ pair<pair<int, int>, T> closest_pair(const vector<Point<T>> &points) {
         its[i] = ms.emplace_hint(ms.upper_bound(sorted[i]), sorted[i]);
     }
 
-    return {{a, b}, dist(points[a], points[b])};
+    return {{a, b}, d};
 }
 
 int main() {
