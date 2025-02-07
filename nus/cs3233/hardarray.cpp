@@ -116,6 +116,49 @@ struct Point {
     };
 };
 
+template <typename T>
+double squared_dist(const Point<T> &a, const Point<T> &b) {
+    return (double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y);
+}
+
+template <typename T>
+pair<pair<int, int>, double> closest_pair(const vector<Point<T>> &points) {
+    int n = points.size();
+
+    vector<pair<Point<T>, int>> sorted(n);
+    for (int i = 0; i < n; i++) sorted[i] = {points[i], i};
+    sort(sorted.begin(), sorted.end(), [](auto p1, auto p2) {return p1.first == p2.first ? p1.second < p2.second : p1.first < p2.first;});
+
+    auto d = DBL_MAX;
+    int a = -1, b = -1;
+    auto update = [&](auto p1, auto p2) {
+        auto dist = squared_dist(p1.first, p2.first);
+        if (d > dist) {
+            d = dist;
+            a = p1.second;
+            b = p2.second;
+        }
+    };
+
+    auto sq = [](double v) -> double {return v * v;};
+    auto cmp = [](auto p1, auto p2) {return p1.first.y < p2.first.y;};
+    multiset<pair<Point<T>, int>, decltype(cmp)> ms(cmp);
+    vector<typename decltype(ms)::const_iterator> its(n);
+    for (int i = 0, j = 0; i < n; i++) {
+        for (; j < i && sq(sorted[j].first.x - sorted[i].first.x) >= d; j++) ms.erase(its[j]);
+
+        auto it = ms.upper_bound(sorted[i]);
+        if (it != ms.begin()) {
+            update(*prev(it), sorted[i]);
+            for (auto p = prev(it); p != ms.begin() && sq(sorted[i].first.y - p->first.y) < d;) update(*(--p), sorted[i]);
+        }
+        for (; it != ms.end() && sq(it->first.y - sorted[i].first.y) < d; it++) update(*it, sorted[i]);
+        its[i] = ms.emplace_hint(ms.upper_bound(sorted[i]), sorted[i]);
+    }
+
+    return {{a, b}, d};
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -137,27 +180,6 @@ int main() {
     }
     sort(points.begin(), points.end());
 
-    auto sq = [](long long v) -> __int128 {return (__int128) v * v;};
-
-    __int128 d = 1e27;
-    auto update = [&](auto p1, auto p2) {
-        d = min(d, sq(p1.x - p2.x) + sq(p1.y - p2.y));
-    };
-
-    auto cmp = [](auto p1, auto p2) {return p1.y < p2.y;};
-    multiset<Point<long long>, decltype(cmp)> ms(cmp);
-    vector<decltype(ms)::const_iterator> its(n + 1);
-    for (int i = 0, j = 0; i <= n; i++) {
-        for (; j < i && sq(points[j].x - points[i].x) >= d; j++) ms.erase(its[j]);
-
-        auto it = ms.upper_bound(points[i]);
-        if (it != ms.begin()) {
-            update(*prev(it), points[i]);
-            for (auto p = prev(it); p != ms.begin() && sq(points[i].y - p->y) < d;) update(*(--p), points[i]);
-        }
-        for (; it != ms.end() && sq(it->y - points[i].y) < d; it++) update(*it, points[i]);
-        its[i] = ms.emplace_hint(ms.upper_bound(points[i]), points[i]);
-    }
-
+    auto [pair, d] = closest_pair(points);
     cout << (long long) d;
 }
