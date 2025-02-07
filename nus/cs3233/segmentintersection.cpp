@@ -183,7 +183,7 @@ int main() {
     cin >> n;
 
     while (n--) {
-        Point<double> p1, p2, p3, p4;
+        Point<long double> p1, p2, p3, p4;
         cin >> p1.x >> p1.y >> p2.x >> p2.y >> p3.x >> p3.y >> p4.x >> p4.y;
 
         auto handle_points = [&]() {
@@ -192,12 +192,12 @@ int main() {
                 else cout << "none\n";
                 return true;
             } else if (p1 == p2) {
-                Line<double> l(p3, p4);
+                Line<long double> l(p3, p4);
                 if (point_on_line(p1, l)) cout << fixed << setprecision(2) << p1.x << " " << p1.y << "\n";
                 else cout << "none\n";
                 return true;
             } else if (p3 == p4) {
-                Line<double> l(p1, p2);
+                Line<long double> l(p1, p2);
                 if (point_on_line(p3, l)) cout << fixed << setprecision(2) << p3.x << " " << p3.y << "\n";
                 else cout << "none\n";
                 return true;
@@ -206,7 +206,7 @@ int main() {
         };
 
         auto handle_lines = [&]() {
-            Line<double> l1(p1, p2), l2(p3, p4);
+            Line<long double> l1(p1, p2), l2(p3, p4);
 
             if (!intersects(l1, l2)) cout << "none\n";
             else if (collinear(l1, l2)) {
@@ -217,8 +217,8 @@ int main() {
                     cout << "\n";
                 }
             } else {
-                auto i = non_collinear_intersection(l1, l2), l = max(min(p1, p2), min(p3, p4)), r = min(max(p1, p2), max(p3, p4));
-                if (l <= i && i <= r) cout << fixed << setprecision(2) << i.x << " " << i.y << "\n";
+                auto p = non_collinear_intersection(l1, l2);
+                if (point_on_line(p, l1) && point_on_line(p, l2)) cout << fixed << setprecision(2) << p.x << " " << p.y << "\n";
                 else cout << "none\n";
             }
         };
