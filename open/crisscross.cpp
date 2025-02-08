@@ -14,11 +14,20 @@ struct Fraction {
             numer *= -1;
             denom *= -1;
         }
+
         T g = __gcd(abs(numer), denom);
         if (g) {
             numer /= g;
             denom /= g;
         }
+    }
+
+    bool operator<(const Fraction &f) const {
+        return numer * f.denom < f.numer * denom;
+    }
+
+    bool operator>(const Fraction &f) const {
+        return numer * f.denom > f.numer * denom;
     }
 
     bool operator==(const Fraction &f) const {
@@ -29,8 +38,73 @@ struct Fraction {
         return numer != f.numer || denom != f.denom;
     }
 
-    bool operator<(const Fraction &f) const {
-        return numer * f.denom < f.numer * denom;
+    bool operator<=(const Fraction &f) const {
+        return *this < f || *this == f;
+    }
+
+    bool operator>=(const Fraction &f) const {
+        return *this > f || *this == f;
+    }
+
+    Fraction operator+(const Fraction &f) const {
+        return {numer * f.denom + f.numer * denom, denom * f.denom};
+    }
+
+    Fraction operator+(const T &v) const {
+        return {numer + v * denom, denom};
+    }
+
+    Fraction & operator+=(const Fraction &f) {
+        numer = numer * f.denom + f.numer * denom;
+        denom *= f.denom;
+        reduce();
+        return *this;
+    }
+
+    Fraction & operator+=(const T &v) {
+        numer += v * denom;
+        reduce();
+        return *this;
+    }
+
+    Fraction operator-(const Fraction &f) const {
+        return {numer * f.denom - f.numer * denom, denom * f.denom};
+    }
+
+    Fraction operator-(const T &v) const {
+        return {numer - v * denom, denom};
+    }
+
+    Fraction & operator-=(const Fraction &f) {
+        numer = numer * f.denom - f.numer * denom;
+        denom *= f.denom;
+        return *this;
+    }
+
+    Fraction & operator-=(const T &v) {
+        numer -= v * denom;
+        reduce();
+        return *this;
+    }
+
+    Fraction operator*(const T &v) const {
+        return {numer * v, denom};
+    }
+
+    Fraction & operator*=(const T &v) {
+        numer *= v;
+        reduce();
+        return *this;
+    }
+
+    Fraction operator/(const T &v) const {
+        return {numer, denom * v};
+    }
+
+    Fraction & operator/=(const T &v) {
+        denom *= v;
+        reduce();
+        return *this;
     }
 };
 
