@@ -27,8 +27,7 @@ int main() {
             if (dist(result, i, j) > dist(result, i, k)) j = k;
 
         int g = __gcd(n - 1, i);
-        while (g != 1) {
-            if (!((dist(start, i, j) - 1) % g)) break;
+        while (g != 1 && (dist(start, i, j) - 1) % g) {
             while (dist(start, i, 1) != 1) leap(1);
             leap(i);
         }
