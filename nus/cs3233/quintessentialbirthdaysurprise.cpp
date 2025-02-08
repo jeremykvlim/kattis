@@ -6,7 +6,7 @@ struct LiChaoSegmentTree {
         __int128 m, c;
         int i;
 
-        Function(__int128 slope = 0, __int128 y_intercept = -1e20, int i = -1) : m(slope), c(y_intercept), i(i) {}
+        Function(__int128 m = 0, __int128 c = -1e20, int i = -1) : m(m), c(c), i(i) {}
 
         __int128 operator()(long long x) {
             return m * x + c;
