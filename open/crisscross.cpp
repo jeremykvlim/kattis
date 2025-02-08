@@ -78,6 +78,7 @@ struct Fraction {
     Fraction & operator-=(const Fraction &f) {
         numer = numer * f.denom - f.numer * denom;
         denom *= f.denom;
+        reduce();
         return *this;
     }
 
