@@ -22,7 +22,7 @@ struct DisjointSet {
     }
 };
 
-vector<int> tarjan_lca(int n, vector<vector<int>> &adj_list, vector<vector<pair<int, int>>> &queries) {
+vector<int> tarjan_lca(int n, const vector<vector<int>> &adj_list, const vector<vector<pair<int, int>>> &queries) {
     DisjointSet dsu(n);
     vector<bool> visited(n, false);
     vector<int> lca(n, -1), ancestor(n, -1);
