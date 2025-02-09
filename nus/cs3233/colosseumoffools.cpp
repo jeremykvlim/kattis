@@ -178,21 +178,20 @@ int main() {
 
             int c1 = charms1[i] - 1, c2 = charms2[j] - 1,
                 l = min(len[c1] - off1, len[c2] - off2), lcp = sa.substring_lcp(start[c1] + off1, start[c2] + off2);
-            if (l <= lcp) {
-                if (len[c1] - off1 < len[c2] - off2) {
-                    off1 = 0;
-                    i++;
-                    off2 += l;
-                } else if (len[c2] - off2 < len[c1] - off1) {
-                    off1 += l;
-                    j++;
-                    off2 = 0;
-                } else {
-                    i++;
-                    j++;
-                    off1 = off2 = 0;
-                }
-            } else return S[start[c1] + off1 + lcp] < S[start[c2] + off2 + lcp];
+            if (l > lcp) return S[start[c1] + off1 + lcp] < S[start[c2] + off2 + lcp]; 
+            if (len[c1] - off1 < len[c2] - off2) {
+                off1 = 0;
+                i++;
+                off2 += l;
+            } else if (len[c2] - off2 < len[c1] - off1) {
+                off1 += l;
+                j++;
+                off2 = 0;
+            } else {
+                i++;
+                j++;
+                off1 = off2 = 0;
+            }
         }
     };
     sort(bugs.begin(), bugs.end(), cmp);
