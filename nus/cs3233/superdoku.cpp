@@ -1,21 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-bool dfs(int i, int j, vector<vector<int>> &grid, vector<bool> &visited, vector<int> &matched, vector<vector<bool>> &col) {
-    for (int v = 1; v < grid.size(); v++)
-        if (!visited[v] && !col[j][v]) {
-            visited[v] = true;
-            if (!matched[v] || dfs(i, matched[v], grid, visited, matched, col)) {
-                col[matched[v]][v] = false;
-                col[j][v] = 1;
-                grid[i][v] = matched[v] = j;
-                return true;
-            }
-        }
-
-    return false;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -29,22 +14,36 @@ int main() {
     for (int i = 1; i <= k; i++)
         for (int j = 1; j <= n; j++) {
             cin >> grid[i][j];
-            
+
             if (row[grid[i][j]][i] || col[grid[i][j]][j]) {
-                cout << "no\n";
+                cout << "no";
                 exit(0);
             }
-            
+
             row[grid[i][j]][i] = col[grid[i][j]][j] = true;
         }
-
 
     for (int i = k + 1; i <= n; i++) {
         vector<int> matched(n + 1);
         for (int j = 1; j <= n; j++) {
-            vector<bool> visited(n + 1, false);
-            if (!dfs(i, j, grid, visited, matched, col)) {
-                cout << "no\n";
+            __int128 visited = 0;
+            auto dfs = [&](auto &&self, int i, int j) -> bool {
+                for (int v = 1; v <= n; v++)
+                    if (!((visited >> v) & 1) && !col[j][v]) {
+                        visited |= (__int128) 1 << v;
+                        if (!matched[v] || self(self, i, matched[v])) {
+                            col[matched[v]][v] = false;
+                            col[j][v] = true;
+                            grid[i][v] = matched[v] = j;
+                            return true;
+                        }
+                    }
+
+                return false;
+            };
+
+            if (!dfs(dfs, i, j)) {
+                cout << "no";
                 exit(0);
             }
         }
