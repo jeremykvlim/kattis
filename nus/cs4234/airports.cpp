@@ -1,19 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-bool dfs(int v, vector<int> &match, vector<bool> &visited, vector<vector<int>> &adj_list) {
-    if (visited[v]) return false;
-
-    visited[v] = true;
-    for (int u : adj_list[v])
-        if (match[u] == -1 || dfs(match[u], match, visited, adj_list)) {
-            match[u] = v;
-            return true;
-        }
-
-    return false;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -51,11 +38,21 @@ int main() {
 
     vector<int> match(m, -1);
     int count = 0;
-    vector<bool> visited(m);
+    vector<int> visited(m, -1);
     for (int i = 0; i < m; i++) {
-        fill(visited.begin(), visited.end(), false);
-        if (dfs(i, match, visited, adj_list)) count++;
-    }
+        auto dfs = [&](auto &&self, int v) {
+            if (visited[v] == i) return false;
 
+            visited[v] = i;
+            for (int u : adj_list[v])
+                if (match[u] == -1 || self(self, match[u])) {
+                    match[u] = v;
+                    return true;
+                }
+
+            return false;
+        };
+        if (dfs(dfs, i)) count++;
+    }
     cout << m - count;
 }
