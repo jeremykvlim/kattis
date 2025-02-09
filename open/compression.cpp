@@ -32,15 +32,15 @@ int main() {
     int n, c;
     cin >> n >> c;
 
-    vector<int> X(n), diff(n), pos(n, 0), neg(n, 0);
+    vector<int> X(n), pos(n, 0), neg(n, 0);
     for (int i = 0; i < n; i++) {
         cin >> X[i];
 
-        diff[i] = !i ? X[i] : X[i] - X[i - 1];
-        if (diff[i] > 0) pos[i] = __lg(diff[i]) + 2;
-        else if (diff[i] < 0) {
-            int lg = __lg(-diff[i]);
-            if ((1 << lg) < -diff[i]) lg++;
+        int diff = !i ? X[i] : X[i] - X[i - 1];
+        if (diff > 0) pos[i] = __lg(diff) + 2;
+        else if (diff < 0) {
+            int lg = __lg(-diff);
+            if ((1 << lg) < -diff) lg++;
             neg[i] = lg + 1;
         }
     }
@@ -80,13 +80,7 @@ int main() {
                 if (xl < xr) add_func(xl + 1, xr, slope, dp[xl] + c - (long long) slope * xl);
             }
 
-            int slope = 0;
-            if (diff[xl] > 0) slope = __lg(diff[xl]) + 2;
-            else if (diff[xl] < 0) {
-                int lg = __lg(-diff[xl]);
-                if ((1 << lg) < -diff[xl]) lg++;
-                slope = lg + 1;
-            }
+            int slope = pos[xl] || neg[xl] ? pos[xl] ^ neg[xl] : 0;
             if (slope > 30) continue;
 
             for (int xr = xl; xr < n && slope <= 30;) {
