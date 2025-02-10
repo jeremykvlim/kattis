@@ -152,9 +152,9 @@ int main() {
     for (int &ci : c) cin >> ci;
     sort(c.begin(), c.end());
 
-    unordered_map<int, unordered_map<Fraction<int>, string, Fraction<int>::Hash>> memo;
+    vector<unordered_map<Fraction<int>, string, Fraction<int>::Hash>> memo(1 << C);
     auto dp = [&](auto &&self, int m1) {
-        if (memo.count(m1)) return memo[m1];
+        if (!memo[m1].empty()) return memo[m1];
 
         unordered_map<Fraction<int>, string, Fraction<int>::Hash> solutions;
         if (__builtin_popcount(m1) == 1) {
@@ -170,27 +170,12 @@ int main() {
                 auto left = self(self, m2), right = self(self, m1 ^ m2);
                 for (auto [f1, s1] : left)
                     for (auto [f2, s2] : right) {
-                        auto f3 = f1 + f2;
-                        if (!solutions.count(f3)) solutions[f3] = "(" + s1 + "+" + s2 + ")";
-
-                        f3 = f1 - f2;
-                        if (!solutions.count(f3)) solutions[f3] = "(" + s1 + "-" + s2 + ")";
-
-                        f3 = f2 - f1;
-                        if (!solutions.count(f3)) solutions[f3] = "(" + s2 + "-" + s1 + ")";
-
-                        f3 = f1 * f2;
-                        if (!solutions.count(f3)) solutions[f3] = "(" + s1 + "*" + s2 + ")";
-
-                        if (f2.numer) {
-                            f3 = f1 / f2;
-                            if (!solutions.count(f3)) solutions[f3] = "(" + s1 + "/" + s2 + ")";
-                        }
-
-                        if (f1.numer) {
-                            f3 = f2 / f1;
-                            if (!solutions.count(f3)) solutions[f3] = "(" + s2 + "/" + s1 + ")";
-                        }
+                        if (!solutions.count({f1 + f2})) solutions[{f1 + f2}] = "(" + s1 + "+" + s2 + ")";
+                        if (!solutions.count({f1 - f2})) solutions[{f1 - f2}] = "(" + s1 + "-" + s2 + ")";
+                        if (!solutions.count({f2 - f1})) solutions[{f2 - f1}] = "(" + s2 + "-" + s1 + ")";
+                        if (!solutions.count({f1 * f2})) solutions[{f1 * f2}] = "(" + s1 + "*" + s2 + ")";
+                        if (f2.numer && !solutions.count({f1 / f2})) solutions[{f1 / f2}] = "(" + s1 + "/" + s2 + ")";
+                        if (f1.numer && !solutions.count({f2 / f1})) solutions[{f2 / f1}] = "(" + s2 + "/" + s1 + ")";
                     }
             }
         }
