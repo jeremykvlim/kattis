@@ -113,13 +113,11 @@ int main() {
                     if (__lg(st_X.range_query(xl, m + 1)) < slope) l = m;
                     else r = m;
                 }
-                xr = l + 1;
+                xr = r;
                 funcs[xl + 1].emplace_back(slope, dp[xl] + c - (long long) slope * xl, xr);
             }
 
             int slope = pos[xl] || neg[xl] ? pos[xl] ^ neg[xl] : 0;
-            if (slope > 30) continue;
-
             for (int xr = xl; xr < n && slope <= 30;) {
                 int l = xr, r = n, m;
                 while (l + 1 < r) {
@@ -128,9 +126,9 @@ int main() {
                     if (max(st_pos.range_query(xl, m + 1), st_neg.range_query(xl, m + 1)) == slope) l = m;
                     else r = m;
                 }
-                xr = l + 1;
+                xr = r;
                 funcs[xl + 1].emplace_back(slope, dp[xl] + c - (long long) slope * xl, xr);
-                if (xr >= n) break;
+                if (xr == n) break;
                 slope = max(st_pos.range_query(xl, xr + 1), st_neg.range_query(xl, xr + 1));
             }
         }
