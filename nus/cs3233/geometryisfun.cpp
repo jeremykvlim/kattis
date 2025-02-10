@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -518,7 +518,7 @@ vector<Point<T>> minkowski(vector<Point<T>> &P, vector<Point<T>> &Q) {
 }
 
 template <typename T>
-T distance_between_polygons(vector<Point<T>> P, vector<Point<T>> Q) {
+T dist_between_convex_polygons(vector<Point<T>> P, vector<Point<T>> Q) {
     for (auto &p : Q) p *= -1;
 
     auto m = minkowski(P, Q);
@@ -709,7 +709,7 @@ int main() {
             while (l + 1 < r) {
                 mid = l + (r - l) / 2;
 
-                if (!distance_between_polygons(s(i, F[mid]), s(j, F[mid]))) r = mid;
+                if (!dist_between_convex_polygons(s(i, F[mid]), s(j, F[mid]))) r = mid;
                 else l = mid;
             }
             time[r].emplace_back(i, j);
