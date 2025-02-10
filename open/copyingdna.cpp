@@ -29,18 +29,16 @@ int main() {
 
         vector<int> dp(1 << m, m + 1), mask(m);
         dp[0] = 0;
-        for (int i = 0; i < 1 << m; i++)
-            if (dp[i] <= m) {
-                for (int j = 0, k = i; j < m; j++, k &= k >> 1) mask[j] = k;
+        for (int m1 = 0; m1 < 1 << m; m1++)
+            if (dp[m1] <= m) {
+                for (int j = 0, m2 = m1; j < m; j++, m2 &= m2 >> 1) mask[j] = m2;
                 for (int j = 0, k = 0; j < m; j++)
-                    if (!((i >> j) & 1)) {
+                    if (!((m1 >> j) & 1)) {
                         k = max(k, j);
-                        while (k < m && !((i >> k) & 1) && same[j][k + 1] | (mask[k - j] & repeats[j][k + 1])) k++;
-
-                        if (j != k) dp[i + (1 << k) - (1 << j)] = min(dp[i + (1 << k) - (1 << j)], dp[i] + 1);
+                        while (k < m && !((m1 >> k) & 1) && same[j][k + 1] | (mask[k - j] & repeats[j][k + 1])) k++;
+                        if (j != k) dp[m1 + (1 << k) - (1 << j)] = min(dp[m1 + (1 << k) - (1 << j)], dp[m1] + 1);
                     }
             }
-
         cout << (dp.back() <= m ? to_string(dp.back()) : "impossible") << "\n";
     }
 }
