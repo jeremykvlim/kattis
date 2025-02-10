@@ -28,8 +28,7 @@ int main() {
     vector<vector<long long>> dp(max(n, k) + 1, vector<long long>(1 << n, 1e13));
     dp[0][0] = 0;
     for (int i = 1; i <= k; i++)
-        for (int j = 0; j < 1 << n; j++)
-            for (int mask = j; mask; --mask &= j) dp[i][j] = min(dp[i][j], dp[i - 1][j & ~mask] + waste[mask]);
-
+        for (int m1 = 0; m1 < 1 << n; m1++)
+            for (int m2 = m1; m2; --m2 &= m1) dp[i][m1] = min(dp[i][m1], dp[i - 1][m1 & ~m2] + waste[m2]);
     cout << dp[min(n, k)].back();
 }
