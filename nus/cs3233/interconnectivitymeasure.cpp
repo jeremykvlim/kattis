@@ -33,7 +33,7 @@ struct PersistentDisjointSets {
     void delete_history(int version = 0) {
         history.resize(version);
     }
-    
+
     PersistentDisjointSets(int n) : sets(n) {
         iota(sets.begin(), sets.end(), 0);
     }
@@ -66,8 +66,8 @@ int main() {
         }
 
         int next = curr ^ (1 << lg), version = pdsu.record();
-        for (int i = next; i; --i &= next) {
-            auto [u, v] = roads[i];
+        for (int mask = next; mask; --mask &= next) {
+            auto [u, v] = roads[mask];
             pdsu.unite(u, v);
         }
 
@@ -82,6 +82,5 @@ int main() {
         self(self, curr, lg - 1, diff);
     };
     dfs(dfs, (1 << (__lg(m) + 1)) - 1, __lg(m), all);
-
     for (int c : cost) cout << c << "\n";
 }
