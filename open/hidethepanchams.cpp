@@ -169,19 +169,18 @@ int main() {
 
     vector<double> d(1 << n, 0), dp(1 << n, 1e18);
     dp[0] = 0;
-    for (int i = 0; i < 1 << n; i++) {
+    for (int mask = 0; mask < 1 << n; mask++) {
         vector<Point<long long>> enclosure;
-        for (int j = 0; j < n; j++)
-            if ((i >> j) & 1) enclosure.emplace_back(points[j]);
+        for (int i = 0; i < n; i++)
+            if ((mask >> i) & 1) enclosure.emplace_back(points[i]);
         if (enclosure.empty()) continue;
 
         auto convex_hull = monotone_chain(enclosure);
-        for (int j = convex_hull.size() - 1, k = 0; k < convex_hull.size(); j = k++) d[i] += dist(convex_hull[j], convex_hull[k]);
+        for (int i = convex_hull.size() - 1, j = 0; j < convex_hull.size(); i = j++) d[mask] += dist(convex_hull[i], convex_hull[j]);
     }
 
-    for (int i = 1; i < 1 << n; i++)
-        for (int j = i; j; --j &= i)
-            if (__builtin_popcount(j) >= 3) dp[i] = min(dp[i], dp[i ^ j] + d[j]);
-
+    for (int m1 = 1; m1 < 1 << n; m1++)
+        for (int m2 = m1; m2; --m2 &= m1)
+            if (__builtin_popcount(m2) > 2) dp[m1] = min(dp[m1], dp[m1 ^ m2] + d[m2]);
     cout << fixed << setprecision(6) << dp.back();
 }
