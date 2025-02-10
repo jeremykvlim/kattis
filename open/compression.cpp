@@ -1,6 +1,54 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+struct LiChaoSegmentTree {
+    struct Function {
+        long long m, c;
+        int xr;
+
+        Function(long long m = 0, long long c = 1e18, int xr = -1) : m(m), c(c), xr(xr) {}
+
+        long long operator()(int x) {
+            return x > xr ? 1e18 : m * x + c;
+        }
+    };
+    int n;
+    vector<Function> ST;
+
+    void insert(Function f) {
+        insert(1, 0, n, f);
+    }
+
+    void insert(int i, int l, int r, Function f) {
+        int m = midpoint(l, r);
+        bool left = f(l) < ST[i](l), mid = f(m) < ST[i](m);
+        if (mid || f.m == ST[i].m && (f.xr > ST[i].xr || f.c < ST[i].c)) swap(f, ST[i]);
+
+        if (l + 1 == r) return;
+        if (left != mid) insert(i << 1, l, m, f);
+        else insert(i << 1 | 1, m, r, f);
+    }
+
+    long long query(int x) {
+        return query(1, x, 0, n);
+    }
+
+    long long query(int i, int x, int l, int r) {
+        if (l + 1 == r) return ST[i](x);
+
+        int m = midpoint(l, r);
+        if (x < m) return min(ST[i](x), query(i << 1, x, l, m));
+        else return min(ST[i](x), query(i << 1 | 1, x, m, r));
+    }
+
+    int midpoint(int l, int r) {
+        int i = 1 << __lg(r - l);
+        return min(l + i, r - (i >> 1));
+    }
+
+    LiChaoSegmentTree(int n) : n(n), ST(2 * n) {}
+};
+
 template <typename T>
 struct SparseTable {
     vector<vector<T>> ST;
@@ -46,25 +94,14 @@ int main() {
     }
 
     SparseTable<int> st_X(X, [](int x, int y) {return max(x, y);}), st_pos(pos, [](int x, int y) {return max(x, y);}), st_neg(neg, [](int x, int y) {return max(x, y);});
-    vector<vector<pair<int, long long>>> L(n + 1), R(n + 1);
+    vector<vector<tuple<int, long long, int>>> funcs(n + 1);
     vector<long long> dp(n + 1, 1e18);
     dp[0] = 0;
-    auto add_func = [&](int xl, int xr, int slope, long long y_intercept) {
-        L[xl].emplace_back(slope, y_intercept);
-        if (xr < n) R[xr + 1].emplace_back(slope, y_intercept);
-    };
-
-    vector<multiset<long long>> funcs(31);
+    vector<LiChaoSegmentTree> lcsts(31, n + 1);
     for (int xl = 0; xl <= n; xl++) {
         if (xl) {
-            for (auto [slope, y_intercept] : L[xl]) funcs[slope].emplace(y_intercept);
-            for (auto [slope, y_intercept] : R[xl]) {
-                auto it = funcs[slope].find(y_intercept);
-                if (it != funcs[slope].end()) funcs[slope].erase(it);
-            }
-
-            for (int slope = 0; slope <= 30; slope++)
-                if (!funcs[slope].empty()) dp[xl] = min(dp[xl], *funcs[slope].begin() + (long long) slope * xl);
+            for (auto [slope, y_intercept, xr] : funcs[xl]) lcsts[slope].insert({slope, y_intercept, xr});
+            for (int slope = 0; slope <= 30; slope++) dp[xl] = min(dp[xl], lcsts[slope].query(xl));
         }
 
         if (xl < n) {
@@ -77,7 +114,7 @@ int main() {
                     else r = m;
                 }
                 xr = l + 1;
-                if (xl < xr) add_func(xl + 1, xr, slope, dp[xl] + c - (long long) slope * xl);
+                funcs[xl + 1].emplace_back(slope, dp[xl] + c - (long long) slope * xl, xr);
             }
 
             int slope = pos[xl] || neg[xl] ? pos[xl] ^ neg[xl] : 0;
@@ -92,7 +129,7 @@ int main() {
                     else r = m;
                 }
                 xr = l + 1;
-                add_func(xl + 1, xr, slope, dp[xl] + c - (long long) slope * xl);
+                funcs[xl + 1].emplace_back(slope, dp[xl] + c - (long long) slope * xl, xr);
                 if (xr >= n) break;
                 slope = max(st_pos.range_query(xl, xr + 1), st_neg.range_query(xl, xr + 1));
             }
