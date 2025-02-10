@@ -5,6 +5,7 @@ template <typename T>
 struct Fraction {
     T numer, denom;
 
+    Fraction() {}
     Fraction(T n, T d) : numer(n), denom(d) {
         reduce();
     }
@@ -88,8 +89,19 @@ struct Fraction {
         return *this;
     }
 
+    Fraction operator*(const Fraction &f) const {
+        return {numer * f.numer, denom * f.denom};
+    }
+
     Fraction operator*(const T &v) const {
         return {numer * v, denom};
+    }
+
+    Fraction & operator*=(const Fraction &f) {
+        numer *= f.numer;
+        denom *= f.denom;
+        reduce();
+        return *this;
     }
 
     Fraction & operator*=(const T &v) {
@@ -98,8 +110,19 @@ struct Fraction {
         return *this;
     }
 
+    Fraction operator/(const Fraction &f) const {
+        return {numer * f.denom, denom * f.numer};
+    }
+
     Fraction operator/(const T &v) const {
         return {numer, denom * v};
+    }
+
+    Fraction & operator/=(const Fraction &f) {
+        numer *= f.denom;
+        denom *= f.numer;
+        reduce();
+        return *this;
     }
 
     Fraction & operator/=(const T &v) {
@@ -107,6 +130,15 @@ struct Fraction {
         reduce();
         return *this;
     }
+
+    struct Hash {
+        size_t operator()(Fraction<T> f) const {
+            auto h = 0ULL;
+            h ^= hash<T>()(f.numer) + 0x9e3779b9 + (h << 6) + (h >> 2);
+            h ^= hash<T>()(f.denom) + 0x9e3779b9 + (h << 6) + (h >> 2);
+            return h;
+        }
+    };
 };
 
 struct Hash {
