@@ -198,14 +198,14 @@ int main() {
             if (i != j) outside[i][j] = kdt.query(polygon[i], polygon[j]);
 
     vector<vector<vector<int>>> memo(m, vector<vector<int>>(m, vector<int>(k + 1, -1)));
-    auto dp = [&](auto &&self, int l, int r, int upgrades) {
-        if (!~upgrades || r - l > m) return n;
-        if (r - l == m) return 0;
+    auto dp = [&](auto &&self, int i, int l, int upgrades) {
+        if (!~upgrades || i - l > m) return n;
+        if (i - l == m) return 0;
 
-        if (~memo[l % m][r % m][upgrades]) return memo[l % m][r % m][upgrades];
+        if (~memo[i % m][l % m][upgrades]) return memo[i % m][l % m][upgrades];
         int stolen = n;
-        for (int i = r + 1; i < r + m; i++) stolen = min(stolen, outside[r % m][i % m] + self(self, l, i, upgrades - 1));
-        return memo[l % m][r % m][upgrades] = stolen;
+        for (int j = i + 1; j < i + m; j++) stolen = min(stolen, outside[i % m][j % m] + self(self, j, l, upgrades - 1));
+        return memo[i % m][l % m][upgrades] = stolen;
     };
 
     int stolen = n;
