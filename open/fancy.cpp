@@ -2,11 +2,6 @@
 using namespace std;
 
 template <typename T>
-bool approximately_equal(const T &v1, const T &v2) {
-    return fabs(v1 - v2) <= 1e-6;
-}
-
-template <typename T>
 struct Point {
     T x, y;
 
@@ -117,9 +112,72 @@ struct Point {
 };
 
 template <typename T>
-T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
-    return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+T cross(const Point<T> &a, const Point<T> &b) {
+    return (a.x * b.y) - (a.y * b.x);
 }
+
+template <typename T>
+struct KDTree {
+    struct KDNode {
+        Point<T> p;
+        T xl, xr, yl, yr;
+        int subtree_size;
+
+        KDNode() {}
+        KDNode(const Point<T> &p) : p(p), xl(p.x), xr(p.x), yl(p.y), yr(p.y), subtree_size(1) {}
+
+        auto operator+=(const KDNode &node) {
+            xl = min(xl, node.xl);
+            xr = max(xr, node.xr);
+            yl = min(yl, node.yl);
+            yr = max(yr, node.yr);
+            subtree_size += node.subtree_size;
+        }
+    };
+
+    vector<Point<T>> points;
+    vector<KDNode> KDT;
+    vector<pair<int, int>> children;
+
+    KDTree(int n, const vector<Point<T>> &p) : points(p), KDT(n), children(n, {-1, -1}) {
+        int i = 0;
+        build(i, 0, points.size());
+    }
+
+    int build(int &i, int l, int r, bool dir = false) {
+        if (l >= r) return -1;
+
+        int m = l + (r - l) / 2;
+        nth_element(points.begin() + l, points.begin() + m, points.begin() + r, [dir](const auto &a, const auto &b) {return !dir ? a.x < b.x : a.y < b.y;});
+
+        int j = i++;
+        KDT[j] = points[m];
+        auto &[cl, cr] = children[j];
+        cl = build(i, l, m, !dir);
+        cr = build(i, m + 1, r, !dir);
+        if (~cl) KDT[j] += KDT[cl];
+        if (~cr) KDT[j] += KDT[cr];
+        return j;
+    }
+
+    int query(const Point<T> &p1, const Point<T> &p2) {
+        return query(0, p1, p2);
+    }
+
+    int query(int i, const Point<T> &p1, const Point<T> &p2) {
+        if (i == -1) return 0;
+
+        auto v = p1 - p2;
+
+        T cross_product = cross(p1, p2), b1 = v.y * KDT[i].xl - v.x * KDT[i].yl, b2 = v.y * KDT[i].xl - v.x * KDT[i].yr, b3 = v.y * KDT[i].xr - v.x * KDT[i].yl, b4 = v.y * KDT[i].xr - v.x * KDT[i].yr;
+        if (cross_product + min({b1, b2, b3, b4}) > 0) return 0;
+        if (cross_product + max({b1, b2, b3, b4}) <= 0) return KDT[i].subtree_size;
+
+        int count = cross_product + cross(KDT[i].p, v) <= 0;
+        auto [cl, cr] = children[i];
+        return count + query(cl, p1, p2) + query(cr, p1, p2);
+    }
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -134,14 +192,11 @@ int main() {
     for (auto &[x, y] : polygon) cin >> x >> y;
     reverse(polygon.begin(), polygon.end());
 
-    vector<vector<int>> outside(m, vector<int>(m));
-    for (int i = 0; i < m; i++) {
-        sort(onions.begin(), onions.end(), [&](auto p1, auto p2) {return cross(p1, p2, polygon[i]) > 0;});
-        for (int j = 1, count = 0; j < m; j++) {
-            while (count < n && cross(onions[count], polygon[i], polygon[(i + j) % m]) <= 0) count++;
-            outside[(i + j) % m][i] = count;
-        }
-    }
+    KDTree<long long> kdt(n, onions);
+    vector<vector<int>> outside(m, vector<int>(m, 0));
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < m; j++)
+            if (i != j) outside[j][i] = kdt.query(polygon[i], polygon[j]);
 
     vector<vector<vector<int>>> memo(m, vector<vector<int>>(m, vector<int>(k + 1, -1)));
     auto dp = [&](auto &&self, int l, int r, int upgrades) {
