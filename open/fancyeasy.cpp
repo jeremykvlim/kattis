@@ -168,11 +168,11 @@ struct KDTree {
         if (i == -1) return 0;
 
         Point<T> v = p1 - p2, pll(KDT[i].xl, KDT[i].yl), plr(KDT[i].xl, KDT[i].yr), prl(KDT[i].xr, KDT[i].yl), prr(KDT[i].xr, KDT[i].yr);
-        T cross_product = cross(p1, p2), b1 = cross(pll, v), b2 = cross(plr, v), b3 = cross(prl, v), b4 = cross(prr, v);
-        if (cross_product + min({b1, b2, b3, b4}) > 0) return 0;
-        if (cross_product + max({b1, b2, b3, b4}) <= 0) return KDT[i].subtree_size;
+        T c0 = cross(p1, p2), c1 = cross(pll, v), c2 = cross(plr, v), c3 = cross(prl, v), c4 = cross(prr, v);
+        if (c0 + min({c1, c2, c3, c4}) > 0) return 0;
+        if (c0 + max({c1, c2, c3, c4}) <= 0) return KDT[i].subtree_size;
 
-        int count = cross_product + cross(KDT[i].p, v) <= 0;
+        int count = c0 + cross(KDT[i].p, v) <= 0;
         auto [cl, cr] = children[i];
         return count + query(cl, p1, p2) + query(cr, p1, p2);
     }
