@@ -212,7 +212,7 @@ int main() {
         cin >> _ >> p1.x >> p1.y >> _ >> _ >> p2.x >> p2.y >> _;
 
         vector<vector<Point<double>>> polygons(f);
-        vector<double> areas(f), xl(f, 1e20), xr(f, -1e20), yl(f, 1e20), yr(f, -1e20);
+        vector<double> areas(f), xl(f, 1e5), xr(f, -1e5), yl(f, 1e5), yr(f, -1e5);
         for (int i = 0; i < f; i++) {
             int v;
             cin >> v;
