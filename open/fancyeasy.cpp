@@ -167,9 +167,8 @@ struct KDTree {
     int query(int i, const Point<T> &p1, const Point<T> &p2) {
         if (i == -1) return 0;
 
-        auto v = p1 - p2;
-
-        T cross_product = cross(p1, p2), b1 = v.y * KDT[i].xl - v.x * KDT[i].yl, b2 = v.y * KDT[i].xl - v.x * KDT[i].yr, b3 = v.y * KDT[i].xr - v.x * KDT[i].yl, b4 = v.y * KDT[i].xr - v.x * KDT[i].yr;
+        Point<T> v = p1 - p2, pll(KDT[i].xl, KDT[i].yl), plr(KDT[i].xl, KDT[i].yr), prl(KDT[i].xr, KDT[i].yl), prr(KDT[i].xr, KDT[i].yr);
+        T cross_product = cross(p1, p2), b1 = cross(pll, v), b2 = cross(plr, v), b3 = cross(prl, v), b4 = cross(prr, v);
         if (cross_product + min({b1, b2, b3, b4}) > 0) return 0;
         if (cross_product + max({b1, b2, b3, b4}) <= 0) return KDT[i].subtree_size;
 
