@@ -131,7 +131,7 @@ vector<Point<T>> monotone_chain(vector<Point<T>> points, bool collinear = false)
     vector<Point<T>> convex_hull;
 
     auto clockwise = [&](auto p) {
-        auto cross_product = cross(convex_hull[convex_hull.size() - 2], convex_hull.back(), p);
+        T cross_product = cross(convex_hull[convex_hull.size() - 2], convex_hull.back(), p);
         return collinear ? cross_product <= 0 : cross_product < 0;
     };
 

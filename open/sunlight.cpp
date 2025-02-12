@@ -129,7 +129,7 @@ T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
 template <typename T>
 void add(deque<Point<T>> &half_hull, Point<T> p, bool collinear = false) {
     auto clockwise = [&]() {
-        auto cross_product = cross(half_hull[1], half_hull[0], p);
+        T cross_product = cross(half_hull[1], half_hull[0], p);
         return collinear ? cross_product <= 0 : cross_product < 0;
     };
 
