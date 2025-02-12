@@ -141,7 +141,7 @@ struct KDTree {
 
     KDTree(int n, const vector<Point<T>> &p) : points(p), KDT(n), children(n, {-1, -1}) {
         int i = 0;
-        build(i, 0, points.size());
+        build(i, 0, n);
     }
 
     int build(int &i, int l, int r, bool dir = false) {
