@@ -189,7 +189,7 @@ T dist_between_polygons(const vector<Point<T>> &P, const vector<Point<T>> &Q){
         for (int j = 0; j < Q.size(); j++) {
             auto c = Q[j], d = Q[(j + 1) % Q.size()];
             dist = min({dist, dist_from_point_to_line(a, Line(c, d)), dist_from_point_to_line(b, Line(c, d)),
-                        dist_from_point_to_line(c, Line(a, b)), dist_from_point_to_line(d, Line(a, b))});
+                              dist_from_point_to_line(c, Line(a, b)), dist_from_point_to_line(d, Line(a, b))});
         }
     }
     return dist;
@@ -254,19 +254,18 @@ int main() {
                 if (yl[j] > yr[i]) y = yl[j] - yr[i];
                 else if (yl[i] > yr[j]) y = yl[i] - yr[j];
 
-                if (dist(Point(x, y)) > d) continue;
-                if (dist_between_polygons(polygons[i], polygons[j]) <= d) adj_matrix[i][j] = adj_matrix[j][i] = true;
+                if (dist(Point(x, y)) <= d && dist_between_polygons(polygons[i], polygons[j]) <= d) adj_matrix[i][j] = adj_matrix[j][i] = true;
             }
 
         vector<double> possible;
         for (int i = 0; i < f; i++)
             if (areas[i] <= min(areas[s1], areas[s2])) possible.emplace_back(areas[i]);
-        sort(possible.begin(), possible.end());
-        possible.erase(unique(possible.begin(), possible.end()), possible.end());
         if (possible.empty()) {
             cout << "Scientists cannot meet\n";
             continue;
         }
+        sort(possible.begin(), possible.end());
+        possible.erase(unique(possible.begin(), possible.end()), possible.end());
 
         int l = -1, r = possible.size(), m;
         while (l + 1 < r) {
