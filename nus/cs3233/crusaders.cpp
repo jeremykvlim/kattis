@@ -1,27 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void dnc(int l, int r, int &fee, vector<pair<int, int>> &s, vector<int> &city) {
-    if (l > r || s.empty() || fee++ > 1500) return;
-
-    int m = l + (r - l) / 2;
-    cout << "Q " << m << "\n" << flush;
-
-    int c;
-    cin >> c;
-
-    vector<pair<int, int>> left, right;
-    for (auto [si, i] : s) {
-        if (si < c) left.emplace_back(si, i);
-        else if (si > c) right.emplace_back(si, i);
-
-        if (si >= c) city[i] = m;
-    }
-
-    dnc(l, m - 1, fee, left, city);
-    dnc(m + 1, r, fee, right, city);
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -37,8 +16,25 @@ int main() {
     }
 
     vector<int> city(a);
-    int fee = 0;
-    dnc(1, c, fee, s, city);
+    auto dnc = [&](auto &&self, int l, int r, vector<pair<int, int>> &s) {
+        if (l + 1 == r || s.empty()) return;
+
+        int m = l + (r - l) / 2, c;
+        cout << "Q " << m << "\n" << flush;
+        cin >> c;
+
+        vector<pair<int, int>> sl, sr;
+        for (auto [si, i] : s) {
+            if (si < c) sl.emplace_back(si, i);
+            else if (si > c) sr.emplace_back(si, i);
+
+            if (si >= c) city[i] = m;
+        }
+
+        self(self, l, m, sl);
+        self(self, m, r, sr);
+    };
+    dnc(dnc, 0, c + 1, s);
 
     cout << "A ";
     for (int p : city) cout << p << " ";
