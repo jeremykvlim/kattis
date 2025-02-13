@@ -117,6 +117,14 @@ T cross(const Point<T> &a, const Point<T> &b) {
 }
 
 template <typename T>
+struct Line {
+    Point<T> a, b;
+
+    Line() {}
+    Line(Point<T> a, Point<T> b) : a(a), b(b) {}
+};
+
+template <typename T>
 struct KDTree {
     struct KDNode {
         Point<T> p;
@@ -160,20 +168,20 @@ struct KDTree {
         return j;
     }
 
-    int query(const Point<T> &a, const Point<T> &b) {
-        return query(0, a, b);
+    int points_in_half_plane(const Line<T> &l) {
+        return points_in_half_plane(0, l);
     }
 
-    int query(int i, const Point<T> &a, const Point<T> &b) {
+    int points_in_half_plane(int i, const Line<T> &l) {
         if (i == -1) return 0;
 
-        Point<T> v = a - b, pll(KDT[i].xl, KDT[i].yl), plr(KDT[i].xl, KDT[i].yr), prl(KDT[i].xr, KDT[i].yl), prr(KDT[i].xr, KDT[i].yr);
-        T c0 = cross(a, b), c1 = cross(pll, v), c2 = cross(plr, v), c3 = cross(prl, v), c4 = cross(prr, v);
+        Point<T> v = l.a - l.b, pll(KDT[i].xl, KDT[i].yl), plr(KDT[i].xl, KDT[i].yr), prl(KDT[i].xr, KDT[i].yl), prr(KDT[i].xr, KDT[i].yr);
+        T c0 = cross(l.a, l.b), c1 = cross(pll, v), c2 = cross(plr, v), c3 = cross(prl, v), c4 = cross(prr, v);
         if (c0 + min({c1, c2, c3, c4}) > 0) return 0;
         if (c0 + max({c1, c2, c3, c4}) <= 0) return KDT[i].size;
 
         auto [cl, cr] = children[i];
-        return query(cl, a, b) + query(cr, a, b) + (c0 + cross(KDT[i].p, v) <= 0);
+        return points_in_half_plane(cl, l) + points_in_half_plane(cr, l) + (c0 + cross(KDT[i].p, v) <= 0);
     }
 };
 
@@ -194,7 +202,7 @@ int main() {
     vector<vector<int>> outside(m, vector<int>(m, 0));
     for (int i = 0; i < m; i++)
         for (int j = 0; j < m; j++)
-            if (i != j) outside[i][j] = kdt.query(polygon[i], polygon[j]);
+            if (i != j) outside[i][j] = kdt.points_in_half_plane({polygon[i], polygon[j]});
 
     vector<vector<vector<int>>> memo(m, vector<vector<int>>(m, vector<int>(k + 1, -1)));
     auto dp = [&](auto &&self, int i, int l, int k) {
