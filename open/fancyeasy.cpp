@@ -172,9 +172,8 @@ struct KDTree {
         if (c0 + min({c1, c2, c3, c4}) > 0) return 0;
         if (c0 + max({c1, c2, c3, c4}) <= 0) return KDT[i].size;
 
-        int count = c0 + cross(KDT[i].p, v) <= 0;
         auto [cl, cr] = children[i];
-        return count + query(cl, a, b) + query(cr, a, b);
+        return query(cl, a, b) + query(cr, a, b) + (c0 + cross(KDT[i].p, v) <= 0);
     }
 };
 
