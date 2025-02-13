@@ -121,17 +121,17 @@ struct KDTree {
     struct KDNode {
         Point<T> p;
         T xl, xr, yl, yr;
-        int subtree_size;
+        int size;
 
         KDNode() {}
-        KDNode(const Point<T> &p) : p(p), xl(p.x), xr(p.x), yl(p.y), yr(p.y), subtree_size(1) {}
+        KDNode(const Point<T> &p) : p(p), xl(p.x), xr(p.x), yl(p.y), yr(p.y), size(1) {}
 
         auto operator+=(const KDNode &node) {
             xl = min(xl, node.xl);
             xr = max(xr, node.xr);
             yl = min(yl, node.yl);
             yr = max(yr, node.yr);
-            subtree_size += node.subtree_size;
+            size += node.size;
         }
     };
 
@@ -170,7 +170,7 @@ struct KDTree {
         Point<T> v = a - b, pll(KDT[i].xl, KDT[i].yl), plr(KDT[i].xl, KDT[i].yr), prl(KDT[i].xr, KDT[i].yl), prr(KDT[i].xr, KDT[i].yr);
         T c0 = cross(a, b), c1 = cross(pll, v), c2 = cross(plr, v), c3 = cross(prl, v), c4 = cross(prr, v);
         if (c0 + min({c1, c2, c3, c4}) > 0) return 0;
-        if (c0 + max({c1, c2, c3, c4}) <= 0) return KDT[i].subtree_size;
+        if (c0 + max({c1, c2, c3, c4}) <= 0) return KDT[i].size;
 
         int count = c0 + cross(KDT[i].p, v) <= 0;
         auto [cl, cr] = children[i];
