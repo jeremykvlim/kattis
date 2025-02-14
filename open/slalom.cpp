@@ -3,7 +3,7 @@ using namespace std;
 
 template <typename T>
 bool approximately_equal(const T &v1, const T &v2) {
-    return fabs(v1 - v2) <= 1e-6;
+    return fabs(v1 - v2) <= 1e-5;
 }
 
 template <typename T>
@@ -158,13 +158,13 @@ int main() {
         for (int i = 0; i < 2 * n - 1; i++) {
             double l = INT_MIN, r = INT_MAX;
 
-            auto pos = [](Point<double> a, Point<double> b) {
-                return (b.x - a.x) / (b.y - a.y);
+            auto pos = [](const Point<double> &a, const Point<double> &b) {
+                auto v = b - a;
+                return v.x / v.y;
             };
 
             for (int j = i + 1 + (i & 1); j < 2 * n - 1 && l <= r; j++) {
                 auto curr = pos(points[i], points[j]);
-
                 if (l <= curr && curr <= r) adj_list[i].emplace_back(j, dist(points[i], points[j]));
 
                 if (j & 1) r = min(r, curr);
@@ -173,7 +173,6 @@ int main() {
 
             for (int j = 2 * n - 1; j < points.size(); j++) {
                 auto curr = pos(points[i], points[j]);
-
                 if (l <= curr && curr <= r) adj_list[i].emplace_back(j, dist(points[i], points[j]));
             }
         }
