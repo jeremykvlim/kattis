@@ -141,7 +141,7 @@ struct Line {
 
 template <typename T>
 bool point_on_line(const Point<T> &p, const Line<T> &l) {
-    return !sgn(cross(l.b - l.a, p - l.a)) && dot(l.a - p, l.b - p) <= 0;
+    return !sgn(cross(l.b - l.a, p - l.a)) && (dot(l.a - p, l.b - p) < 0 || approximately_equal(dot(l.a - p, l.b - p), (T) 0));
 }
 
 template <typename T>
