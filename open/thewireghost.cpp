@@ -231,14 +231,9 @@ int main() {
             bool first = true;
             for (auto p : {l1.a, l1.b}) {
                 auto v = p - pivot;
-                Point<double> q;
-                if (c == 'C') {
-                    q.x = pivot.x + cos * v.x + sin * v.y;
-                    q.y = pivot.y - sin * v.x + cos * v.y;
-                } else {
-                    q.x = pivot.x + cos * v.x - sin * v.y;
-                    q.y = pivot.y + sin * v.x + cos * v.y;
-                }
+                Point<double> q{pivot.x + cos * v.x, pivot.y + cos * v.y};
+                if (c == 'C') q += {sin * v.y, -sin * v.x};
+                else q += {-sin * v.y, sin * v.x};
                 (first ? l2.a : l2.b) = q;
                 first = false;
             }
