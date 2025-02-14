@@ -183,22 +183,20 @@ int main() {
     int n;
     cin >> L >> n;
 
-    vector<pair<double, Line<double>>> segments;
-    segments.push_back({L, {{0, 0}, {L, 0}}});
-
     vector<pair<double, double>> angles(100);
     for (int k = 1; k <= 100; k++) {
         auto theta = M_PI_2 * k / 100;
         angles[k - 1] = {sin(theta), cos(theta)};
     }
 
+    vector<pair<double, Line<double>>> segments{{L, {{0., 0.}, {L, 0.}}}};
     while (n--) {
         double x;
         char c;
         cin >> x >> c;
 
-        double total = 0;
         int bend = 0;
+        double total = 0;
         vector<pair<double, Line<double>>> l, r;
         while (bend < segments.size() && total + segments[bend].first < x) {
             l.emplace_back(segments[bend]);
@@ -215,7 +213,8 @@ int main() {
         else if (fabs(x - segments[bend].first) < 1e-6) l.emplace_back(segments[bend]);
         else {
             auto [len, line] = segments[bend];
-            Point<double> split{line.a.x + x / len * (line.b.x - line.a.x), line.a.y + x / len * (line.b.y - line.a.y)};
+            auto v = line.b - line.a;
+            Point<double> split{line.a.x + x / len * v.x, line.a.y + x / len * v.y};
             l.emplace_back(x, Line(line.a, split));
             r.emplace_back(len - x, Line(split, line.b));
         }
