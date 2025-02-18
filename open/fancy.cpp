@@ -177,16 +177,15 @@ struct KDTree {
         return points_in_half_plane(0, l.a - l.b, cross(l.a, l.b));
     }
 
-    int points_in_half_plane(int i, const Point<T> &v, const T &c0) {
+    int points_in_half_plane(int i, const Point<T> &v, const T &c) {
         if (i == -1) return 0;
 
-        Point<T> pll(KDT[i].xl, KDT[i].yl), plr(KDT[i].xl, KDT[i].yr), prl(KDT[i].xr, KDT[i].yl), prr(KDT[i].xr, KDT[i].yr);
-        T c1 = cross(pll, v), c2 = cross(plr, v), c3 = cross(prl, v), c4 = cross(prr, v);
-        if (c0 + min({c1, c2, c3, c4}) > 0) return 0;
-        if (c0 + max({c1, c2, c3, c4}) <= 0) return KDT[i].size;
+        T cll = cross({KDT[i].xl, KDT[i].yl}, v), clr = cross({KDT[i].xl, KDT[i].yr}, v), crl = cross({KDT[i].xr, KDT[i].yl}, v), crr = cross({KDT[i].xr, KDT[i].yr}, v);
+        if (c + min({cll, clr, crl, crr}) > 0) return 0;
+        if (c + max({cll, clr, crl, crr}) <= 0) return KDT[i].size;
 
         auto [cl, cr] = children[i];
-        return points_in_half_plane(cl, v, c0) + points_in_half_plane(cr, v, c0) + (c0 + cross(KDT[i].p, v) <= 0);
+        return points_in_half_plane(cl, v, c) + points_in_half_plane(cr, v, c) + (c + cross(KDT[i].p, v) <= 0);
     }
 };
 
