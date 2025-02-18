@@ -220,11 +220,9 @@ int main() {
         }
         for (int i = bend + 1; i < segments.size(); i++) r.emplace_back(segments[i]);
 
-        if (r.empty()) {
-            segments = l;
-            continue;
-        }
-
+        segments = l;
+        if (r.empty()) continue;
+        
         auto pivot = r[0].second.a;
         auto rotate = [&](const Line<double> &l1, double sin = 1, double cos = 0) {
             Line<double> l2;
@@ -261,9 +259,7 @@ int main() {
                     }
                 }
 
-        auto temp = l;
-        for (auto [len, line] : r) temp.emplace_back(len, rotate(line));
-        segments = temp;
+        for (auto [len, line] : r) segments.emplace_back(len, rotate(line));
     }
     cout << "SAFE";
 }
