@@ -209,8 +209,8 @@ int main() {
         }
 
         x -= total;
-        if (fabs(x) < 1e-6) r.emplace_back(segments[bend]);
-        else if (fabs(x - segments[bend].first) < 1e-6) l.emplace_back(segments[bend]);
+        if (!sgn(x)) r.emplace_back(segments[bend]);
+        else if (!sgn(x - segments[bend].first)) l.emplace_back(segments[bend]);
         else {
             auto [len, line] = segments[bend];
             auto v = line.b - line.a;
