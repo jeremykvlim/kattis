@@ -32,7 +32,6 @@ struct SplayTree {
 
     void pull(int i) {
         if (!i) return;
-
         auto [l, r, p] = ST[i].family;
         ST[i].size = size(l) + size(r) + 1;
     }
