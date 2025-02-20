@@ -148,7 +148,7 @@ struct SplayTree {
         }
     }
 
-    int subtree_maximum(int i) {
+    int subtree_max(int i) {
         while (ST[i].family[1]) {
             push(i);
             i = ST[i].family[1];
@@ -159,7 +159,7 @@ struct SplayTree {
 
     int meld(int i, int j) {
         if (!i || !j) return i ^ j;
-        i = subtree_maximum(i);
+        i = subtree_max(i);
         splay(i);
         ST[i].family[1] = j;
         ST[j].family[2] = i;
@@ -194,7 +194,7 @@ int main() {
 
     vector<int> moves;
     while (st[i].count) {
-        char c = st[st.subtree_maximum(i)].c;
+        char c = st[st.subtree_max(i)].c;
         int j = (st[i].pos_l[c == 'C'] == 1e9 ? 1 : st[i].pos_l[c == 'C'] + 1);
         moves.emplace_back(j);
         auto [l, r] = st.split(i, j);
