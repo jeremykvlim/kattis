@@ -119,13 +119,18 @@ struct SplayTree {
         }
     }
 
-    int meld(int i, int j) {
-        if (!i || !j) return i ^ j;
+    int subtree_maximum(int i) {
         while (ST[i].family[1]) {
             push(i);
             i = ST[i].family[1];
         }
         push(i);
+        return i;
+    }
+
+    int meld(int i, int j) {
+        if (!i || !j) return i ^ j;
+        i = subtree_maximum(i);
         splay(i);
         ST[i].family[1] = j;
         ST[j].family[2] = i;
