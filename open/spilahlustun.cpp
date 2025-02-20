@@ -161,10 +161,10 @@ int main() {
         int i, j;
         cin >> i >> j;
 
-        auto [l, ml] = st.split(top, i - 1);
-        auto [mr, r] = st.split(ml, j - i + 1);
-        if (mr) st.flip(mr);
-        top = st.meld(st.meld(l, mr), r);
+        auto [l, lm] = st.split(top, i - 1);
+        auto [rm, r] = st.split(lm, j - i + 1);
+        if (rm) st.flip(rm);
+        top = st.meld(st.meld(l, rm), r);
     }
     for (int k : st.in_order_traversal(top)) cout << k << " ";
 }
