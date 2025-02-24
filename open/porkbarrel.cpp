@@ -255,7 +255,7 @@ int main() {
             cin >> l >> h;
 
             int r = 1 + (upper_bound(weights.begin() + 1, weights.end(), h - c) - weights.begin() - 1),
-                    i = m - (lower_bound(weights.begin() + 1, weights.end(), l - c) - weights.begin() - 1);
+                i = m - (lower_bound(weights.begin() + 1, weights.end(), l - c) - weights.begin() - 1);
 
             c = pst.range_query(i + offset[i], 1, r).sum;
             cout << c << "\n";
