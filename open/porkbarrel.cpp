@@ -188,17 +188,21 @@ struct LinkCutTree : SplayTree {
         ST[i].family[2] = j;
     }
 
-    void cut(int i, int j) {
-        reroot(j);
+    void cut(int i) {
         access(i);
-        ST[i].family[0] = ST[j].family[2] = 0;
+        ST[i].family[0] = ST[ST[i].family[0]].family[2] = 0;
         pull(i);
     }
 
+    void cut(int i, int j) {
+        reroot(i);
+        cut(j);
+    }
+
     int query(int i, int j) {
-        reroot(j);
-        access(i);
-        return ST[i].i2;
+        reroot(i);
+        access(j);
+        return ST[j].i2;
     }
 };
 
