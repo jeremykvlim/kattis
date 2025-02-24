@@ -39,7 +39,7 @@ int main() {
             if (mex < m) break;
             moves[pick][{l, r}].emplace_back(i);
         }
-        if (!mex && !possible.empty()) moves[pick][{l, r}].emplace_back(possible.begin()->second);
+        if (!mex && !possible.empty()) moves[pick][{l, r}].emplace_back(possible[0].second);
 
         return memo[pick][{l, r}] = mex;
     };
