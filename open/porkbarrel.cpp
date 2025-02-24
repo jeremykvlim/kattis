@@ -147,6 +147,15 @@ struct SplayTree {
         }
         pull(i);
     }
+
+    int subtree_min(int i) {
+        while (ST[i].family[0]) {
+            push(i);
+            i = ST[i].family[0];
+        }
+        push(i);
+        return i;
+    }
 };
 
 struct LinkCutTree : SplayTree {
@@ -163,13 +172,15 @@ struct LinkCutTree : SplayTree {
 
     int find(int i) {
         access(i);
-        while (ST[i].family[0]) push(i = ST[i].family[0]);
+        i = subtree_min(i);
+        splay(i);
         return i;
     }
 
     void reroot(int i) {
         access(i);
         flip(i);
+        pull(i);
     }
 
     void link(int i, int j) {
@@ -244,7 +255,7 @@ int main() {
             cin >> l >> h;
 
             int r = 1 + (upper_bound(weights.begin() + 1, weights.end(), h - c) - weights.begin() - 1),
-                i = m - (lower_bound(weights.begin() + 1, weights.end(), l - c) - weights.begin() - 1);
+                    i = m - (lower_bound(weights.begin() + 1, weights.end(), l - c) - weights.begin() - 1);
 
             c = pst.range_query(i + offset[i], 1, r).sum;
             cout << c << "\n";
