@@ -148,8 +148,8 @@ int main() {
         auto [k, t1] = time(i);
         auto [_, t2] = time(j);
 
-        auto dist = j == 2 ? m : t2;
-        lct[i] = dist <= t1 + haze[i] + (k ? s1 : s2) ? 1 : min((dist - t1 - haze[i] + both - 1) / both * 2, (dist - t1 - haze[i] - (k ? s1 : s2) + both - 1) / both * 2 + 1);
+        auto dist = (j == 2 ? m : t2) - t1 - haze[i];
+        lct[i] = dist <= (k ? s1 : s2) ? 1 : min((dist + both - 1) / both * 2, (dist + both - 1 - (k ? s1 : s2)) / both * 2 + 1);
         lct.splay(i);
     };
     nodes[0][0] = 1;
