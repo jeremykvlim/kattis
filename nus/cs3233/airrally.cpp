@@ -9,13 +9,8 @@ struct SplayTree {
 
         SplayNode(long long v = 0) : family{0, 0, 0}, flip(false), value(v), sum(v) {}
 
-        auto operator=(long long x) {
-            value = sum = x;
-        }
-
-        auto operator+=(long long x) {
-            value += x;
-            sum += x;
+        auto operator=(long long v) {
+            value = sum = v;
         }
     };
 
