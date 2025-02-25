@@ -10,7 +10,7 @@ template <typename T, typename U>
 T pow(T base, U exponent, T mod) {
     T value = 1;
     while (exponent) {
-        if (exponent & 1) value = mul(value, base, mod);
+        if (exponent & 1) value = mul(base, value, mod);
         base = mul(base, base, mod);
         exponent >>= 1;
     }
@@ -432,7 +432,7 @@ int main() {
         vector<modint> value(p, 0);
         value[0] = 1;
         while (exponent) {
-            if (exponent & 1) value = mul(value, base);
+            if (exponent & 1) value = mul(base, value);
             base = mul(base, base);
             exponent >>= 1;
         }

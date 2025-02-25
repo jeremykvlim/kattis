@@ -20,7 +20,7 @@ template <typename T, typename U>
 T pow(T base, U exponent, T mod) {
     T value = 1;
     while (exponent) {
-        if (exponent & 1) value = mul(value, base, mod);
+        if (exponent & 1) value = mul(base, value, mod);
         base = mul(base, base, mod);
         exponent >>= 1;
     }
