@@ -191,7 +191,7 @@ int main() {
                 haze[i] = h;
                 link_nodes(i, j);
             }
-        } else {
+        } else 
             for (int k = 0; k < 2; k++) {
                 int i = node(k, p);
                 haze[i] = 0;
@@ -200,7 +200,7 @@ int main() {
                 int j = it == nodes[r].end() ? 2 : it->second;
                 link_nodes(i, j);
             }
-        }
+        
         cout << lct.path_sum(1, 2) << "\n" << flush;
     }
 }
