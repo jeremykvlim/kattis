@@ -5,16 +5,16 @@ struct SplayTree {
     struct SplayNode {
         array<int, 3> family;
         bool flip;
-        long long v = 0, sum = 0;
+        long long value = 0, sum = 0;
 
-        SplayNode(long long v = 0) : family{0, 0, 0}, flip(false), v(v), sum(v) {}
+        SplayNode(long long v = 0) : family{0, 0, 0}, flip(false), value(v), sum(v) {}
 
         auto operator=(long long x) {
-            v = sum = x;
+            value = sum = x;
         }
 
         auto operator+=(long long x) {
-            v += x;
+            value += x;
             sum += x;
         }
     };
@@ -30,7 +30,7 @@ struct SplayTree {
     void pull(int i) {
         if (!i) return;
         auto [l, r, p] = ST[i].family;
-        ST[i].sum = ST[i].v + ST[l].sum + ST[r].sum;
+        ST[i].sum = ST[i].value + ST[l].sum + ST[r].sum;
     }
 
     void flip(int i) {
@@ -109,11 +109,15 @@ struct LinkCutTree : SplayTree {
         ST[i].family[2] = j;
     }
 
-    void cut(int i, int j) {
-        reroot(j);
+    void cut(int i) {
         access(i);
-        ST[i].family[0] = ST[j].family[2] = 0;
+        ST[i].family[0] = ST[ST[i].family[0]].family[2] = 0;
         pull(i);
+    }
+
+    void cut(int i, int j) {
+        reroot(i);
+        cut(j);
     }
 
     long long path_sum(int i, int j) {
@@ -134,12 +138,10 @@ int main() {
 
     LinkCutTree lct(4 * Q);
     unordered_map<long long, map<long long, int>> nodes;
-    vector<long long> haze(4 * Q, 0), link(4 * Q, 0);
+    vector<long long> haze(4 * Q, 0);
+    vector<int> link(4 * Q, 0);
     vector<pair<long long, long long>> cycles(4 * Q, {0, 0});
-    auto link_nodes = [&](int i = 1, int j = 2) {
-        if (link[i]) lct.cut(i, link[i]);
-        link[i] = j;
-        lct.link(i, j);
+    auto unite = [&](int i, int j) {
         auto time = [&](int i) -> pair<int, long long> {
             auto [r, hits] = cycles[i];
             int k = hits & 1;
@@ -150,10 +152,12 @@ int main() {
 
         auto dist = (j == 2 ? m : t2) - t1 - haze[i];
         lct[i] = dist <= (k ? s1 : s2) ? 1 : min((dist + both - 1) / both * 2, (dist + both - 1 - (k ? s1 : s2)) / both * 2 + 1);
-        lct.splay(i);
+        if (link[i]) lct.cut(i, link[i]);
+        link[i] = j;
+        lct.link(i, j);
     };
     nodes[0][0] = 1;
-    link_nodes();
+    unite(1, 2);
 
     int count = 3;
     auto node = [&](int k, long long p) {
@@ -169,11 +173,11 @@ int main() {
 
         auto it1 = nodes[r].upper_bound(hits);
         int j = it1 == nodes[r].end() ? 2 : it1->second;
-        link_nodes(i, j);
+        unite(i, j);
 
         auto it2 = nodes[r].lower_bound(hits);
         int h = it2 == nodes[r].begin() ? 0 : prev(it2)->second;
-        if (h && !haze[h]) link_nodes(h, i);
+        if (h && !haze[h]) unite(h, i);
         return i;
     };
 
@@ -189,18 +193,18 @@ int main() {
             for (int k = 0; k < 2; k++) {
                 int i = node(k, p), j = node(k ^ 1, p + h + (k ? s1 : s2));
                 haze[i] = h;
-                link_nodes(i, j);
+                unite(i, j);
             }
-        } else 
+        } else
             for (int k = 0; k < 2; k++) {
                 int i = node(k, p);
                 haze[i] = 0;
                 auto [r, hits] = cycles[i];
                 auto it = nodes[r].upper_bound(hits);
                 int j = it == nodes[r].end() ? 2 : it->second;
-                link_nodes(i, j);
+                unite(i, j);
             }
-        
+
         cout << lct.path_sum(1, 2) << "\n" << flush;
     }
 }
