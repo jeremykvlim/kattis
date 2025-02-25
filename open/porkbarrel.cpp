@@ -162,10 +162,10 @@ struct LinkCutTree : SplayTree {
     LinkCutTree(int n) : SplayTree(n) {}
 
     void access(int i) {
-        for (int prev = 0, curr = i; curr; prev = curr, curr = ST[curr].family[2]) {
-            splay(curr);
-            ST[curr].family[1] = prev;
-            pull(curr);
+        for (int u = 0, v = i; v; u = v, v = ST[v].family[2]) {
+            splay(v);
+            ST[v].family[1] = u;
+            pull(v);
         }
         splay(i);
     }
@@ -199,7 +199,7 @@ struct LinkCutTree : SplayTree {
         cut(j);
     }
 
-    int query(int i, int j) {
+    int path_max_index(int i, int j) {
         reroot(i);
         access(j);
         return ST[j].i2;
@@ -237,7 +237,7 @@ int main() {
             pst.modify(i - 1 + offset[i - 1], wi, m - i + 1);
 
             if (lct.find(xi) == lct.find(yi)) {
-                int j = lct.query(xi, yi);
+                int j = lct.path_max_index(xi, yi);
 
                 auto [xj, yj, wj] = edges[j];
                 lct.cut(j + n, xj);
