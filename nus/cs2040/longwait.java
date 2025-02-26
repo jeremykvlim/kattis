@@ -35,7 +35,7 @@ public class longwait {
     static class Deque<T> {
         private T[] dq;
 
-        private int head, tail = 0;
+        private int head = 0, tail = 0;
 
         Deque() {
             dq = (T[]) new Object[8];
