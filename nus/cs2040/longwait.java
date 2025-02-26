@@ -43,19 +43,17 @@ public class longwait {
 
         Deque(int n) {
             head = tail = 0;
-            int size = 8;
-            if (n >= size) {
-                size = n;
-                size |= (size >>> 1);
-                size |= (size >>> 2);
-                size |= (size >>> 4);
-                size |= (size >>> 8);
-                size |= (size >>> 16);
-                size++;
+            if (n >= 8) {
+                n |= (n >>> 1);
+                n |= (n >>> 2);
+                n |= (n >>> 4);
+                n |= (n >>> 8);
+                n |= (n >>> 16);
+                n++;
 
-                if (size < 0) size >>>= 1;
+                if (n < 0) n >>>= 1;
             }
-            dq = (T[]) new Object[size];
+            dq = (T[]) new Object[n];
         }
 
         private void resize() {
