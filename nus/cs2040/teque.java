@@ -56,22 +56,22 @@ public class teque {
         }
 
         private void resize() {
-            int n = dq.length, r = n - head, size = n << 1;
-            var a = new Object[size];
-            System.arraycopy(dq, head, a, 0, r);
-            System.arraycopy(dq, 0, a, r, head);
+            int n = dq.length;
+            var a = new Object[n << 1];
+            System.arraycopy(dq, head, a, 0, n - head);
+            System.arraycopy(dq, 0, a, n - head, head);
             dq = (T[]) a;
             head = 0;
             tail = n;
         }
 
-        void pushFront(T e) {
-            dq[head = (head - 1) & (dq.length - 1)] = e;
+        void pushFront(T v) {
+            dq[head = (head - 1) & (dq.length - 1)] = v;
             if (head == tail) resize();
         }
 
-        void pushBack(T e) {
-            dq[tail] = e;
+        void pushBack(T v) {
+            dq[tail] = v;
             if ((tail = (tail + 1) & (dq.length - 1)) == head) resize();
         }
 
