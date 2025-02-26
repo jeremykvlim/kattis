@@ -140,7 +140,8 @@ int main() {
         auto time = [&](int i) -> pair<int, long long> {
             auto [r, hits] = cycles[i];
             int k = hits & 1;
-            return {k, (hits + k) / 2 * both + r - (k ? s1 : 0)};
+            if (k) r -= s1;
+            return {k, r + (hits + k) / 2 * both};
         };
         auto [k, t1] = time(i);
         auto [_, t2] = time(j);
