@@ -9,8 +9,8 @@ public class longwait {
         var input = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
         int q = input[0], k = input[1];
 
-        var l = new Deque<String>((int) 1e6);
-        var r = new Deque<String>((int) 1e6);
+        var l = new Deque<String>(q);
+        var r = new Deque<String>(q);
         while (q-- > 0) {
             var op = br.readLine().split(" ");
             switch (op[0]) {
