@@ -68,13 +68,13 @@ public class longwait {
             tail = n;
         }
 
-        void pushFront(T e) {
-            dq[head = (head - 1) & (dq.length - 1)] = e;
+        void pushFront(T v) {
+            dq[head = (head - 1) & (dq.length - 1)] = v;
             if (head == tail) resize();
         }
 
-        void pushBack(T e) {
-            dq[tail] = e;
+        void pushBack(T v) {
+            dq[tail] = v;
             if ((tail = (tail + 1) & (dq.length - 1)) == head) resize();
         }
 
