@@ -33,7 +33,7 @@ public class teque {
     static class Deque<T> {
         private T[] dq;
 
-        private int head, tail;
+        private int head = 0, tail = 0;
 
         Deque() {
             dq = (T[]) new Object[8];
