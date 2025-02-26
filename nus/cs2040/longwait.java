@@ -37,6 +37,10 @@ public class longwait {
 
         private int head, tail = 0;
 
+        Deque() {
+            dq = (T[]) new Object[8];
+        }
+
         Deque(int n) {
             int size = 8;
             if (n >= size) {
