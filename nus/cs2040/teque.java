@@ -17,8 +17,8 @@ public class teque {
                 case "push_back" -> r.pushBack(command[1]);
                 case "push_middle" -> {
                     int m = (l.size() + r.size() + 1) / 2;
-                    while (m < l.size()) r.pushFront(l.popBack());
-                    while (m > l.size()) l.pushBack(r.popFront());
+                    while (m < l.size() && !l.isEmpty()) r.pushFront(l.popBack());
+                    while (m > l.size() && !r.isEmpty()) l.pushBack(r.popFront());
                     l.pushBack(command[1]);
                 }
                 default -> {
