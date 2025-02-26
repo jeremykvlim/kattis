@@ -34,14 +34,15 @@ public class longwait {
 
     static class Deque<T> {
         private T[] dq;
-
-        private int head = 0, tail = 0;
+        private int head, tail;
 
         Deque() {
+            head = tail = 0;
             dq = (T[]) new Object[8];
         }
 
         Deque(int n) {
+            head = tail = 0;
             int size = 8;
             if (n >= size) {
                 size = n;
@@ -58,51 +59,41 @@ public class longwait {
         }
 
         private void resize() {
-            assert head == tail;
-            int p = head, n = dq.length, r = n - p, size = n << 1;
-            if (size < 0) throw new IllegalStateException();
-            Object[] a = new Object[size];
-            System.arraycopy(dq, p, a, 0, r);
-            System.arraycopy(dq, 0, a, r, p);
+            int n = dq.length, r = n - head, size = n << 1;
+            var a = new Object[size];
+            System.arraycopy(dq, head, a, 0, r);
+            System.arraycopy(dq, 0, a, r, head);
             dq = (T[]) a;
             head = 0;
             tail = n;
         }
 
         void pushFront(T e) {
-            if (e == null) throw new NullPointerException();
             dq[head = (head - 1) & (dq.length - 1)] = e;
             if (head == tail) resize();
         }
 
         void pushBack(T e) {
-            if (e == null) throw new NullPointerException();
             dq[tail] = e;
             if ((tail = (tail + 1) & (dq.length - 1)) == head) resize();
         }
 
         T popFront() {
-            int h = head;
-            T x = dq[h];
-            if (x == null) throw new NoSuchElementException();
-            dq[h] = null;
-            head = (h + 1) & (dq.length - 1);
-            return x;
+            T v = dq[head];
+            dq[head] = null;
+            head = (head + 1) & (dq.length - 1);
+            return v;
         }
 
         T popBack() {
-            int t = (tail - 1) & (dq.length - 1);
-            T x = dq[t];
-            if (x == null) throw new NoSuchElementException();
-            dq[t] = null;
-            tail = t;
-            return x;
+            T v = dq[(tail - 1) & (dq.length - 1)];
+            dq[(tail - 1) & (dq.length - 1)] = null;
+            tail = (tail - 1) & (dq.length - 1);
+            return v;
         }
 
         T get(int i) {
-            T x = dq[(head + i) & (dq.length - 1)];
-            if (x == null) throw new NoSuchElementException();
-            return x;
+            return dq[(head + i) & (dq.length - 1)];
         }
 
         T front() {
@@ -122,16 +113,13 @@ public class longwait {
         }
 
         void clear() {
-            int h = head, t = tail;
-            if (h != t) {
-                head = tail = 0;
-                int i = h;
-                int mask = dq.length - 1;
-                do {
-                    dq[i] = null;
-                    i = (i + 1) & mask;
-                } while (i != t);
-            }
+            if (head == tail) return;
+            int i = head, t = tail, mask = dq.length - 1;
+            head = tail = 0;
+            do {
+                dq[i] = null;
+                i = (i + 1) & mask;
+            } while (i != t);
         }
     }
 }
