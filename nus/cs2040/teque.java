@@ -35,6 +35,10 @@ public class teque {
 
         private int head, tail;
 
+        Deque() {
+            dq = (T[]) new Object[8];
+        }
+
         Deque(int n) {
             head = tail = 0;
             int size = 8;
