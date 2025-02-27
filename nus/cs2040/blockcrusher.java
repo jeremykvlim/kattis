@@ -9,58 +9,63 @@ public class blockcrusher {
         for (var line = br.readLine(); !line.equals("0 0"); line = br.readLine()) {
             var input = line.split(" ");
             int h = Integer.parseInt(input[0]), w = Integer.parseInt(input[1]);
-            var block = new char[h][w];
-            var strength = new int[h][w];
 
+            var block = new char[h][w];
+            int[][] strength = new int[h][w], prev_x = new int[h][w], prev_y = new int[h][w];
             for (int i = 0; i < h; i++) {
                 block[i] = br.readLine().toCharArray();
                 Arrays.fill(strength[i], Integer.MAX_VALUE);
+                Arrays.fill(prev_x[i], -1);
+                Arrays.fill(prev_y[i], -1);
             }
 
-            var pq = new PriorityQueue<Digit>();
-            for (int i = 0; i < w; i++)
-                pq.offer(new Digit(0, i, block[0][i] - '0', null));
+            var pq = new PriorityQueue<Triple<Integer, Integer, Integer>>();
+            for (int i = 0; i < w; i++) {
+                strength[0][i] = block[0][i] - '0';
+                pq.add(new Triple<>(strength[0][i], 0, i));
+            }
 
             int[] dx = {1, 1, 1, -1, -1, -1, 0, 0}, dy = {-1, 0, 1, -1, 0, 1, -1, 1};
-            Digit min = null;
+            int r = -1, c = -1, lowest = Integer.MAX_VALUE;
             while (!pq.isEmpty()) {
-                var v = pq.poll();
-                if (v.x == h - 1) min = (min == null) ? v : (min.strength < v.strength ? min : v);
+                var t = pq.poll();
+                int s = t.first, i = t.second, j = t.third;
 
-                for (int i = 0; i < 8; i++) {
-                    int x = v.x + dx[i], y = v.y + dy[i];
-                    if (0 <= x && x < h && 0 <= y && y < w && v.strength + block[x][y] - '0' < strength[x][y]) {
-                        strength[x][y] = v.strength + block[x][y] - '0';
-                        pq.offer(new Digit(x, y, strength[x][y], v));
+                if (i == h - 1 && lowest > s) {
+                    r = i;
+                    c = j;
+                    lowest = s;
+                }
+
+                for (int k = 0; k < 8; k++) {
+                    int x = i + dx[k], y = j + dy[k];
+                    if (0 <= x && x < h && 0 <= y && y < w && strength[x][y] > s + block[x][y] - '0') {
+                        strength[x][y] = s + block[x][y] - '0';
+                        prev_x[x][y] = i;
+                        prev_y[x][y] = j;
+                        pq.add(new Triple<>(strength[x][y], x, y));
                     }
                 }
             }
-
-            while (min != null) {
-                block[min.x][min.y] = ' ';
-                min = min.prev;
+            while (r != -1 && c != -1) {
+                block[r][c] = ' ';
+                int temp = prev_y[r][c];
+                r = prev_x[r][c];
+                c = temp;
             }
-
             Arrays.stream(block).forEach(row -> pw.println(new String(row)));
             pw.println();
         }
         pw.flush();
     }
 
-    static class Digit implements Comparable<Digit> {
-        int x, y, strength;
-        Digit prev;
-
-        Digit(int x, int y, int s, Digit d) {
-            this.x = x;
-            this.y = y;
-            strength = s;
-            prev = d;
-        }
-
+    record Triple<T extends Comparable<T>, U extends Comparable<U>, V extends Comparable<V>>(T first, U second, V third) implements Comparable<Triple<T, U, V>> {
         @Override
-        public int compareTo(Digit d) {
-            return strength - d.strength;
+        public int compareTo(Triple<T, U, V> t) {
+            int cmp = first.compareTo(t.first);
+            if (cmp != 0) return cmp;
+            cmp = second.compareTo(t.second);
+            return (cmp == 0) ? third.compareTo(t.third) : cmp;
         }
     }
 }
