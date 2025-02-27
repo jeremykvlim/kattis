@@ -47,6 +47,7 @@ public class blockcrusher {
                     }
                 }
             }
+            
             while (r != -1 && c != -1) {
                 block[r][c] = ' ';
                 int temp = prev_y[r][c];
