@@ -7,8 +7,8 @@ public class planks {
         var pw = new PrintWriter(System.out);
 
         int q = Integer.parseInt(br.readLine());
+        
         var planks = new TreeMap<Integer, TreeMap<Integer, Integer>>();
-
         while (q-- > 0) {
             var parts = br.readLine().split(" ");
             char op = parts[0].charAt(0);
