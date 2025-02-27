@@ -5,50 +5,45 @@ public class nesteddolls {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
         var pw = new PrintWriter(System.out);
+
         int t = Integer.parseInt(br.readLine());
 
         while (t-- > 0) {
             int m = Integer.parseInt(br.readLine());
 
-            var dolls = new Doll[m];
+            var dolls = new ArrayList<Pair<Integer, Integer>>(m);
             var input = br.readLine().split(" ");
-            for (int i = 0; i < m; i++) dolls[i] = new Doll(Integer.parseInt(input[2 * i]), Integer.parseInt(input[2 * i + 1]));
-            Arrays.sort(dolls);
+            for (int i = 0; i < m; i++) dolls.add(new Pair<>(Integer.parseInt(input[2 * i]), -Integer.parseInt(input[2 * i + 1])));
+            Collections.sort(dolls);
 
             var lnds = new int[m];
-            lnds[0] = dolls[0].height;
+            lnds[0] = -dolls.get(0).second;
             int len = 1;
             for (int i = 1; i < m; i++) {
-                if (dolls[i].height > lnds[0]) lnds[0] = dolls[i].height;
-                else if (dolls[i].height <= lnds[len - 1]) lnds[len++] = dolls[i].height;
+                int height = -dolls.get(i).second;
+                if (lnds[0] < height) lnds[0] = height;
+                else if (lnds[len - 1] >= height) lnds[len++] = height;
                 else {
                     int l = -1, r = len, mid;
                     while (l + 1 < r) {
                         mid = l + (r - l) / 2;
 
-                        if (lnds[mid] < dolls[i].height) r = mid;
+                        if (lnds[mid] < height) r = mid;
                         else l = mid;
                     }
-                    lnds[r] = dolls[i].height;
+                    lnds[r] = height;
                 }
             }
-
             pw.println(len);
         }
         pw.flush();
     }
 
-    static class Doll implements Comparable<Doll> {
-        int width, height;
-
-        Doll(int w, int h) {
-            width = w;
-            height = h;
-        }
-
+    record Pair<T extends Comparable<T>, U extends Comparable<U>>(T first, U second) implements Comparable<Pair<T, U>> {
         @Override
-        public int compareTo(Doll d) {
-            return width != d.width ? width - d.width : d.height - height;
+        public int compareTo(Pair<T, U> p) {
+            int cmp = first.compareTo(p.first);
+            return (cmp == 0) ? second.compareTo(p.second) : cmp;
         }
     }
 }
