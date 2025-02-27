@@ -4,65 +4,59 @@ import java.util.*;
 public class arcticnetwork {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
-        
+
         int n = Integer.parseInt(br.readLine());
         while (n-- > 0) {
             var input = br.readLine().split(" ");
             int s = Integer.parseInt(input[0]), p = Integer.parseInt(input[1]);
 
-            var outposts = new Pair[p];
+            var outposts = new ArrayList<Pair<Integer, Integer>>(p);
             for (int i = 0; i < p; i++) {
                 var line = br.readLine().split(" ");
-                outposts[i] = new Pair(Integer.parseInt(line[0]), Integer.parseInt(line[1]));
+                outposts.add(new Pair<>(Integer.parseInt(line[0]), Integer.parseInt(line[1])));
             }
 
-            var pq = new PriorityQueue<Edge>();
+            var pq = new PriorityQueue<Triple<Double, Integer, Integer>>();
             for (int i = 0; i < p; i++)
                 for (int j = i + 1; j < p; j++)
-                    pq.add(new Edge(i, j, Math.hypot(outposts[i].first - outposts[j].first, outposts[i].second - outposts[j].second)));
+                    pq.add(new Triple<>(Math.hypot(outposts.get(i).first - outposts.get(j).first, outposts.get(i).second - outposts.get(j).second), i, j));
 
             var output = 0.0;
             var visited = new boolean[p];
             var dsu = new DisjointSets(p);
             while (p > s && !pq.isEmpty()) {
                 var e = pq.poll();
-                if (!visited[e.source] || !visited[e.destination] || dsu.find(e.source) != dsu.find(e.destination)) {
+
+                if (!visited[e.second] || !visited[e.third] || dsu.find(e.second) != dsu.find(e.third)) {
+                    visited[e.second] = visited[e.third] = true;
+                    dsu.unite(e.second, e.third);
+                    output = e.first;
                     p--;
-                    visited[e.source] = visited[e.destination] = true;
-                    dsu.unite(e.source, e.destination);
-                    output = e.weight;
                 }
             }
 
             System.out.printf("%.2f\n", output);
         }
     }
-
-    static class Pair {
-        int first, second;
-
-        Pair(int f, int s) {
-            first = f;
-            second = s;
-        }
-    }
-
-    static class Edge implements Comparable<Edge>{
-        int source, destination;
-        double weight;
-
-        Edge(int src, int dest, double w) {
-            source = src;
-            destination = dest;
-            weight = w;
-        }
-
+    
+    record Pair<T extends Comparable<T>, U extends Comparable<U>>(T first, U second) implements Comparable<Pair<T, U>> {
         @Override
-        public int compareTo(Edge e) {
-            return Double.compare(weight, e.weight);
+        public int compareTo(Pair<T, U> p) {
+            int cmp = first.compareTo(p.first);
+            return (cmp == 0) ? second.compareTo(p.second) : cmp;
         }
     }
 
+    record Triple<T extends Comparable<T>, U extends Comparable<U>, V extends Comparable<V>>(T first, U second, V third) implements Comparable<Triple<T, U, V>> {
+        @Override
+        public int compareTo(Triple<T, U, V> t) {
+            int cmp = first.compareTo(t.first);
+            if (cmp != 0) return cmp;
+            cmp = second.compareTo(t.second);
+            return (cmp == 0) ? third.compareTo(t.third) : cmp;
+        }
+    }
+    
     static class DisjointSets {
         int[] sets;
 
