@@ -71,7 +71,8 @@ public class abinitio {
             do {
                 b = nextByte();
             } while (b <= ' ');
-            boolean negative = false;
+            
+            var negative = false;
             if (b == '-') {
                 negative = true;
                 b = nextByte();
