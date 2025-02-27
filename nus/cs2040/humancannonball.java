@@ -21,7 +21,7 @@ public class humancannonball {
         for (int i = 1; i < n + 1; i++)
             for (int j = 1; j < n + 2; j++)
                 adjMatrix[i][j] = Math.min(2 + Math.abs(Math.hypot(coords[i][0] - coords[j][0], coords[i][1] - coords[j][1]) - 50) / 5,
-                        Math.hypot(coords[i][0] - coords[j][0], coords[i][1] - coords[j][1]) / 5);
+                                           Math.hypot(coords[i][0] - coords[j][0], coords[i][1] - coords[j][1]) / 5);
 
         var time = new double[n + 2];
         Arrays.fill(time, Double.POSITIVE_INFINITY);
