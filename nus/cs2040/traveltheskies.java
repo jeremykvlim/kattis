@@ -4,60 +4,53 @@ import java.util.*;
 public class traveltheskies {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
-        
+
         var input = br.readLine().split(" ");
         int k = Integer.parseInt(input[0]), n = Integer.parseInt(input[1]), m = Integer.parseInt(input[2]);
 
-        var adjMatrix = new int[k + 1][n + 1];
-        var flights = new Flight[m];
+        int[] u = new int[m], v = new int[m], z = new int[m];
+        var days = new ArrayList<Pair<Integer, Integer>>(m);
         for (int i = 0; i < m; i++) {
             var line = br.readLine().split(" ");
-            int u = Integer.parseInt(line[0]), v = Integer.parseInt(line[1]), d = Integer.parseInt(line[2]), z = Integer.parseInt(line[3]);
-            flights[i] = new Flight(u, v, d, z);
+            u[i] = Integer.parseInt(line[0]);
+            v[i] = Integer.parseInt(line[1]);
+            days.add(new Pair<>(Integer.parseInt(line[2]), i));
+            z[i] = Integer.parseInt(line[3]);
         }
+        Collections.sort(days);
 
-        Arrays.sort(flights);
-
+        var adjMatrix = new int[k + 1][n + 1];
         for (int i = 0; i < k * n; i++) {
             var line = br.readLine().split(" ");
             int a = Integer.parseInt(line[0]), b = Integer.parseInt(line[1]), c = Integer.parseInt(line[2]);
             adjMatrix[a][b] += c;
         }
 
-        var people = new int[k + 1];
+        var capacity = new int[k + 1];
         for (int i = 0, prev = 1; i < m; i++) {
-            var f = flights[i];
-            if (f.d != prev) {
-                prev = f.d;
-                for (int j = 1; j < k + 1; j++)
-                    adjMatrix[j][prev] += adjMatrix[j][prev - 1] + people[j];
-                people = new int[k + 1];
+            int d = days.get(i).first, j = days.get(i).second;
+            if (prev != d) {
+                prev = d;
+                for (int l = 1; l <= k; l++) adjMatrix[l][prev] += adjMatrix[l][prev - 1] + capacity[l];
+                Arrays.fill(capacity, 0);
             }
 
-            if (adjMatrix[f.u][f.d] < f.z) {
+            if (adjMatrix[u[j]][d] < z[j]) {
                 System.out.println("suboptimal");
-                return;
-            } else {
-                people[f.v] += f.z;
-                adjMatrix[f.u][f.d] -= f.z;
+                System.exit(0);
             }
+
+            capacity[v[j]] += z[j];
+            adjMatrix[u[j]][d] -= z[j];
         }
         System.out.println("optimal");
     }
 
-    static class Flight implements Comparable<Flight> {
-        int u, v, d, z;
-
-        Flight(int source, int destination, int day, int capacity) {
-            u = source;
-            v = destination;
-            d = day;
-            z = capacity;
-        }
-
+    record Pair<T extends Comparable<T>, U extends Comparable<U>>(T first, U second) implements Comparable<Pair<T, U>> {
         @Override
-        public int compareTo(Flight f) {
-            return d - f.d;
+        public int compareTo(Pair<T, U> p) {
+            int cmp = first.compareTo(p.first);
+            return (cmp == 0) ? second.compareTo(p.second) : cmp;
         }
     }
 }
