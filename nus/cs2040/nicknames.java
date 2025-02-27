@@ -2,6 +2,19 @@ import java.io.*;
 import java.util.*;
 
 public class nicknames {
+    public static void main(String[] args) throws IOException {
+        var br = new BufferedReader(new InputStreamReader(System.in));
+        var pw = new PrintWriter(System.out);
+
+        var trie = new Trie();
+        int a = Integer.parseInt(br.readLine());
+        while (a-- > 0) trie.add(br.readLine());
+
+        int b = Integer.parseInt(br.readLine());
+        while (b-- > 0) pw.println(trie.occurrences(br.readLine()));
+        pw.flush();
+    }
+
     static class Trie {
         static class TrieNode {
             int[] next = new int[26];
@@ -16,7 +29,7 @@ public class nicknames {
         ArrayList<TrieNode> T;
 
         Trie() {
-            T = new ArrayList<>(List.of(new TrieNode()));
+            T = new ArrayList<>();
         }
 
         void add(String s) {
@@ -44,18 +57,5 @@ public class nicknames {
 
             return T.get(node).count;
         }
-    }
-
-    public static void main(String[] args) throws IOException {
-        var br = new BufferedReader(new InputStreamReader(System.in));
-        var pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
-
-        var trie = new Trie();
-        int a = Integer.parseInt(br.readLine());
-        while (a-- > 0) trie.add(br.readLine());
-
-        int b = Integer.parseInt(br.readLine());
-        while (b-- > 0) pw.println(trie.occurrences(br.readLine()));
-        pw.flush();
     }
 }
