@@ -7,7 +7,7 @@ public class planks {
         var pw = new PrintWriter(System.out);
 
         int q = Integer.parseInt(br.readLine());
-        
+
         var planks = new TreeMap<Integer, TreeMap<Integer, Integer>>();
         while (q-- > 0) {
             var parts = br.readLine().split(" ");
@@ -19,14 +19,15 @@ public class planks {
             } else if (op == 'c') {
                 int x = Integer.parseInt(parts[1]);
 
-                int[] a = plank(planks, x, true), b = plank(planks, x, false);
-                pw.println((1L + a[1] + b[1]) * (1L + Math.abs(a[0] - b[0])));
+                var a = plank(planks, x, true);
+                var b = plank(planks, x, false);
+                pw.println((1L + Math.abs(a.first - b.first)) * (1L + a.second + b.second));
             }
         }
         pw.flush();
     }
 
-    static int[] plank(TreeMap<Integer, TreeMap<Integer, Integer>> planks, int x, boolean a) {
+    static Pair<Integer, Integer> plank(TreeMap<Integer, TreeMap<Integer, Integer>> planks, int x, boolean a) {
         int l = a ? planks.floorKey(x) : planks.ceilingKey(x);
         var weights = planks.get(l);
         int w = a ? weights.firstKey() : weights.lastKey();
@@ -37,6 +38,14 @@ public class planks {
             if (weights.isEmpty()) planks.remove(l);
         } else weights.put(w, weights.get(w) - 1);
 
-        return new int[]{l, w};
+        return new Pair<>(l, w);
+    }
+
+    record Pair<T extends Comparable<T>, U extends Comparable<U>>(T first, U second) implements Comparable<Pair<T, U>> {
+        @Override
+        public int compareTo(Pair<T, U> p) {
+            int cmp = first.compareTo(p.first);
+            return (cmp == 0) ? second.compareTo(p.second) : cmp;
+        }
     }
 }
