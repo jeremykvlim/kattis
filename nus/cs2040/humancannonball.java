@@ -27,7 +27,7 @@ public class humancannonball {
         Arrays.fill(time, Double.POSITIVE_INFINITY);
         time[0] = 0;
         var pq = new PriorityQueue<Pair<Double, Integer>>();
-        pq.offer(new Pair<>(0., 0));
+        pq.add(new Pair<>(0., 0));
         while (!pq.isEmpty()) {
             var p = pq.poll();
             var d = p.first;
@@ -38,7 +38,7 @@ public class humancannonball {
             for (int u = 0; u < n + 2; u++)
                 if (time[u] > time[v] + adjMatrix[v][u]) {
                     time[u] = time[v] + adjMatrix[v][u];
-                    pq.offer(new Pair<>(time[u], u));
+                    pq.add(new Pair<>(time[u], u));
                 }
         }
         pw.format("%3f", time[n + 1]);
