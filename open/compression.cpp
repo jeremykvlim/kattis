@@ -93,7 +93,7 @@ int main() {
         }
     }
 
-    SparseTable<int> st_X(X, [](int x, int y) {return max(x, y);}), st_pos(pos, [](int x, int y) {return max(x, y);}), st_neg(neg, [](int x, int y) {return max(x, y);});
+    SparseTable<int> st_x(X, [](int x, int y) {return max(x, y);}), st_pos(pos, [](int x, int y) {return max(x, y);}), st_neg(neg, [](int x, int y) {return max(x, y);});
     vector<vector<tuple<int, long long, int>>> funcs(n + 1);
     vector<long long> dp(n + 1, 1e18);
     dp[0] = 0;
@@ -106,11 +106,11 @@ int main() {
 
         if (xl < n) {
             for (int xr = xl; xr < n;) {
-                int l = xr, r = n, m, slope = __lg(st_X.range_query(xl, xr + 1)) + 1;
+                int l = xr, r = n, m, slope = __lg(st_x.range_query(xl, xr + 1)) + 1;
                 while (l + 1 < r) {
                     m = l + (r - l) / 2;
 
-                    if (__lg(st_X.range_query(xl, m + 1)) < slope) l = m;
+                    if (__lg(st_x.range_query(xl, m + 1)) < slope) l = m;
                     else r = m;
                 }
                 xr = r;
