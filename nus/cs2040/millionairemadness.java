@@ -23,7 +23,6 @@ public class millionairemadness {
             if (bfs(mid, vault)) r = mid;
             else l = mid;
         }
-
         System.out.println(r);
     }
 
@@ -33,19 +32,20 @@ public class millionairemadness {
 
         var visited = new boolean[m][n];
         visited[0][0] = true;
-        var q = new ArrayDeque<Pair>();
-        q.add(new Pair(0, 0));
+        var q = new ArrayDeque<Pair<Integer, Integer>>();
+        q.add(new Pair<>(0, 0));
         while (!q.isEmpty()) {
-            var curr = q.poll();
+            var p = q.poll();
+            int i = p.first, j = p.second;
 
-            for (int i = 0; i < 4; i++) {
-                int x = curr.first + dx[i], y = curr.second + dy[i];
+            for (int k = 0; k < 4; k++) {
+                int x = i + dx[k], y = j + dy[k];
                 if (!(0 <= x && x < m && 0 <= y && y < n) || visited[x][y]) continue;
 
-                if (vault[x][y] - vault[curr.first][curr.second] <= len) {
+                if (vault[x][y] - vault[i][j] <= len) {
                     if (x == m - 1 && y == n - 1) return true;
                     visited[x][y] = true;
-                    q.add(new Pair(x, y));
+                    q.add(new Pair<>(x, y));
                 }
             }
         }
@@ -53,12 +53,11 @@ public class millionairemadness {
         return false;
     }
 
-    static class Pair {
-        int first, second;
-
-        Pair(int f, int s) {
-            first = f;
-            second = s;
+    record Pair<T extends Comparable<T>, U extends Comparable<U>>(T first, U second) implements Comparable<Pair<T, U>> {
+        @Override
+        public int compareTo(Pair<T, U> p) {
+            int cmp = first.compareTo(p.first);
+            return (cmp == 0) ? second.compareTo(p.second) : cmp;
         }
     }
 }
