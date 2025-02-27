@@ -9,17 +9,17 @@ public class longwait {
         var input = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
         int q = input[0], k = input[1];
 
-        var l = new Deque<String>(q);
-        var r = new Deque<String>(q);
+        var l = new ArrayDeque<String>(q);
+        var r = new ArrayDeque<String>(q);
         while (q-- > 0) {
             var op = br.readLine().split(" ");
             switch (op[0]) {
-                case "vip" -> l.pushFront(op[1]);
-                case "queue" -> r.pushBack(op[1]);
+                case "vip" -> l.addFirst(op[1]);
+                case "queue" -> r.addLast(op[1]);
                 case "member" -> {
-                    while (k < l.size() && !l.isEmpty()) r.pushFront(l.popBack());
-                    while (k > l.size() && !r.isEmpty()) l.pushBack(r.popFront());
-                    l.pushBack(op[1]);
+                    while (k < l.size() && !l.isEmpty()) r.addFirst(l.removeLast());
+                    while (k > l.size() && !r.isEmpty()) l.addLast(r.removeFirst());
+                    l.addLast(op[1]);
                 }
                 case "slower" -> k++;
                 case "faster" -> k--;
@@ -32,16 +32,16 @@ public class longwait {
         pw.flush();
     }
 
-    static class Deque<T> {
+    static class ArrayDeque<T> {
         private T[] dq;
         private int head, tail;
 
-        Deque() {
+        ArrayDeque() {
             head = tail = 0;
             dq = (T[]) new Object[8];
         }
 
-        Deque(int n) {
+        ArrayDeque(int n) {
             head = tail = 0;
             if (n >= 8) {
                 n |= (n >>> 1);
@@ -56,7 +56,7 @@ public class longwait {
             dq = (T[]) new Object[n];
         }
 
-        private void resize() {
+        private void enlarge() {
             int n = dq.length;
             var a = new Object[n << 1];
             System.arraycopy(dq, head, a, 0, n - head);
@@ -66,24 +66,24 @@ public class longwait {
             tail = n;
         }
 
-        void pushFront(T v) {
+        void addFirst(T v) {
             dq[head = (head - 1) & (dq.length - 1)] = v;
-            if (head == tail) resize();
+            if (head == tail) enlarge();
         }
 
-        void pushBack(T v) {
+        void addLast(T v) {
             dq[tail] = v;
-            if ((tail = (tail + 1) & (dq.length - 1)) == head) resize();
+            if ((tail = (tail + 1) & (dq.length - 1)) == head) enlarge();
         }
 
-        T popFront() {
+        T removeFirst() {
             T v = dq[head];
             dq[head] = null;
             head = (head + 1) & (dq.length - 1);
             return v;
         }
 
-        T popBack() {
+        T removeLast() {
             T v = dq[(tail - 1) & (dq.length - 1)];
             dq[(tail - 1) & (dq.length - 1)] = null;
             tail = (tail - 1) & (dq.length - 1);
@@ -94,11 +94,15 @@ public class longwait {
             return dq[(head + i) & (dq.length - 1)];
         }
 
-        T front() {
+        void set(int i, T v) {
+            dq[(head + i) & (dq.length - 1)] = v;
+        }
+
+        T first() {
             return dq[head];
         }
 
-        T back() {
+        T last() {
             return dq[(tail - 1) & (dq.length - 1)];
         }
 
