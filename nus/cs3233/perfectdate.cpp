@@ -22,17 +22,18 @@ int main() {
         adj_list[v - 1].emplace_back(u - 1, w);
     }
 
-    vector<int> order{0}, prev(n, -1);
-    prev[0] = 0;
-    for (int i = 0; i < n; i++) {
-        int v = order[i];
+    vector<int> order, prev(n, -1);
+    auto dfs = [&](auto &&self, int v = 0) -> void {
+        order.emplace_back(v);
         for (auto [u, w] : adj_list[v])
             if (u != prev[v]) {
                 prev[u] = v;
-                order.emplace_back(u);
+                self(self, u);
             }
-    }
-    
+    };
+    dfs(dfs);
+    prev[0] = 0;
+
     auto add = [&](auto &s1, auto s2, int w) {
         s2[3] += w * w * w * s2[0];
         s2[3] += 3 * w * w * s2[1];
