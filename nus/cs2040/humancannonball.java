@@ -4,6 +4,7 @@ import java.util.*;
 public class humancannonball {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
+        var pw = new PrintWriter(System.out);
 
         var src = Arrays.stream(br.readLine().split(" ")).mapToDouble(Double::parseDouble).toArray();
         var dest = Arrays.stream(br.readLine().split(" ")).mapToDouble(Double::parseDouble).toArray();
@@ -25,37 +26,30 @@ public class humancannonball {
         var time = new double[n + 2];
         Arrays.fill(time, Double.POSITIVE_INFINITY);
         time[0] = 0;
-        var pq = new PriorityQueue<Pair>();
-        pq.offer(new Pair(0, 0));
+        var pq = new PriorityQueue<Pair<Double, Integer>>();
+        pq.offer(new Pair<>(0., 0));
         while (!pq.isEmpty()) {
-            var v = pq.poll();
+            var p = pq.poll();
+            var d = p.first;
+            int v = p.second;
 
-            if (v.second != time[v.first]) continue;
+            if (d != time[v]) continue;
 
-            for (int u = 0; u < n + 2; u++) {
-                var d = time[v.first] + adjMatrix[v.first][u];
-                if (time[u] > d) {
-                    time[u] = d;
-                    pq.offer(new Pair(u, d));
+            for (int u = 0; u < n + 2; u++)
+                if (time[u] > time[v] + adjMatrix[v][u]) {
+                    time[u] = time[v] + adjMatrix[v][u];
+                    pq.offer(new Pair<>(time[u], u));
                 }
-            }
         }
-
-        System.out.printf("%3f", time[n + 1]);
+        pw.format("%3f", time[n + 1]);
+        pw.flush();
     }
 
-    static class Pair implements Comparable<Pair> {
-        int first;
-        double second;
-
-        public Pair(int f, double s) {
-            first = f;
-            second = s;
-        }
-
+    record Pair<T extends Comparable<T>, U extends Comparable<U>>(T first, U second) implements Comparable<Pair<T, U>> {
         @Override
-        public int compareTo(Pair p) {
-            return Double.compare(second, p.second);
+        public int compareTo(Pair<T, U> p) {
+            int cmp = first.compareTo(p.first);
+            return (cmp == 0) ? second.compareTo(p.second) : cmp;
         }
     }
 }
