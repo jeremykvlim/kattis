@@ -4,54 +4,48 @@ import java.util.*;
 public class bestrelayteam {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
+        var pw = new PrintWriter(System.out);
 
         int n = Integer.parseInt(br.readLine());
-        var runners = new Runner[n];
+        var runners = new ArrayList<Triple<Double, Double, String>>(n);
         for (int i = 0; i < n; i++) {
             var line = br.readLine().split(" ");
-            runners[i] = new Runner(line[0], Double.parseDouble(line[1]), Double.parseDouble(line[2]));
+            runners.add(new Triple<>(Double.parseDouble(line[2]), Double.parseDouble(line[1]), line[0]));
         }
-        Arrays.sort(runners);
+        Collections.sort(runners);
 
-        var fastest = Double.POSITIVE_INFINITY;
-        var best = new ArrayList<Runner>();
-        for (var r : runners) {
-            var time = 0;
-            var team = new ArrayList<Runner>();
-            time += r.first;
-            team.add(r);
+        var time = Double.POSITIVE_INFINITY;
+        var team = new ArrayList<String>();
+        for (var r1 : runners) {
+            var t = r1.second;
+            var r = new ArrayList<String>();
+            r.add(r1.third);
 
-            for (var ru : runners) {
-                if (team.size() == 4) break;
-                if (r != ru) {
-                    time += ru.second;
-                    team.add(ru);
+            for (var r2 : runners)
+                if (r1 != r2) {
+                    t += r2.first;
+                    r.add(r2.third);
+                    if (r.size() == 4) break;
                 }
-            }
 
-            if (fastest > time) {
-                fastest = time;
-                best = team;
+            if (time > t) {
+                time = t;
+                team = r;
             }
         }
 
-        System.out.println(fastest);
-        for (var r : best) System.out.println(r.name);
+        pw.println(time);
+        for (var r : team) pw.println(r);
+        pw.flush();
     }
 
-    static class Runner implements Comparable<Runner> {
-        String name;
-        double first, second;
-
-        Runner(String n, double f, double s) {
-            name = n;
-            first = f;
-            second = s;
-        }
-
+    record Triple<T extends Comparable<T>, U extends Comparable<U>, V extends Comparable<V>>(T first, U second, V third) implements Comparable<Triple<T, U, V>> {
         @Override
-        public int compareTo(Runner r) {
-            return Double.compare(second, r.second);
+        public int compareTo(Triple<T, U, V> t) {
+            int cmp = first.compareTo(t.first);
+            if (cmp != 0) return cmp;
+            cmp = second.compareTo(t.second);
+            return (cmp == 0) ? third.compareTo(t.third) : cmp;
         }
     }
 }
