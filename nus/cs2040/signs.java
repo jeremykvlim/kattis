@@ -7,32 +7,25 @@ public class signs {
         var pw = new PrintWriter(System.out);
 
         int n = Integer.parseInt(br.readLine());
-        var signs = new Sign[n];
+        var signs = new ArrayList<Triple<String, Integer, String>>(n);
         for (int i = 0; i < n; i++) {
             var sign = br.readLine();
-
-            signs[i] = ((sign.length() & 1) == 0) ? new Sign(sign.substring(sign.length() / 2 - 1, sign.length() / 2 + 1), sign, i)
-                                                  : new Sign(String.valueOf(sign.charAt(sign.length() / 2)), sign, i);
+            signs.add(((sign.length() & 1) == 0) ? new Triple<>(sign.substring(sign.length() / 2 - 1, sign.length() / 2 + 1), i, sign)
+                                                 : new Triple<>(String.valueOf(sign.charAt(sign.length() / 2)), i, sign));
         }
-        Arrays.sort(signs);
+        Collections.sort(signs);
 
-        for (var sign : signs) pw.println(sign.full);
+        for (var sign : signs) pw.println(sign.third);
         pw.flush();
     }
 
-    static class Sign implements Comparable<Sign> {
-        String middle, full;
-        int index;
-
-        Sign(String m, String f, int i) {
-            middle = m;
-            full = f;
-            index = i;
-        }
-
+    record Triple<T extends Comparable<T>, U extends Comparable<U>, V extends Comparable<V>>(T first, U second, V third) implements Comparable<Triple<T, U, V>> {
         @Override
-        public int compareTo(Sign s) {
-            return !middle.equals(s.middle) ? middle.compareTo(s.middle) : Integer.compare(index, s.index);
+        public int compareTo(Triple<T, U, V> t) {
+            int cmp = first.compareTo(t.first);
+            if (cmp != 0) return cmp;
+            cmp = second.compareTo(t.second);
+            return (cmp == 0) ? third.compareTo(t.third) : cmp;
         }
     }
 }
