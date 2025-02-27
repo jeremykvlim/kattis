@@ -4,7 +4,7 @@ import java.util.*;
 public class blockcrusher {
     public static void main(String[] args) throws IOException {
         var br = new BufferedReader(new InputStreamReader(System.in));
-        var pw = new PrintWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+        var pw = new PrintWriter(System.out);
 
         for (var line = br.readLine(); !line.equals("0 0"); line = br.readLine()) {
             var input = line.split(" ");
