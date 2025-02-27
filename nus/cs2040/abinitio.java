@@ -4,8 +4,7 @@ public class abinitio {
     static final int MODULO = (int) (1e9 + 7);
 
     public static void main(String[] args) throws Exception {
-        var io = new IO(System.in);
-        var pw = new PrintWriter(System.out);
+        var io = new IO(System.in, System.out);
 
         int v = io.nextInt(), e = io.nextInt(), q = io.nextInt();
         var adjMatrix = new int[v + q][v + q];
@@ -41,7 +40,7 @@ public class abinitio {
                 case 6 -> status[1] ^= 1;
             }
         }
-        pw.println(v);
+        io.println(v);
 
         for (int i = 0; i < v; i++) {
             long d = 0, h = 0;
@@ -50,19 +49,22 @@ public class abinitio {
                     d++;
                     h = (7 * h + j) % MODULO;
                 }
-            pw.println(d + " " + h);
+            io.println(d + " " + h);
         }
-
-        pw.flush();
+        io.flush();
     }
 
     static class IO {
-        InputStream dis;
-        byte[] buffer = new byte[1 << 17];
-        int pointer = 0;
+        InputStream in;
+        OutputStream out;
+        byte[] in_buff, out_buff;
+        int in_pointer, out_pointer;
 
-        IO(InputStream is) {
-            dis = is;
+        IO(InputStream is, OutputStream os) {
+            in = is;
+            out = os;
+            in_buff = out_buff = new byte[1 << 17];
+            in_pointer = out_pointer = 0;
         }
 
         int nextInt() throws Exception {
@@ -71,25 +73,77 @@ public class abinitio {
             do {
                 b = nextByte();
             } while (b <= ' ');
-            
+
             var negative = false;
             if (b == '-') {
                 negative = true;
                 b = nextByte();
             }
-            while (b >= '0' && b <= '9') {
+
+            while ('0' <= b && b <= '9') {
                 n = 10 * n + b - '0';
                 b = nextByte();
             }
             return (negative) ? -n : n;
         }
 
-        byte nextByte() throws Exception {
-            if (pointer == buffer.length) {
-                dis.read(buffer, 0, buffer.length);
-                pointer = 0;
+        String nextString() throws Exception {
+            var sb = new StringBuilder();
+            byte b;
+            do {
+                b = nextByte();
+            } while (b <= ' ');
+
+            while (b != ' ') {
+                sb.append((char) b);
+                b = nextByte();
             }
-            return buffer[pointer++];
+            return sb.toString();
+        }
+
+        byte nextByte() throws Exception {
+            if (in_pointer == in_buff.length) {
+                in.read(in_buff, 0, in_buff.length);
+                in_pointer = 0;
+            }
+            return in_buff[in_pointer++];
+        }
+
+        void push() throws IOException {
+            out.write(out_buff, 0, out_pointer);
+            out_pointer = 0;
+        }
+
+        void print(int v) throws IOException {
+            var s = String.valueOf(v);
+            for (int i = 0; i < s.length(); i++) {
+                if (out_pointer == out_buff.length) push();
+                out_buff[out_pointer++] = (byte) s.charAt(i);
+            }
+        }
+
+        void println(int v) throws IOException {
+            print(v);
+            if (out_pointer == out_buff.length) push();
+            out_buff[out_pointer++] = (byte) '\n';
+        }
+
+        void print(String s) throws IOException {
+            for (int i = 0; i < s.length(); i++) {
+                if (out_pointer == out_buff.length) push();
+                out_buff[out_pointer++] = (byte) s.charAt(i);
+            }
+        }
+
+        void println(String s) throws IOException {
+            print(s);
+            if (out_pointer == out_buff.length) push();
+            out_buff[out_pointer++] = (byte) '\n';
+        }
+
+        void flush() throws IOException {
+            push();
+            out.flush();
         }
     }
 }
