@@ -106,6 +106,5 @@ int main() {
 
     long long n;
     cin >> n;
-
     cout << (isprime(n) ? "YES" : "NO");
 }
