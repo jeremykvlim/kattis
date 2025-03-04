@@ -66,23 +66,18 @@ int main() {
 
         return {L1_inv, U, L2_inv};
     };
+    
+    auto M = decompose()[w - 1];
+    vector<bool> b(n);
+    for (int i = w & 1 ? 0 : n - 1; (w & 1 ? i < n : ~i); (w & 1 ? i++ : i--)) {
+        bool bi;
+        cin >> bi;
 
-    auto design = [&](bool odd) {
-        auto M = decompose()[w - 1];
-        vector<bool> b(n);
-        for (int i = odd ? 0 : n - 1; (odd ? i < n : ~i); (odd ? i++ : i--)) {
-            bool bi;
-            cin >> bi;
+        b[i] = bi;
+        bi = false;
+        for (int j = w & 1 ? 0 : i; j <= (w & 1 ? i : n - 1); j++)
+            if (M[i][j]) bi ^= b[j];
 
-            b[i] = bi;
-            bi = false;
-            for (int j = odd ? 0 : i; j <= (odd ? i : n - 1); j++)
-                if (M[i][j]) bi ^= b[j];
-
-            cout << bi << "\n" << flush;
-        }
-    };
-
-    if (w & 1) design(true);
-    else design(false);
+        cout << bi << "\n" << flush;
+    }
 }
