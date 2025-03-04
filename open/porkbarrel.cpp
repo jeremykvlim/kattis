@@ -67,9 +67,9 @@ struct SplayTree {
     struct SplayNode {
         array<int, 3> family;
         bool flip;
-        int v1, v2, i1, i2;
+        pair<int, int> base, aggregate;
 
-        SplayNode(int v = 0, int i = -1) : family{0, 0, 0}, flip(false), v1(v), v2(v), i1(i), i2(i) {}
+        SplayNode(int v = 0, int i = -1) : family{0, 0, 0}, flip(false), base({v, i}), aggregate({v, i}) {}
     };
 
     vector<SplayNode> ST;
@@ -82,18 +82,8 @@ struct SplayTree {
 
     void pull(int i) {
         if (!i) return;
-        ST[i].v2 = ST[i].v1;
-        ST[i].i2 = ST[i].i1;
-
-        auto update = [&](int c) {
-            if (ST[i].v2 < ST[c].v2) {
-                ST[i].v2 = ST[c].v2;
-                ST[i].i2 = ST[c].i2;
-            }
-        };
         auto [l, r, p] = ST[i].family;
-        update(l);
-        update(r);
+        ST[i].aggregate = max({ST[i].base, ST[l].aggregate, ST[r].aggregate});
     }
 
     void flip(int i) {
@@ -199,10 +189,10 @@ struct LinkCutTree : SplayTree {
         cut(j);
     }
 
-    int path_max_index(int i, int j) {
+    pair<int, int> path_max(int i, int j) {
         reroot(i);
         access(j);
-        return ST[j].i2;
+        return ST[j].aggregate;
     }
 };
 
@@ -237,7 +227,7 @@ int main() {
             pst.modify(i - 1 + offset[i - 1], wi, m - i + 1);
 
             if (lct.find(xi) == lct.find(yi)) {
-                int j = lct.path_max_index(xi, yi);
+                int j = lct.path_max(xi, yi).second;
 
                 auto [xj, yj, wj] = edges[j];
                 lct.cut(j + n, xj);
