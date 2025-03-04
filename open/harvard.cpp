@@ -5,7 +5,7 @@ struct Program {
     int repeats, index;
     vector<Program> loop;
 
-    Program(int r = 0) : repeats(r), index(-1) {}
+    Program(int r = 0, int i = -1) : repeats(r), index(i) {}
 };
 
 int main() {
@@ -30,8 +30,7 @@ int main() {
                 if (S[++l] != ' ') i = i * 10 + S[l++] - '0';
 
                 v = max(v, i);
-                Program child;
-                child.index = i - 1;
+                Program child(0, i - 1);
                 root.loop.emplace_back(child);
             } else {
                 int n = S[++l] - '0';
@@ -42,11 +41,10 @@ int main() {
 
                 auto child = self(self, temp, l - 1);
                 child.repeats = n;
-                root.loop.emplace_back(move(child));
+                root.loop.emplace_back(child);
             }
         }
-
-        return move(root);
+        return root;
     };
     auto root = parse(parse, 0, S.size());
 
@@ -79,13 +77,13 @@ int main() {
     }
 
     auto least = LLONG_MAX;
-    int size = 1 << v, banks = min(b - 1, v / (s / 2 + 1)) - 1;
-    vector<long long> dp1(size, 0), dp2(size, 0);
-    for (int mask = 0; mask < size; mask++)
-        if (__builtin_popcount(mask) == s) {
+    int banks = min(b - 1, v / (s / 2 + 1)) - 1;
+    vector<long long> dp1(1 << v, 0), dp2(1 << v, 0);
+    for (int m1 = 0; m1 < 1 << v; m1++)
+        if (__builtin_popcount(m1) == s) {
             for (auto &row : count) fill(row.begin(), row.end(), 0);
             R = C = -1;
-            run(run, root, mask, 1);
+            run(run, root, m1);
 
             auto curr = base + (C != -1);
             for (auto row : count) curr += accumulate(row.begin(), row.end(), 0LL);
@@ -96,27 +94,24 @@ int main() {
                 continue;
             }
 
-            int m = size + ~mask;
-            for (int k = (mask + 1) & m; k; k = ((k | mask) + 1) & m) {
-                dp1[k] = 0;
+            int m2 = ~m1 + (1 << v);
+            for (int m3 = (m1 + 1) & m2; m3; m3 = ((m3 | m1) + 1) & m2) {
+                dp1[m3] = 0;
 
-                if (__builtin_popcount(k) <= s) {
-                    int i = __builtin_ctz(k);
-                    dp2[k] = dp2[k & (k - 1)] - count[i][i];
+                if (__builtin_popcount(m3) <= s) {
+                    int i = __builtin_ctz(m3);
+                    dp2[m3] = dp2[m3 & (m3 - 1)] - count[i][i];
                     for (int j = i + 1; j < v; j++)
-                        if ((k >> j) & 1) dp2[k] -= count[i][j] + count[j][i];
+                        if ((m3 >> j) & 1) dp2[m3] -= count[i][j] + count[j][i];
 
-                    dp1[k] = dp2[k];
+                    dp1[m3] = dp2[m3];
                 }
             }
 
-            for (int h = banks, k = 1 << __lg(m); h && k && k != m; h--, k |= 1 << __lg(m - k))
-                for (int i = m; i > 0; --i &= m)
-                    for (int j = i - k; j > 0; --j &= i - k)
-                        dp1[i] = min(dp1[i], dp1[i - j] + dp2[j]);
-
-            least = min(least, curr + dp1[m]);
+            for (int _ = banks, m3 = 1 << __lg(m2); _ && m3 && m3 != m2; _--, m3 |= 1 << __lg(m2 - m3))
+                for (int m4 = m2; m4 > 0; --m4 &= m2)
+                    for (int m5 = m4 - m3; m5 > 0; --m5 &= m4 - m3) dp1[m4] = min(dp1[m4], dp1[m4 - m5] + dp2[m5]);
+            least = min(least, curr + dp1[m2]);
         }
-
     cout << least;
 }
