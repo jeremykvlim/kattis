@@ -1,14 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct Program {
-    int repeats, index;
-    vector<Program> loop;
-
-    Program(int r = 0, int i = -1) : repeats(r), index(i) {}
-};
-
-int main() {
+int main(){
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
@@ -18,54 +11,60 @@ int main() {
 
     string S;
     getline(cin, S);
-    S += ' ';
 
-    int v = 0;
-    auto parse = [&](auto &&self, int l, int r) -> Program {
-        Program root(1);
-        while (l < r) {
-            if (S[l] == ' ') l++;
-            else if (S[l] == 'V') {
-                int i = S[++l] - '0';
-                if (S[++l] != ' ') i = i * 10 + S[l++] - '0';
+    stringstream ss(S);
+    vector<string> tokens;
+    string t;
+    while (ss >> t) tokens.emplace_back(t);
 
+    vector<char> ops;
+    vector<int> repeats, indices;
+    vector<vector<int>> adj_list;
+    int pos = 0, v = 0;
+    auto parse = [&](auto &&self) -> int {
+        auto node = [&](char op, int n, int i = -1) -> int {
+            ops.emplace_back(op);
+            repeats.emplace_back(n);
+            indices.emplace_back(i);
+            adj_list.emplace_back();
+            return ops.size() - 1;
+        };
+
+        int x = node('#', 1);
+        while (pos < tokens.size() && tokens[pos] != "E")
+            if (tokens[pos][0] == 'V') {
+                int i = stoi(tokens[pos++].substr(1));
                 v = max(v, i);
-                Program child(0, i - 1);
-                root.loop.emplace_back(child);
-            } else {
-                int n = S[++l] - '0';
-                while (S[++l] != ' ') n = n * 10 + S[l] - '0';
-
-                int temp = l++;
-                for (int program = 1; program; l++) program += (S[l] == 'R') - (S[l] == 'E');
-
-                auto child = self(self, temp, l - 1);
-                child.repeats = n;
-                root.loop.emplace_back(child);
+                int y = node('V', 0, i - 1);
+                adj_list[x].emplace_back(y);
+            } else if (tokens[pos][0] == 'R') {
+                int y = node('R', stoi(tokens[pos++].substr(1))), z = self(self);
+                adj_list[x].emplace_back(y);
+                adj_list[y].emplace_back(z);
             }
-        }
-        return root;
+
+        if (pos < tokens.size() && tokens[pos] == "E") pos++;
+        return x;
     };
-    auto root = parse(parse, 0, S.size());
+    int root = parse(parse);
 
     vector<vector<long long>> count(v, vector<long long>(v, 0));
     int R = -1, C = -1;
-    auto run = [&](auto &&self, Program &curr, int mask = 0, long long reps = 1) {
-        if (curr.loop.empty()) {
-            if ((mask >> curr.index) & 1) C = -1;
-            else R = C = curr.index;
+    auto run = [&](auto &&self, int i, int mask = 0, long long reps = 1) {
+        if (ops[i] == 'V') {
+            if ((mask >> indices[i]) & 1) C = -1;
+            else R = C = indices[i];
             return;
         }
-
         int r = -1, c = -1;
-        for (auto &next : curr.loop) {
-            self(self, next, mask, reps * curr.repeats);
-            if (~C && ~r) count[r][C] += reps * curr.repeats;
+        for (int j : adj_list[i]) {
+            self(self, j, mask, reps * repeats[i]);
+            if (~C && ~r) count[r][C] += reps * repeats[i];
             if (~C) r = R;
             if (!~c) c = C;
         }
         C = c;
-        if (~c) count[R][c] += reps * (curr.repeats - 1);
+        if (~c) count[R][c] += reps * (repeats[i] - 1);
     };
     run(run, root);
 
@@ -73,7 +72,7 @@ int main() {
     for (auto row : count) base += accumulate(row.begin(), row.end(), 0LL);
     if (v <= s) {
         cout << base;
-        exit(0);
+        return 0;
     }
 
     auto least = LLONG_MAX;
