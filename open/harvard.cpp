@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int main(){
+int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
@@ -21,7 +21,7 @@ int main(){
     vector<int> repeats, indices;
     vector<vector<int>> adj_list;
     int pos = 0, v = 0;
-    auto parse = [&](auto &&self) -> int {
+    auto build = [&](auto &&self) -> int {
         auto node = [&](char op, int n, int i = -1) -> int {
             ops.emplace_back(op);
             repeats.emplace_back(n);
@@ -46,16 +46,17 @@ int main(){
         if (pos < tokens.size() && tokens[pos] == "E") pos++;
         return x;
     };
-    int root = parse(parse);
+    int root = build(build);
 
     vector<vector<long long>> count(v, vector<long long>(v, 0));
     int R = -1, C = -1;
-    auto run = [&](auto &&self, int i, int mask = 0, long long reps = 1) {
+    auto dfs = [&](auto &&self, int i, int mask = 0, long long reps = 1) {
         if (ops[i] == 'V') {
             if ((mask >> indices[i]) & 1) C = -1;
             else R = C = indices[i];
             return;
         }
+        
         int r = -1, c = -1;
         for (int j : adj_list[i]) {
             self(self, j, mask, reps * repeats[i]);
@@ -66,7 +67,7 @@ int main(){
         C = c;
         if (~c) count[R][c] += reps * (repeats[i] - 1);
     };
-    run(run, root);
+    dfs(dfs, root);
 
     auto base = 1LL;
     for (auto row : count) base += accumulate(row.begin(), row.end(), 0LL);
@@ -82,7 +83,7 @@ int main(){
         if (__builtin_popcount(m1) == s) {
             for (auto &row : count) fill(row.begin(), row.end(), 0);
             R = C = -1;
-            run(run, root, m1);
+            dfs(dfs, root, m1);
 
             auto curr = base + (C != -1);
             for (auto row : count) curr += accumulate(row.begin(), row.end(), 0LL);
