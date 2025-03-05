@@ -1,11 +1,12 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-long long hungarian(vector<vector<int>> &adj_matrix) {
+template <typename T, typename U>
+U hungarian(const vector<vector<T>> &adj_matrix, const U delta) {
     int R = adj_matrix.size(), C = adj_matrix[0].size();
 
     vector<int> r_match(R, -1), c_match(C, -1);
-    vector<long long> potential(R, 0);
+    vector<T> potential(R, 0);
     for (int c = 0; c < C; c++) {
         int r = 0;
         for (int row = 1; row < R; row++)
@@ -27,7 +28,7 @@ long long hungarian(vector<vector<int>> &adj_matrix) {
     for (int r = 0; r < R; r++) {
         if (r_match[r] != -1) continue;
 
-        vector<long long> dist(C);
+        vector<T> dist(C);
         for (int c = 0; c < C; c++) dist[c] = diff(r, c);
 
         vector<int> prev(C, r);
@@ -85,10 +86,9 @@ long long hungarian(vector<vector<int>> &adj_matrix) {
         }
     }
 
-    auto cost = 0LL;
+    U cost = 0;
     for (int r = 0; r < R; r++) cost += adj_matrix[r][r_match[r]];
-
-    return cost;
+    return cost - delta;
 }
 
 int main() {
@@ -114,7 +114,7 @@ int main() {
         for (int j = m; j < n + m - 1; j++) adj_matrix[i][j] = min(adj_matrix[i][j], diff(b[i], r));
     }
 
-    auto cost = hungarian(adj_matrix) - (int) 1e6 * (m - 1);
+    auto cost = hungarian(adj_matrix, (int) 1e6 * (m - 1));
     for (auto bi : b) cost += diff(bi, r);
     cout << cost;
 }
