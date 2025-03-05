@@ -31,7 +31,7 @@ int main() {
                 mid = l + (r - l) / 2;
 
                 auto cmp = [&](const auto &t1, const auto &t2) {
-                    for(int i = 0; i < min(t1.size(), t2.size()); i++)
+                    for (int i = 0; i < min(t1.size(), t2.size()); i++)
                         if (t1[i] != t2[i]) return height[t1[i]] < height[t2[i]];
                     return t1.size() <= t2.size();
                 };
