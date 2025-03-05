@@ -168,10 +168,10 @@ int main() {
         }
 
         if (!leftover[c].empty()) {
-            vector<vector<pair<int, long long>>> labels(s);
+            vector<vector<pair<long long, int>>> dist(s);
             priority_queue<tuple<long long, int, int>, vector<tuple<long long, int, int>>, greater<tuple<long long, int, int>>> pq;
             for (int x : leftover[c]) {
-                labels[c_indices[x]].emplace_back(x, 0);
+                dist[c_indices[x]].emplace_back(0, x);
                 pq.emplace(0, c_indices[x], x);
             }
 
@@ -179,16 +179,16 @@ int main() {
                 auto [d, v, x1] = pq.top();
                 pq.pop();
 
-                for (auto [x2, dv] : labels[v])
-                    if (x1 == x2 && d == dv) goto valid;
-
+                for (auto [dv, x2] : dist[v])
+                    if (d == dv && x1 == x2) goto valid;
                 continue;
+                
                 valid:;
                 for (auto [y, w] : adj_matrix[components[c][v]]) {
                     if (component[y] != c) continue;
 
                     int u = c_indices[y];
-                    for (auto &[x2, du] : labels[u])
+                    for (auto &[du, x2] : dist[u])
                         if (x1 == x2) {
                             if (du > d + w) {
                                 du = d + w;
@@ -197,7 +197,7 @@ int main() {
                             goto next;
                         }
 
-                    labels[u].emplace_back(x1, d + w);
+                    dist[u].emplace_back(d + w, x1);
                     pq.emplace(d + w, u, x1);
                     next:;
                 }
@@ -205,8 +205,8 @@ int main() {
 
             for (int i : c_query_indices[c]) {
                 auto [a, b] = queries[i];
-                for (auto [x1, d1] : labels[c_indices[a]])
-                    for (auto [x2, d2] : labels[c_indices[b]])
+                for (auto [d1, x1] : dist[c_indices[a]])
+                    for (auto [d2, x2] : dist[c_indices[b]])
                         if (x1 == x2) time[i] = min(time[i], d1 + d2);
             }
         }
