@@ -13,8 +13,7 @@ int main() {
     for (int i = 0; i < n; i++) {
         cin >> fences[i][0] >> fences[i][1];
 
-        fences[i][2] = i;
-        l[i] = r[i] = i;
+        fences[i][2] = l[i] = r[i] = i;
     }
     sort(fences.begin(), fences.end());
 
