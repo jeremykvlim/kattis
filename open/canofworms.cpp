@@ -50,5 +50,5 @@ int main() {
 
     vector<int> cans(n);
     for (int i = 0; i < n; i++) cans[fences[i][2]] = r[i] - l[i] + 1;
-    for (int i = 0; i < n; i++) cout << cans[i] << " ";
+    for (int c : cans) cout << c << " ";
 }
