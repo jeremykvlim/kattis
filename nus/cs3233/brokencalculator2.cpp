@@ -3,13 +3,13 @@ using namespace std;
 
 template <typename T, typename U>
 U hungarian(const vector<vector<T>> &adj_matrix, const U delta) {
-    int R = adj_matrix.size(), C = adj_matrix[0].size();
+    int n = adj_matrix.size();
 
-    vector<int> r_match(R, -1), c_match(C, -1);
-    vector<T> potential(C, 0);
-    for (int c = 0; c < C; c++) {
+    vector<int> r_match(n, -1), c_match(n, -1);
+    vector<T> potential(n, 0);
+    for (int c = 0; c < n; c++) {
         int r = 0;
-        for (int row = 1; row < R; row++)
+        for (int row = 1; row < n; row++)
             if (adj_matrix[r][c] > adj_matrix[row][c]) r = row;
 
         potential[c] = adj_matrix[r][c];
@@ -23,20 +23,20 @@ U hungarian(const vector<vector<T>> &adj_matrix, const U delta) {
         return adj_matrix[r][c] - potential[c];
     };
 
-    vector<int> cols(C);
+    vector<int> cols(n);
     iota(cols.begin(), cols.end(), 0);
-    for (int r = 0; r < R; r++) {
+    for (int r = 0; r < n; r++) {
         if (r_match[r] != -1) continue;
 
-        vector<T> dist(C);
-        for (int c = 0; c < C; c++) dist[c] = diff(r, c);
+        vector<T> dist(n);
+        for (int c = 0; c < n; c++) dist[c] = diff(r, c);
 
-        vector<int> prev(C, r);
+        vector<int> prev(n, r);
         int scanned = 0, labeled = 0, last = 0, curr;
         for (;;) {
             if (scanned == labeled) {
                 auto d = dist[cols[scanned]];
-                for (int c = scanned; c < C; c++)
+                for (int c = scanned; c < n; c++)
                     if (dist[cols[c]] <= d) {
                         if (dist[cols[c]] < d) {
                             d = dist[cols[c]];
@@ -56,7 +56,7 @@ U hungarian(const vector<vector<T>> &adj_matrix, const U delta) {
             }
 
             int c1 = cols[scanned++], r1 = c_match[c1];
-            for (int c = labeled; c < C; c++) {
+            for (int c = labeled; c < n; c++) {
                 int c2 = cols[c];
                 auto d = diff(r1, c2) - diff(r1, c1);
 
@@ -87,7 +87,7 @@ U hungarian(const vector<vector<T>> &adj_matrix, const U delta) {
     }
 
     U cost = 0;
-    for (int r = 0; r < R; r++) cost += adj_matrix[r][r_match[r]];
+    for (int r = 0; r < n; r++) cost += adj_matrix[r][r_match[r]];
     return cost - delta;
 }
 
