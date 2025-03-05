@@ -72,8 +72,8 @@ int main() {
             cin >> w;
 
             id[i] = id[v];
-            queries[id[v]].push_back({id[w], i});
-            queries[id[w]].push_back({id[v], i});
+            queries[id[v]].emplace_back(id[w], i);
+            queries[id[w]].emplace_back(id[v], i);
         }
     }
 
