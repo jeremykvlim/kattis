@@ -22,10 +22,10 @@ struct DisjointSets {
     }
 };
 
-vector<int> tarjan_lca(int n, const vector<vector<int>> &adj_list, const vector<vector<pair<int, int>>> &queries) {
+vector<int> tarjan_lca(int n, int q, const vector<vector<int>> &adj_list, const vector<vector<pair<int, int>>> &queries) {
     DisjointSets dsu(n);
     vector<bool> visited(n, false);
-    vector<int> lca(n, -1), ancestor(n, -1);
+    vector<int> lca(q, -1), ancestor(n, -1);
 
     auto dfs = [&](auto &&self, int v = 0) -> void {
         visited[v] = true;
@@ -77,7 +77,7 @@ int main() {
         }
     }
 
-    auto lca = tarjan_lca(n + 1, adj_list, queries);
+    auto lca = tarjan_lca(n + 1, n + 1, adj_list, queries);
     for (int i = 1; i <= n; i++) {
         if (~lca[i]) op[i] = depth[lca[i]];
         if (~op[i]) cout << op[i] << "\n";
