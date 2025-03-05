@@ -9,14 +9,13 @@ int main() {
     cin >> n >> m;
 
     vector<vector<int>> all(m);
-    for(int i = 0; i < m; i++) {
+    for (int i = 0; i < m; i++) {
         int k;
         cin >> k;
 
         vector<int> islands(k);
         for (int &x : islands) {
             cin >> x;
-
             x--;
         }
         sort(islands.begin(), islands.end());
