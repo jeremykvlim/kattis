@@ -26,35 +26,35 @@ int main() {
             adj_list[v - 1].emplace_back(u - 1);
         }
 
-        vector<__gnu_pbds::priority_queue<pair<long long, long long>, less<>, pairing_heap_tag>> pqs(n);
-        pqs[t - 1].push({0, 1e12});
-
         long long least, h;
-        auto eval = [&](int v = 0) -> void {
-            while (!pqs[v].empty() && (h <= 0 || h + pqs[v].top().first >= least)) {
-                auto [l, gain] = pqs[v].top();
-                pqs[v].pop();
+        auto eval = [&](__gnu_pbds::priority_queue<pair<long long, long long>, less<>, pairing_heap_tag> &pq, bool last = true) -> void {
+            while (!pq.empty() && (last || h <= 0 || h + pq.top().first >= least)) {
+                auto [l, gain] = pq.top();
+                pq.pop();
 
                 least = min(least, h + l);
                 h += gain;
             }
         };
 
-        auto dfs = [&](auto &&self, int v = 0, int prev = -1) -> void {
+        auto dfs = [&](auto &&self, int v = 0, int prev = -1) -> __gnu_pbds::priority_queue<pair<long long, long long>, less<>, pairing_heap_tag> {
+            __gnu_pbds::priority_queue<pair<long long, long long>, less<>, pairing_heap_tag> pq;
+            if (v == t - 1) pq.push({0, 1e12});
             for (int u : adj_list[v])
                 if (u != prev) {
-                    self(self, u, v);
-                    pqs[v].join(pqs[u]);
+                    auto temp = self(self, u, v);
+                    pq.join(temp);
                 }
 
             least = 0, h = hp[v];
-            eval(v);
-            if (h > 0) pqs[v].push({least, h});
+            eval(pq, false);
+            if (h > 0) pq.push({least, h});
+            return pq;
         };
-        dfs(dfs);
+        auto pq = dfs(dfs);
 
-        least = h = 0;
-        eval();
+        least = 0, h = 0;
+        eval(pq);
         cout << (least || h < (long long) 1e12 ? "trapped\n" : "escaped\n");
     }
 }
