@@ -182,7 +182,7 @@ T dist_from_point_to_line(const Point<T> &p, const Line<T> &l) {
 }
 
 template <typename T>
-T dist_between_polygons(const vector<Point<T>> &P, const vector<Point<T>> &Q){
+T dist_between_polygons(const vector<Point<T>> &P, const vector<Point<T>> &Q) {
     T dist = numeric_limits<T>::max();
     for (int i = 0; i < P.size(); i++) {
         auto a = P[i], b = P[(i + 1) % P.size()];
