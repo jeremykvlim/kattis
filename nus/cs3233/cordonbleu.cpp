@@ -6,7 +6,7 @@ U hungarian(const vector<vector<T>> &adj_matrix, const U delta) {
     int R = adj_matrix.size(), C = adj_matrix[0].size();
 
     vector<int> r_match(R, -1), c_match(C, -1);
-    vector<T> potential(R, 0);
+    vector<T> potential(C, 0);
     for (int c = 0; c < C; c++) {
         int r = 0;
         for (int row = 1; row < R; row++)
