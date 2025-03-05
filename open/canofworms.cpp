@@ -23,11 +23,7 @@ int main() {
         auto update = [&](bool rev = false) {
             stack<int> s;
             for (int i = rev ? n - 1 : 0; (rev ? ~i : i < n); (rev ? i-- : i++)) {
-                auto valid = [&](int j) {
-                    return abs(fences[i][0] - fences[j][0]) <= fences[i][1];
-                };
-
-                while (!s.empty() && valid(s.top())) {
+                while (!s.empty() && abs(fences[i][0] - fences[s.top()][0]) <= fences[i][1]) {
                     int j = s.top();
                     s.pop();
 
