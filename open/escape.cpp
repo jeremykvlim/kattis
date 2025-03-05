@@ -49,7 +49,7 @@ int main() {
 
             least = 0, h = hp[v];
             eval(v);
-            if (h >= 0) pqs[v].push({least, h});
+            if (h > 0) pqs[v].push({least, h});
         };
         dfs(dfs);
 
