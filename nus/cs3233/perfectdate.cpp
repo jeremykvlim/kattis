@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-vector<array<long long, 4>> rerooting_dp(int n, const vector<array<int, 3>> &edges) {
+auto rerooting_dp(int n, const vector<array<int, 3>> &edges) {
     vector<vector<array<int, 3>>> adj_list(n);
     for (int i = 0; i < edges.size(); i++) {
         auto [u, v, w] = edges[i];
