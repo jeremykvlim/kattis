@@ -69,7 +69,7 @@ struct SplayTree {
         bool flip;
         pair<int, int> base, aggregate;
 
-        SplayNode(int v = 0, int i = -1) : family{0, 0, 0}, flip(false), base({v, i}), aggregate({v, i}) {}
+        SplayNode(int v = 0, int i = -1) : family{0, 0, 0}, flip(false), base{v, i}, aggregate{v, i} {}
     };
 
     vector<SplayNode> ST;
