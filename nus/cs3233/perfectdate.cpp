@@ -9,13 +9,13 @@ vector<array<long long, 4>> rerooting_dp(int n, const vector<array<int, 3>> &edg
         adj_list[v].push_back({u, w, 2 * i + 1});
     }
 
-    vector<int> order, parent_edge(n, -1), parent_weight(n, 0);
+    vector<int> order;
+    vector<pair<int, int>> parent_edge(n, {-1, -1});
     auto dfs = [&](auto &&self, int v = 0) -> void {
         order.emplace_back(v);
         for (auto [u, w, i] : adj_list[v]) {
             adj_list[u].erase(remove_if(adj_list[u].begin(), adj_list[u].end(), [i, v](const auto &e) {return e[0] == v && e[2] == (i ^ 1);}), adj_list[u].end());
-            parent_edge[u] = i ^ 1;
-            parent_weight[u] = w;
+            parent_edge[u] = {i ^ 1, w};
             self(self, u);
         }
     };
@@ -55,7 +55,7 @@ vector<array<long long, 4>> rerooting_dp(int n, const vector<array<int, 3>> &edg
     for (int v : order) {
         int m = adj_list[v].size();
         vector<State> pref(m + 1), suff(m + 1, base());
-        if (~parent_edge[v]) pref[0] = ascend(down[v], parent_weight[v]);
+        if (~parent_edge[v].first) pref[0] = ascend(down[v], parent_edge[v].second);
         for (int i = 0; i < m; i++) {
             auto [u, w, _] = adj_list[v][i];
             pref[i + 1] = suff[i] = ascend(up[u], w);
@@ -70,7 +70,7 @@ vector<array<long long, 4>> rerooting_dp(int n, const vector<array<int, 3>> &edg
 
     vector<State> dp(n, base());
     for (int v = 0; v < n; v++) {
-        if (parent_edge[v] != -1) dp[v] = ascend(down[v], parent_weight[v]);
+        if (~parent_edge[v].first) dp[v] = ascend(down[v], parent_edge[v].second);
         for (auto [u, w, i] : adj_list[v]) dp[v] = add(dp[v], ascend(up[u], w));
         dp[v] = absorb(dp[v]);
     }
@@ -78,7 +78,7 @@ vector<array<long long, 4>> rerooting_dp(int n, const vector<array<int, 3>> &edg
 }
 
 
-int main() {
+int main(){
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
