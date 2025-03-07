@@ -1,6 +1,83 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+vector<array<long long, 4>> rerooting_dp(int n, const vector<array<int, 3>> &edges) {
+    vector<vector<array<int, 3>>> adj_list(n);
+    for (int i = 0; i < edges.size(); i++) {
+        auto [u, v, w] = edges[i];
+        adj_list[u].push_back({v, w, 2 * i});
+        adj_list[v].push_back({u, w, 2 * i + 1});
+    }
+
+    vector<int> order, parent_edge(n, -1), parent_weight(n, 0);
+    auto dfs = [&](auto &&self, int v = 0) -> void {
+        order.emplace_back(v);
+        for (auto [u, w, i] : adj_list[v]) {
+            adj_list[u].erase(remove_if(adj_list[u].begin(), adj_list[u].end(), [i, v](const auto &e) {return e[0] == v && e[2] == (i ^ 1);}), adj_list[u].end());
+            parent_edge[u] = i ^ 1;
+            parent_weight[u] = w;
+            self(self, u);
+        }
+    };
+    dfs(dfs);
+
+    using State = array<long long, 4>;
+    auto base = [&]() -> State {
+        return {0, 0, 0, 0};
+    };
+
+    auto absorb = [&](State s) -> State {
+        return State{s[0] + 1, s[1], s[2], s[3]};
+    };
+
+    auto add = [&](State s1, State s2) -> State {
+        return State{s1[0] + s2[0], s1[1] + s2[1], s1[2] + s2[2], s1[3] + s2[3]};
+    };
+
+    auto ascend = [&](State s, int w) -> State {
+        s[3] += w * w * w * s[0];
+        s[3] += 3 * w * w * s[1];
+        s[3] += 3 * w * s[2];
+        s[2] += 2 * s[1] * w + s[0] * w * w;
+        s[1] += w * s[0];
+        return s;
+    };
+
+    reverse(order.begin(), order.end());
+    vector<State> up(n, base());
+    for (int v : order) {
+        for (auto [u, w, i] : adj_list[v]) up[v] = add(up[v], ascend(up[u], w));
+        up[v] = absorb(up[v]);
+    }
+
+    reverse(order.begin(), order.end());
+    vector<State> down(n, base());
+    for (int v : order) {
+        int m = adj_list[v].size();
+        vector<State> pref(m + 1), suff(m + 1, base());
+        if (~parent_edge[v]) pref[0] = ascend(down[v], parent_weight[v]);
+        for (int i = 0; i < m; i++) {
+            auto [u, w, _] = adj_list[v][i];
+            pref[i + 1] = suff[i] = ascend(up[u], w);
+        }
+        for (int i = 1; i <= m; i++) pref[i] = add(pref[i - 1], pref[i]);
+        for (int i = m - 1; ~i; i--) suff[i] = add(suff[i], suff[i + 1]);
+        for (int i = 0; i < m; i++) {
+            auto [u, w, _] = adj_list[v][i];
+            down[u] = absorb(add(pref[i], suff[i + 1]));
+        }
+    }
+
+    vector<State> dp(n, base());
+    for (int v = 0; v < n; v++) {
+        if (parent_edge[v] != -1) dp[v] = ascend(down[v], parent_weight[v]);
+        for (auto [u, w, i] : adj_list[v]) dp[v] = add(dp[v], ascend(up[u], w));
+        dp[v] = absorb(dp[v]);
+    }
+    return dp;
+}
+
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -8,66 +85,14 @@ int main() {
     int n;
     cin >> n;
 
-    if (n == 1) {
-        cout << 0;
-        exit(0);
-    }
-
-    vector<vector<pair<int, int>>> adj_list(n);
-    for (int _ = 0; _ < n - 1; _++) {
-        int u, v, w;
+    vector<array<int, 3>> edges(n - 1);
+    for (auto &[u, v, w] : edges) {
         cin >> u >> v >> w;
-
-        adj_list[u - 1].emplace_back(v - 1, w);
-        adj_list[v - 1].emplace_back(u - 1, w);
-    }
-
-    vector<int> order, prev(n, -1);
-    auto dfs = [&](auto &&self, int v = 0) -> void {
-        order.emplace_back(v);
-        for (auto [u, w] : adj_list[v])
-            if (u != prev[v]) {
-                prev[u] = v;
-                self(self, u);
-            }
-    };
-    dfs(dfs);
-    prev[0] = 0;
-
-    auto add = [&](auto &s1, auto s2, int w) {
-        s2[3] += w * w * w * s2[0];
-        s2[3] += 3 * w * w * s2[1];
-        s2[3] += 3 * w * s2[2];
-        s2[2] += 2 * s2[1] * w + s2[0] * w * w;
-        s2[1] += w * s2[0];
-        for (int k = 0; k < 4; k++) s1[k] += s2[k];
-    };
-
-    vector<array<long long, 4>> dp1(n, {1, 0, 0, 0}), dp2(n);
-    for (int i = n - 1; ~i; i--) {
-        int v = order[i];
-        for (auto [u, w] : adj_list[v])
-            if (u != prev[v]) add(dp1[v], dp1[u], w);
-    }
-
-    for (int v : order) {
-        dp1[prev[v]] = dp1[v];
-        int m = adj_list[v].size();
-        vector<array<long long, 4>> states(m, {1, 0, 0, 0});
-        for (int b = __lg(m); ~b; b--) {
-            for (int i = m - 1; ~i; i--) states[i] = states[i >> 1];
-            for (int i = 0; i < m - (m & (!b)); i++) {
-                auto [u, w] = adj_list[v][i];
-                add(states[(i >> b) ^ 1], dp1[u], w);
-            }
-        }
-        dp2[v] = states[0];
-        auto [u, w] = adj_list[v][0];
-        add(dp2[v], dp1[u], w);
-        for (int i = 0; i < m; i++) dp1[adj_list[v][i].first] = states[i];
+        u--;
+        v--;
     }
 
     auto dist = LLONG_MAX;
-    for (auto [size, lin, sq, cb] : dp2) dist = min(dist, cb);
+    for (auto [size, lin, sq, cb] : rerooting_dp(n, edges)) dist = min(dist, cb);
     cout << dist * 2;
 }
