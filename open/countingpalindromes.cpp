@@ -400,6 +400,7 @@ int main() {
         cycle_weights[i] = pow(10, i, p);
         if (j > 0) cycle_weights[i] = (cycle_weights[i] + pow(10, j, p)) % p;
     }
+    
     if (n & 1)
         for (auto i = half - remaining, j = half + remaining; i <= j; i++, j--)
             if (i == j) leftover_weights.emplace_back(pow(10, i, p));
@@ -419,7 +420,7 @@ int main() {
         }
         return dp;
     };
-    vector<modint> base = process(cycle_weights), leftover = process(leftover_weights);
+    auto base = process(cycle_weights), leftover = process(leftover_weights);
 
     auto mul = [&](const vector<modint> &a, const vector<modint> &b) {
         vector<modint> c(p, 0);
