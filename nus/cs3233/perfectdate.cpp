@@ -1,8 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-auto rerooting_dp(int n, const vector<array<int, 3>> &edges) {
-    vector<vector<array<int, 3>>> adj_list(n);
+template <typename T>
+auto rerooting_dp(int n, const vector<T> &edges) {
+    vector<vector<T>> adj_list(n);
     for (int i = 0; i < edges.size(); i++) {
         auto [u, v, w] = edges[i];
         adj_list[u].push_back({v, w, 2 * i});
