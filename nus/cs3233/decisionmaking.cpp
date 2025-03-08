@@ -361,70 +361,17 @@ bool MontgomeryModInt<M>::prime_mod;
 constexpr unsigned long long MODULO = 998244353;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
-struct Trie {
-    enum ascii {
-        LOWER = 97,
-        UPPER = 65,
-        NUM = 48,
-        NA = 0
-    };
-
-    struct TrieNode {
-        vector<int> next;
-        int link;
-
-        TrieNode(int range = 26) : next(range, -1), link(-1) {}
-    };
-
-    vector<TrieNode> T;
-    ascii a;
-    int r;
-
-    Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
-
-    int add(string &s) {
-        int node = 0;
-        for (char c : s) {
-            int pos = c == 'T';
-
-            if (T[node].next[pos] == -1) {
-                T[node].next[pos] = T.size();
-                T.emplace_back(TrieNode(r));
-            }
-            node = T[node].next[pos];
-        }
-
-        return node;
+vector<int> prefix_function(const string &s) {
+    vector<int> pi(s.size());
+    for (int i = 1; i < s.size(); i++) {
+        int j = pi[i - 1];
+        while (j && s[i] != s[j]) j = pi[j - 1];
+        if (s[i] == s[j]) j++;
+        pi[i] = j;
     }
 
-    void aho_corasick() {
-        queue<int> q;
-        q.emplace(0);
-        while (!q.empty()) {
-            int v = q.front();
-            q.pop();
-
-            int l = T[v].link;
-            for (int c = 0; c < r; c++) {
-                int u = T[v].next[c];
-
-                if (u != -1) {
-                    T[u].link = (l == -1) ? 0 : T[l].next[c];
-                    q.emplace(u);
-                } else T[v].next[c] = (l == -1) ? 0 : T[l].next[c];
-            }
-        }
-        T[0].link = 0;
-    }
-
-    auto size() {
-        return T.size();
-    }
-
-    auto & operator[](int i) {
-        return T[i];
-    }
-};
+    return pi;
+}
 
 template <typename T>
 struct Matrix {
@@ -440,18 +387,10 @@ struct Matrix {
 };
 
 template <typename T>
-Matrix<T> I(int n) {
-    Matrix<T> I(n);
-    for (int i = 0; i < n; i++) I[i][i] = 1;
-
-    return I;
-}
-
-template <typename T>
-Matrix<T> rref(Matrix<T> &matrix) {
+vector<int> rref(Matrix<T> &matrix) {
     int n = matrix.r, m = matrix.c;
-    auto matrix_inv = I<T>(n);
 
+    vector<int> match(m, -1);
     int rank = 0;
     for (int c = 0; c < m && rank < n; c++) {
         int pivot = rank;
@@ -460,27 +399,21 @@ Matrix<T> rref(Matrix<T> &matrix) {
 
         if (!matrix[pivot][c]) continue;
         swap(matrix[pivot], matrix[rank]);
-        swap(matrix_inv[pivot], matrix_inv[rank]);
+        match[c] = rank;
 
         auto temp = 1 / matrix[rank][c];
-        for (int j = 0; j < m; j++) {
-            matrix[rank][j] *= temp;
-            matrix_inv[rank][j] *= temp;
-        }
+        for (int j = 0; j < m; j++) matrix[rank][j] *= temp;
 
         for (int i = 0; i < n; i++)
             if (i != rank && matrix[i][c]) {
                 temp = matrix[i][c];
-                for (int j = 0; j < m; j++) {
-                    matrix[i][j] -= temp * matrix[rank][j];
-                    matrix_inv[i][j] -= temp * matrix_inv[rank][j];
-                }
+                for (int j = 0; j < m; j++) matrix[i][j] -= temp * matrix[rank][j];
             }
 
         rank++;
     }
 
-    return matrix_inv;
+    return match;
 }
 
 int main() {
@@ -492,43 +425,35 @@ int main() {
     int n;
     cin >> n;
 
-    Trie trie(1, Trie::NA, 2);
-    unordered_map<int, int> indices;
-    for (int i = 0; i < n; i++) {
-        string s;
-        cin >> s;
+    int len = 0;
+    vector<string> s(n);
+    for (auto &si : s) {
+        cin >> si;
 
-        int node = trie.add(s);
-        if (!indices.count(node)) indices[node] = i;
-    }
-    trie.aho_corasick();
-
-    Matrix<modint> a(n), p(trie.size(), n);
-    p[0][0] = 1;
-    vector<bool> visited(trie.size(), false);
-    visited[0] = true;
-    int count = 1;
-    queue<int> q;
-    q.emplace(0);
-    while (!q.empty()) {
-        int v = q.front();
-        q.pop();
-
-        if (indices.count(v)) a[indices[v]] = p[v];
-        else {
-            int w = trie[v].next[0] ^ trie[v].next[1];
-            for (int u : trie[v].next)
-                if (!visited[u]) {
-                    if (visited[u ^ w])
-                        for (int i = 0; i < n; i++) p[u][i] = 2 * p[v][i] - p[w ^ u][i];
-                    else p[u][count++] = 1;
-
-                    visited[u] = true;
-                    q.emplace(u);
-                }
-        }
+        len += si.size();
     }
 
-    auto a_inv = rref(a);
-    for (auto v : a_inv[0]) cout << v << " ";
+    vector<modint> p2(len + 1, 1);
+    for (int i = 1; i <= len; i++) p2[i] = p2[i - 1] * 2;
+
+    auto overlaps = [&](const string &s1, const string &s2) {
+        auto s3 = s1 + "#" + s2;
+        auto pi = prefix_function(s3);
+
+        modint sum = 0;
+        for (int i = pi.back(); i; i = pi[i - 1]) sum += p2[i];
+        return sum;
+    };
+
+    Matrix<modint> A(n + 1, n + 2);
+    for (int i = 1; i <= n + 1; i++) A[0][i] = 1;
+    for (int i = 1; i <= n; i++) A[i][0] = 1;
+
+    for (int i = 1; i <= n; i++) {
+        A[i].back() = overlaps(s[i - 1], s[i - 1]);
+        for (int j = 1; j < n + 1; j++) A[i][j] = A[i].back() - overlaps(s[i - 1], s[j - 1]);
+    }
+
+    auto match = rref(A);
+    for (int i = 1; i <= n; i++) cout << (match[i] != -1 ? A[match[i]][n + 1] / A[match[i]][i] : 0) << " ";
 }
