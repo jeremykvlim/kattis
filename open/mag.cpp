@@ -1,6 +1,146 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+struct Fraction {
+    T numer, denom;
+
+    Fraction() {}
+    Fraction(T n, T d) : numer(n), denom(d) {
+        reduce();
+    }
+
+    void reduce() {
+        if (denom < 0) {
+            numer *= -1;
+            denom *= -1;
+        }
+
+        T g = __gcd(abs(numer), denom);
+        if (g) {
+            numer /= g;
+            denom /= g;
+        }
+    }
+
+    bool operator<(const Fraction &f) const {
+        return numer * f.denom < f.numer * denom;
+    }
+
+    bool operator>(const Fraction &f) const {
+        return numer * f.denom > f.numer * denom;
+    }
+
+    bool operator==(const Fraction &f) const {
+        return numer == f.numer && denom == f.denom;
+    }
+
+    bool operator!=(const Fraction &f) const {
+        return numer != f.numer || denom != f.denom;
+    }
+
+    bool operator<=(const Fraction &f) const {
+        return *this < f || *this == f;
+    }
+
+    bool operator>=(const Fraction &f) const {
+        return *this > f || *this == f;
+    }
+
+    Fraction operator+(const Fraction &f) const {
+        return {numer * f.denom + f.numer * denom, denom * f.denom};
+    }
+
+    Fraction operator+(const T &v) const {
+        return {numer + v * denom, denom};
+    }
+
+    Fraction & operator+=(const Fraction &f) {
+        numer = numer * f.denom + f.numer * denom;
+        denom *= f.denom;
+        reduce();
+        return *this;
+    }
+
+    Fraction & operator+=(const T &v) {
+        numer += v * denom;
+        reduce();
+        return *this;
+    }
+
+    Fraction operator-(const Fraction &f) const {
+        return {numer * f.denom - f.numer * denom, denom * f.denom};
+    }
+
+    Fraction operator-(const T &v) const {
+        return {numer - v * denom, denom};
+    }
+
+    Fraction & operator-=(const Fraction &f) {
+        numer = numer * f.denom - f.numer * denom;
+        denom *= f.denom;
+        reduce();
+        return *this;
+    }
+
+    Fraction & operator-=(const T &v) {
+        numer -= v * denom;
+        reduce();
+        return *this;
+    }
+
+    Fraction operator*(const Fraction &f) const {
+        return {numer * f.numer, denom * f.denom};
+    }
+
+    Fraction operator*(const T &v) const {
+        return {numer * v, denom};
+    }
+
+    Fraction & operator*=(const Fraction &f) {
+        numer *= f.numer;
+        denom *= f.denom;
+        reduce();
+        return *this;
+    }
+
+    Fraction & operator*=(const T &v) {
+        numer *= v;
+        reduce();
+        return *this;
+    }
+
+    Fraction operator/(const Fraction &f) const {
+        return {numer * f.denom, denom * f.numer};
+    }
+
+    Fraction operator/(const T &v) const {
+        return {numer, denom * v};
+    }
+
+    Fraction & operator/=(const Fraction &f) {
+        numer *= f.denom;
+        denom *= f.numer;
+        reduce();
+        return *this;
+    }
+
+    Fraction & operator/=(const T &v) {
+        denom *= v;
+        reduce();
+        return *this;
+    }
+
+    struct FractionHash {
+        size_t operator()(Fraction<T> f) const {
+            auto h = 0ULL;
+            h ^= hash<T>()(f.numer) + 0x9e3779b9 + (h << 6) + (h >> 2);
+            h ^= hash<T>()(f.denom) + 0x9e3779b9 + (h << 6) + (h >> 2);
+            return h;
+        }
+    };
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -26,7 +166,7 @@ int main() {
             dp2[i] = max(dp2[i], j);
             if (dp2[i] > dp1[i]) swap(dp1[i], dp2[i]);
         };
-        
+
         for (int u : adj_list[v])
             if (u != prev) {
                 if (first) {
@@ -44,9 +184,11 @@ int main() {
     auto p = 1LL, q = 0LL;
     for (int i = 0; i < n; i++) {
         int a = x[i], b = dp1[i] + dp2[i] + 1;
-        if ((long long) a * q < (long long) b * p) p = a, q = b;
+        if ((long long) a * q < (long long) b * p) {
+            p = a;
+            q = b;
+        }
     }
-    auto g = __gcd(p, q);
-
-    cout << p / g << "/" << q / g;
+    Fraction<long long> f(p, q);
+    cout << f.numer << "/" << f.denom;
 }
