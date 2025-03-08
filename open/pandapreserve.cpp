@@ -205,25 +205,22 @@ Point<T> non_collinear_intersection(const Line<T> &l1, const Line<T> &l2) {
 
 struct Hash {
     template <typename T>
-    static inline void combine(size_t &seed, const T &v) {
-        seed ^= Hash{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    }
-
-    template <typename ... Ts>
-    static size_t seed_value(const Ts & ... args) {
-        size_t seed = 0;
-        (combine(seed, args), ...);
-        return seed;
+    static inline void combine(size_t &h, const T &v) {
+        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
     }
 
     template <typename T>
     size_t operator()(const T &v) const {
         if constexpr (requires {tuple_size<T>::value;})
-            return apply([](const auto & ... elems) {return seed_value(elems...);}, v);
+            return apply([](const auto &...e) {
+                size_t h = 0;
+                (combine(h, e), ...);
+                return h;
+            }, v);
         else if constexpr (requires {declval<T>().begin(); declval<T>().end();} && !is_same_v<T, string>) {
-            size_t seed = 0;
-            for (const auto &e : v) combine(seed, e);
-            return seed;
+            size_t h = 0;
+            for (const auto &e : v) combine(h, e);
+            return h;
         } else return hash<T>{}(v);
     }
 };
