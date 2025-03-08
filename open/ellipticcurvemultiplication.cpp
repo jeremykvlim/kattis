@@ -464,7 +464,7 @@ struct Point {
         return *this;
     }
 
-    struct Hash {
+    struct PointHash {
         size_t operator()(Point<T> p) const {
             auto h = 0ULL;
             h ^= hash<T>()(p.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
