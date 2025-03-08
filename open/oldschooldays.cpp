@@ -376,6 +376,14 @@ struct Point {
     template <typename U>
     Point(const Point<U> &p) : x((T) p.x), y((T) p.y) {}
 
+    const auto begin() const {
+        return &x;
+    }
+
+    const auto end() const {
+        return &y + 1;
+    }
+
     Point operator-() const {
         return {-x, -y};
     }
@@ -465,15 +473,6 @@ struct Point {
         y /= v;
         return *this;
     }
-
-    struct PointHash {
-        size_t operator()(Point<T> p) const {
-            auto h = 0ULL;
-            h ^= hash<T>()(p.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            h ^= hash<T>()(p.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            return h;
-        }
-    };
 };
 
 template <typename T>

@@ -1,6 +1,28 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+struct Hash {
+    template <typename T>
+    static inline void combine(size_t &h, const T &v) {
+        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
+    }
+
+    template <typename T>
+    size_t operator()(const T &v) const {
+        if constexpr (requires {tuple_size<T>::value;})
+            return apply([](const auto &...e) {
+                size_t h = 0;
+                (combine(h, e), ...);
+                return h;
+            }, v);
+        else if constexpr (requires {declval<T>().begin(); declval<T>().end();} && !is_same_v<T, string>) {
+            size_t h = 0;
+            for (const auto &e : v) combine(h, e);
+            return h;
+        } else return hash<T>{}(v);
+    }
+};
+
 template <typename T>
 bool approximately_equal(const T &v1, const T &v2) {
     return fabs(v1 - v2) <= 1e-5;
@@ -15,6 +37,14 @@ struct Point {
 
     template <typename U>
     Point(const Point<U> &p) : x((T) p.x), y((T) p.y) {}
+
+    const auto begin() const {
+        return &x;
+    }
+
+    const auto end() const {
+        return &y + 1;
+    }
 
     Point operator-() const {
         return {-x, -y};
@@ -105,15 +135,6 @@ struct Point {
         y /= v;
         return *this;
     }
-
-    struct PointHash {
-        size_t operator()(Point<T> p) const {
-            auto h = 0ULL;
-            h ^= hash<T>()(p.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            h ^= hash<T>()(p.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            return h;
-        }
-    };
 };
 
 template <typename T>
@@ -203,28 +224,6 @@ Point<T> non_collinear_intersection(const Line<T> &l1, const Line<T> &l2) {
     return l1.a + (l1.b - l1.a) * cross(l2.a - l1.a, l2.b - l2.a) / cross(l1.b - l1.a, l2.b - l2.a);
 }
 
-struct Hash {
-    template <typename T>
-    static inline void combine(size_t &h, const T &v) {
-        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
-    }
-
-    template <typename T>
-    size_t operator()(const T &v) const {
-        if constexpr (requires {tuple_size<T>::value;})
-            return apply([](const auto &...e) {
-                size_t h = 0;
-                (combine(h, e), ...);
-                return h;
-            }, v);
-        else if constexpr (requires {declval<T>().begin(); declval<T>().end();} && !is_same_v<T, string>) {
-            size_t h = 0;
-            for (const auto &e : v) combine(h, e);
-            return h;
-        } else return hash<T>{}(v);
-    }
-};
-
 template <typename T>
 struct VoronoiDiagram {
     int n;
@@ -256,7 +255,7 @@ struct VoronoiDiagram {
     }
 
     void delaunay_triangulation(vector<Point<T>> p) {
-        unordered_map<Point<T>, int, typename Point<T>::PointHash> indices;
+        unordered_map<Point<T>, int, Hash> indices;
         for (int i = 0; i < p.size(); i++) indices[p[i]] = i;
         sort(p.begin(), p.end());
 

@@ -1,6 +1,28 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+struct Hash {
+    template <typename T>
+    static inline void combine(size_t &h, const T &v) {
+        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
+    }
+
+    template <typename T>
+    size_t operator()(const T &v) const {
+        if constexpr (requires {tuple_size<T>::value;})
+            return apply([](const auto &...e) {
+                size_t h = 0;
+                (combine(h, e), ...);
+                return h;
+            }, v);
+        else if constexpr (requires {declval<T>().begin(); declval<T>().end();} && !is_same_v<T, string>) {
+            size_t h = 0;
+            for (const auto &e : v) combine(h, e);
+            return h;
+        } else return hash<T>{}(v);
+    }
+};
+
 template <typename T>
 bool approximately_equal(const T &v1, const T &v2) {
     return fabs(v1 - v2) <= 1e-5;
@@ -15,6 +37,14 @@ struct Point {
 
     template <typename U>
     Point(const Point<U> &p) : x((T) p.x), y((T) p.y) {}
+
+    const auto begin() const {
+        return &x;
+    }
+
+    const auto end() const {
+        return &y + 1;
+    }
 
     Point operator-() const {
         return {-x, -y};
@@ -105,15 +135,6 @@ struct Point {
         y /= v;
         return *this;
     }
-
-    struct PointHash {
-        size_t operator()(Point<T> p) const {
-            auto h = 0ULL;
-            h ^= hash<T>()(p.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            h ^= hash<T>()(p.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            return h;
-        }
-    };
 };
 
 Point<int> tile(int l, int m, int n) {
@@ -195,8 +216,8 @@ int main() {
         for (int i : order) {
             auto s = tile(connect[i].x, m, n), d = tile(connect[i].y, m, n);
 
-            unordered_map<Point<int>, Point<int>, Point<int>::PointHash> prev;
-            unordered_map<Point<int>, int, Point<int>::PointHash> dist;
+            unordered_map<Point<int>, Point<int>, Hash> prev;
+            unordered_map<Point<int>, int, Hash> dist;
             dist[s] = 0;
             stack<Point<int>> st;
             st.emplace(s);
