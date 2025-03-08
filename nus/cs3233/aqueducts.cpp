@@ -112,7 +112,7 @@ struct Point3D {
         return *this;
     }
 
-    struct Hash {
+    struct Point3DHash {
         size_t operator()(Point3D<T> p) const {
             auto h = 0ULL;
             h ^= hash<T>()(p.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
