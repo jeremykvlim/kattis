@@ -106,7 +106,7 @@ struct Point {
         return *this;
     }
 
-    struct Hash {
+    struct PointHash {
         size_t operator()(Point<T> p) const {
             auto h = 0ULL;
             h ^= hash<T>()(p.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
@@ -135,7 +135,7 @@ int main() {
     auto move = [&](bool flip) {
         Point<int> curr{0, 0};
         int curr_k = 0;
-        unordered_set<Point<int>, Point<int>::Hash> visited;
+        unordered_set<Point<int>, Point<int>::PointHash> visited;
         visited.emplace(curr);
 
         vector<int> dx{1, 0, -1, 0}, dy{0, 1, 0, -1};
