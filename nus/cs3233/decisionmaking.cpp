@@ -446,12 +446,12 @@ int main() {
     };
 
     Matrix<modint> A(n + 1, n + 2);
-    for (int i = 1; i <= n + 1; i++) A[0][i] = 1;
-    for (int i = 1; i <= n; i++) A[i][0] = 1;
+    for (int i = 1; i <= n; i++) A[0][i] = A[i][0] = 1;
+    A[0][n + 1] = 1;
 
     for (int i = 1; i <= n; i++) {
         A[i].back() = overlaps(s[i - 1], s[i - 1]);
-        for (int j = 1; j < n + 1; j++) A[i][j] = A[i].back() - overlaps(s[i - 1], s[j - 1]);
+        for (int j = 1; j <= n; j++) A[i][j] = A[i].back() - overlaps(s[i - 1], s[j - 1]);
     }
 
     auto match = rref(A);
