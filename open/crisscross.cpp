@@ -1,42 +1,83 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T>
-struct Fraction {
-    T numer, denom;
+struct Hash {
+    template <typename T>
+    static inline void combine(size_t &seed, const T &v) {
+        seed ^= Hash{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
 
-    Fraction() {}
-    Fraction(T n, T d) : numer(n), denom(d) {
+    template <typename ... Ts>
+    static size_t seed_value(const Ts & ... args) {
+        size_t seed = 0;
+        (combine(seed, args), ...);
+        return seed;
+    }
+
+    template <typename T>
+    size_t operator()(const T &v) const {
+        if constexpr (requires {tuple_size<T>::value;})
+            return apply([](const auto & ... elems) {return seed_value(elems...);}, v);
+        else if constexpr (requires {declval<T>().begin(); declval<T>().end();} && !is_same_v<T, string>) {
+            size_t seed = 0;
+            for (const auto &e : v) combine(seed, e);
+            return seed;
+        } else return hash<T>{}(v);
+    }
+};
+
+template <typename T>
+struct Fraction : array<T, 2> {
+    using F = array<T, 2>;
+
+    Fraction() = default;
+    Fraction(T n, T d) : F{n, d} {
         reduce();
     }
 
+    T & numer() {
+        return (*this)[0];
+    }
+
+    T & denom() {
+        return (*this)[1];
+    }
+
+    const T & numer() const {
+        return (*this)[0];
+    }
+
+    const T & denom() const {
+        return (*this)[1];
+    }
+
     void reduce() {
-        if (denom < 0) {
-            numer *= -1;
-            denom *= -1;
+        if (denom() < 0) {
+            numer() *= -1;
+            denom() *= -1;
         }
 
-        T g = __gcd(abs(numer), denom);
+        T g = __gcd(abs(numer()), denom());
         if (g) {
-            numer /= g;
-            denom /= g;
+            numer() /= g;
+            denom() /= g;
         }
     }
 
     bool operator<(const Fraction &f) const {
-        return numer * f.denom < f.numer * denom;
+        return numer() * f.denom() < f.numer() * denom();
     }
 
     bool operator>(const Fraction &f) const {
-        return numer * f.denom > f.numer * denom;
+        return numer() * f.denom() > f.numer() * denom();
     }
 
     bool operator==(const Fraction &f) const {
-        return numer == f.numer && denom == f.denom;
+        return numer() == f.numer() && denom() == f.denom();
     }
 
     bool operator!=(const Fraction &f) const {
-        return numer != f.numer || denom != f.denom;
+        return numer() != f.numer() || denom() != f.denom();
     }
 
     bool operator<=(const Fraction &f) const {
@@ -48,97 +89,88 @@ struct Fraction {
     }
 
     Fraction operator+(const Fraction &f) const {
-        return {numer * f.denom + f.numer * denom, denom * f.denom};
+        return {numer() * f.denom() + f.numer() * denom(), denom() * f.denom()};
     }
 
     Fraction operator+(const T &v) const {
-        return {numer + v * denom, denom};
+        return {numer() + v * denom(), denom()};
     }
 
     Fraction & operator+=(const Fraction &f) {
-        numer = numer * f.denom + f.numer * denom;
-        denom *= f.denom;
+        numer() = numer() * f.denom() + f.numer() * denom();
+        denom() *= f.denom();
         reduce();
         return *this;
     }
 
     Fraction & operator+=(const T &v) {
-        numer += v * denom;
+        numer() += v * denom();
         reduce();
         return *this;
     }
 
     Fraction operator-(const Fraction &f) const {
-        return {numer * f.denom - f.numer * denom, denom * f.denom};
+        return {numer() * f.denom() - f.numer() * denom(), denom() * f.denom()};
     }
 
     Fraction operator-(const T &v) const {
-        return {numer - v * denom, denom};
+        return {numer() - v * denom(), denom()};
     }
 
     Fraction & operator-=(const Fraction &f) {
-        numer = numer * f.denom - f.numer * denom;
-        denom *= f.denom;
+        numer() = numer() * f.denom() - f.numer() * denom();
+        denom() *= f.denom();
         reduce();
         return *this;
     }
 
     Fraction & operator-=(const T &v) {
-        numer -= v * denom;
+        numer() -= v * denom();
         reduce();
         return *this;
     }
 
     Fraction operator*(const Fraction &f) const {
-        return {numer * f.numer, denom * f.denom};
+        return {numer() * f.numer(), denom() * f.denom()};
     }
 
     Fraction operator*(const T &v) const {
-        return {numer * v, denom};
+        return {numer() * v, denom()};
     }
 
     Fraction & operator*=(const Fraction &f) {
-        numer *= f.numer;
-        denom *= f.denom;
+        numer() *= f.numer();
+        denom() *= f.denom();
         reduce();
         return *this;
     }
 
     Fraction & operator*=(const T &v) {
-        numer *= v;
+        numer() *= v;
         reduce();
         return *this;
     }
 
     Fraction operator/(const Fraction &f) const {
-        return {numer * f.denom, denom * f.numer};
+        return {numer() * f.denom(), denom() * f.numer()};
     }
 
     Fraction operator/(const T &v) const {
-        return {numer, denom * v};
+        return {numer(), denom() * v};
     }
 
     Fraction & operator/=(const Fraction &f) {
-        numer *= f.denom;
-        denom *= f.numer;
+        numer() *= f.denom();
+        denom() *= f.numer();
         reduce();
         return *this;
     }
 
     Fraction & operator/=(const T &v) {
-        denom *= v;
+        denom() *= v;
         reduce();
         return *this;
     }
-
-    struct FractionHash {
-        size_t operator()(Fraction<T> f) const {
-            auto h = 0ULL;
-            h ^= hash<T>()(f.numer) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            h ^= hash<T>()(f.denom) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            return h;
-        }
-    };
 };
 
 template <typename T>
@@ -245,15 +277,6 @@ struct Point {
         y /= v;
         return *this;
     }
-
-    struct PointHash {
-        size_t operator()(Point<T> p) const {
-            auto h = 0ULL;
-            h ^= hash<T>()(p.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            h ^= hash<T>()(p.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            return h;
-        }
-    };
 };
 
 template <typename T>
@@ -325,7 +348,7 @@ int main() {
     vector<Line<long double>> lines(n);
     for (auto &[a, b] : lines) cin >> a.x >> a.y >> b.x >> b.y;
 
-    set<pair<Fraction<long long>, Fraction<long long>>> points;
+    unordered_set<pair<Fraction<long long>, Fraction<long long>>, Hash> points;
     for (int i = 0; i < n; i++)
         for (int j = i + 1; j < n; j++) {
             auto l1 = lines[i], l2 = lines[j];
