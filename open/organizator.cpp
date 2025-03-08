@@ -1,13 +1,5 @@
 #include <bits/stdc++.h>
-#include <ext/pb_ds/assoc_container.hpp>
 using namespace std;
-using namespace __gnu_pbds;
-
-struct Hash {
-    size_t operator()(const int &i) const {
-        return 0ULL ^ (i + 0x9e3779b9 + (i << 6) + (i >> 2));
-    }
-};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -16,22 +8,21 @@ int main() {
     int n;
     cin >> n;
 
-    gp_hash_table<int, int, Hash> members;
-    int biggest = 0;
-    while (n--) {
+    int most = 0;
+    vector<int> count(2e6 + 1, 0);
+    for (int _ = 0; _ < n; _++) {
         int m;
         cin >> m;
 
-        members[m]++;
-        biggest = max(biggest, m);
+        most = max(most, m);
+        count[m]++;
     }
 
-    auto finalists = -1LL;
-    for (int i = 1; i <= biggest; i++) {
-        auto curr = 0LL;
-        for (int j = i; j <= biggest; j += i) curr += members[j];
-        if (curr > 1) finalists = max(finalists, curr * i);
+    long long finalists = n;
+    for (int i = 2; i <= most; i++) {
+        auto c = 0LL;
+        for (int j = i; j <= most; j += i) c += count[j];
+        if (c >= 2) finalists = max(finalists, i * c);
     }
-
     cout << finalists;
 }

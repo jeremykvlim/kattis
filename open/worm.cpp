@@ -1,13 +1,5 @@
 #include <bits/stdc++.h>
-#include <ext/pb_ds/assoc_container.hpp>
 using namespace std;
-using namespace __gnu_pbds;
-
-struct Hash {
-    size_t operator()(const int &i) const {
-        return 0ULL ^ (i + 0x9e3779b9 + (i << 6) + (i >> 2));
-    }
-};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -16,7 +8,7 @@ int main() {
     int n, m, k, q;
     cin >> n >> m >> k >> q;
 
-    gp_hash_table<int, int, Hash> H;
+    unordered_map<int, int> H;
     auto query = [&](int x, int y = 0, int z = 0) {
         if (!(0 <= x && x < n && 0 <= y && y < m && 0 <= z && z < k)) return 0;
 

@@ -27,25 +27,27 @@ struct DisjointSets {
 };
 
 struct Hash {
-    size_t operator()(pair<int, int> p) const {
-        auto h = hash<int>()(p.first);
-        h ^= hash<int>()(p.second) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        return h;
+    template <typename T>
+    static inline void combine(size_t &seed, const T &v) {
+        seed ^= Hash{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
 
-    size_t operator()(array<int, 3> a) const {
-        auto h = hash<int>()(a[0]);
-        h ^= hash<int>()(a[1]) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        h ^= hash<int>()(a[2]) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        return h;
+    template <typename ... Ts>
+    static size_t seed_value(const Ts & ... args) {
+        size_t seed = 0;
+        (combine(seed, args), ...);
+        return seed;
     }
 
-    size_t operator()(array<int, 4> a) const {
-        auto h = hash<int>()(a[0]);
-        h ^= hash<int>()(a[1]) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        h ^= hash<int>()(a[2]) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        h ^= hash<int>()(a[3]) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        return h;
+    template <typename T>
+    size_t operator()(const T &v) const {
+        if constexpr (requires {tuple_size<T>::value;})
+            return apply([](const auto & ... elems) {return seed_value(elems...);}, v);
+        else if constexpr (requires {declval<T>().begin(); declval<T>().end();} && !is_same_v<T, string>) {
+            size_t seed = 0;
+            for (const auto &e : v) combine(seed, e);
+            return seed;
+        } else return hash<T>{}(v);
     }
 };
 

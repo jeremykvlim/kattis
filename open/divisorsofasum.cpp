@@ -1,13 +1,5 @@
 #include <bits/stdc++.h>
-#include <ext/pb_ds/assoc_container.hpp>
 using namespace std;
-using namespace __gnu_pbds;
-
-struct Hash {
-    size_t operator()(const int &i) const {
-        return 0ULL ^ (i + 0x9e3779b9 + (i << 6) + (i >> 2));
-    }
-};
 
 template <typename T, typename U, typename V>
 T mul(U x, V y, T mod) {
@@ -137,8 +129,8 @@ T brent(T n) {
 }
 
 template <typename T>
-gp_hash_table<T, int, Hash> factorize(T n) {
-    gp_hash_table<T, int, Hash> pfs;
+unordered_map<T, int> factorize(T n) {
+    unordered_map<T, int> pfs;
 
     auto dfs = [&](auto &&self, T m) -> void {
         if (m < 2) return;

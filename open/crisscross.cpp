@@ -131,7 +131,7 @@ struct Fraction {
         return *this;
     }
 
-    struct Hash {
+    struct FractionHash {
         size_t operator()(Fraction<T> f) const {
             auto h = 0ULL;
             h ^= hash<T>()(f.numer) + 0x9e3779b9 + (h << 6) + (h >> 2);
@@ -139,18 +139,6 @@ struct Fraction {
             return h;
         }
     };
-};
-
-struct Hash {
-    size_t operator()(pair<Fraction<long long>, Fraction<long long>> p) const {
-        auto [f1, f2] = p;
-        auto h = 0ULL;
-        for (auto f : {f1, f2}) {
-            h ^= hash<long long>()(f.numer) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            h ^= hash<long long>()(f.denom) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        }
-        return h;
-    }
 };
 
 template <typename T>
@@ -337,7 +325,7 @@ int main() {
     vector<Line<long double>> lines(n);
     for (auto &[a, b] : lines) cin >> a.x >> a.y >> b.x >> b.y;
 
-    unordered_set<pair<Fraction<long long>, Fraction<long long>>, Hash> points;
+    set<pair<Fraction<long long>, Fraction<long long>>> points;
     for (int i = 0; i < n; i++)
         for (int j = i + 1; j < n; j++) {
             auto l1 = lines[i], l2 = lines[j];

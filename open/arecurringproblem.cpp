@@ -2,11 +2,27 @@
 using namespace std;
 
 struct Hash {
-    size_t operator()(const pair<vector<long long>, vector<long long>> &p) const {
-        auto h1 = 0ULL, h2 = 0ULL;
-        for (auto e : p.first) h1 ^= e + 0x9e3779b9 + (h1 << 6) + (h1 >> 2);
-        for (auto e : p.second) h2 ^= e + 0x9e3779b9 + (h2 << 6) + (h2 >> 2);
-        return h1 + h2;
+    template <typename T>
+    static inline void combine(size_t &seed, const T &v) {
+        seed ^= Hash{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+
+    template <typename ... Ts>
+    static size_t seed_value(const Ts & ... args) {
+        size_t seed = 0;
+        (combine(seed, args), ...);
+        return seed;
+    }
+
+    template <typename T>
+    size_t operator()(const T &v) const {
+        if constexpr (requires {tuple_size<T>::value;})
+            return apply([](const auto & ... elems) {return seed_value(elems...);}, v);
+        else if constexpr (requires {declval<T>().begin(); declval<T>().end();} && !is_same_v<T, string>) {
+            size_t seed = 0;
+            for (const auto &e : v) combine(seed, e);
+            return seed;
+        } else return hash<T>{}(v);
     }
 };
 

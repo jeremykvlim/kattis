@@ -1,15 +1,7 @@
 #include <bits/stdc++.h>
-#include <ext/pb_ds/assoc_container.hpp>
 using namespace std;
-using namespace __gnu_pbds;
 
 const int fixed_point = 9375000;
-
-struct Hash {
-    size_t operator()(const int &i) const {
-        return 0ULL ^ (i + 0x9e3779b9 + (i << 6) + (i >> 2));
-    }
-};
 
 template <typename T, typename U, typename V>
 T mul(U x, V y, T mod) {
@@ -44,7 +36,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -140,7 +132,7 @@ T brent(T n) {
 
 template <typename T>
 vector<pair<T, int>> factorize(T n) {
-    gp_hash_table<T, int, Hash> pfs;
+    unordered_map<T, int> pfs;
 
     auto dfs = [&](auto &&self, T m) -> void {
         if (m < 2) return;
@@ -193,7 +185,7 @@ pair<T, T> fib(U n, T mod = 1) {
     }
 }
 
-int pisano_period(int p, gp_hash_table<int, int, Hash> &cache) {
+int pisano_period(int p, unordered_map<int, int> &cache) {
     if (cache[p]) return cache[p];
 
     auto pfs = factorize(p);
@@ -230,9 +222,9 @@ int main() {
     int t;
     cin >> t;
 
-    gp_hash_table<int, int, Hash> cache, seq_indices, visited;
-    gp_hash_table<int, gp_hash_table<long long, pair<int, int>, Hash>, Hash> cycle_members;
-    gp_hash_table<int, vector<vector<long long>>, Hash> cycles;
+    unordered_map<int, int> cache, seq_indices, visited;
+    unordered_map<int, unordered_map<long long, pair<int, int>>> cycle_members;
+    unordered_map<int, vector<vector<long long>>> cycles;
     while (t--) {
         long long n, k;
         int p;
