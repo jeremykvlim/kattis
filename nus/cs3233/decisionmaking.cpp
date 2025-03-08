@@ -361,18 +361,6 @@ bool MontgomeryModInt<M>::prime_mod;
 constexpr unsigned long long MODULO = 998244353;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
-vector<int> prefix_function(const string &s) {
-    vector<int> pi(s.size());
-    for (int i = 1; i < s.size(); i++) {
-        int j = pi[i - 1];
-        while (j && s[i] != s[j]) j = pi[j - 1];
-        if (s[i] == s[j]) j++;
-        pi[i] = j;
-    }
-
-    return pi;
-}
-
 template <typename T>
 struct Matrix {
     int r, c;
@@ -414,6 +402,18 @@ vector<int> rref(Matrix<T> &matrix) {
     }
 
     return match;
+}
+
+vector<int> prefix_function(const string &s) {
+    vector<int> pi(s.size());
+    for (int i = 1; i < s.size(); i++) {
+        int j = pi[i - 1];
+        while (j && s[i] != s[j]) j = pi[j - 1];
+        if (s[i] == s[j]) j++;
+        pi[i] = j;
+    }
+
+    return pi;
 }
 
 int main() {
