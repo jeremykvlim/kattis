@@ -3,14 +3,6 @@
 using namespace std;
 using namespace __gnu_pbds;
 
-enum State {
-    UNVISITED = 0,
-    VISITED = 1,
-    PATH = 2,
-    LOOP1 = 3,
-    LOOP2 = 4
-};
-
 struct Hash {
     template <typename T>
     static inline void combine(size_t &seed, const T &v) {
@@ -50,6 +42,14 @@ int main() {
     vector<vector<tuple<int, int, int, int, bool>>> adj_list(1e6);
     gp_hash_table<vector<int>, int, Hash> cache;
     auto jump = [&](int v) -> void {
+        enum State {
+            UNVISITED = 0,
+            VISITED = 1,
+            PATH = 2,
+            LOOP1 = 3,
+            LOOP2 = 4
+        };
+
         int w = v;
         vector<int> states;
         while (w) {
@@ -70,7 +70,7 @@ int main() {
 
         auto encode = [&](vector<int> states) {
             if (cache.find(states) != cache.end()) return cache[states];
-            
+
             gp_hash_table<int, int> indices;
             vector<pair<int, int>> matches;
             for (int i = 0; i < states.size(); i++)
