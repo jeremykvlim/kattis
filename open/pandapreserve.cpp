@@ -106,7 +106,7 @@ struct Point {
         return *this;
     }
 
-    struct Hash {
+    struct PointHash {
         size_t operator()(Point<T> p) const {
             auto h = 0ULL;
             h ^= hash<T>()(p.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
@@ -204,10 +204,26 @@ Point<T> non_collinear_intersection(const Line<T> &l1, const Line<T> &l2) {
 }
 
 struct Hash {
-    size_t operator()(pair<int, int> p) const {
-        auto h = hash<int>()(p.first);
-        h ^= hash<int>()(p.second) + 0x9e3779b9 + (h << 6) + (h >> 2);
-        return h;
+    template <typename T>
+    static inline void combine(size_t &seed, const T &v) {
+        seed ^= hash<T>{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+
+    template <typename ... T>
+    static size_t seed_value(const T &... args) {
+        size_t seed = 0;
+        (combine(seed, args), ...);
+        return seed;
+    }
+
+    template <typename T>
+    size_t operator()(const T &v) const {
+        if constexpr (requires {tuple_size<T>::value;}) return apply([](const auto & ... e) {return seed_value(e...);}, v);
+        else if constexpr (requires {v.begin(); v.end();} && !is_same_v<T, string>) {
+            size_t seed = 0;
+            for (const auto &e : v) combine(seed, e);
+            return seed;
+        } else return hash<T>{}(v);
     }
 };
 
@@ -242,7 +258,7 @@ struct VoronoiDiagram {
     }
 
     void delaunay_triangulation(vector<Point<T>> p) {
-        unordered_map<Point<T>, int, typename Point<T>::Hash> indices;
+        unordered_map<Point<T>, int, typename Point<T>::PointHash> indices;
         for (int i = 0; i < p.size(); i++) indices[p[i]] = i;
         sort(p.begin(), p.end());
 
