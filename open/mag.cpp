@@ -2,41 +2,57 @@
 using namespace std;
 
 template <typename T>
-struct Fraction {
-    T numer, denom;
+struct Fraction : array<T, 2> {
+    using F = array<T, 2>;
 
-    Fraction() {}
-    Fraction(T n, T d) : numer(n), denom(d) {
+    Fraction() = default;
+    Fraction(T n, T d) : F{n, d} {
         reduce();
     }
 
+    T & numer() {
+        return (*this)[0];
+    }
+
+    T & denom() {
+        return (*this)[1];
+    }
+
+    const T & numer() const {
+        return (*this)[0];
+    }
+
+    const T & denom() const {
+        return (*this)[1];
+    }
+
     void reduce() {
-        if (denom < 0) {
-            numer *= -1;
-            denom *= -1;
+        if (denom() < 0) {
+            numer() *= -1;
+            denom() *= -1;
         }
 
-        T g = __gcd(abs(numer), denom);
+        T g = __gcd(abs(numer()), denom());
         if (g) {
-            numer /= g;
-            denom /= g;
+            numer() /= g;
+            denom() /= g;
         }
     }
 
     bool operator<(const Fraction &f) const {
-        return numer * f.denom < f.numer * denom;
+        return numer() * f.denom() < f.numer() * denom();
     }
 
     bool operator>(const Fraction &f) const {
-        return numer * f.denom > f.numer * denom;
+        return numer() * f.denom() > f.numer() * denom();
     }
 
     bool operator==(const Fraction &f) const {
-        return numer == f.numer && denom == f.denom;
+        return numer() == f.numer() && denom() == f.denom();
     }
 
     bool operator!=(const Fraction &f) const {
-        return numer != f.numer || denom != f.denom;
+        return numer() != f.numer() || denom() != f.denom();
     }
 
     bool operator<=(const Fraction &f) const {
@@ -48,97 +64,88 @@ struct Fraction {
     }
 
     Fraction operator+(const Fraction &f) const {
-        return {numer * f.denom + f.numer * denom, denom * f.denom};
+        return {numer() * f.denom() + f.numer() * denom(), denom() * f.denom()};
     }
 
     Fraction operator+(const T &v) const {
-        return {numer + v * denom, denom};
+        return {numer() + v * denom(), denom()};
     }
 
     Fraction & operator+=(const Fraction &f) {
-        numer = numer * f.denom + f.numer * denom;
-        denom *= f.denom;
+        numer() = numer() * f.denom() + f.numer() * denom();
+        denom() *= f.denom();
         reduce();
         return *this;
     }
 
     Fraction & operator+=(const T &v) {
-        numer += v * denom;
+        numer() += v * denom();
         reduce();
         return *this;
     }
 
     Fraction operator-(const Fraction &f) const {
-        return {numer * f.denom - f.numer * denom, denom * f.denom};
+        return {numer() * f.denom() - f.numer() * denom(), denom() * f.denom()};
     }
 
     Fraction operator-(const T &v) const {
-        return {numer - v * denom, denom};
+        return {numer() - v * denom(), denom()};
     }
 
     Fraction & operator-=(const Fraction &f) {
-        numer = numer * f.denom - f.numer * denom;
-        denom *= f.denom;
+        numer() = numer() * f.denom() - f.numer() * denom();
+        denom() *= f.denom();
         reduce();
         return *this;
     }
 
     Fraction & operator-=(const T &v) {
-        numer -= v * denom;
+        numer() -= v * denom();
         reduce();
         return *this;
     }
 
     Fraction operator*(const Fraction &f) const {
-        return {numer * f.numer, denom * f.denom};
+        return {numer() * f.numer(), denom() * f.denom()};
     }
 
     Fraction operator*(const T &v) const {
-        return {numer * v, denom};
+        return {numer() * v, denom()};
     }
 
     Fraction & operator*=(const Fraction &f) {
-        numer *= f.numer;
-        denom *= f.denom;
+        numer() *= f.numer();
+        denom() *= f.denom();
         reduce();
         return *this;
     }
 
     Fraction & operator*=(const T &v) {
-        numer *= v;
+        numer() *= v;
         reduce();
         return *this;
     }
 
     Fraction operator/(const Fraction &f) const {
-        return {numer * f.denom, denom * f.numer};
+        return {numer() * f.denom(), denom() * f.numer()};
     }
 
     Fraction operator/(const T &v) const {
-        return {numer, denom * v};
+        return {numer(), denom() * v};
     }
 
     Fraction & operator/=(const Fraction &f) {
-        numer *= f.denom;
-        denom *= f.numer;
+        numer() *= f.denom();
+        denom() *= f.numer();
         reduce();
         return *this;
     }
 
     Fraction & operator/=(const T &v) {
-        denom *= v;
+        denom() *= v;
         reduce();
         return *this;
     }
-
-    struct FractionHash {
-        size_t operator()(Fraction<T> f) const {
-            auto h = 0ULL;
-            h ^= hash<T>()(f.numer) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            h ^= hash<T>()(f.denom) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            return h;
-        }
-    };
 };
 
 int main() {
@@ -190,5 +197,5 @@ int main() {
         }
     }
     Fraction<long long> f(p, q);
-    cout << f.numer << "/" << f.denom;
+    cout << f.numer() << "/" << f.denom();
 }
