@@ -131,7 +131,7 @@ struct Fraction {
         return *this;
     }
 
-    struct Hash {
+    struct FractionHash {
         size_t operator()(Fraction<T> f) const {
             auto h = 0ULL;
             h ^= hash<T>()(f.numer) + 0x9e3779b9 + (h << 6) + (h >> 2);
@@ -152,11 +152,11 @@ int main() {
     for (int &ci : c) cin >> ci;
     sort(c.begin(), c.end());
 
-    vector<unordered_map<Fraction<int>, string, Fraction<int>::Hash>> memo(1 << C);
+    vector<unordered_map<Fraction<int>, string, Fraction<int>::FractionHash>> memo(1 << C);
     auto dp = [&](auto &&self, int m1) {
         if (!memo[m1].empty()) return memo[m1];
 
-        unordered_map<Fraction<int>, string, Fraction<int>::Hash> solutions;
+        unordered_map<Fraction<int>, string, Fraction<int>::FractionHash> solutions;
         if (__builtin_popcount(m1) == 1) {
             for (int i = 0; i < C; i++)
                 if ((m1 >> i) & 1) {
