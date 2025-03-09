@@ -358,7 +358,7 @@ pair<typename MontgomeryModInt<M>::T, typename MontgomeryModInt<M>::U> Montgomer
 template <typename M>
 bool MontgomeryModInt<M>::prime_mod;
 
-constexpr unsigned long long MODULO = 1000003233;
+constexpr unsigned long long MODULO = 1e9 + 3233;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
 int main() {
