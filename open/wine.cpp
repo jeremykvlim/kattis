@@ -18,7 +18,7 @@ int main() {
         for (auto &[l, r] : bottles) {
             cin >> l >> r;
 
-            least = min(least, (r - 1) / (r - l) * r);
+            least = min(least, (r * l) / (r - l));
         }
 
         if (wine >= least) {
