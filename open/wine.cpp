@@ -11,55 +11,35 @@ int main() {
     while (t--) {
         int wine, sizes;
         cin >> wine >> sizes;
-
         wine *= 1000;
+
         vector<pair<int, int>> bottles(sizes);
         int least = INT_MAX;
-        for (auto &[minimum, maximum] : bottles) {
-            cin >> minimum >> maximum;
+        for (auto &[l, r] : bottles) {
+            cin >> l >> r;
 
-            if (minimum != maximum) least = min(least, maximum * minimum / (maximum - minimum));
+            least = min(least, (r - 1) / (r - l) * r);
         }
 
-        if (wine > least) {
+        if (wine >= least) {
+            next:;
             cout << "0\n";
             continue;
         }
 
+        vector<int> dp(least + 1, -1);
+        dp[0] = 0;
+        for (int i = 0; i <= least; i++)
+            if (~dp[i])
+                for (auto [l, r] : bottles)
+                    if (i + r <= least) dp[i + r] = max(dp[i + r], dp[i] + r - l);
+
         int bottled = 0;
-        set<pair<int, int>> s{{0, 0}};
-        while (!s.empty()) {
-            auto [l1, r1] = *s.begin();
-            s.erase(s.begin());
-
-            for (auto [minimum, maximum] : bottles) {
-                auto [l2, r2] = make_pair(l1 + minimum, r1 + maximum);
-                if (l2 > wine) continue;
-                if (r2 >= wine) {
-                    cout << "0\n";
-                    goto next;
-                }
-
-                auto it = s.lower_bound({l2, r2});
-                while (it != s.begin() && prev(it)->second >= l2) {
-                    l2 = min(prev(it)->first, l2);
-                    r2 = max(prev(it)->second, r2);
-                    it = s.erase(prev(it));
-                }
-
-                it = s.lower_bound({l2, r2});
-                while (it != s.end() && it->first <= r2) {
-                    l2 = min(it->first, l2);
-                    r2 = max(it->second, r2);
-                    it = s.erase(it);
-                }
-
-                bottled = max(bottled, r2);
-                s.emplace(l2, r2);
+        for (int i = 0; i <= least; i++)
+            if (~dp[i]) {
+                if (wine <= i && i <= wine + dp[i]) goto next;
+                else if (i <= wine) bottled = max(bottled, i);
             }
-        }
-
         cout << wine - bottled << "\n";
-        next:;
     }
 }
