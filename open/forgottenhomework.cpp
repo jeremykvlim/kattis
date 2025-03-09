@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -362,40 +362,32 @@ constexpr unsigned long long MODULO = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
 template <typename T>
-vector<T> berlekamp_massey(vector<T> seq) {
-    vector<T> curr, prev;
-    for (int i = 0, len = -1; i < seq.size(); i++) {
-        T discrepancy = seq[i];
-        for (int j = 1; j <= curr.size(); j++) discrepancy -= curr[j - 1] * seq[i - j];
-        if (!discrepancy) continue;
+vector<T> berlekamp_massey(const vector<T> &s) {
+    int n = s.size();
 
-        if (len == -1) {
-            curr.resize(i + 1);
-            len = i;
-            continue;
-        }
-
-        auto temp1 = prev;
-        for (T &c : prev) c *= -1;
-        prev.emplace(prev.begin(), 1);
-
+    vector<T> B{-1}, C{-1};
+    T b = 1;
+    for (int e = 1; e <= n; e++) {
+        int l = C.size();
         T d = 0;
-        for (int j = 1; j <= prev.size(); j++) d += prev[j - 1] * seq[len + 1 - j];
-        auto coeff = discrepancy / d;
-        for (T &c : prev) c *= coeff;
+        for (int i = 0; i < l; i++) d += C[i] * s[e - l + i];
+        B.emplace_back(0);
+        if (!d) continue;
 
-        prev.insert(prev.begin(), i - len - 1, 0);
-        auto temp2 = curr;
-        curr.resize(max(curr.size(), prev.size()));
-        for (int j = 0; j < prev.size(); j++) curr[j] += prev[j];
-
-        if (i - temp2.size() > len - temp1.size()) {
-            prev = temp2;
-            len = i;
-        } else prev = temp1;
+        int m = B.size();
+        T f = d / b;
+        if (l < m) {
+            auto t = C;
+            C.insert(C.begin(), m - l, 0);
+            for (int i = 0; i < m; i++) C[m - 1 - i] -= f * B[m - 1 - i];
+            B = t;
+            b = d;
+        } else
+            for (int i = 0; i < m; i++) C[l - 1 - i] -= f * B[m - 1 - i];
     }
-
-    return curr;
+    C.pop_back();
+    reverse(C.begin(), C.end());
+    return C;
 }
 
 int main() {
@@ -407,12 +399,12 @@ int main() {
     int n, i, j;
     cin >> n >> i >> j;
 
-    vector<modint> seq(2 * n - 1);
-    for (auto &a : seq) cin >> a;
-    seq.emplace(seq.begin(), i == j);
+    vector<modint> s(2 * n - 1);
+    for (auto &a : s) cin >> a;
+    s.emplace(s.begin(), i == j);
 
-    auto lfsr = berlekamp_massey(seq);
+    auto C = berlekamp_massey(s);
     modint value = 0;
-    for (int k = 0; k < lfsr.size(); k++) value += seq[2 * n - 1 - k] * lfsr[k];
+    for (int k = 0; k < C.size(); k++) value += s[2 * n - 1 - k] * C[k];
     cout << value;
 }
