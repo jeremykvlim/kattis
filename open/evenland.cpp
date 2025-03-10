@@ -3,7 +3,7 @@ using namespace std;
 
 template <typename T, typename U, typename V>
 T mul(U x, V y, T mod) {
-    return ((unsigned __int128) x * y) % mod;
+    return (unsigned __int128) x * y % mod;
 }
 
 template <typename T, typename U>

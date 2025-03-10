@@ -3,7 +3,7 @@ using namespace std;
 
 template <typename T, typename U, typename V>
 T mul(U x, V y, T mod) {
-    return ((unsigned __int128) x * y) % mod;
+    return (unsigned __int128) x * y % mod;
 }
 
 template <typename T, typename U>
@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-
+    
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
