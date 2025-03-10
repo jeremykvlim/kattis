@@ -133,8 +133,10 @@ struct BarrettModInt {
     }
 
     static I reduce(J v) {
-        v -= (J) (((K) v * inv_mod) >> bit_length) * mod();
-        return v >= mod() ? v - mod() : v;
+        H r = (H) (v - (((K) v * inv_mod) >> bit_length) * mod());
+        if (r < 0) r += mod();
+        else if (r >= mod()) r -= mod();
+        return (I) r;
     }
 
     const I & operator()() const {
@@ -151,12 +153,14 @@ struct BarrettModInt {
     }
 
     inline auto & operator+=(const BarrettModInt &v) {
-        if ((G) (value += v.value) >= mod()) value -= mod();
+        H t = (H) value + v.value;
+        value = (t >= mod() ? t - mod() : t);
         return *this;
     }
 
     inline auto & operator-=(const BarrettModInt &v) {
-        if ((G) (value -= v.value) < 0) value += mod();
+        H t = (H) value - v.value;
+        value = (t < 0 ? t + mod() : t);
         return *this;
     }
 
@@ -198,7 +202,7 @@ struct BarrettModInt {
 
     template <typename V = M>
     typename enable_if<!is_integral<typename BarrettModInt<V>::I>::value, BarrettModInt>::type & operator*=(const BarrettModInt &v) {
-        value = reduce(value * v.value);
+        value = reduce((J) value * v.value);
         return *this;
     }
 
@@ -217,7 +221,7 @@ struct BarrettModInt {
             }
             return inv;
         }
-
+        
         H x = 0, y = 1, a = v.value, m = mod();
         while (a) {
             H t = m / a;
