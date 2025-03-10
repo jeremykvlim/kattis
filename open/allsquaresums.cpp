@@ -272,9 +272,8 @@ int main() {
         exit(0);
     }
 
-    auto sums = two_square_sums(n);
     unordered_set<string> ways;
-    for (auto [x, y] : sums) {
+    for (auto [x, y] : two_square_sums(n)) {
         ways.emplace(to_string(x) + "^2 + " + to_string(y) + "^2 = " + to_string(n));
         ways.emplace(to_string(y) + "^2 + " + to_string(x) + "^2 = " + to_string(n));
 
