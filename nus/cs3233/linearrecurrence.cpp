@@ -462,11 +462,11 @@ int main() {
     vector<long long> a(n + 1), x(n);
     for (auto &ai : a) cin >> ai;
     for (auto &xi : x) cin >> xi;
+    auto d = a[0] - accumulate(a.begin(), a.end(), 0LL) + 1;
 
     int q;
     cin >> q;
 
-    auto d = a[0] - accumulate(a.begin(), a.end(), 0LL) + 1;
     while (q--) {
         long long t;
         cin >> t >> m;
