@@ -154,13 +154,13 @@ struct BarrettModInt {
 
     inline auto & operator+=(const BarrettModInt &v) {
         H t = (H) value + v.value;
-        value = (t >= mod() ? t - mod() : t);
+        value = t >= mod() ? t - mod() : t;
         return *this;
     }
 
     inline auto & operator-=(const BarrettModInt &v) {
         H t = (H) value - v.value;
-        value = (t < 0 ? t + mod() : t);
+        value = t < 0 ? t + mod() : t;
         return *this;
     }
 
