@@ -102,6 +102,8 @@ bool isprime(unsigned long long n) {
 
 template <typename M>
 struct BarrettModInt {
+    using G = int;
+    using H = long long;
     using I = unsigned int;
     using J = unsigned long long;
     using K = unsigned __int128;
@@ -113,7 +115,7 @@ struct BarrettModInt {
 
     static void init() {
         prime_mod = mod() == 998244353 || mod() == 1e9 + 7 || mod() == 1e9 + 9 || mod() == 1e6 + 69 || isprime(mod());
-        inv_mod = (J) -1 / mod() + 1;
+        inv_mod = (J) -1 / mod();
     }
 
     constexpr BarrettModInt() : value() {}
@@ -132,7 +134,7 @@ struct BarrettModInt {
 
     static I reduce(J v) {
         v -= (J) (((K) v * inv_mod) >> bit_length) * mod();
-        return v >= mod() ? v + mod() : v;
+        return v >= mod() ? v - mod() : v;
     }
 
     const I & operator()() const {
@@ -144,17 +146,17 @@ struct BarrettModInt {
         return (V) value;
     }
 
-    constexpr static I mod() {
+    constexpr static H mod() {
         return M::value;
     }
 
     inline auto & operator+=(const BarrettModInt &v) {
-        if ((int) (value += v.value) >= mod()) value -= mod();
+        if ((G) (value += v.value) >= mod()) value -= mod();
         return *this;
     }
 
     inline auto & operator-=(const BarrettModInt &v) {
-        if ((int) (value -= v.value) < 0) value += mod();
+        if ((G) (value -= v.value) < 0) value += mod();
         return *this;
     }
 
@@ -207,7 +209,7 @@ struct BarrettModInt {
     BarrettModInt inv(const BarrettModInt &v) {
         if (prime_mod) {
             BarrettModInt inv = 1, base = v;
-            I n = mod() - 2;
+            J n = mod() - 2;
             while (n) {
                 if (n & 1) inv *= base;
                 base *= base;
@@ -216,9 +218,9 @@ struct BarrettModInt {
             return inv;
         }
 
-        I x = 0, y = 1, a = v.value, m = mod();
+        H x = 0, y = 1, a = v.value, m = mod();
         while (a) {
-            I t = m / a;
+            H t = m / a;
             m -= t * a;
             swap(a, m);
             x -= t * y;
@@ -414,6 +416,42 @@ Matrix<T> matpow(Matrix<T> A, U exponent) {
     return B;
 }
 
+template <typename T>
+T kitamasa(vector<T> c, vector<T> a, long long k) {
+    int n = a.size();
+
+    auto mul = [&](const vector<T> &x, const vector<T> &y) {
+        vector<T> z(2 * n + 1);
+        for (int i = 0; i <= n; i++)
+            for (int j = 0; j <= n; j++) z[i + j] += x[i] * y[j];
+
+        for (int i = 2 * n; i > n; i--)
+            for (int j = 0; j < n; j++)
+                z[i - j - 1] += z[i] * c[j];
+
+        z.resize(n + 1);
+        return z;
+    };
+
+    vector<T> base(n + 1, 0);
+    base[1] = 1;
+    auto pow = [&](vector<T> base, long long exponent) {
+        vector<T> value(n + 1);
+        value[0] = 1;
+        while (exponent) {
+            if (exponent & 1) value = mul(value, base);
+            base = mul(base, base);
+            exponent >>= 1;
+        }
+        return value;
+    };
+    auto value = pow(base, k);
+
+    T kth = 0;
+    for (int i = 0; i < n; i++) kth += value[i + 1] * a[i];
+    return kth;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -428,6 +466,7 @@ int main() {
     int q;
     cin >> q;
 
+    auto denom = a[0] - accumulate(a.begin(), a.end(), 0LL) + 1;
     while (q--) {
         long long t;
         cin >> t >> m;
@@ -439,14 +478,24 @@ int main() {
             continue;
         }
 
-        Matrix<modint> A(n + 1);
-        for (int i = 0; i <= n; i++) A[0][i] = a[(i + 1) % (n + 1)];
-        for (int i = 1; i < n; i++) A[i][i - 1] = 1;
-        A[n][n] = 1;
-        A = matpow(A, t - n + 1);
+        if (!denom || gcd(denom, m) != 1) {
+            Matrix<modint> A(n + 1);
+            for (int i = 0; i <= n; i++) A[0][i] = a[(i + 1) % (n + 1)];
+            for (int i = 1; i < n; i++) A[i][i - 1] = 1;
+            A[n][n] = 1;
+            A = matpow(A, t - n + 1);
 
-        vector<modint> v(n + 1, 1);
-        for (int i = 0; i < n; i++) v[i] = x[n - i - 1];
-        cout << (A * v)[0] << "\n";
+            vector<modint> v(n + 1, 1);
+            for (int i = 0; i < n; i++) v[i] = x[n - 1 - i];
+            cout << (A * v)[0] << "\n";
+        } else {
+            modint s = (modint) a[0] / denom;
+            vector<modint> c(n), y(n);
+            for (int i = 1; i <= n; i++) {
+                c[i - 1] = a[i];
+                y[i - 1] = x[i - 1] - s;
+            }
+            cout << kitamasa(c, y, t + 1) + s << "\n";
+        }
     }
 }

@@ -102,6 +102,8 @@ bool isprime(unsigned long long n) {
 
 template <typename M>
 struct BarrettModInt {
+    using G = int;
+    using H = long long;
     using I = unsigned int;
     using J = unsigned long long;
     using K = unsigned __int128;
@@ -113,7 +115,7 @@ struct BarrettModInt {
 
     static void init() {
         prime_mod = mod() == 998244353 || mod() == 1e9 + 7 || mod() == 1e9 + 9 || mod() == 1e6 + 69 || isprime(mod());
-        inv_mod = (J) -1 / mod() + 1;
+        inv_mod = (J) -1 / mod();
     }
 
     constexpr BarrettModInt() : value() {}
@@ -132,7 +134,7 @@ struct BarrettModInt {
 
     static I reduce(J v) {
         v -= (J) (((K) v * inv_mod) >> bit_length) * mod();
-        return v >= mod() ? v + mod() : v;
+        return v >= mod() ? v - mod() : v;
     }
 
     const I & operator()() const {
@@ -144,17 +146,17 @@ struct BarrettModInt {
         return (V) value;
     }
 
-    constexpr static I mod() {
+    constexpr static H mod() {
         return M::value;
     }
 
     inline auto & operator+=(const BarrettModInt &v) {
-        if ((int) (value += v.value) >= mod()) value -= mod();
+        if ((G) (value += v.value) >= mod()) value -= mod();
         return *this;
     }
 
     inline auto & operator-=(const BarrettModInt &v) {
-        if ((int) (value -= v.value) < 0) value += mod();
+        if ((G) (value -= v.value) < 0) value += mod();
         return *this;
     }
 
@@ -207,7 +209,7 @@ struct BarrettModInt {
     BarrettModInt inv(const BarrettModInt &v) {
         if (prime_mod) {
             BarrettModInt inv = 1, base = v;
-            I n = mod() - 2;
+            J n = mod() - 2;
             while (n) {
                 if (n & 1) inv *= base;
                 base *= base;
@@ -216,9 +218,9 @@ struct BarrettModInt {
             return inv;
         }
 
-        I x = 0, y = 1, a = v.value, m = mod();
+        H x = 0, y = 1, a = v.value, m = mod();
         while (a) {
-            I t = m / a;
+            H t = m / a;
             m -= t * a;
             swap(a, m);
             x -= t * y;
