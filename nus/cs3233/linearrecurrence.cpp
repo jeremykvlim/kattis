@@ -417,7 +417,7 @@ Matrix<T> matpow(Matrix<T> A, U exponent) {
 }
 
 template <typename T>
-T kitamasa(vector<T> c, vector<T> a, long long k) {
+T kitamasa(const vector<T> &c, const vector<T> &a, long long k) {
     int n = a.size();
 
     auto mul = [&](const vector<T> &x, const vector<T> &y) {
@@ -466,7 +466,7 @@ int main() {
     int q;
     cin >> q;
 
-    auto denom = a[0] - accumulate(a.begin(), a.end(), 0LL) + 1;
+    auto d = a[0] - accumulate(a.begin(), a.end(), 0LL) + 1;
     while (q--) {
         long long t;
         cin >> t >> m;
@@ -478,7 +478,7 @@ int main() {
             continue;
         }
 
-        if (!denom || gcd(denom, m) != 1) {
+        if (!d || gcd(d, m) != 1) {
             Matrix<modint> A(n + 1);
             for (int i = 0; i <= n; i++) A[0][i] = a[(i + 1) % (n + 1)];
             for (int i = 1; i < n; i++) A[i][i - 1] = 1;
@@ -489,7 +489,7 @@ int main() {
             for (int i = 0; i < n; i++) v[i] = x[n - 1 - i];
             cout << (A * v)[0] << "\n";
         } else {
-            modint s = (modint) a[0] / denom;
+            auto s = (modint) a[0] / d;
             vector<modint> c(n), y(n);
             for (int i = 1; i <= n; i++) {
                 c[i - 1] = a[i];
