@@ -246,7 +246,7 @@ int main() {
     equations[3][0] = {-b1, -a1, -c4};
     equations[3][1] = {b1, a1, c4};
 
-    unordered_set<Point<__int128>, Hash> candidates{{0, 0}};
+    unordered_set<Point<__int128>, Hash> candidates;
     auto add = [&](Point<long double> p) {
         Point<long long> q(p);
         for (int dx = -2; dx <= 2; dx++)
