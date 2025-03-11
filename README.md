@@ -1,6 +1,6 @@
 # kattis
 
-My solutions for Kattis problems. Not all of them have been archived here yet because I haven't bothered scraping through all my submissions from 2022 till now. Solutions are named `"problemname".<languagefilename>`. To find the problem statement, please go to:
+My solutions to Kattis problems. Solutions are named `"problemname".<languagefilename>`. To find the problem statement, please go to:
 
 `https://nus.kattis.com/problems/"problemname"` or `https://open.kattis.com/problems/"problemname"`
 
@@ -25,9 +25,5 @@ Kattis compiles using C++ 23 for [C++](https://open.kattis.com/languages/cpp), J
 Problems have to be solved using base programming language libraries or self-coded structures. External libraries, such as Boost for C++, Guava for Java, NumPy for Python 3 and others are not available. However, you are allowed to attach multiple files in one submission, although I never bothered.
 
 ---
-
-My code isn't particularly optimized. I do try to come up with efficient solutions to the problems that don't just scrape by the time or memory limit (I also do not like to overallocate memory just for speed), but I've been prioritising coding style as I want my code to be pleasant to read (with some exceptions because I do get lazy sometimes).
-
-Occasionally when I learn new techniques, I do revisit some old solutions of mine to see if I can improve them, so I do update my old code (provided I do remember that problem). 
 
 Many of these solutions were implemented after reading the editorials, and I suggest you to do the same if you find yourself stuck. If you have any questions about a particular solution, please contact me at j_lim@u.nus.edu.
