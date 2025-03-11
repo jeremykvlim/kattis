@@ -29,7 +29,7 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n, r0, c0, a0, b0, p0;
+    int n, r0, c0, a0, b0, p0;;
     cin >> n >> r0 >> c0 >> a0 >> b0 >> p0;
 
     if (!r0 && !c0) {
@@ -89,7 +89,7 @@ int main() {
             int g = __gcd(g1, g2);
 
             pair<int, int> u{t1, g};
-            if (t1 != t2) u.first = !((t1 == 1 ? g1 : g2) % (2 * g)) ? 2 : 1;
+            if (t1 != t2) u.first = !(((t1 == 1 ? g1 : g2) / g) & 1) ? 2 : 1;
             if (u == v) continue;
 
             if (relax(d + p, u)) pq.emplace(d + p, u);
