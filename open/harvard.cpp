@@ -56,7 +56,7 @@ int main() {
             else R = C = indices[i];
             return;
         }
-        
+
         int r = -1, c = -1;
         for (int j : adj_list[i]) {
             self(self, j, mask, reps * repeats[i]);
@@ -99,7 +99,7 @@ int main() {
                 dp1[m3] = 0;
 
                 if (__builtin_popcount(m3) <= s) {
-                    int i = __builtin_ctz(m3);
+                    int i = popcount((unsigned) m3);
                     dp2[m3] = dp2[m3 & (m3 - 1)] - count[i][i];
                     for (int j = i + 1; j < v; j++)
                         if ((m3 >> j) & 1) dp2[m3] -= count[i][j] + count[j][i];
