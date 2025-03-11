@@ -27,7 +27,7 @@ int main() {
         }
 
     for (int m1 = 3; m1 < 1 << n; m1++) {
-        if (__builtin_popcount(m1) == 1) continue;
+        if (popcount((unsigned) m1) == 1) continue;
 
         dp2[m1] = INT_MAX;
         for (int m2 = m1 ^ (1 << __lg(m1)); m2; m2 = m1 & (m2 - 1))
