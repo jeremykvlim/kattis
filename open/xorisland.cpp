@@ -17,10 +17,9 @@ int main() {
             for (int k = j + 1; k < n; k++) dp[(1 << i) | (1 << j) | (1 << k)] = !(hats[i] ^ hats[j] ^ hats[k]);
 
     int meetings = n;
-    for (int i = 0; i < dp.size(); i++)
-        if (!dp[i]) meetings = min(meetings, n - __builtin_popcount(i));
+    for (int mask = 0; mask < 1 << n; mask++)
+        if (!dp[mask]) meetings = min(meetings, n - popcount((unsigned) mask));
         else
-            for (int j = 0; j < n; j++) dp[i | (1 << j)] = true;
-
+            for (int i = 0; i < n; i++) dp[mask | (1 << i)] = true;
     cout << meetings;
 }
