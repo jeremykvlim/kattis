@@ -180,6 +180,6 @@ int main() {
 
     for (int m1 = 1; m1 < 1 << n; m1++)
         for (int m2 = m1; m2; --m2 &= m1)
-            if (__builtin_popcount(m2) > 2) dp[m1] = min(dp[m1], dp[m1 ^ m2] + d[m2]);
+            if (popcount((unsigned) m2) > 2) dp[m1] = min(dp[m1], dp[m1 ^ m2] + d[m2]);
     cout << fixed << setprecision(6) << dp.back();
 }
