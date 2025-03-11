@@ -43,8 +43,8 @@ int main() {
         int u, v;
         cin >> u >> v;
 
-        adj_list[u] |= (unsigned __int128) 1 << (v);
-        adj_list[v] |= (unsigned __int128) 1 << (u);
+        adj_list[u] |= (unsigned __int128) 1 << v;
+        adj_list[v] |= (unsigned __int128) 1 << u;
     }
 
     cout << bron_kerbosch(V, adj_list);
