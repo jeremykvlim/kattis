@@ -186,7 +186,7 @@ int main() {
         if (!memo[m1].empty()) return memo[m1];
 
         unordered_map<Fraction<int>, string, Hash> solutions;
-        if (__builtin_popcount(m1) == 1) {
+        if (popcount((unsigned) m1) == 1) {
             for (int i = 0; i < C; i++)
                 if ((m1 >> i) & 1) {
                     solutions[{c[i], 1}] = to_string(c[i]);
