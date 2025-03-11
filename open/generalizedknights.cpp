@@ -205,10 +205,10 @@ tuple<T, T, T> extended_gcd(const T &a, const T &b) {
     auto div = [&](const T &x, const T &y) {
         auto numer = x * conj(y);
         auto denom = norm(y);
-        auto round = [&](auto part) {
+        auto round_div = [&](auto part) {
             return (part >= 0) ? (part + denom / 2) / denom : (part - denom / 2) / denom;
         };
-        return complex<long long>(round(numer.real()), round(numer.imag()));
+        return complex<long long>(round_div(numer.real()), round_div(numer.imag()));
     };
 
     auto q = div(a, b), r = a - q * b;
