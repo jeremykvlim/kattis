@@ -29,15 +29,16 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n;
-    array<int, 5> card0;
-    auto &[r0, c0, a0, b0, p0] = card0;
+    int n, r0, c0, a0, b0, p0;
     cin >> n >> r0 >> c0 >> a0 >> b0 >> p0;
 
     if (!r0 && !c0) {
         cout << "0";
         exit(0);
     }
+
+    vector<array<int, 5>> cards(n - 1);
+    for (auto &[r, c, a, b, p] : cards) cin >> r >> c >> a >> b >> p;
 
     auto reduce = [&](int a, int b) -> pair<int, int> {
         int g = __gcd(a, b);
@@ -46,61 +47,52 @@ int main() {
         return {1, g};
     };
 
-    vector<array<int, 5>> cards(n - 1);
-    vector<pair<int, int>> parity(n - 1);
-    vector<long long> P(n - 1);
-    gp_hash_table<pair<int, int>, long long, Hash> visited;
-    visited[reduce(a0, b0)] = p0;
-    for (int i = 0; i < n - 1; i++) {
-        auto &[r, c, a, b, p] = cards[i];
-        cin >> r >> c >> a >> b >> p;
-
-        parity[i] = reduce(a, b);
-        P[i] = p;
-        if (r == r0 && c == c0) visited[parity[i]] = visited.find(parity[i]) != visited.end() ? min(visited[parity[i]], P[i]) : P[i];
-    }
+    auto s = reduce(a0, b0);
+    gp_hash_table<pair<int, int>, long long, Hash> dist;
+    auto relax = [&](long long d, auto v) -> bool {
+        if (dist.find(v) == dist.end() || dist[v] > d) {
+            dist[v] = d;
+            return true;
+        }
+        return false;
+    };
+    relax(p0, s);
+    for (auto [r, c, a, b, p] : cards)
+        if (r == r0 && c == c0) relax(p, reduce(a, b));
 
     priority_queue<pair<long long, pair<int, int>>, vector<pair<long long, pair<int, int>>>, greater<>> pq;
-    for (auto [par, p] : visited) pq.emplace(p, par);
+    for (auto [v, d] : dist) pq.emplace(d, v);
+
+    auto reachable = [&](pair<int, int> state, int r = 0, int c = 0) -> bool {
+        auto [t, g] = state;
+        if ((r - r0) % g || (c - c0) % g) return false;
+
+        return t == 1 || !(((r - r0) / g) + ((c - c0) / g) & 1);
+    };
+
     while (!pq.empty()) {
-        auto [cost, curr] = pq.top();
+        auto [d, v] = pq.top();
         pq.pop();
 
-        auto reachable = [&](pair<int, int> p, int r = 0, int c = 0) {
-            auto [type, g] = p;
-            bool aligns = !((r - r0) % g) && !((c - c0) % g);
+        if (dist[v] != d) continue;
 
-            if (type == 1) return aligns;
-            return aligns && !(((r - r0) / g + (c - c0) / g) & 1);
-        };
-
-        if (reachable(curr)) {
-            cout << cost;
+        if (reachable(v)) {
+            cout << d << "\n";
             exit(0);
         }
 
-        if (visited.find(curr) != visited.end() && visited[curr] < cost) continue;
+        auto [t1, g1] = v;
+        for (auto [r, c, a, b, p] : cards) {
+            if (!reachable(v, r, c)) continue;
 
-        for (int i = 0; i < n - 1; i++) {
-            if (!reachable(curr, cards[i][0], cards[i][1])) continue;
+            auto [t2, g2] = reduce(a, b);
+            int g = __gcd(g1, g2);
 
-            int g = __gcd(curr.second, parity[i].second);
+            pair<int, int> u{t1, g};
+            if (t1 != t2) u.first = !((t1 == 1 ? g1 : g2) % (2 * g)) ? 2 : 1;
+            if (u == v) continue;
 
-            pair<int, int> next;
-            if (curr.first == parity[i].first) next = {curr.first, g};
-            else {
-                int a = curr.first == 1 ? curr.second : parity[i].second;
-
-                if (!(a % (2 * g))) next = {2, g};
-                else next = {1, g};
-            }
-
-            if (curr == next) continue;
-
-            if (visited.find(next) == visited.end() || visited[next] > cost + P[i]) {
-                visited[next] = cost + P[i];
-                pq.emplace(cost + P[i], next);
-            }
+            if (relax(d + p, u)) pq.emplace(d + p, u);
         }
     }
     cout << -1;
