@@ -160,7 +160,7 @@ int main() {
                 }
             }
 
-            if (dp[m1] != INT_MAX) eggs = max(eggs, __builtin_popcount(m1));
+            if (dp[m1] != INT_MAX) eggs = max(eggs, popcount((unsigned) m1));
         }
 
         cout << eggs << "\n";
