@@ -14,13 +14,13 @@ int bron_kerbosch(int n, vector<unsigned __int128> adj_list) {
             return v ? ((v & ULLONG_MAX) ? __builtin_ctzll(v) : 64 + __builtin_ctzll(v >> 64)) : 0;
         };
         int pivot = lsb(p | x);
+        
 
         auto candidates = p & ~adj_list[pivot];
         while (candidates && cliques <= 1e3) {
             int v = lsb(candidates);
             auto mask = (unsigned __int128) 1 << v;
-            r |= mask;
-            self(self, p & adj_list[v], x & adj_list[v], r);
+            self(self, p & adj_list[v], x & adj_list[v], r | mask);
             p &= ~mask;
             x |= mask;
             candidates &= ~mask;
