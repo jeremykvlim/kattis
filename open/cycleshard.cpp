@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -416,7 +416,7 @@ int main() {
                     if (!dsu.unite(u, v)) cycles++;
                 }
 
-            int forbidden = __builtin_popcount(mask);
+            int forbidden = popcount((unsigned) mask);
             for (int j = 1; j <= n; j++) degree_count[min(degree[j], 3)]++;
 
             if (degree_count[3]) continue;
