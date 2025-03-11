@@ -98,8 +98,8 @@ int main() {
             for (int m3 = (m1 + 1) & m2; m3; m3 = ((m3 | m1) + 1) & m2) {
                 dp1[m3] = 0;
 
-                if (__builtin_popcount(m3) <= s) {
-                    int i = popcount((unsigned) m3);
+                int i = popcount((unsigned) m3);
+                if (i <= s) {
                     dp2[m3] = dp2[m3 & (m3 - 1)] - count[i][i];
                     for (int j = i + 1; j < v; j++)
                         if ((m3 >> j) & 1) dp2[m3] -= count[i][j] + count[j][i];
