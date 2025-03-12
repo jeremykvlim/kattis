@@ -131,7 +131,7 @@ T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
 }
 
 template <typename T>
-double dist(const Point<T> &a, const Point<T> &b) {
+double euclidean_dist(const Point<T> &a, const Point<T> &b) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
@@ -172,7 +172,7 @@ int main() {
                 int dir1 = sgn(cross(polygon[i], polygon[j], polygon[k])), dir2 = sgn(cross(polygon[i], polygon[j], polygon[k + 1]));
                 if (dir1 != dir2) {
                     auto p = non_collinear_intersection(Line(polygon[i], polygon[j]), Line(polygon[k], polygon[k + 1]));
-                    auto d = dot(p - polygon[i], polygon[j] - polygon[i]) / dist(polygon[i], polygon[j]);
+                    auto d = dot(p - polygon[i], polygon[j] - polygon[i]) / euclidean_dist(polygon[i], polygon[j]);
                     if (dir1 && dir2) dist_to_intersection.emplace_back(d, dir1 > dir2 ? 2 : -2);
                     else dist_to_intersection.emplace_back(d, dir1 > dir2 ? 1 : -1);
                 }
