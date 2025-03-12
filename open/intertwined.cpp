@@ -116,12 +116,7 @@ struct Point {
 };
 
 template <typename T>
-double dist(const Point<T> &p) {
-    return sqrt(p.x * p.x + p.y * p.y);
-}
-
-template <typename T>
-double dist(const Point<T> &a, const Point<T> &b) {
+double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
@@ -155,7 +150,7 @@ int main() {
     for (int i = 1; i <= n; i++) {
         cin >> coords[i].x >> coords[i].y;
 
-        if (dist(coords[i]) <= d) collide = true;
+        if (euclidean_dist(coords[i]) <= d) collide = true;
     }
 
     if (!collide) {
@@ -201,11 +196,11 @@ int main() {
 
             int v = 0;
             for (auto len = d; len >= 0;) {
-                auto it = find_if(adj_list[v].rbegin(), adj_list[v].rend(), [&](int u) {return len >= dist(temp[v].first, temp[u].first);});
+                auto it = find_if(adj_list[v].rbegin(), adj_list[v].rend(), [&](int u) {return len >= euclidean_dist(temp[v].first, temp[u].first);});
                 if (it == adj_list[v].rend()) break;
 
                 int u = *it;
-                len -= dist(temp[v].first, temp[u].first);
+                len -= euclidean_dist(temp[v].first, temp[u].first);
                 v = u;
                 indices.emplace_back(temp[u].second);
             }
@@ -213,8 +208,8 @@ int main() {
         }
 
         count = 0;
-        d -= dist(points[indices[0]].first);
-        for (int j = 1; j < indices.size(); j++) d -= dist(points[indices[j]].first, points[indices[j - 1]].first);
+        d -= euclidean_dist(points[indices[0]].first);
+        for (int j = 1; j < indices.size(); j++) d -= euclidean_dist(points[indices[j]].first, points[indices[j - 1]].first);
         i = points[indices.back()].second;
 
         for (int j : indices) order.emplace_back(points[j].second);
@@ -222,7 +217,7 @@ int main() {
             for (int k = order.size() - 2, l = order.size() - 1; ~k; k--)
                 if (order[k - 1] == order[l - 1] && order[k] == order[l]) {
                     double len = 0;
-                    for (int j = k; j < l; j++) len += dist(coords[order[j + 1]], coords[order[j]]);
+                    for (int j = k; j < l; j++) len += euclidean_dist(coords[order[j + 1]], coords[order[j]]);
 
                     if (d > len) d -= (int) (d / len - 1) * len;
                     break;
