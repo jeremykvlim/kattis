@@ -116,7 +116,7 @@ struct Point {
 };
 
 template <typename T>
-double dist(const Point<T> &a, const Point<T> &b) {
+double euclidean_dist(const Point<T> &a, const Point<T> &b) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
@@ -164,7 +164,7 @@ int main() {
 
             for (int j = i + 1 + (i & 1); j < 2 * n - 1 && l <= r; j++) {
                 auto curr = pos(points[i], points[j]);
-                if (l <= curr && curr <= r) adj_list[i].emplace_back(j, dist(points[i], points[j]));
+                if (l <= curr && curr <= r) adj_list[i].emplace_back(j, euclidean_dist(points[i], points[j]));
 
                 if (j & 1) r = min(r, curr);
                 else l = max(l, curr);
@@ -172,7 +172,7 @@ int main() {
 
             for (int j = 2 * n - 1; j < points.size(); j++) {
                 auto curr = pos(points[i], points[j]);
-                if (l <= curr && curr <= r) adj_list[i].emplace_back(j, dist(points[i], points[j]));
+                if (l <= curr && curr <= r) adj_list[i].emplace_back(j, euclidean_dist(points[i], points[j]));
             }
         }
 
