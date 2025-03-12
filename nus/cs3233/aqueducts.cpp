@@ -111,20 +111,10 @@ struct Point3D {
         z /= v;
         return *this;
     }
-
-    struct Point3DHash {
-        size_t operator()(Point3D<T> p) const {
-            auto h = 0ULL;
-            h ^= hash<T>()(p.x) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            h ^= hash<T>()(p.y) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            h ^= hash<T>()(p.z) + 0x9e3779b9 + (h << 6) + (h >> 2);
-            return h;
-        }
-    };
 };
 
 template <typename T>
-double dist(const Point3D<T> &a, const Point3D<T> &b) {
+double euclidean_dist(const Point3D<T> &a, const Point3D<T> &b) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y) + (double) (a.z - b.z) * (a.z - b.z));
 }
 
@@ -228,14 +218,14 @@ int main() {
     vector<Point3D<long long>> hills(n);
     for (auto &[x, y, h] : hills) cin >> x >> y >> h;
 
-    vector<vector<double>> d(n, vector<double>(n, 1e9));
+    vector<vector<double>> dist(n, vector<double>(n, 1e9));
     for (int i = 0; i < n; i++)
         for (int j = 0; j < n; j++)
-            if (hills[i].z < hills[j].z && dist(hills[i], hills[j]) < q) d[i][j] = dist(hills[i], hills[j]);
+            if (hills[i].z < hills[j].z && euclidean_dist(hills[i], hills[j]) < q) dist[i][j] = euclidean_dist(hills[i], hills[j]);
 
     for (int i = 0; i < n; i++)
         for (int j = 0; j < n; j++)
-            for (int k = 0; k < n; k++) d[j][k] = min(d[j][k], d[j][i] + d[i][k]);
+            for (int k = 0; k < n; k++) dist[j][k] = min(dist[j][k], dist[j][i] + dist[i][k]);
 
     vector<int> spring(s), town(t);
     for (int &ij : spring) cin >> ij;
@@ -243,7 +233,7 @@ int main() {
 
     vector<vector<double>> adj_matrix(s, vector<double>(s, 0));
     for (int i = 0; i < t; i++)
-        for (int j = 0; j < s; j++) adj_matrix[i][j] = d[town[i] - 1][spring[j] - 1];
+        for (int j = 0; j < s; j++) adj_matrix[i][j] = dist[town[i] - 1][spring[j] - 1];
 
     auto cost = hungarian(adj_matrix, 0.);
     if (cost < 1e9) cout << fixed << setprecision(6) << cost;
