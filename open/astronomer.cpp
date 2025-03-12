@@ -116,8 +116,8 @@ struct Point {
 };
 
 template <typename T>
-double dist(const Point<T> &p) {
-    return sqrt(p.x * p.x + p.y * p.y);
+double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
+    return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
 template <typename T>
@@ -151,14 +151,14 @@ int main() {
     for (auto &[x, y] : coords) cin >> x >> y;
 
     if (s >= t) {
-        sort(coords.begin(), coords.end(), [&](auto p1, auto p2) {return dist(p1) < dist(p2);});
-        cout << fixed << setprecision(6) << t * dist(coords[k - 1]);
+        sort(coords.begin(), coords.end(), [&](auto p1, auto p2) {return euclidean_dist(p1) < euclidean_dist(p2);});
+        cout << fixed << setprecision(6) << t * euclidean_dist(coords[k - 1]);
         exit(0);
     }
 
     double kroner = 1e20;
     if (k == 1) {
-        for (int i = 0; i < n; i++) kroner = min(kroner, s * dist(coords[i]));
+        for (int i = 0; i < n; i++) kroner = min(kroner, s * euclidean_dist(coords[i]));
         cout << fixed << setprecision(6) << kroner;
         exit(0);
     }
@@ -173,7 +173,7 @@ int main() {
                 auto [a, b] = perpendicular_bisector(coords[i], coords[j]);
                 auto cost = [&](auto m) {
                     auto p = a + (b - a) * m;
-                    return s * dist(p) + t * dist(p - coords[i]);
+                    return s * euclidean_dist(p) + t * euclidean_dist(p - coords[i]);
                 };
 
                 double l = -1e10, r = 1e10, mid1, mid2;
