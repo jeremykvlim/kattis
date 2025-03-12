@@ -8,17 +8,17 @@ pair<T, T> bezout(T a, T b) {
     return {y - (b / a) * x, x};
 }
 
-long long congruence(long long base, long long b, long long mod) {
-    auto g = __gcd(base, mod);
+template <typename T>
+T linear_congruence_solution(T a, T b, T n) {
+    auto g = __gcd(a, n);
     if (b % g) return -1;
 
+    a /= g;
     b /= g;
-    base /= g;
-    mod /= g;
-    auto [x, y] = bezout(base, mod);
-    x %= mod;
-    if (x < 0) x += mod;
-    return b * x % mod;
+    n /= g;
+    auto [x, y] = bezout(a, n);
+    x = (x + n) % n;
+    return (b * x) % n;
 }
 
 int main() {
@@ -34,19 +34,19 @@ int main() {
     while (l + 1 < r) {
         m = l + (r - l) / 2;
 
-        auto base = 1LL, B = 0LL;
+        auto p10 = 1LL, c = 0LL;
         for (int i = 0; i < m; i++) {
-            base = base * 10 % b;
-            B = (B * 10 + d) % b;
+            p10 = (p10 * 10) % b;
+            c = (c * 10 + d) % b;
         }
 
-        auto x = congruence(base, (b - B) % b, b);
+        auto x = linear_congruence_solution(p10, (b - c) % b, b);
         if (x == -1) {
             r = m;
             continue;
         }
 
-        if (!x && !d) x = b / __gcd(base, b);
+        if (!x && !d) x = b / __gcd(p10, b);
         auto s = to_string(x);
         if (!x) s.clear();
         s += string(m, '0' + d);
