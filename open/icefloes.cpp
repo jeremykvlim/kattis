@@ -126,12 +126,7 @@ T cross(Point<T> a, Point<T> b) {
 }
 
 template <typename T>
-double dist(const Point<T> &p) {
-    return sqrt(p.x * p.x + p.y * p.y);
-}
-
-template <typename T>
-double dist(const Point<T> &a, const Point<T> &b) {
+double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
@@ -172,12 +167,12 @@ T dist_from_point_to_line(const Point<T> &p, const Line<T> &l) {
     auto v = l.b - l.a, w = p - l.a;
 
     T d1 = dot(w, v);
-    if (d1 <= 0) return dist(p, l.a);
+    if (d1 <= 0) return euclidean_dist(p, l.a);
 
     T d2 = dot(v, v);
-    if (d2 <= d1) return dist(p, l.b);
+    if (d2 <= d1) return euclidean_dist(p, l.b);
 
-    return dist(p, l.a + v * d1 / d2);
+    return euclidean_dist(p, l.a + v * d1 / d2);
 }
 
 template <typename T>
@@ -188,7 +183,7 @@ T dist_between_polygons(const vector<Point<T>> &P, const vector<Point<T>> &Q) {
         for (int j = 0; j < Q.size(); j++) {
             auto c = Q[j], d = Q[(j + 1) % Q.size()];
             dist = min({dist, dist_from_point_to_line(a, Line(c, d)), dist_from_point_to_line(b, Line(c, d)),
-                              dist_from_point_to_line(c, Line(a, b)), dist_from_point_to_line(d, Line(a, b))});
+                        dist_from_point_to_line(c, Line(a, b)), dist_from_point_to_line(d, Line(a, b))});
         }
     }
     return dist;
@@ -253,7 +248,7 @@ int main() {
                 if (yl[j] > yr[i]) y = yl[j] - yr[i];
                 else if (yl[i] > yr[j]) y = yl[i] - yr[j];
 
-                if (dist(Point(x, y)) <= d && dist_between_polygons(polygons[i], polygons[j]) <= d) adj_matrix[i][j] = adj_matrix[j][i] = true;
+                if (euclidean_dist(Point(x, y)) <= d && dist_between_polygons(polygons[i], polygons[j]) <= d) adj_matrix[i][j] = adj_matrix[j][i] = true;
             }
 
         vector<double> possible;
