@@ -202,18 +202,49 @@ template <typename T>
 tuple<T, T, T> extended_gcd(const T &a, const T &b) {
     if (b == (T) 0) return {a, (T) 1, (T) 0};
 
-    auto div = [&](const T &x, const T &y) {
-        auto numer = x * conj(y);
-        auto denom = norm(y);
-        auto round_div = [&](auto part) {
-            return (part >= 0) ? (part + denom / 2) / denom : (part - denom / 2) / denom;
+    auto divmod = [&](const T &x, const T &y) -> pair<T, T> {
+        auto div = [&](const T &x, const T &y) {
+            auto numer = x * conj(y);
+            auto denom = norm(y);
+            auto round_div = [&](auto part) {
+                return (part >= 0) ? (part + denom / 2) / denom : (part - denom / 2) / denom;
+            };
+            return complex<long long>(round_div(numer.real()), round_div(numer.imag()));
         };
-        return complex<long long>(round_div(numer.real()), round_div(numer.imag()));
+        auto q = div(x, y), r = x - q * y;
+        return {q, r};
     };
 
-    auto q = div(a, b), r = a - q * b;
+    auto [q, r] = divmod(a, b);
     auto [g, s, t] = extended_gcd(b, r);
     return {g, t, s - t * q};
+}
+
+template <typename T>
+tuple<T, T, bool> linear_diophantine_solution(T &a, T &b, T c) {
+    auto divmod = [&](const T &x, const T &y) -> pair<T, T> {
+        auto div = [&](const T &x, const T &y) {
+            auto numer = x * conj(y);
+            auto denom = norm(y);
+            auto round_div = [&](auto part) {
+                return (part >= 0) ? (part + denom / 2) / denom : (part - denom / 2) / denom;
+            };
+            return complex<long long>(round_div(numer.real()), round_div(numer.imag()));
+        };
+        auto q = div(x, y), r = x - q * y;
+        return {q, r};
+    };
+
+    auto [g, x, y] = extended_gcd(a, b);
+    auto [q, r] = divmod(c, g);
+    if (r != (T) 0) return {x, y, false};
+
+    a /= g;
+    b /= g;
+    c /= g;
+    x *= c;
+    y *= c;
+    return {x, y, true};
 }
 
 int main() {
@@ -223,13 +254,8 @@ int main() {
     int a, b, x, y;
     cin >> a >> b >> x >> y;
 
-    complex<long long> A(a, b), B(b, a), target(x, y);
-    auto [G, X, Y] = extended_gcd(A, B);
-    A /= G;
-    B /= G;
-    target /= G;
-    X *= target;
-    Y *= target;
+    complex<long long> A(a, b), B(b, a), C(x, y);
+    auto [X, Y, _] = linear_diophantine_solution(A, B, C);
 
     long double a1 = A.real(), b1 = A.imag(),
                 a2 = B.real(), b2 = B.imag(),
