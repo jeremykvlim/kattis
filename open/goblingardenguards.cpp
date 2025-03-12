@@ -116,7 +116,7 @@ struct Point {
 };
 
 template <typename T>
-double dist(const Point<T> &a, const Point<T> &b) {
+double euclidean_dist(const Point<T> &a, const Point<T> &b) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
@@ -128,24 +128,24 @@ int main() {
     cin >> g;
 
     vector<Point<int>> points(g);
-    pair<int, int> farthest{-1, -1};
+    Point<int> farthest{-1, -1};
     for (auto &[x, y] : points) {
         cin >> x >> y;
 
-        farthest = {max(farthest.first, x), max(farthest.second, y)};
+        farthest = {max(farthest.x, x), max(farthest.y, y)};
     }
 
     int m;
     cin >> m;
 
-    vector<vector<bool>> soaked(farthest.first + 1, vector<bool>(farthest.second + 1, false));
+    vector<vector<bool>> soaked(farthest.x + 1, vector<bool>(farthest.y + 1, false));
     while (m--) {
         int x, y, r;
         cin >> x >> y >> r;
 
-        for (int i = max(x - r, 0); i <= min(x + r, farthest.first); i++)
-            for (int j = max(y - r, 0); j <= min(y + r, farthest.second); j++)
-                if (dist(Point(i, j), Point(x, y)) <= r) soaked[i][j] = true;
+        for (int i = max(x - r, 0); i <= min(x + r, farthest.x); i++)
+            for (int j = max(y - r, 0); j <= min(y + r, farthest.y); j++)
+                if (euclidean_dist(Point(i, j), Point(x, y)) <= r) soaked[i][j] = true;
     }
 
     for (auto [x, y] : points)
