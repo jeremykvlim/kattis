@@ -121,7 +121,7 @@ T dot(const Point<T> &a, const Point<T> &b) {
 }
 
 template <typename T>
-double dist(const Point<T> &a, const Point<T> &b) {
+double euclidean_dist(const Point<T> &a, const Point<T> &b) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
@@ -136,7 +136,7 @@ int main() {
 
     Point<double> m1, m2, p;
     while (cin >> m1.x >> m1.y >> m2.x >> m2.y >> p.x >> p.y) {
-        auto dir = m2 - m1, unit = dir / dist(m1, m2), v1 = p - m1, v2 = m1 - v1;
+        auto dir = m2 - m1, unit = dir / euclidean_dist(m1, m2), v1 = p - m1, v2 = m1 - v1;
         auto s = v2 + unit * 2 * dot(v1, unit);
 
         if (approximately_equal(s.x, 0.)) {
