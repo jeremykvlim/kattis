@@ -116,7 +116,7 @@ struct Point {
 };
 
 template <typename T>
-double dist(const Point<T> &a, const Point<T> &b) {
+double euclidean_dist(const Point<T> &a, const Point<T> &b) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
@@ -133,7 +133,7 @@ int main() {
         cin >> points[i].x >> points[i].y;
 
         for (int j = i; ~j; j--)
-            if (dist(points[i], points[j]) <= d) valid[i][j] = valid[j][i] = true;
+            if (euclidean_dist(points[i], points[j]) <= d) valid[i][j] = valid[j][i] = true;
     }
 
     vector<int> indices(n);
