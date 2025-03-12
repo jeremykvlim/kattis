@@ -137,7 +137,7 @@ struct Point {
 };
 
 template <typename T>
-double dist(const Point<T> &a, const Point<T> &b) {
+double euclidean_dist(const Point<T> &a, const Point<T> &b) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
@@ -152,22 +152,22 @@ int main() {
     vector<Point<long long>> coords(c);
     for (auto &[x, y] : coords) cin >> x >> y;
 
-    vector<double> d;
+    vector<double> dist;
     for (int i = 0; i < c; i++)
-        for (int j = i + 1; j < c; j++) d.emplace_back(dist(coords[i], coords[j]));
-    sort(d.begin(), d.end());
-    d.erase(unique(d.begin(), d.end(), [&](double d1, double d2) {return abs(d1 - d2) < 1e-9;}), d.end());
+        for (int j = i + 1; j < c; j++) dist.emplace_back(euclidean_dist(coords[i], coords[j]));
+    sort(dist.begin(), dist.end());
+    dist.erase(unique(dist.begin(), dist.end(), [&](double d1, double d2) {return abs(d1 - d2) < 1e-9;}), dist.end());
 
     double distance = 0;
     vector<int> blue;
-    int l = -1, r = d.size(), mid;
+    int l = -1, r = dist.size(), mid;
     while (l + 1 < r) {
         mid = l + (r - l) / 2;
 
         DisjointSets dsu(c);
         for (int i = 0; i < c; i++)
             for (int j = i + 1; j < c; j++)
-                if (dist(coords[i], coords[j]) + 1e-9 < d[mid]) dsu.unite(i, j);
+                if (euclidean_dist(coords[i], coords[j]) + 1e-9 < dist[mid]) dsu.unite(i, j);
 
         vector<vector<int>> components(c);
         for (int i = 0; i < c; i++) components[dsu.find(i)].emplace_back(i);
@@ -184,7 +184,7 @@ int main() {
 
         if (!visited1[n]) r = mid;
         else {
-            distance = d[mid];
+            distance = dist[mid];
 
             vector<bool> visited2(c, false);
             int temp = n;
