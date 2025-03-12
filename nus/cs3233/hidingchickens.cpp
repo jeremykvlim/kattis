@@ -116,7 +116,7 @@ struct Point {
 };
 
 template <typename T>
-double dist(const Point<T> &a, const Point<T> &b) {
+double euclidean_dist(const Point<T> &a, const Point<T> &b) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
@@ -140,10 +140,10 @@ int main() {
                 if (!((m1 >> j) & 1)) continue;
 
                 int m2 = (1 << i) | (1 << j);
-                auto d = dist(points[i], points[j]);
-                d += (m2 == m1) ? min(dist(points[i], roost), dist(points[j], roost)) : dist(points[i], roost) + dist(points[j], roost);
-
-                dp[m1] = min(dp[m1], dp[m1 ^ m2] + d);
+                auto dist = euclidean_dist(points[i], points[j]);
+                dist += (m1 == m2) ? min(euclidean_dist(points[i], roost), euclidean_dist(points[j], roost))
+                                   : euclidean_dist(points[i], roost) + euclidean_dist(points[j], roost);
+                dp[m1] = min(dp[m1], dp[m1 ^ m2] + dist);
             }
         }
 
