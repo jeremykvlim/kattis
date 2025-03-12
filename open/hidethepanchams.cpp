@@ -116,7 +116,7 @@ struct Point {
 };
 
 template <typename T>
-double dist(const Point<T> &a, const Point<T> &b) {
+double euclidean_dist(const Point<T> &a, const Point<T> &b) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
@@ -166,7 +166,7 @@ int main() {
     vector<Point<long long>> points(n);
     for (auto &[x, y] : points) cin >> x >> y;
 
-    vector<double> d(1 << n, 0), dp(1 << n, 1e18);
+    vector<double> dist(1 << n, 0), dp(1 << n, 1e18);
     dp[0] = 0;
     for (int mask = 0; mask < 1 << n; mask++) {
         vector<Point<long long>> enclosure;
@@ -175,11 +175,11 @@ int main() {
         if (enclosure.empty()) continue;
 
         auto convex_hull = monotone_chain(enclosure);
-        for (int i = convex_hull.size() - 1, j = 0; j < convex_hull.size(); i = j++) d[mask] += dist(convex_hull[i], convex_hull[j]);
+        for (int i = convex_hull.size() - 1, j = 0; j < convex_hull.size(); i = j++) dist[mask] += euclidean_dist(convex_hull[i], convex_hull[j]);
     }
 
     for (int m1 = 1; m1 < 1 << n; m1++)
         for (int m2 = m1; m2; --m2 &= m1)
-            if (popcount((unsigned) m2) > 2) dp[m1] = min(dp[m1], dp[m1 ^ m2] + d[m2]);
+            if (popcount((unsigned) m2) > 2) dp[m1] = min(dp[m1], dp[m1 ^ m2] + dist[m2]);
     cout << fixed << setprecision(6) << dp.back();
 }
