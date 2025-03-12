@@ -121,7 +121,7 @@ T cross(const Point<T> &a, const Point<T> &b) {
 }
 
 template <typename T>
-double dist(const Point<T> &a, const Point<T> &b) {
+double euclidean_dist(const Point<T> &a, const Point<T> &b) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
@@ -161,7 +161,7 @@ int main() {
         int mid1 = indices[li.i], mid2 = indices[li.j];
         if (mid1 > mid2) swap(mid1, mid2);
 
-        long long d = cross(points[mid1], li.a - li.b), limit = dist(li.a, li.b) * t;
+        long long d = cross(points[mid1], li.a - li.b), limit = euclidean_dist(li.a, li.b) * t;
         auto search = [&](int l, int r, bool half) {
             if (l + 1 >= r) return;
 
