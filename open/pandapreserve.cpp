@@ -138,7 +138,7 @@ struct Point {
 };
 
 template <typename T>
-double dist(const Point<T> &a, const Point<T> &b) {
+double euclidean_dist(const Point<T> &a, const Point<T> &b) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
@@ -463,7 +463,7 @@ int main() {
     for (int i = 0; i < vd.voronoi_vertices.size(); i++) {
         auto cc = vd.voronoi_vertices[i];
         auto [in, on] = point_in_polygon(polygon, cc);
-        if (in || on) range = max(range, dist(cc, polygon[vd.triangles[i][0]]));
+        if (in || on) range = max(range, euclidean_dist(cc, polygon[vd.triangles[i][0]]));
     }
 
     for (int i = 0; i < vd.voronoi_edges.size(); i++) {
@@ -472,7 +472,7 @@ int main() {
             auto l2 = Line(polygon[j], polygon[(j + 1) % n]);
             if (intersects(l1, l2) && !collinear(l1, l2)) {
                 auto p = non_collinear_intersection(l1, l2), l = max(min(l1.a, l1.b), min(l2.a, l2.b)), r = min(max(l1.a, l1.b), max(l2.a, l2.b));
-                if (l <= p && p <= r) range = max(range, dist(p, polygon[vd.edge_match[i]]));
+                if (l <= p && p <= r) range = max(range, euclidean_dist(p, polygon[vd.edge_match[i]]));
             }
         }
     }
