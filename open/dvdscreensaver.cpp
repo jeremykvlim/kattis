@@ -8,17 +8,17 @@ pair<T, T> bezout(T a, T b) {
     return {y - (b / a) * x, x};
 }
 
-long long congruence(long long base, long long b, long long mod) {
-    auto g = __gcd(base, mod);
+template <typename T>
+T linear_congruence_solution(T a, T b, T n) {
+    auto g = __gcd(a, n);
     if (b % g) return -1;
 
+    a /= g;
     b /= g;
-    base /= g;
-    mod /= g;
-    auto [x, y] = bezout(base, mod);
-    x %= mod;
-    if (x < 0) x += mod;
-    return b * x % mod;
+    n /= g;
+    auto [x, y] = bezout(a, n);
+    x = (x + n) % n;
+    return (b * x) % n;
 }
 
 int main() {
@@ -34,8 +34,7 @@ int main() {
 
         ws -= wl;
         hs -= hl;
-        auto base = ws % hs, b = ((hs - yl) % hs - ((ws - xl) % ws) % hs + hs) % hs, x = congruence(base, b, hs);
-
+        auto a = ws % hs, b = ((hs - yl) % hs - ((ws - xl) % ws) % hs + hs) % hs, x = linear_congruence_solution(a, b, hs);
         cout << ((x == -1) ? "Johnny will die waiting\n" : to_string(x * ws + (ws - xl) % ws) + "\n");
     }
 }
