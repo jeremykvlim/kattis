@@ -131,12 +131,7 @@ T cross(const Point<T> &a, const Point<T> &b) {
 }
 
 template <typename T>
-double dist(const Point<T> &p) {
-    return sqrt(p.x * p.x + p.y * p.y);
-}
-
-template <typename T>
-double dist(const Point<T> &a, const Point<T> &b) {
+double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
@@ -195,7 +190,7 @@ int main() {
                 if (point_in_polygon({prev, spot, toy}, t).first) {
                     auto b = t - prev;
 
-                    auto theta = acos(dot(a, b) / (dist(a) * dist(b)));
+                    auto theta = acos(dot(a, b) / (euclidean_dist(a) * euclidean_dist(b)));
                     if (smallest > theta) {
                         smallest = theta;
                         tree = t;
@@ -218,7 +213,7 @@ int main() {
             }
 
             double l = 0;
-            for (int i = 0; i < wrapped.size(); i++) l += dist(wrapped[i], (i + 1 < wrapped.size()) ? wrapped[i + 1] : spot);
+            for (int i = 0; i < wrapped.size(); i++) l += euclidean_dist(wrapped[i], (i + 1 < wrapped.size()) ? wrapped[i + 1] : spot);
             len = max(len, l);
         }
 
