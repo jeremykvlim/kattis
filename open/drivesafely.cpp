@@ -116,7 +116,7 @@ struct Point {
 };
 
 template <typename T>
-double dist(const Point<T> &a, const Point<T> &b) {
+double euclidean_dist(const Point<T> &a, const Point<T> &b) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
@@ -133,11 +133,11 @@ int main() {
     vector<double> len(n - 1, 0), angle(n, 0);
     angle[0] = 180;
     for (int i = 0; i < n - 1; i++) {
-        len[i] = dist(points[i], points[i + 1]);
+        len[i] = euclidean_dist(points[i], points[i + 1]);
 
         if (i < n - 2) {
             auto x1 = points[i + 1].x - points[i].x, y1 = points[i + 1].y - points[i].y,
-                 x2 = points[i + 2].x - points[i + 1].x, y2 = points[i + 2].y - points[i + 1].y;
+                    x2 = points[i + 2].x - points[i + 1].x, y2 = points[i + 2].y - points[i + 1].y;
 
             angle[i + 1] = 180 - abs(atan2(x1 * y2 - x2 * y1, x1 * x2 + y1 * y2)) / M_PI * 180;
         }
