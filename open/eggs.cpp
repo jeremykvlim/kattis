@@ -116,7 +116,7 @@ struct Point {
 };
 
 template <typename T>
-double dist(const Point<T> &a, const Point<T> &b) {
+double euclidean_dist(const Point<T> &a, const Point<T> &b) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
@@ -135,7 +135,7 @@ int main() {
         for (int i = 0; i < n; i++) {
             sun[i] = (720 + (double) points[i].x / 2000) * 60;
 
-            for (int j = 0; j <= n; j++) time[i][j] = dist(points[i], points[j]) / v;
+            for (int j = 0; j <= n; j++) time[i][j] = euclidean_dist(points[i], points[j]) / v;
         }
 
         vector<double> dp(1 << n, INT_MAX);
