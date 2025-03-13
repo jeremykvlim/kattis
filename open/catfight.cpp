@@ -116,6 +116,11 @@ struct Point {
 };
 
 template <typename T>
+double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
+    return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
+}
+
+template <typename T>
 double squared_dist(const Point<T> &a, const Point<T> &b) {
     return (double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y);
 }
@@ -158,13 +163,27 @@ pair<pair<int, int>, double> closest_pair(const vector<Point<T>> &points) {
     return {{a, b}, d};
 }
 
-double circle_intersection_area(double d, double r1, double r2) {
-    if (d >= r1 + r2) return 0;
+template <typename T>
+struct Circle {
+    Point<T> origin;
+    T radius;
 
-    auto rmin = min(r1, r2), rmax = max(r1, r2);
+    Circle() {}
+    Circle(const Point<T> &o, const T &r) : origin(o), radius(r) {}
+};
+
+template <typename T>
+T circle_intersection_area(const Circle<T> &c1, const Circle<T> &c2) {
+    T d = euclidean_dist(c1.origin, c2.origin);
+
+    if (d >= c1.radius + c2.radius) return 0;
+
+    auto [rmin, rmax] = minmax(c1.radius, c2.radius);
     if (d <= rmax - rmin) return M_PI * rmin * rmin;
 
-    auto r1sq = r1 * r1, r2sq = r2 * r2, alpha = acos((d * d + r1sq - r2sq) / (2 * d * r1)) * 2, beta = acos((d * d + r2sq - r1sq) / (2 * d * r2)) * 2;
+    auto r1sq = c1.radius * c1.radius, r2sq = c2.radius * c2.radius,
+         alpha = acos((d * d + r1sq - r2sq) / (2 * d * c1.radius)) * 2,
+         beta = acos((d * d + r2sq - r1sq) / (2 * d * c2.radius)) * 2;
     return 0.5 * (r1sq * (alpha - sin(alpha)) + r2sq * (beta - sin(beta)));
 }
 
@@ -237,8 +256,18 @@ int main() {
     }
 
     double overlap = 0;
-    if (male.size() >= 2) overlap = max(overlap, circle_intersection_area(sqrt(closest_pair(male).second), rm, rm));
-    if (female.size() >= 2) overlap = max(overlap, circle_intersection_area(sqrt(closest_pair(female).second), rf, rf));
+    if (male.size() >= 2) {
+        auto [pair, d] = closest_pair(male);
+        auto [a, b] = pair;
+        Circle c1(male[a], rm), c2(male[b], rm);
+        overlap = max(overlap, circle_intersection_area(c1, c2));
+    }
+    if (female.size() >= 2) {
+        auto [pair, d] = closest_pair(female);
+        auto [a, b] = pair;
+        Circle c1(female[a], rf), c2(female[b], rf);
+        overlap = max(overlap, circle_intersection_area(c1, c2));
+    }
     if (!female.empty() && !male.empty()) {
         auto g1 = male, g2 = female;
         if (male.size() >= female.size()) swap(g1, g2);
@@ -246,7 +275,8 @@ int main() {
         KDTree<double> kdt(g1.size(), g1);
         auto d = 1e30;
         for (auto p : g2) d = min(d, kdt.nearest_neighbour_dist(p));
-        overlap = max(overlap, circle_intersection_area(sqrt(d), rf, rm));
+        Circle c1({0, 0}, rf), c2({sqrt(d), 0}, rm);
+        overlap = max(overlap, circle_intersection_area(c1, c2));
     }
     cout << fixed << setprecision(5) << overlap;
 }
