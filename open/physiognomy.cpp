@@ -209,12 +209,13 @@ int main() {
         for (int j = i + 1; j < 4 * n; j++) {
             auto a = corners[i], b = corners[j];
             if (a == b) continue;
+            auto c = a + b;
             Line<double> l1(a, b);
             for (int k = 0; k < n; k++) {
-                if ((a.x + b.x == 2 * lamps[k].x + 1 && a.y + b.y == 2 * lamps[k].y) ||
-                    (a.x + b.x == 2 * lamps[k].x - 1 && a.y + b.y == 2 * lamps[k].y) ||
-                    (a.x + b.x == 2 * lamps[k].x && a.y + b.y == 2 * lamps[k].y + 1) ||
-                    (a.x + b.x == 2 * lamps[k].x && a.y + b.y == 2 * lamps[k].y - 1) ||
+                if (c + Point(1, 0) == lamps[k] * 2 ||
+                    c + Point(-1, 0) == lamps[k] * 2 ||
+                    c + Point(0, 1) == lamps[k] * 2 ||
+                    c + Point(0, -1) == lamps[k] * 2 ||
                     point_on_line(lamps[k], l1, false) ||
                     point_on_line(corners[4 * k], l1, false) ||
                     point_on_line(corners[4 * k + 1], l1, false) ||
@@ -222,7 +223,7 @@ int main() {
                     point_on_line(corners[4 * k + 3], l1, false)) goto next;
 
                 Line<double> l2(corners[4 * k], corners[4 * k + 1]), l3(corners[4 * k], corners[4 * k + 2]),
-                             l4(corners[4 * k + 3], corners[4 * k + 1]), l5(corners[4 * k + 3], corners[4 * k + 2]);
+                        l4(corners[4 * k + 3], corners[4 * k + 1]), l5(corners[4 * k + 3], corners[4 * k + 2]);
                 for (auto l : {l2, l3, l4, l5}) {
                     if (!intersects(l1, l) || collinear(l1, l)) continue;
                     auto p = non_collinear_intersection(l1, l);
