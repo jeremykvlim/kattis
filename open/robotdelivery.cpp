@@ -69,7 +69,7 @@ int main() {
 
     int d = -1;
     vector<int> dx{1, 0, -1, 0}, dy{0, 1, 0, -1};
-    vector<vector<int>> robotToPerson(n, vector<int>(n, -1));
+    vector<vector<int>> time(n, vector<int>(n, -1));
     queue<pair<int,int>> q;
     for (int i = 0; i < n; i++) {
         auto [sr, sc] = robots[i];
@@ -93,17 +93,17 @@ int main() {
         for (int j = 0; j < n; j++) {
             auto [pr, pc] = people[j];
             if (dist[pr][pc] != -1) {
-                robotToPerson[i][j] = dist[pr][pc];
+                time[i][j] = dist[pr][pc];
                 d = max(d, dist[pr][pc]);
             }
         }
     }
 
-    auto matchable = [&](int k) -> bool {
+    auto matchable = [&](int t) -> bool {
         vector<pair<int, int>> edges;
         for (int i = 0; i < n; i++)
             for (int j = 0; j < n; j++)
-                if (robotToPerson[i][j] != -1 && robotToPerson[i][j] <= k) edges.emplace_back(i, j);
+                if (time[i][j] != -1 && time[i][j] <= t) edges.emplace_back(i, j);
 
         auto [l, r, matches] = hopcroft_karp(n, n, edges);
         return matches == n;
