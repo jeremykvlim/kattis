@@ -116,7 +116,7 @@ struct Point {
 };
 
 template <typename T>
-T manhattan_dist(const Point<T> &a, const Point<T> &b) {
+T manhattan_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
     return abs(a.x - b.x) + abs(a.y - b.y);
 }
 
