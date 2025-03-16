@@ -7,12 +7,12 @@ struct FenwickTree {
     function<T(T, T)> f;
 
     void update(int i, T v) {
-        for (; i < BIT.size(); i += i & -i) BIT[i] = f(BIT[i], v);
+        for (; i && i < BIT.size(); i += i & -i) BIT[i] = f(BIT[i], v);
     }
 
     T range_query(int i) {
         T v = numeric_limits<T>::max();
-        for (; i; i &= (i - 1)) v = f(v, BIT[i]);
+        for (; i; i &= i - 1) v = f(v, BIT[i]);
         return v;
     }
 
