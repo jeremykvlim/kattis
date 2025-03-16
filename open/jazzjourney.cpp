@@ -48,10 +48,10 @@ int main() {
         cin >> sk >> dk >> tk >> pk;
 
         auto p = make_pair(sk, dk);
-        if (tk == 'O' && (!price_o.count(p) || pk < price_o[p])) price_o[p] = pk;
-        if (tk == 'R' && (!price_r.count(p) || pk < price_r[p])) price_r[p] = pk;
+        if (tk == 'O' && (!price_o.count(p) || price_o[p] > pk)) price_o[p] = pk;
+        if (tk == 'R' && (!price_r.count(p) || price_r[p] > pk)) price_r[p] = pk;
 
-        if (price_r.count(p) && (!price_o.count(p) || price_r[p] < price_o[p])) price_o[p] = price_r[p];
+        if (price_r.count(p) && (!price_o.count(p) || price_o[p] > price_r[p])) price_o[p] = price_r[p];
     }
 
     unordered_map<pair<int, int>, int, Hash> flights;
