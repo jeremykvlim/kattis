@@ -1,15 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void relax(int u, int v, long long t, unordered_map<int, long long> &time, priority_queue<int, vector<int>, greater<>> &pq) {
-    if (!time.count(u)) time[u] = LLONG_MAX;
-
-    if (time[u] > time[v] + t) {
-        time[u] = time[v] + t;
-        pq.emplace(u);
-    }
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -21,7 +12,7 @@ int main() {
     for (int i = 0; i < n; i++) cin >> l[i] >> r[i];
     l[n] = s;
 
-    unordered_map<int, long long> time{{0, 0}};
+    unordered_map<int, long long> dist{{0, 0}};
     unordered_map<int, bool> visited;
     priority_queue<int, vector<int>, greater<>> pq;
     pq.emplace(0);
@@ -32,23 +23,29 @@ int main() {
         if (visited[v]) continue;
 
         visited[v] = true;
+
+        auto relax = [&](int u, int v, long long t) {
+            if (!dist.count(u) || dist[u] > dist[v] + t) {
+                dist[u] = dist[v] + t;
+                pq.emplace(u);
+            }
+        };
         int curr = lower_bound(begin(l), end(l), v) - begin(l);
         if ((l[curr] - v) / d > 1) {
             int jumps = max(0, (l[curr] - v) / d - 1);
-            relax(v + jumps * d, v, (long long) jumps * t, time, pq);
+            relax(v + jumps * d, v, (long long) jumps * t);
         } else {
             int next = curr;
             while (next < n && r[next] <= v + d) next++;
-            relax(min(v + d, l[next]), v, t, time, pq);
+            relax(min(v + d, l[next]), v, t);
         }
 
         if (curr < n)
             for (int i = curr; i < n; i++) {
                 int u = r[i] - d;
-                if (v <= u && u <= l[curr]) relax(u, v, u - v, time, pq);
+                if (v <= u && u <= l[curr]) relax(u, v, u - v);
             }
-        else relax(s, v, s - v, time, pq);
+        else relax(s, v, s - v);
     }
-
-    cout << time[s];
+    cout << dist[s];
 }
