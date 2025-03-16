@@ -36,7 +36,9 @@ int main() {
     for (int &e : arr) cin >> e;
 
     D = min(D, n - 1);
-    vector<vector<tuple<int, int, int, int, bool>>> adj_list(1e6);
+    int p5 = 1;
+    for (int i = 0; i <= D; i++) p5 *= 5;
+    vector<vector<tuple<int, int, int, int, bool>>> adj_list(p5);
     gp_hash_table<vector<int>, int, Hash> cache;
     auto jump = [&](int v) -> void {
         enum State {
@@ -47,12 +49,8 @@ int main() {
             LOOP2 = 4
         };
 
-        int w = v;
         vector<int> states;
-        while (w) {
-            states.emplace_back(w % 5);
-            w /= 5;
-        }
+        for (int u = v; u; u /= 5) states.emplace_back(u % 5);
         states.resize(max(D + 1, (int) states.size()), UNVISITED);
 
         vector<int> path, unvisited;
@@ -165,7 +163,7 @@ int main() {
         adj_list[v].erase(unique(adj_list[v].begin(), adj_list[v].end()), adj_list[v].end());
     };
 
-    vector<bool> visited(1e6, false);
+    vector<bool> visited(p5, false);
     vector<int> visits;
     queue<int> q;
     q.emplace(0);
@@ -175,7 +173,7 @@ int main() {
 
         visits.emplace_back(v);
         jump(v);
-        for (auto [u, jumps, src, dest, end] : adj_list[v])
+        for (auto [u, jumps, l, r, end] : adj_list[v])
             if (!visited[u]) {
                 visited[u] = true;
                 q.emplace(u);
@@ -189,7 +187,7 @@ int main() {
         visited[v] = false;
     }
 
-    vector<vector<int>> dp(2, vector<int>(1e6, 0));
+    vector<vector<int>> dp(2, vector<int>(p5, 0));
     int len = -1;
     for (int i = 0; i + D < n; i++) {
         q.emplace(0);
@@ -217,8 +215,8 @@ int main() {
             q.pop();
 
             visits.emplace_back(v);
-            for (auto [u, jumps, src, dest, end] : adj_list[v])
-                if (abs(arr[i + src] - arr[i + dest]) <= M) {
+            for (auto [u, jumps, l, r, end] : adj_list[v])
+                if (abs(arr[i + l] - arr[i + r]) <= M) {
                     if (end) {
                         len = max(len, dp[i & 1][v]);
                         continue;
