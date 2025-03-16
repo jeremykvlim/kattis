@@ -213,8 +213,8 @@ int main() {
             Line<double> l1(a, b);
             for (int k = 0; k < n; k++) {
                 if (c + Point(1, 0) == lamps[k] * 2 ||
-                    c + Point(-1, 0) == lamps[k] * 2 ||
                     c + Point(0, 1) == lamps[k] * 2 ||
+                    c + Point(-1, 0) == lamps[k] * 2 ||
                     c + Point(0, -1) == lamps[k] * 2 ||
                     point_on_line(lamps[k], l1, false) ||
                     point_on_line(corners[4 * k], l1, false) ||
