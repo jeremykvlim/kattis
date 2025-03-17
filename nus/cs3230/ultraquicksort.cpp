@@ -14,7 +14,7 @@ int main() {
     for (int &e : a) cin >> e;
     reverse(a.begin(), a.end());
 
-    tree<int, null_type, less<>, rb_tree_tag, tree_order_statistics_node_update> t;
+    tree<int, null_type, less_equal<>, rb_tree_tag, tree_order_statistics_node_update> t;
     auto inversions = 0LL;
     for (int e : a) {
         t.insert(e);
