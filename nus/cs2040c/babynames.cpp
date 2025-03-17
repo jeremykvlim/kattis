@@ -7,7 +7,7 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    tree<string, null_type, less<string>, rb_tree_tag, tree_order_statistics_node_update> male, female;
+    tree<string, null_type, less<>, rb_tree_tag, tree_order_statistics_node_update> male, female;
     int command;
     while (cin >> command && command) {
         switch (command) {
