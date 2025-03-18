@@ -223,7 +223,7 @@ int main() {
                     point_on_line(corners[4 * k + 3], l1, false)) goto next;
 
                 Line<double> l2(corners[4 * k], corners[4 * k + 1]), l3(corners[4 * k], corners[4 * k + 2]),
-                        l4(corners[4 * k + 3], corners[4 * k + 1]), l5(corners[4 * k + 3], corners[4 * k + 2]);
+                             l4(corners[4 * k + 3], corners[4 * k + 1]), l5(corners[4 * k + 3], corners[4 * k + 2]);
                 for (auto l : {l2, l3, l4, l5}) {
                     if (!intersects(l1, l) || collinear(l1, l)) continue;
                     auto p = non_collinear_intersection(l1, l);
