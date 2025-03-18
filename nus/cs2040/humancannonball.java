@@ -12,7 +12,7 @@ public class humancannonball {
         var coords = new double[n + 2][2];
         coords[0] = src;
         coords[n + 1] = dest;
-        for (int i = 1; i < n + 1; i++) coords[i] = Arrays.stream(br.readLine().split(" ")).mapToDouble(Double::parseDouble).toArray();
+        for (int i = 1; i <= n; i++) coords[i] = Arrays.stream(br.readLine().split(" ")).mapToDouble(Double::parseDouble).toArray();
 
         var adjMatrix = new double[n + 2][n + 2];
         for (int i = 1; i < n + 2; i++)
