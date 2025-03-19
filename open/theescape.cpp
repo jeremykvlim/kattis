@@ -9,7 +9,7 @@ int main() {
     cin >> V >> P;
 
     vector<vector<int>> adj_list(V);
-    for(int i = 0; i < V - 1; i++) {
+    for (int _ = 0; _ < V - 1; _++) {
         int u, v;
         cin >> u >> v;
 
@@ -32,13 +32,10 @@ int main() {
             break;
         }
 
-    vector<int> dp1(V), dp3(V), dp2(V);
+    vector<int> dp1(V, 0), dp2(V), dp3(V);
+    for (int i = 0; i < V; i++) dp2[i] = dp3[i] = !pig[i];
     auto dfs = [&](auto &&self, int v, int prev = -1) {
-        if (v != start && adj_list[v].size() == 1) {
-            dp1[v] = 0;
-            dp2[v] = dp3[v] = !pig[v];
-            return;
-        }
+        if (v != start && adj_list[v].size() == 1) return;
 
         bool done = false;
         for (int u : adj_list[v])
