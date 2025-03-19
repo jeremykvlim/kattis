@@ -53,8 +53,8 @@ int main() {
                     }
                     done = true;
                 } else {
-                    dp1[v] = min(dp1[v] + dp1[u], min(dp3[v] + dp2[u], dp3[u] + dp2[v]));
-                    dp2[v] = min(dp2[v] + min(dp1[u], dp3[u]), dp3[v] + dp2[u]);
+                    dp1[v] = min(dp1[v] + dp1[u], min(dp2[u] + dp3[v], dp2[v] + dp3[u]));
+                    dp2[v] = min(dp2[v] + min(dp1[u], dp3[u]), dp2[u] + dp3[v]);
                     dp3[v] += min(dp1[u], dp3[u]);
                 }
             }
