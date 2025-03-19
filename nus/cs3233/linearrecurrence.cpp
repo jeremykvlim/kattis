@@ -422,8 +422,7 @@ T kitamasa(const vector<T> &c, const vector<T> &a, long long k) {
             for (int j = 0; j <= n; j++) z[i + j] += x[i] * y[j];
 
         for (int i = 2 * n; i > n; i--)
-            for (int j = 0; j < n; j++)
-                z[i - j - 1] += z[i] * c[j];
+            for (int j = 0; j < n; j++) z[i - j - 1] += z[i] * c[j];
 
         z.resize(n + 1);
         return z;
