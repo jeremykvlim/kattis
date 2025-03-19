@@ -32,7 +32,7 @@ int main() {
             break;
         }
 
-    vector<int> dp1(V), dp2(V), dp3(V);
+    vector<int> dp1(V), dp3(V), dp2(V);
     auto dfs = [&](auto &&self, int v, int prev = -1) {
         if (v != start && adj_list[v].size() == 1) {
             dp1[v] = 0;
@@ -47,23 +47,18 @@ int main() {
 
                 if (!done) {
                     if (pig[v]) {
-                        dp1[v] = dp3[u];
-                        dp2[v] = min(dp1[u], dp2[u]);
-                        dp3[v] = dp3[u];
+                        dp1[v] = dp2[v] = dp2[u];
+                        dp3[v] = min(dp1[u], dp3[u]);
                     } else {
                         dp1[v] = dp1[u];
-                        dp2[v] = min(dp1[u], dp2[u]) + 1;
-                        dp3[v] = dp3[u] + 1;
+                        dp2[v] = dp2[u] + 1;
+                        dp3[v] = min(dp1[u], dp3[u]) + 1;
                     }
                     done = true;
                 } else {
-                    int c1 = min(dp1[v] + dp1[u], min(dp2[v] + dp3[u], dp2[u] + dp3[v])),
-                        c2 = dp2[v] + min(dp1[u], dp2[u]),
-                        c3 = min(dp3[v] + min(dp1[u], dp2[u]), dp2[v] + dp3[u]);
-
-                    dp1[v] = c1;
-                    dp2[v] = c2;
-                    dp3[v] = c3;
+                    dp1[v] = min(dp1[v] + dp1[u], min(dp3[v] + dp2[u], dp3[u] + dp2[v]));
+                    dp2[v] = min(dp2[v] + min(dp1[u], dp3[u]), dp3[v] + dp2[u]);
+                    dp3[v] += min(dp1[u], dp3[u]);
                 }
             }
     };
