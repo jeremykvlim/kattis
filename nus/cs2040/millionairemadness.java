@@ -10,7 +10,7 @@ public class millionairemadness {
 
         if (m == 1 && n == 1) {
             System.out.println(0);
-            return;
+            System.exit(0);
         }
 
         var vault = new int[m][n];
