@@ -1,0 +1,450 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+template <typename T, typename U, typename V>
+T mul(U x, V y, T mod) {
+    return (unsigned __int128) x * y % mod;
+}
+
+template <typename T, typename U>
+T pow(T base, U exponent, T mod) {
+    T value = 1;
+    while (exponent) {
+        if (exponent & 1) value = mul(base, value, mod);
+        base = mul(base, base, mod);
+        exponent >>= 1;
+    }
+    return value;
+}
+
+bool isprime(unsigned long long n) {
+    if (n < 2) return false;
+    if (n == 2 || n == 5 || n == 11) return true;
+    if (n % 6 % 4 != 1) return (n | 1) == 3;
+
+    auto miller_rabin = [&](int a) {
+        int s = __builtin_ctzll(n - 1);
+        auto d = n >> s, x = pow(a % n, d, n);
+        if (x == 1 || x == n - 1) return true;
+
+        while (s--) {
+            x = mul(x, x, n);
+            if (x == n - 1) return true;
+        }
+        return false;
+    };
+    if (!miller_rabin(2) || !miller_rabin(3)) return false;
+
+    auto lucas_pseudoprime = [&]() {
+        auto normalize = [&](__int128 &x) {
+            if (x < 0) x += ((-x / n) + 1) * n;
+        };
+
+        __int128 D = -3;
+        for (;;) {
+            D += D > 0 ? 2 : -2;
+            D *= -1;
+
+            int jacobi = 1;
+            auto jacobi_symbol = [&](__int128 n) {
+                auto a = D;
+                normalize(a);
+
+                while (a) {
+                    while (!(a & 1)) {
+                        a >>= 1;
+                        if ((n & 7) == 3 || (n & 7) == 5) jacobi = -jacobi;
+                    }
+                    if ((a & 3) == 3 && (n & 3) == 3) jacobi = -jacobi;
+
+                    swap(a, n);
+                    a %= n;
+                }
+                return n == 1;
+            };
+            if (!jacobi_symbol(n)) return false;
+            if (jacobi == -1) break;
+        }
+
+        string bits;
+        auto temp = n + 1;
+        while (temp) {
+            bits += (temp & 1) ? '1' : '0';
+            temp >>= 1;
+        }
+        bits.pop_back();
+        reverse(bits.begin(), bits.end());
+
+        auto div2mod = [&](__int128 x) -> unsigned long long {
+            if (x & 1) x += n;
+            normalize(x >>= 1);
+
+            return x % n;
+        };
+
+        __int128 U = 1, V = 1;
+        for (char b : bits) {
+            auto U_2k = mul(U, V, n), V_2k = div2mod(mul(V, V, n) + D * mul(U, U, n));
+
+            if (b == '0') {
+                U = U_2k;
+                V = V_2k;
+            } else {
+                U = div2mod(U_2k + V_2k);
+                V = div2mod(D * U_2k + V_2k);
+            }
+        }
+
+        return !U;
+    };
+    return lucas_pseudoprime();
+}
+
+template <typename M>
+struct MontgomeryModInt {
+    using T = typename decay<decltype(M::value)>::type;
+    using U = typename conditional<is_same<T, unsigned int>::value, unsigned long long, typename conditional<is_same<T, unsigned long long>::value, unsigned __int128, void>::type>::type;
+    using I = typename conditional<is_same<T, unsigned int>::value, int, typename conditional<is_same<T, unsigned long long>::value, long long, void>::type>::type;
+    using J = typename conditional<is_same<T, unsigned int>::value, long long, typename conditional<is_same<T, unsigned long long>::value, __int128, void>::type>::type;
+
+    T value;
+    static pair<T, U> r;
+    static bool prime_mod;
+    static constexpr int bit_length = sizeof(T) * 8;
+
+    static void init() {
+        prime_mod = mod() == 998244353 || mod() == (unsigned long long) 1e9 + 7 || mod() == (unsigned long long) 1e9 + 9 || mod() == (unsigned long long) 1e6 + 69 || mod() == 2524775926340780033 || isprime(mod());
+        r = {mod(), - (U) mod() % mod()};
+        while (mod() * r.first != 1) r.first *= (T) 2 - mod() * r.first;
+    }
+
+    constexpr MontgomeryModInt() : value() {}
+
+    MontgomeryModInt(const J &x) {
+        value = reduce((U) x * r.second);
+    }
+
+    static T reduce(const U &x) {
+        T q = (U) x * r.first, v = (x >> bit_length) + mod() - (((U) q * mod()) >> bit_length);
+        return v >= mod() ? v - mod() : v;
+    }
+
+    T operator()() const {
+        return reduce((U) value);
+    }
+
+    template <typename V>
+    explicit operator V() const {
+        return (V) value;
+    }
+
+    constexpr static T mod() {
+        return M::value;
+    }
+
+    inline auto & operator+=(const MontgomeryModInt &v) {
+        if ((I) (value += v.value) >= mod()) value -= mod();
+        return *this;
+    }
+
+    inline auto & operator-=(const MontgomeryModInt &v) {
+        if ((I) (value -= v.value) < 0) value += mod();
+        return *this;
+    }
+
+    template <typename U>
+    inline auto & operator+=(const U &v) {
+        return *this += (MontgomeryModInt) v;
+    }
+
+    template <typename U>
+    inline auto & operator-=(const U &v) {
+        return *this -= (MontgomeryModInt) v;
+    }
+
+    auto & operator++() {
+        return *this += 1;
+    }
+
+    auto & operator--() {
+        return *this -= 1;
+    }
+
+    auto operator++(int) {
+        return *this += 1;
+    }
+
+    auto operator--(int) {
+        return *this -= 1;
+    }
+
+    auto operator-() const {
+        return (MontgomeryModInt) 0 - *this;
+    }
+
+    template <typename V = M>
+    typename enable_if<is_same<typename MontgomeryModInt<V>::T, unsigned int>::value, MontgomeryModInt>::type & operator*=(const MontgomeryModInt &v) {
+        value = reduce((unsigned long long) value * v.value);
+        return *this;
+    }
+
+    template <typename V = M>
+    typename enable_if<is_same<typename MontgomeryModInt<V>::T, unsigned long long>::value, MontgomeryModInt>::type & operator*=(const MontgomeryModInt &v) {
+        value = reduce((unsigned __int128) value * v.value);
+        return *this;
+    }
+
+    template <typename V = M>
+    typename enable_if<!is_integral<typename MontgomeryModInt<V>::T>::value, MontgomeryModInt>::type & operator*=(const MontgomeryModInt &v) {
+        value = reduce(value * v.value);
+        return *this;
+    }
+
+    auto & operator/=(const MontgomeryModInt &v) {
+        return *this *= inv(v);
+    }
+
+    MontgomeryModInt inv(const MontgomeryModInt &v) {
+        if (prime_mod) {
+            MontgomeryModInt inv = 1, base = v;
+            T n = mod() - 2;
+            while (n) {
+                if (n & 1) inv *= base;
+                base *= base;
+                n >>= 1;
+            }
+            return inv;
+        }
+
+        T x = 0, y = 1, a = v.value, m = mod();
+        while (a) {
+            T t = m / a;
+            m -= t * a;
+            swap(a, m);
+            x -= t * y;
+            swap(x, y);
+        }
+
+        return (MontgomeryModInt) x;
+    }
+};
+
+template <typename T>
+bool operator==(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return lhs.value == rhs.value;
+}
+
+template <typename T, typename U>
+bool operator==(const MontgomeryModInt<T> &lhs, U rhs) {
+    return lhs == MontgomeryModInt<T>(rhs);
+}
+
+template <typename T, typename U>
+bool operator==(U lhs, const MontgomeryModInt<T> &rhs) {
+    return MontgomeryModInt<T>(lhs) == rhs;
+}
+
+template <typename T>
+bool operator!=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return !(lhs == rhs);
+}
+
+template <typename T, typename U>
+bool operator!=(const MontgomeryModInt<T> &lhs, U rhs) {
+    return !(lhs == rhs);
+}
+
+template <typename T, typename U>
+bool operator!=(U lhs, const MontgomeryModInt<T> &rhs) {
+    return !(lhs == rhs);
+}
+
+template <typename T>
+bool operator>(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return lhs() > rhs();
+}
+
+template <typename T>
+bool operator<(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return lhs() < rhs();
+}
+
+template <typename T>
+bool operator>=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return lhs > rhs || lhs == rhs;
+}
+
+template <typename T>
+bool operator<=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return lhs < rhs || lhs == rhs;
+}
+
+template <typename T>
+MontgomeryModInt<T> operator+(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return MontgomeryModInt<T>(lhs) += rhs;
+}
+
+template <typename T, typename U>
+MontgomeryModInt<T> operator+(const MontgomeryModInt<T> &lhs, U rhs) {
+    return MontgomeryModInt<T>(lhs) += rhs;
+}
+
+template <typename T, typename U>
+MontgomeryModInt<T> operator+(U lhs, const MontgomeryModInt<T> &rhs) {
+    return MontgomeryModInt<T>(lhs) += rhs;
+}
+
+template <typename T>
+MontgomeryModInt<T> operator-(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return MontgomeryModInt<T>(lhs) -= rhs;
+}
+
+template <typename T, typename U>
+MontgomeryModInt<T> operator-(const MontgomeryModInt<T> &lhs, U rhs) {
+    return MontgomeryModInt<T>(lhs) -= rhs;
+}
+
+template <typename T, typename U>
+MontgomeryModInt<T> operator-(U lhs, const MontgomeryModInt<T> &rhs) {
+    return MontgomeryModInt<T>(lhs) -= rhs;
+}
+
+template <typename T>
+MontgomeryModInt<T> operator*(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return MontgomeryModInt<T>(lhs) *= rhs;
+}
+
+template <typename T, typename U>
+MontgomeryModInt<T> operator*(const MontgomeryModInt<T> &lhs, U rhs) {
+    return MontgomeryModInt<T>(lhs) *= rhs;
+}
+
+template <typename T, typename U>
+MontgomeryModInt<T> operator*(U lhs, const MontgomeryModInt<T> &rhs) {
+    return MontgomeryModInt<T>(lhs) *= rhs;
+}
+
+template <typename T>
+MontgomeryModInt<T> operator/(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
+    return MontgomeryModInt<T>(lhs) /= rhs;
+}
+
+template <typename T, typename U>
+MontgomeryModInt<T> operator/(const MontgomeryModInt<T> &lhs, U rhs) {
+    return MontgomeryModInt<T>(lhs) /= rhs;
+}
+
+template <typename T, typename U>
+MontgomeryModInt<T> operator/(U lhs, const MontgomeryModInt<T> &rhs) {
+    return MontgomeryModInt<T>(lhs) /= rhs;
+}
+
+template <typename U, typename T>
+U & operator<<(U &stream, const MontgomeryModInt<T> &v) {
+    return stream << v();
+}
+
+template <typename U, typename T>
+U & operator>>(U &stream, MontgomeryModInt<T> &v) {
+    typename common_type<typename MontgomeryModInt<T>::T, long long>::type x;
+    stream >> x;
+    v = MontgomeryModInt<T>(x);
+    return stream;
+}
+
+template <typename M>
+pair<typename MontgomeryModInt<M>::T, typename MontgomeryModInt<M>::U> MontgomeryModInt<M>::r;
+
+template <typename M>
+bool MontgomeryModInt<M>::prime_mod;
+
+constexpr unsigned long long MODULO = 1e9 + 9;
+using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
+
+template <typename T>
+struct FenwickTree {
+    vector<T> BIT;
+
+    void update(int i, T v) {
+        for (; i && i < BIT.size(); i += i & -i) BIT[i] += v;
+    }
+
+    T pref_sum(int i) {
+        T sum = 0;
+        for (; i; i &= i - 1) sum += BIT[i];
+        return sum;
+    }
+
+    FenwickTree(int n) : BIT(n, 0) {}
+};
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    modint::init();
+
+    int n;
+    cin >> n;
+
+    if (!n) {
+        cout << "shovel time!";
+        exit(0);
+    }
+
+    vector<pair<long long, int>> events(2 * n);
+    for (int i = 0; i < n; i++) {
+        long long a, b;
+        cin >> a >> b;
+
+        events[2 * i] = {a, 1};
+        events[2 * i + 1] = {b + 1, -1};
+    }
+    sort(events.begin(), events.end());
+
+    vector<pair<long long, long long>> segs;
+    auto total = 0LL, prev = events[0].first;
+    if (prev) segs.emplace_back(0, prev);
+    for (auto [p, delta] : events) {
+        if (prev < p) {
+            auto d = p - prev;
+            if (!segs.empty() && segs.back().first == total) segs.back().second += d;
+            else segs.emplace_back(total, d);
+
+            prev = p;
+        }
+        total += delta;
+    }
+
+    int m = segs.size();
+    vector<long long> levels(m), dist(m, 0);
+    for (int i = 0; i < m; i++) {
+        levels[i] = segs[i].first;
+        dist[i] = segs[i].second;
+    }
+    sort(levels.begin(), levels.end());
+    levels.erase(unique(levels.begin(), levels.end()), levels.end());
+
+    FenwickTree<long long> fw_l(m + 1), fw_r(m + 1);
+    vector<long long> l(m, 0), r(m, 0);
+    for (int i = 0; i < m; i++) {
+        int j = lower_bound(levels.begin(), levels.end(), segs[i].first) - levels.begin();
+        l[i] = j ? fw_l.pref_sum(j) : 0;
+        fw_l.update(j + 1, segs[i].second);
+    }
+
+    for (int i = m - 1; ~i; i--) {
+        int j = lower_bound(levels.begin(), levels.end(), segs[i].first) - levels.begin();
+        r[i] = fw_r.pref_sum(levels.size()) - fw_r.pref_sum(j + 1);
+        fw_r.update(j + 1, segs[i].second);
+    }
+
+    if (ranges::none_of(views::iota(0, m), [&](int i) {return l[i] && r[i] && dist[i];})) {
+        cout << "shovel time!";
+        exit(0);
+    }
+
+    modint ways = 0;
+    for (int i = 0; i < m; i++) ways += (modint) l[i] * r[i] * dist[i];
+    cout << ways;
+}
