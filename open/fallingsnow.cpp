@@ -402,25 +402,25 @@ int main() {
     }
     sort(events.begin(), events.end());
 
-    vector<pair<long long, long long>> segs;
+    vector<pair<long long, long long>> intervals;
     auto total = 0LL, prev = events[0].first;
-    if (prev) segs.emplace_back(0, prev);
+    if (prev) intervals.emplace_back(0, prev);
     for (auto [p, delta] : events) {
         if (prev < p) {
             auto d = p - prev;
-            if (!segs.empty() && segs.back().first == total) segs.back().second += d;
-            else segs.emplace_back(total, d);
+            if (!intervals.empty() && intervals.back().first == total) intervals.back().second += d;
+            else intervals.emplace_back(total, d);
 
             prev = p;
         }
         total += delta;
     }
 
-    int m = segs.size();
+    int m = intervals.size();
     vector<long long> levels(m), dist(m, 0);
     for (int i = 0; i < m; i++) {
-        levels[i] = segs[i].first;
-        dist[i] = segs[i].second;
+        levels[i] = intervals[i].first;
+        dist[i] = intervals[i].second;
     }
     sort(levels.begin(), levels.end());
     levels.erase(unique(levels.begin(), levels.end()), levels.end());
@@ -428,15 +428,15 @@ int main() {
     FenwickTree<long long> fw_l(m + 1), fw_r(m + 1);
     vector<long long> l(m, 0), r(m, 0);
     for (int i = 0; i < m; i++) {
-        int j = lower_bound(levels.begin(), levels.end(), segs[i].first) - levels.begin();
+        int j = lower_bound(levels.begin(), levels.end(), intervals[i].first) - levels.begin();
         l[i] = j ? fw_l.pref_sum(j) : 0;
-        fw_l.update(j + 1, segs[i].second);
+        fw_l.update(j + 1, intervals[i].second);
     }
 
     for (int i = m - 1; ~i; i--) {
-        int j = lower_bound(levels.begin(), levels.end(), segs[i].first) - levels.begin();
+        int j = lower_bound(levels.begin(), levels.end(), intervals[i].first) - levels.begin();
         r[i] = fw_r.pref_sum(levels.size()) - fw_r.pref_sum(j + 1);
-        fw_r.update(j + 1, segs[i].second);
+        fw_r.update(j + 1, intervals[i].second);
     }
 
     if (ranges::none_of(views::iota(0, m), [&](int i) {return l[i] && r[i] && dist[i];})) {
