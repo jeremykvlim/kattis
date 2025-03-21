@@ -13,10 +13,7 @@ int main() {
     getline(cin, S);
 
     istringstream iss(S);
-    vector<string> tokens;
-    string t;
-    while (iss >> t) tokens.emplace_back(t);
-
+    vector<string> tokens(istream_iterator<string>{iss}, istream_iterator<string>{});
     vector<char> ops;
     vector<int> repeats, indices;
     vector<vector<int>> adj_list;
@@ -80,7 +77,7 @@ int main() {
     int banks = min(b - 1, v / (s / 2 + 1)) - 1;
     vector<long long> dp1(1 << v, 0), dp2(1 << v, 0);
     for (int m1 = 0; m1 < 1 << v; m1++)
-        if (__builtin_popcount(m1) == s) {
+        if (popcount((unsigned) m1) == s) {
             for (auto &row : count) fill(row.begin(), row.end(), 0);
             R = C = -1;
             dfs(dfs, root, m1);
@@ -98,8 +95,8 @@ int main() {
             for (int m3 = (m1 + 1) & m2; m3; m3 = ((m3 | m1) + 1) & m2) {
                 dp1[m3] = 0;
 
-                int i = popcount((unsigned) m3);
-                if (i <= s) {
+                if (popcount((unsigned) m3) <= s) {
+                    int i = countr_zero((unsigned) m3);
                     dp2[m3] = dp2[m3 & (m3 - 1)] - count[i][i];
                     for (int j = i + 1; j < v; j++)
                         if ((m3 >> j) & 1) dp2[m3] -= count[i][j] + count[j][i];
