@@ -29,12 +29,12 @@ int main() {
         for (int &c : row) cin >> c;
 
     auto sum = LLONG_MAX;
-    auto calc = [&](bool x, bool y) -> void {
+    auto calc = [&](bool odd, bool even) -> void {
         for (int i = 0; i < n; i++)
             for (int j = 0; j < m; j++) {
                 if (!board[i][j]) continue;
-                if ((i & 1) != (j & 1) && (board[i][j] & 1) != (x ^ !(i & 1)) ||
-                   ((i & 1) == (j & 1) && (board[i][j] & 1) != (y ^ !(i & 1)))) return;
+                if ((i & 1) != (j & 1) && (board[i][j] & 1) != (odd ^ !(i & 1)) ||
+                   ((i & 1) == (j & 1) && (board[i][j] & 1) != (even ^ !(i & 1)))) return;
             }
 
         auto s = 0LL;
@@ -42,8 +42,8 @@ int main() {
         for (int i = 0; i < n; i++)
             for (int j = 0; j < m; j++) {
                 dp[i + 1][j + 1] = max(dp[i][j + 1], dp[i + 1][j]) + 1;
-                if ((i & 1) != (j & 1) && (dp[i + 1][j + 1] & 1) != (x ^ !(i & 1))) dp[i + 1][j + 1]++;
-                if ((i & 1) == (j & 1) && (dp[i + 1][j + 1] & 1) != (y ^ !(i & 1))) dp[i + 1][j + 1]++;
+                if ((i & 1) != (j & 1) && (dp[i + 1][j + 1] & 1) != (odd ^ !(i & 1))) dp[i + 1][j + 1]++;
+                if ((i & 1) == (j & 1) && (dp[i + 1][j + 1] & 1) != (even ^ !(i & 1))) dp[i + 1][j + 1]++;
                 if (board[i][j] && dp[i + 1][j + 1] > board[i][j]) return;
                 dp[i + 1][j + 1] = max(dp[i + 1][j + 1], board[i][j]);
                 s += dp[i + 1][j + 1];
