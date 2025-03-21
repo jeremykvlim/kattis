@@ -13,9 +13,9 @@ int main() {
 
         long long x;
         char op;
-        while (ss >> x) {
+        while (iss >> x) {
             nums.emplace_back(x);
-            ss >> op;
+            iss >> op;
             ops += op;
         }
 
