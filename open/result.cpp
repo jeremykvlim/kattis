@@ -9,7 +9,7 @@ int main() {
     while (cin >> s && s != "END") {
         vector<long long> nums;
         string ops;
-        stringstream ss(s);
+        istringstream iss(s);
 
         long long x;
         char op;
