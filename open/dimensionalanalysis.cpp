@@ -72,7 +72,7 @@ int main() {
         istringstream iss(s);
         vector<string> equation;
         string t;
-        while (ss >> t) equation.emplace_back(t);
+        while (iss >> t) equation.emplace_back(t);
 
         int sgn1 = 1;
         for (int j = 0; j < equation.size(); j++) {
