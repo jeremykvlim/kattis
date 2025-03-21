@@ -80,8 +80,8 @@ int main() {
     cin >> n >> q;
 
     Trie trie;
-    vector<string> dict(n);
-    for (auto &w : dict) {
+    while (n--) {
+        string w;
         cin >> w;
 
         auto rev = w;
@@ -92,6 +92,7 @@ int main() {
             both[2 * i] = w[i];
             both[2 * i + 1] = rev[i];
         }
+        
         trie.add(both, 0);
         trie.add(w, 1);
         trie.add(rev, 2);
