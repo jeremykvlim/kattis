@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -106,14 +106,13 @@ int main() {
 
     vector<long long> zeisel;
     for (int a = 1LL; a < 1e5; a++)
-        for (int b = 2 - a; a * (a + b - 1) < 1e5; b++) {
+        for (int b = 2 - a; a * (a + b - 1) < 1e5; b++)
             for (auto n = 0LL, p = 1LL, z = 1LL;; n++) {
                 p = p * a + b;
 
                 if (!isprime(p) || __builtin_mul_overflow(z, p, &z)) break;
                 if (n > 1) zeisel.emplace_back(z);
             }
-        }
     sort(zeisel.begin(), zeisel.end());
 
     int n;
