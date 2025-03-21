@@ -1,6 +1,10 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+bool ispalindrome(const string &s) {
+    return s == string(s.rbegin(), s.rend());
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -14,10 +18,6 @@ int main() {
         }
 
         if (a.size() > b.size()) swap(a, b);
-
-        auto ispalindrome = [](string s) {
-            return s == string(s.rbegin(), s.rend());
-        };
 
         for (int i = 0; i <= a.size(); i++) {
             auto xa = a.substr(0, i), xb = b.substr(0, i);
