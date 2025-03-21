@@ -15,7 +15,7 @@ int main() {
     istringstream iss(S);
     vector<string> tokens;
     string t;
-    while (ss >> t) tokens.emplace_back(t);
+    while (iss >> t) tokens.emplace_back(t);
 
     vector<char> ops;
     vector<int> repeats, indices;
