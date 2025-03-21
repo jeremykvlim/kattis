@@ -69,7 +69,7 @@ int main() {
         string s;
         getline(cin, s);
 
-        stringstream ss(s);
+        istringstream iss(s);
         vector<string> equation;
         string t;
         while (ss >> t) equation.emplace_back(t);
