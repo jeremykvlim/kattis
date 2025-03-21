@@ -36,7 +36,6 @@ int main() {
                     }
                 }
 
-
         cout << dp_min[0].back() << " " << dp_max[0].back() << "\n";
     }
 }
