@@ -23,7 +23,7 @@ bool isprime(unsigned long long n) {
     if (n % 6 % 4 != 1) return (n | 1) == 3;
 
     auto miller_rabin = [&](int a) {
-        int s = __builtin_ctzll(n - 1);
+        int s = countr_zero(n - 1);
         auto d = n >> s, x = pow(a % n, d, n);
         if (x == 1 || x == n - 1) return true;
 
