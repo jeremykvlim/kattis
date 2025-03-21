@@ -29,7 +29,7 @@ int main() {
         string tower, base;
         cin >> tower;
 
-        stringstream ss(tower);
+        istringstream iss(tower);
         while (getline(ss, base, '^')) t.emplace_back(stoi(base));
     }
     stable_sort(towers.begin(), towers.end(), [&](auto t1, auto t2) {
