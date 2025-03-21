@@ -12,7 +12,7 @@ int main() {
     string S;
     getline(cin, S);
 
-    stringstream ss(S);
+    istringstream iss(S);
     vector<string> tokens;
     string t;
     while (ss >> t) tokens.emplace_back(t);
