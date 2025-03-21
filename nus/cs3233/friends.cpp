@@ -11,10 +11,10 @@ int bron_kerbosch(int n, vector<unsigned __int128> adj_list) {
         }
 
         auto lsb = [&](unsigned __int128 v) {
-            return v ? ((v & ULLONG_MAX) ? __builtin_ctzll(v) : 64 + __builtin_ctzll(v >> 64)) : 0;
+            return v ? ((v & ULLONG_MAX) ? countr_zero(v) : 64 + countr_zero(v >> 64)) : 0;
         };
         int pivot = lsb(p | x);
-        
+
 
         auto candidates = p & ~adj_list[pivot];
         while (candidates && cliques <= 1e3) {
