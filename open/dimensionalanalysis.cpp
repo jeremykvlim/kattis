@@ -70,13 +70,11 @@ int main() {
         getline(cin, s);
 
         istringstream iss(s);
-        vector<string> equation;
-        string t;
-        while (iss >> t) equation.emplace_back(t);
+        vector<string> equation{istream_iterator<string>{iss}, istream_iterator<string>{}};
 
         int sgn1 = 1;
         for (int j = 0; j < equation.size(); j++) {
-            t = equation[j];
+            auto t = equation[j];
             if (t == "=") {
                 sgn1 = -1;
                 continue;
