@@ -115,11 +115,6 @@ struct Point {
     }
 };
 
-template <typename T>
-T manhattan_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
-    return abs(a.x - b.x) + abs(a.y - b.y);
-}
-
 template <typename T, typename U, typename V>
 T mul(U x, V y, T mod) {
     return (unsigned __int128) x * y % mod;
