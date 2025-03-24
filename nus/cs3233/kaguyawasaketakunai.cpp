@@ -5,8 +5,8 @@ template <typename T>
 struct FlowNetwork {
     struct Arc {
         int u, rev;
-        T cap, initial_cap;
-        Arc(int u, int rev, T cap) : u(u), rev(rev), cap(cap), initial_cap(cap) {}
+        T cap;
+        Arc(int u, int rev, T cap) : u(u), rev(rev), cap(cap) {}
     };
 
     int n;
@@ -77,15 +77,6 @@ struct FlowNetwork {
             }
 
         return -excess[s];
-    }
-
-    vector<tuple<int, int, T>> flow_decomposition() {
-        vector<tuple<int, int, T>> path;
-        for (int v = 0; v < n; v++)
-            for (auto [u, _, cap, initial_cap] : network[v])
-                if (cap > 0 && cap > initial_cap) path.emplace_back(u, v, cap - initial_cap);
-
-        return path;
     }
 };
 
