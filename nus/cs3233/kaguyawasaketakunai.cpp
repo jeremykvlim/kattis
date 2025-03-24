@@ -4,9 +4,9 @@ using namespace std;
 template <typename T>
 struct FlowNetwork {
     struct Arc {
-        int u, v;
+        int u, rev;
         T cap, initial_cap;
-        Arc(int u, int v, T cap) : u(u), v(v), cap(cap), initial_cap(cap) {}
+        Arc(int u, int rev, T cap) : u(u), rev(rev), cap(cap), initial_cap(cap) {}
     };
 
     int n;
@@ -36,7 +36,7 @@ struct FlowNetwork {
             int u = a.u;
             if (!excess[u] && delta) active_stacks[height[u]].emplace(u);
             a.cap -= delta;
-            network[u][a.v].cap += delta;
+            network[u][a.rev].cap += delta;
             excess[v] -= delta;
             excess[u] += delta;
         };
