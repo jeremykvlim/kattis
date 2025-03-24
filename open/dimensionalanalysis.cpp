@@ -9,7 +9,7 @@ struct Matrix {
     Matrix(int n) : Matrix(n, n) {}
     Matrix(int row, int col, int v = 0) : r(row), c(col), mat(row, vector<T>(col, v)) {}
 
-    void resize_c(int columns) {
+    void resize_columns(int columns) {
         c = columns;
         for (auto &row : mat) row.resize(c);
     }
@@ -87,6 +87,6 @@ int main() {
             }
         }
     }
-    A.resize_c(atoms.size());
+    A.resize_columns(atoms.size());
     cout << (rref(A) ? "invalid" : "valid");
 }
