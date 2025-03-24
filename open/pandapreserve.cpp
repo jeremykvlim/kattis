@@ -350,17 +350,17 @@ struct VoronoiDiagram {
             }
 
             auto [ldo, ldi] = self(self, {s.begin(), s.begin() + size / 2});
-            auto [rdo, rdi] = self(self, {s.begin() + size / 2, s.end()});
+            auto [rdi, rdo] = self(self, {s.begin() + size / 2, s.end()});
 
             for (;;) {
-                if (left_of(ldi, src(rdo))) ldi = lnext(ldi);
-                else if (right_of(rdo, src(ldi))) rdo = rprev(rdo);
+                if (left_of(ldi, src(rdi))) ldi = lnext(ldi);
+                else if (right_of(rdi, src(ldi))) rdi = rprev(rdi);
                 else break;
             }
 
-            int base = connect(symm(rdo), ldi);
+            int base = connect(symm(rdi), ldi);
             if (src(ldo) == src(ldi)) ldo = symm(base);
-            if (src(rdo) == src(rdi)) rdi = base;
+            if (src(rdi) == src(rdo)) rdo = base;
 
             for (;;) {
                 auto valid = [&](int i) {
@@ -388,7 +388,7 @@ struct VoronoiDiagram {
                 if (!vl || (vr && point_in_circumcircle({src(rc), dest(lc), src(lc)}, dest(rc)).first)) base = connect(rc, symm(base));
                 else base = connect(symm(base), symm(lc));
             }
-            return {ldo, rdi};
+            return {ldo, rdo};
         };
 
         int l = guibas_stolfi(guibas_stolfi, p).first;
