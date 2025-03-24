@@ -118,7 +118,7 @@ int main() {
 
     vector<pair<string, int>> rulings(L);
     for (int i = 0; i < L; i++)
-        for (auto [u, v, cap, _] : fn.network[i + 1])
+        for (auto [u, v, cap] : fn.network[i + 1])
             if (L < u && u <= L + R + s && !cap) {
                 if (u <= L + R) rulings[i] = {"INDV", edges[i].first};
                 else rulings[i] = {"CORP", edges[i].second};
