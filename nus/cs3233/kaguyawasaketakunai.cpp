@@ -136,7 +136,7 @@ int main() {
         int v = q.front();
         q.pop();
 
-        for (auto [u, _, cap, __] : fn.network[v])
+        for (auto [u, _, cap] : fn.network[v])
             if (cap > 0 && !visited[u]) {
                 visited[u] = true;
                 q.emplace(u);
