@@ -179,8 +179,7 @@ template <typename T>
 pair<bool, bool> point_in_circumcircle(const array<Point<T>, 3> &triangle, const Point<T> &p) {
     Point<T> a = triangle[0], b = triangle[1], c = triangle[2];
     T pa = dot(a - p, a - p), pb = dot(b - p, b - p), pc = dot(c - p, c - p), det = cross(a, b, p) * pc + cross(b, c, p) * pa + cross(c, a, p) * pb;
-    if (sgn(det) > 0) return {true, false};
-    if (!sgn(det)) return {false, true};
+    if (sgn(det) >= 0) return {sgn(det) > 0, !sgn(det)};
     return {false, false};
 }
 
