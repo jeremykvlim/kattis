@@ -54,11 +54,7 @@ public class virtualfriends {
         }
 
         int find(int v) {
-            while (v != sets[v]) {
-                sets[v] = sets[sets[v]];
-                v = sets[v];
-            }
-            return v;
+            return sets[v] == v ? v : (sets[v] = find(sets[v]));
         }
     }
 }
