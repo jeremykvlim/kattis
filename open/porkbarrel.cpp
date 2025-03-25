@@ -28,8 +28,9 @@ struct PersistentSegmentTree {
 
     PersistentSegmentTree(int n) : n(n), roots{0}, ST(1), children{{0, 0}} {}
 
-    void modify(int i, const int &v, const int &pos) {
+    int modify(int i, const int &v, const int &pos) {
         roots.emplace_back(modify(roots[i], v, pos, 1, n));
+        return roots.size() - 1;
     }
 
     int modify(int i, const int &v, const int &pos, int tl, int tr) {
@@ -148,19 +149,17 @@ int main() {
         sort(weights.begin() + 1, weights.end());
 
         WeightedDisjointSets wdsu(n + 1);
-        vector<int> offset(m + 1, 0);
         PersistentSegmentTree pst(m);
+        vector<int> version(m + 1, 0);
         for (int i = 1; i <= m; i++) {
             auto [xi, yi, wi] = edges[i];
-            pst.modify(i - 1 + offset[i - 1], wi, m - i + 1);
+            version[i] = pst.modify(version[i - 1], wi, m - i + 1);
 
             int j = wdsu.unite(xi, yi, {wi, i});
             if (j != -1) {
                 auto [xj, yj, wj] = edges[j];
-                pst.modify(i + offset[i]++, -wj, m - j + 1);
+                version[i] = pst.modify(version[i], -wj, m - j + 1);
             }
-
-            if (i < m) offset[i + 1] += offset[i];
         }
 
         int q;
@@ -172,7 +171,7 @@ int main() {
             cin >> l >> h;
 
             int i = m - (lower_bound(weights.begin() + 1, weights.end(), l - c) - weights.begin() - 1);
-            c = pst.range_query(i + offset[i], 1, upper_bound(weights.begin() + 1, weights.end(), h - c) - weights.begin()).sum;
+            c = pst.range_query(version[i], 1, upper_bound(weights.begin() + 1, weights.end(), h - c) - weights.begin()).sum;
             cout << c << "\n";
         }
     }
