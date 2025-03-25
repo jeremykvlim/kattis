@@ -1,6 +1,123 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+bool approximately_equal(const T &v1, const T &v2) {
+    return fabs(v1 - v2) <= 1e-5;
+}
+
+template <typename T>
+struct Point {
+    T x, y;
+
+    Point() {}
+    Point(T x, T y) : x(x), y(y) {}
+
+    template <typename U>
+    Point(U x, U y) : x(x), y(y) {}
+
+    template <typename U>
+    Point(const Point<U> &p) : x((T) p.x), y((T) p.y) {}
+
+    const auto begin() const {
+        return &x;
+    }
+
+    const auto end() const {
+        return &y + 1;
+    }
+
+    Point operator-() const {
+        return {-x, -y};
+    }
+
+    bool operator<(const Point &p) const {
+        return !approximately_equal(x, p.x) ? x < p.x : y < p.y;
+    }
+
+    bool operator>(const Point &p) const {
+        return !approximately_equal(x, p.x) ? x > p.x : y > p.y;
+    }
+
+    bool operator==(const Point &p) const {
+        if constexpr (is_floating_point_v<T>) return approximately_equal(x, p.x) && approximately_equal(y, p.y);
+        return x == p.x && y == p.y;
+    }
+
+    bool operator!=(const Point &p) const {
+        if constexpr (is_floating_point_v<T>) return !approximately_equal(x, p.x) || !approximately_equal(y, p.y);
+        return x != p.x || y != p.y;
+    }
+
+    bool operator<=(const Point &p) const {
+        return *this < p || *this == p;
+    }
+
+    bool operator>=(const Point &p) const {
+        return *this > p || *this == p;
+    }
+
+    Point operator+(const Point &p) const {
+        return {x + p.x, y + p.y};
+    }
+
+    Point operator+(const T &v) const {
+        return {x + v, y + v};
+    }
+
+    Point & operator+=(const Point &p) {
+        x += p.x;
+        y += p.y;
+        return *this;
+    }
+
+    Point & operator+=(const T &v) {
+        x += v;
+        y += v;
+        return *this;
+    }
+
+    Point operator-(const Point &p) const {
+        return {x - p.x, y - p.y};
+    }
+
+    Point operator-(const T &v) const {
+        return {x - v, y - v};
+    }
+
+    Point & operator-=(const Point &p) {
+        x -= p.x;
+        y -= p.y;
+        return *this;
+    }
+
+    Point & operator-=(const T &v) {
+        x -= v;
+        y -= v;
+        return *this;
+    }
+
+    Point operator*(const T &v) const {
+        return {x * v, y * v};
+    }
+
+    Point & operator*=(const T &v) {
+        x *= v;
+        y *= v;
+        return *this;
+    }
+
+    Point operator/(const T &v) const {
+        return {x / v, y / v};
+    }
+
+    Point & operator/=(const T &v) {
+        x /= v;
+        y /= v;
+        return *this;
+    }
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -13,47 +130,43 @@ int main() {
         exit(0);
     }
 
-    pair<__int128, __int128> a{1e7, 1e7}, b{1e7, 1e7}, c;
+    Point<__int128> a{1e7, 1e7}, b{1e7, 1e7}, c;
     vector<__int128> Y(n - 2);
     for (int i = 0; i < n; i++) {
-        int x, y;
-        cin >> x >> y;
+        Point<int> p;
+        cin >> p.x >> p.y;
 
-        if (a.first == 1e7) {
-            a = {x, y};
+        if (a.x == 1e7) {
+            a = p;
             continue;
         }
 
         auto adjust = [](auto &p) {
-            if (p.first < 0) {
-                p.first *= -1;
-                p.second *= -1;
-            }
+            if (p.x < 0) p *= -1;
         };
 
-        if (b.first == 1e7) {
-            b = {x - a.first, y - a.second};
+        if (b.x == 1e7) {
+            b = p - a;
             adjust(b);
             continue;
         }
 
-        c = {x - a.first, y - a.second};
+        c = p - a;
         adjust(c);
 
-        if (b.first < c.first) swap(b, c);
-        while (c.first) {
-            auto q = b.first / c.first;
-            b.first -= q * c.first;
-            b.second -= q * c.second;
-            if (b.first < c.first) swap(b, c);
+        if (b.x < c.x) swap(b, c);
+        while (c.x) {
+            auto q = b.x / c.x;
+            b -= c * q;
+            if (b.x < c.x) swap(b, c);
         }
 
-        Y[i - 2] = abs(c.second);
+        Y[i - 2] = abs(c.y);
     }
 
     auto g = Y[0];
     for (int i = 1; i < n - 2; i++) g = __gcd(g, Y[i]);
 
-    long long colours = abs(g * b.first);
+    long long colours = abs(g * b.x);
     cout << (!colours ? -1 : colours);
 }
