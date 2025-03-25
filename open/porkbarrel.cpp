@@ -152,7 +152,7 @@ int main() {
         PersistentSegmentTree pst(m);
         for (int i = 1; i <= m; i++) {
             auto [xi, yi, wi] = edges[i];
-            pst.modify(i - 1 + offset[i-1], wi, m - i + 1);
+            pst.modify(i - 1 + offset[i - 1], wi, m - i + 1);
 
             int j = wdsu.unite(xi, yi, {wi, i});
             if (j != -1) {
