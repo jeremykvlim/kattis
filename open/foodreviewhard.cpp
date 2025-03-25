@@ -4,15 +4,15 @@ using namespace std;
 struct DisjointSets {
     vector<int> sets, members;
 
-    int find(int p) {
-        return (sets[p] == p) ? p : (sets[p] = find(sets[p]));
+    int find(int v) {
+        return sets[v] == v ? v : (sets[v] = find(sets[v]));
     }
 
-    bool unite(int p, int q) {
-        int p_set = find(p), q_set = find(q);
-        if (p_set != q_set) {
-            sets[q_set] = p_set;
-            members[p_set] |= members[q_set];
+    bool unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set != v_set) {
+            sets[v_set] = u_set;
+            members[u_set] |= members[v_set];
             return true;
         }
         return false;
