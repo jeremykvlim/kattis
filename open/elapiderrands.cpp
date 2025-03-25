@@ -194,7 +194,7 @@ int main() {
                 if (p == start) break;
             }
 
-            Point<int> p{(int) 1e9, (int) 1e9};
+            Point<int> p{1e9, 1e9};
             for (auto pt : border)
                 if (manhattan_dist(P, p) > manhattan_dist(P, pt)) p = pt;
 
