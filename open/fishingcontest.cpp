@@ -191,8 +191,9 @@ struct PersistentSegmentTree {
 
     PersistentSegmentTree(int n) : n(n), roots{0}, ST(1), children{{0, 0}} {}
 
-    void modify(int i, const int &v, const int &pos) {
+    int modify(int i, const int &v, const int &pos) {
         roots.emplace_back(modify(roots[i], v, pos, 1, n));
+        return roots.size() - 1;
     }
 
     int modify(int i, const int &v, const int &pos, int tl, int tr) {
@@ -272,11 +273,11 @@ int main() {
     };
 
     int m0 = encode(0, 0),
-        centre = m0 | encode(1, 0) | encode(0, 1) | encode(-1, 0) | encode(0, -1),
-        up = centre | encode(-2, 0) | encode(-1, -1) | encode(-1, 1),
-        down = centre | encode(2, 0) | encode(1, -1) | encode(1, 1),
-        left = centre | encode(0, -2) | encode(-1, -1) | encode(1, -1),
-        right = centre | encode(0, 2) | encode(-1, 1) | encode(1, 1);
+            centre = m0 | encode(1, 0) | encode(0, 1) | encode(-1, 0) | encode(0, -1),
+            up = centre | encode(-2, 0) | encode(-1, -1) | encode(-1, 1),
+            down = centre | encode(2, 0) | encode(1, -1) | encode(1, 1),
+            left = centre | encode(0, -2) | encode(-1, -1) | encode(1, -1),
+            right = centre | encode(0, 2) | encode(-1, 1) | encode(1, 1);
 
     int most = 0;
     for (int t1 = 0; t1 <= l; t1++) {
