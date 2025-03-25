@@ -73,10 +73,10 @@ struct WeightedDisjointSets {
         shuffle(priority.begin(), priority.end(), mt19937(random_device{}()));
     }
 
-    int & compress(int u) {
-        if (sets[u] == u) return sets[u];
-        while (weight[sets[u]].first <= weight[u].first) sets[u] = sets[sets[u]];
-        return sets[u];
+    int & compress(int v) {
+        if (sets[v] == v) return sets[v];
+        while (weight[sets[v]].first <= weight[v].first) sets[v] = sets[sets[v]];
+        return sets[v];
     }
 
     int find(int u, int w = INT_MAX - 1) {
