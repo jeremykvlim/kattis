@@ -36,18 +36,23 @@ public class ladice {
             }
         }
 
-        boolean unite(int p, int q) {
-            int p_set = find(p), q_set = find(q);
-            if (p_set != q_set) {
-                sets[q_set] = p_set;
-                size[p_set] += size[q_set];
+        boolean unite(int u, int v) {
+            u = find(u);
+            v = find(v);
+            if (u != v) {
+                sets[v] = u;
+                size[u] += size[v];
                 return true;
             }
             return false;
         }
 
-        int find(int p) {
-            return (sets[p] == p) ? p : (sets[p] = find(sets[p]));
+        int find(int v) {
+            while (v != sets[v]) {
+                sets[v] = sets[sets[v]];
+                v = sets[v];
+            }
+            return v;
         }
     }
 }
