@@ -183,6 +183,9 @@ struct Point {
     Point(T x, T y) : x(x), y(y) {}
 
     template <typename U>
+    Point(U x, U y) : x(x), y(y) {}
+
+    template <typename U>
     Point(const Point<U> &p) : x((T) p.x), y((T) p.y) {}
 
     const auto begin() const {
