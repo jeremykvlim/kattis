@@ -65,13 +65,11 @@ struct PersistentSegmentTree {
 };
 
 struct WeightedDisjointSets {
-    vector<int> sets, priority;
+    vector<int> sets, size;
     vector<pair<int, int>> weight;
 
-    WeightedDisjointSets(int n) : sets(n), priority(n), weight(n, {INT_MAX, 0}) {
+    WeightedDisjointSets(int n) : sets(n), size(n, 1), weight(n, {INT_MAX, 0}) {
         iota(sets.begin(), sets.end(), 0);
-        iota(priority.begin(), priority.end(), 0);
-        shuffle(priority.begin(), priority.end(), mt19937(random_device{}()));
     }
 
     int & compress(int v) {
@@ -89,7 +87,8 @@ struct WeightedDisjointSets {
         while (u != v) {
             u = find(u, w.first);
             v = find(v, w.first);
-            if (priority[u] < priority[v]) swap(u, v);
+            if (size[u] < size[v]) swap(u, v);
+            size[u] += size[v];
             swap(compress(v), u);
             swap(weight[v], w);
         }
