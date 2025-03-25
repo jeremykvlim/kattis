@@ -273,11 +273,11 @@ int main() {
     };
 
     int m0 = encode(0, 0),
-            centre = m0 | encode(1, 0) | encode(0, 1) | encode(-1, 0) | encode(0, -1),
-            up = centre | encode(-2, 0) | encode(-1, -1) | encode(-1, 1),
-            down = centre | encode(2, 0) | encode(1, -1) | encode(1, 1),
-            left = centre | encode(0, -2) | encode(-1, -1) | encode(1, -1),
-            right = centre | encode(0, 2) | encode(-1, 1) | encode(1, 1);
+        centre = m0 | encode(1, 0) | encode(0, 1) | encode(-1, 0) | encode(0, -1),
+        up = centre | encode(-2, 0) | encode(-1, -1) | encode(-1, 1),
+        down = centre | encode(2, 0) | encode(1, -1) | encode(1, 1),
+        left = centre | encode(0, -2) | encode(-1, -1) | encode(1, -1),
+        right = centre | encode(0, 2) | encode(-1, 1) | encode(1, 1);
 
     int most = 0;
     for (int t1 = 0; t1 <= l; t1++) {
