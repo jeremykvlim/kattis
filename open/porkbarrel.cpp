@@ -63,136 +63,67 @@ struct PersistentSegmentTree {
     }
 };
 
-struct SplayTree {
-    struct SplayNode {
-        array<int, 3> family;
-        bool flip;
-        pair<int, int> base, aggregate;
+struct WeightedDisjointSets {
+    vector<int> sets, priority;
+    vector<pair<int, int>> weight;
 
-        SplayNode(int v = 0, int i = -1) : family{0, 0, 0}, flip(false), base{v, i}, aggregate{v, i} {}
-    };
-
-    vector<SplayNode> ST;
-
-    SplayTree(int n) : ST(n + 1) {}
-
-    auto & operator[](int i) {
-        return ST[i];
+    WeightedDisjointSets(int n) : sets(n), priority(n), weight(n, {INT_MAX, 0}) {
+        iota(sets.begin(), sets.end(), 0);
+        iota(priority.begin(), priority.end(), 0);
+        shuffle(priority.begin(), priority.end(), mt19937(random_device{}()));
     }
 
-    void pull(int i) {
-        if (!i) return;
-        auto [l, r, p] = ST[i].family;
-        ST[i].aggregate = max({ST[i].base, ST[l].aggregate, ST[r].aggregate});
+    int & compress(int u) {
+        if (sets[u] == u) return sets[u];
+        while (weight[sets[u]].first <= weight[u].first) sets[u] = sets[sets[u]];
+        return sets[u];
     }
 
-    void flip(int i) {
-        if (!i) return;
-        auto &[l, r, p] = ST[i].family;
-        swap(l, r);
-        ST[i].flip ^= true;
+    int find(int u, int w = INT_MAX - 1) {
+        while (weight[u].first <= w) u = compress(u);
+        return u;
     }
 
-    void push(int i) {
-        if (!i) return;
-        if (ST[i].flip) {
-            auto [l, r, p] = ST[i].family;
-            if (l) flip(l);
-            if (r) flip(r);
-            ST[i].flip = false;
+    void link(int u, int v, pair<int, int> w) {
+        while (u != v) {
+            u = find(u, w.first);
+            v = find(v, w.first);
+            if (priority[u] < priority[v]) swap(u, v);
+            swap(compress(v), u);
+            swap(weight[v], w);
         }
     }
 
-    void splay(int i) {
-        auto root = [&](int i) {
-            auto [l, r, p] = ST[ST[i].family[2]].family;
-            return !i || l != i && r != i;
-        };
+    void cut(int v) {
+        compress(v) = v;
+        weight[v] = {INT_MAX, 0};
+    }
 
-        auto child = [&](int i, int parent) {return ST[parent].family[1] == i;};
+    int path_max(int u, int v) {
+        if (find(u) != find(v)) return -1;
 
-        auto rotate = [&](int i) {
-            int j = ST[i].family[2], k = ST[j].family[2];
-            if (!root(j)) ST[k].family[child(j, k)] = i;
-
-            int c = child(i, j), s = ST[j].family[c] = ST[i].family[c ^ 1];
-            if (s) ST[s].family[2] = j;
-
-            ST[i].family[c ^ 1] = j;
-            ST[i].family[2] = k;
-            ST[j].family[2] = i;
-            pull(j);
-        };
-
-        auto propagate = [&](auto &&self, int i) -> void {
-            if (!root(i)) self(self, ST[i].family[2]);
-            push(i);
-        };
-
-        propagate(propagate, i);
-        while (!root(i)) {
-            int j = ST[i].family[2], k = ST[j].family[2];
-            if (!root(j)) rotate(child(i, j) != child(j, k) ? i : j);
-            rotate(i);
+        for (;;) {
+            if (weight[u].first > weight[v].first) swap(u, v);
+            if (compress(u) == v) break;
+            u = compress(u);
         }
-        pull(i);
+        return u;
     }
 
-    int subtree_min(int i) {
-        while (ST[i].family[0]) {
-            push(i);
-            i = ST[i].family[0];
+    int unite(int u, int v, pair<int, int> w) {
+        if (u == v) return w.second;
+
+        int t = path_max(u, v);
+        if (t == -1) {
+            link(u, v, w);
+            return -1;
+        } else if (weight[t].first > w.first) {
+            int i = weight[t].second;
+            cut(t);
+            link(u, v, w);
+            return i;
         }
-        push(i);
-        return i;
-    }
-};
-
-struct LinkCutTree : SplayTree {
-    LinkCutTree(int n) : SplayTree(n) {}
-
-    void access(int i) {
-        for (int u = 0, v = i; v; u = v, v = ST[v].family[2]) {
-            splay(v);
-            ST[v].family[1] = u;
-            pull(v);
-        }
-        splay(i);
-    }
-
-    int find(int i) {
-        access(i);
-        i = subtree_min(i);
-        splay(i);
-        return i;
-    }
-
-    void reroot(int i) {
-        access(i);
-        flip(i);
-        pull(i);
-    }
-
-    void link(int i, int j) {
-        reroot(i);
-        ST[i].family[2] = j;
-    }
-
-    void cut(int i) {
-        access(i);
-        ST[i].family[0] = ST[ST[i].family[0]].family[2] = 0;
-        pull(i);
-    }
-
-    void cut(int i, int j) {
-        reroot(i);
-        cut(j);
-    }
-
-    pair<int, int> path_max(int i, int j) {
-        reroot(i);
-        access(j);
-        return ST[j].aggregate;
+        return w.second;
     }
 };
 
@@ -202,8 +133,7 @@ int main() {
 
     int t;
     cin >> t;
-
-    while (t--) {
+    while(t--) {
         int n, m;
         cin >> n >> m;
 
@@ -217,26 +147,19 @@ int main() {
         sort(edges.begin() + 1, edges.end(), [](auto a1, auto a2) {return a1[2] > a2[2];});
         sort(weights.begin() + 1, weights.end());
 
-        LinkCutTree lct(m + n);
-        for (int i = 1; i <= m; i++) lct[i + n] = {edges[i][2], i};
-
+        WeightedDisjointSets wdsu(n + 1);
         vector<int> offset(m + 1, 0);
         PersistentSegmentTree pst(m);
         for (int i = 1; i <= m; i++) {
             auto [xi, yi, wi] = edges[i];
-            pst.modify(i - 1 + offset[i - 1], wi, m - i + 1);
+            pst.modify(i - 1 + offset[i-1], wi, m - i + 1);
 
-            if (lct.find(xi) == lct.find(yi)) {
-                int j = lct.path_max(xi, yi).second;
-
+            int j = wdsu.unite(xi, yi, {wi, i});
+            if (j != -1) {
                 auto [xj, yj, wj] = edges[j];
-                lct.cut(j + n, xj);
-                lct.cut(j + n, yj);
                 pst.modify(i + offset[i]++, -wj, m - j + 1);
             }
 
-            lct.link(i + n, xi);
-            lct.link(i + n, yi);
             if (i < m) offset[i + 1] += offset[i];
         }
 
