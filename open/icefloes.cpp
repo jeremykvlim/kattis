@@ -257,10 +257,12 @@ int main() {
         vector<double> possible;
         for (int i = 0; i < f; i++)
             if (areas[i] <= min(areas[s1], areas[s2])) possible.emplace_back(areas[i]);
+        
         if (possible.empty()) {
             cout << "Scientists cannot meet\n";
             continue;
         }
+        
         sort(possible.begin(), possible.end());
         possible.erase(unique(possible.begin(), possible.end()), possible.end());
 
@@ -289,6 +291,7 @@ int main() {
                 }
                 return false;
             };
+            
             if (bfs()) l = m;
             else r = m;
         }
