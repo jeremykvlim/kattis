@@ -112,17 +112,17 @@ struct WeightedDisjointSets {
     }
 
     int unite(int u, int v, pair<int, int> w) {
-        if (u == v) return w.second;
-
-        int t = path_max(u, v);
-        if (t == -1) {
-            link(u, v, w);
-            return -1;
-        } else if (weight[t].first > w.first) {
-            int i = weight[t].second;
-            cut(t);
-            link(u, v, w);
-            return i;
+        if (u != v) {
+            int t = path_max(u, v);
+            if (t == -1) {
+                link(u, v, w);
+                return -1;
+            } else if (weight[t].first > w.first) {
+                int i = weight[t].second;
+                cut(t);
+                link(u, v, w);
+                return i;
+            }
         }
         return w.second;
     }
@@ -134,7 +134,7 @@ int main() {
 
     int t;
     cin >> t;
-    
+
     while (t--) {
         int n, m;
         cin >> n >> m;
