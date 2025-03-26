@@ -96,6 +96,7 @@ struct WeightedDisjointSets {
 
     void cut(int v) {
         compress(v) = v;
+        size[v] = 1;
         weight[v] = {INT_MAX, 0};
     }
 
