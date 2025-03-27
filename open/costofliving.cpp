@@ -4,11 +4,10 @@ using namespace std;
 template <typename T>
 struct Matrix {
     int r, c;
-    bool recalibrate;
     vector<vector<T>> mat;
 
     Matrix(int n) : Matrix(n, n) {}
-    Matrix(int row, int col, int v = 0) : r(row), c(col), mat(row, vector<T>(col, v)), recalibrate(false) {}
+    Matrix(int row, int col, int v = 0) : r(row), c(col), mat(row, vector<T>(col, v)) {}
 
     auto & operator[](int i) {
         return mat[i];
@@ -17,16 +16,6 @@ struct Matrix {
     void add(vector<T> &row) {
         mat.emplace_back(row);
         r++;
-        
-        if (row.size() != c) {
-            c = max(c, (int) row.size());
-            recalibrate = true;
-        }
-    }
-
-    void adjust() {
-        if (!recalibrate) return;
-        for (auto &row : mat) row.resize(c);
     }
 };
 
@@ -58,7 +47,7 @@ vector<T> rref(Matrix<T> &matrix) {
     vector<T> solution(m - 1, -1);
     for (int i = 0; i < n; i++) {
         int l = find_if(matrix[i].begin(), matrix[i].end(), [](auto value) {return fabs(value) > 1e-9;}) - matrix[i].begin(),
-            r = find_if(matrix[i].rbegin() + 1, matrix[i].rend(), [](auto value) {return fabs(value) > 1e-9;}) - matrix[i].rbegin();
+                r = find_if(matrix[i].rbegin() + 1, matrix[i].rend(), [](auto value) {return fabs(value) > 1e-9;}) - matrix[i].rbegin();
 
         if (l + 1 == m - r) solution[l] = exp(matrix[i][m - 1]);
     }
@@ -103,8 +92,7 @@ int main() {
             row.back() = log(r[i]);
             A.add(row);
         }
-    
-    A.adjust();
+
     auto price = rref(A);
     while (q--) {
         int a, b;
