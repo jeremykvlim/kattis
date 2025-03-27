@@ -14,6 +14,9 @@ struct Point3D {
     Point3D(T x, T y, T z) : x(x), y(y), z(z) {}
 
     template <typename U>
+    Point3D(U x, U y, U z) : x(x), y(y), z(z) {}
+
+    template <typename U>
     Point3D(const Point3D<U> &p) : x((T) p.x), y((T) p.y), z((T) p.z) {}
 
     Point3D operator-() const {
