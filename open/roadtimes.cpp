@@ -72,7 +72,7 @@ pair<T, vector<T>> solve_linear_program(const vector<vector<T>> &A, const vector
     for (int i = 1; i < m; i++)
         if (tableau[i].back() < tableau[row].back()) row = i;
 
-    if (tableau[row][n + 1] < -1e-8) {
+    if (tableau[row][n + 1] <= -1e-8) {
         pivot(row, n);
         if (!simplex(1) || tableau[m + 1][n + 1] < -1e-8) return {-numeric_limits<T>::infinity(), {}};
         for (int i = 0; i < m; i++)
