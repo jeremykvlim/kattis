@@ -4,127 +4,94 @@ using namespace std;
 template <typename T>
 struct Matrix {
     int r, c;
-    bool recalibrate;
     vector<vector<T>> mat;
 
     Matrix(int n) : Matrix(n, n) {}
-    Matrix(int row, int col, int v = 0) : r(row), c(col), mat(row, vector<T>(col, v)), recalibrate(false) {}
+    Matrix(int row, int col, int v = 0) : r(row), c(col), mat(row, vector<T>(col, v)) {}
 
     auto & operator[](int i) {
         return mat[i];
     }
-
-    void add() {
-        vector<T> row(c, 0);
-        mat.emplace_back(row);
-        r++;
-    }
-
-    void add(vector<T> &row) {
-        mat.emplace_back(row);
-        r++;
-
-        if (row.size() != c) {
-            c = max(c, (int) row.size());
-            recalibrate = true;
-        }
-    }
-
-    void remove() {
-        mat.pop_back();
-        r--;
-    }
-
-    void adjust() {
-        if (!recalibrate) return;
-        for (auto &row : mat) row.resize(c);
-    }
 };
 
 template <typename T>
-vector<int> rref(Matrix<T> &matrix) {
-    int n = matrix.r, m = matrix.c;
+pair<T, vector<T>> solve_linear_program(const vector<vector<T>> &A, const vector<T> &b, const vector<T> &c) {
+    int m = b.size(), n = c.size();
 
-    vector<int> pivots(n, -1);
-    int rank = 0;
-    for (int c = 0; c < m && rank < n; c++) {
-        int pivot = rank;
-        for (int i = rank + 1; i < n; i++)
-            if (fabs(matrix[i][c]) > fabs(matrix[pivot][c])) pivot = i;
-
-        if (fabs(matrix[pivot][c]) < 1e-9) continue;
-        swap(matrix[pivot], matrix[rank]);
-        pivots[rank] = c;
-
-        auto temp = 1 / matrix[rank][c];
-        for (int j = 0; j < m; j++) matrix[rank][j] *= temp;
-
-        for (int i = 0; i < n; i++)
-            if (i != rank && fabs(matrix[i][c]) > 1e-9) {
-                temp = matrix[i][c];
-                for (int j = 0; j < m; j++) matrix[i][j] -= temp * matrix[rank][j];
-            }
-
-        rank++;
+    Matrix<T> tableau(m + 2, n + 2);
+    vector<T> basic(m), non_basic(n + 1);
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) tableau[i][j] = A[i][j];
+        basic[i] = n + i;
+        tableau[i][n] = -1;
+        tableau[i][n + 1] = b[i];
     }
 
-    return pivots;
-}
+    iota(non_basic.begin(), non_basic.end(), 0);
+    for (int j = 0; j < n; j++) tableau[m][j] = -c[j];
+    non_basic[n] = -1;
+    tableau[m + 1][n] = 1;
 
-template <typename T>
-void normalize_pivot_row(Matrix<T> &matrix, int p, T v) {
-    int m = matrix.c;
-    for (int i = 0; i < m; i++) matrix[p][i] /= v;
-}
-
-template <typename T>
-void eliminate_pivot_column(Matrix<T> &matrix, int row, int p, T v) {
-    int m = matrix.c;
-    for (int i = 0; i < m; i++) matrix[row][i] -= v * matrix[p][i];
-}
-
-template <typename T>
-void pivot(Matrix<T> &matrix, int pivot_col, int pivot_row) {
-    int n = matrix.r;
-
-    normalize_pivot_row(matrix, pivot_row, matrix[pivot_row][pivot_col]);
-
-    for (int i = 0; i < n - 1; i++)
-        if (i != pivot_row) eliminate_pivot_column(matrix, i, pivot_row, matrix[i][pivot_col]);
-}
-
-template <typename T>
-T simplex(Matrix<T> &matrix, vector<int> &pivots) {
-    T value = 0;
-    int n = matrix.r, m = matrix.c;
-    for (;;) {
-        T least = 0;
-        int pivot_col = -1;
-        for (int i = 0; i < m - 1; i++)
-            if (least < matrix[n - 1][i]) {
-                least = matrix[n - 1][i];
-                pivot_col = i;
+    auto pivot = [&](int row, int col) {
+        T inv = 1 / tableau[row][col];
+        for (int i = 0; i < m + 2; i++)
+            if (i != row && fabs(tableau[i][col]) > 1e-8) {
+                T temp = tableau[i][col] * inv;
+                for (int j = 0; j < n + 2; j++) tableau[i][j] -= tableau[row][j] * temp;
+                tableau[i][col] = tableau[row][col] * temp;
             }
-        if (pivot_col == -1) return value;
+        for (int i = 0; i < m + 2; i++)
+            if (i != row) tableau[i][col] *= -inv;
+        for (int j = 0; j < n + 2; j++)
+            if (j != col) tableau[row][j] *= inv;
+        tableau[row][col] = inv;
+        swap(basic[row], non_basic[col]);
+    };
 
-        T ratio = numeric_limits<T>::max();
-        int pivot_row = -1;
-        for (int i = 0; i < n - 1; i++)
-            if (ratio > -matrix[i][m - 1] / matrix[i][pivot_col] && matrix[i][pivot_col] > 1e-9) {
-                ratio = -matrix[i][m - 1] / matrix[i][pivot_col];
-                pivot_row = i;
+    auto simplex = [&](int phase) -> bool {
+        for (int r = m + (phase == 1);;) {
+            int col = -1;
+            for (int j = 0; j <= n; j++) {
+                if (phase == 2 && non_basic[j] == -1) continue;
+                if (col == -1 || pair<T, T>(tableau[r][j], non_basic[j]) < pair<T, T>(tableau[r][col], non_basic[col])) col = j;
             }
+            if (tableau[r][col] >= -1e-8) return true;
 
-        pivots[pivot_row] = pivot_col;
-        pivot(matrix, pivot_col, pivot_row);
+            int row = -1;
+            for (int i = 0; i < m; i++) {
+                if (tableau[i][col] <= 1e-8) continue;
+                if (row == -1 || pair<T, T>(tableau[i][n + 1] / tableau[i][col], basic[i]) < pair(tableau[row][n + 1] / tableau[row][col], basic[row])) row = i;
+            }
+            if (row == -1) return false;
 
-        T v = matrix[n - 1][pivot_col];
-        value -= v * matrix[pivot_row][m - 1];
-        eliminate_pivot_column(matrix, n - 1, pivot_row, v);
+            pivot(row, col);
+        }
+    };
+
+    int row = 0;
+    for (int i = 1; i < m; i++)
+        if (tableau[i].back() < tableau[row].back()) row = i;
+
+    if (tableau[row][n + 1] < -1e-8) {
+        pivot(row, n);
+        if (!simplex(1) || tableau[m + 1][n + 1] < -1e-8) return {-numeric_limits<T>::infinity(), {}};
+        for (int i = 0; i < m; i++)
+            if (basic[i] == -1) {
+                int col = -1;
+                for (int j = 0; j <= n; j++)
+                    if (col == -1 || pair<T, T>{tableau[i][j], non_basic[j]} < pair<T, T>{tableau[i][col], non_basic[col]}) col = j;
+                pivot(i, col);
+            }
     }
+    if (!simplex(2)) return {numeric_limits<T>::infinity(), {}};
+
+    vector<T> solution(n);
+    for (int i = 0; i < m; i++)
+        if (basic[i] < n) solution[basic[i]] = tableau[i][n + 1];
+    return {tableau[m][n + 1], solution};
 }
 
-vector<int> dijkstra_dense(int s, vector<vector<int>> adj_matrix) {
+vector<int> dijkstra_dense(int s, const vector<vector<int>> &adj_matrix) {
     int n = adj_matrix.size();
 
     vector<int> dist(n, INT_MAX), prev(n, -1);
@@ -156,114 +123,61 @@ int main() {
     int n;
     cin >> n;
 
-    vector<vector<int>> adj_matrix(n, vector<int>(n)), indices(n, vector<int>(n));
-    int c = 0;
+    vector<vector<int>> adj_matrix(n, vector<int>(n, 0));
+    vector<vector<int>> indices(n, vector<int>(n, -1));
+    vector<array<int, 3>> edges;
+    int count = 0;
     for (int i = 0; i < n; i++)
         for (int j = 0; j < n; j++) {
             cin >> adj_matrix[i][j];
 
-            if (adj_matrix[i][j] > 0) indices[i][j] = c++;
+            if (adj_matrix[i][j] > 0) {
+                edges.push_back({i, j, adj_matrix[i][j]});
+                indices[i][j] = count++;
+            }
         }
+
+    vector<vector<double>> A;
+    vector<double> b;
+    for (auto [u, v, w] : edges) {
+        vector<double> c(count, 0);
+        c[indices[u][v]] = 1;
+
+        A.emplace_back(c);
+        b.emplace_back(adj_matrix[u][v]);
+    }
+
+    auto path = [&](int s, int d) -> tuple<vector<double>, vector<double>, int> {
+        auto prev = dijkstra_dense(s, adj_matrix);
+        vector<int> p;
+        while (d != s) {
+            p.emplace_back(indices[prev[d]][d]);
+            d = prev[d];
+        }
+
+        vector<double> c_pos(count, 0), c_neg(count, 0);
+        int dist = 0;
+        for (int i : p) {
+            c_pos[i] = 1;
+            c_neg[i] = -1;
+            dist += edges[i][2];
+        }
+
+        return {c_pos, c_neg, dist};
+    };
 
     int r;
     cin >> r;
 
-    Matrix<double> A(r, c + 1);
-    auto path = [&](auto prev, int d, int s, auto &t, int row, bool rev = false) {
-        while (d != s) {
-            int v = prev[d];
-            A[row][indices[v][d]] = rev ? -1 : 1;
-            t += rev ? -adj_matrix[v][d] : adj_matrix[v][d];
-            d = v;
-        }
-    };
-
-    for (int i = 0; i < r; i++) {
+    while (r--) {
         int s, d, t;
         cin >> s >> d >> t;
 
-        auto prev = dijkstra_dense(s, adj_matrix);
-        t *= -1;
-        path(prev, d, s, t, i);
-        A[i][c] = t;
-    }
-    auto pivots = rref(A);
-
-    while (pivots.back() == -1) {
-        pivots.pop_back();
-        A.remove();
-        r--;
-    }
-
-    auto get_pivot = [&](int i) {
-        int p = -1;
-        for (int j = 0; j < pivots.size(); j++)
-            if (pivots[j] == i) p = j;
-
-        return p;
-    };
-
-    auto update = [&](int p, auto v, auto &t) {
-        if (p == -1) return;
-        for (int k = 0; k < c; k++) A[r - 1][k] -= v * A[p][k];
-        t -= v * A[p].back();
-    };
-
-    for (int i = 0, count = c; i < n; i++)
-        for (int j = 0; j < n; j++)
-            if (adj_matrix[i][j] > 0) {
-                pivots.emplace_back(count);
-
-                vector<double> curr(count + 2, 0);
-                curr[indices[i][j]] = curr[count++] = 1;
-                curr[count] = -adj_matrix[i][j];
-
-                A.add(curr);
-                r++;
-
-                update(get_pivot(indices[i][j]), A[r - 1][indices[i][j]], A[r - 1].back());
-            }
-
-    queue<double> temp;
-    for (auto &row : A.mat) {
-        temp.emplace(row.back());
-        row.pop_back();
-    }
-    A.adjust();
-    for (auto &row : A.mat) {
-        row.back() = temp.front();
-        temp.pop();
-    }
-
-    A.add();
-    r++;
-    c = A.c;
-    double most = 0;
-    int pivot_row = -1;
-    for (int i = 0; i < r - 1; i++)
-        if (most < A[i][c - 1]) {
-            most = A[i][c - 1];
-            pivot_row = i;
-        }
-
-    if (pivot_row != -1) {
-        pivots[pivot_row] = -1;
-        normalize_pivot_row(A, pivot_row, -1.);
-
-        for (int i = 0; i < r; i++)
-            if (i != pivot_row) eliminate_pivot_column(A, i, pivot_row, -1.);
-        simplex(A, pivots);
-
-        pivot_row = get_pivot(-1);
-
-        if (pivot_row != -1) {
-            int pivot_col = -1;
-            for (int i = 0; i < c - 1; i++)
-                if (fabs(A[pivot_row][i]) > 1e-9) pivot_col = i;
-
-            pivot(A, pivot_col, pivot_row);
-            eliminate_pivot_column(A, r - 1, pivot_row, A[r - 1][pivot_col]);
-        }
+        auto [c_pos, c_neg, dist] = path(s, d);
+        A.emplace_back(c_pos);
+        A.emplace_back(c_neg);
+        b.emplace_back(t - dist);
+        b.emplace_back(dist - t);
     }
 
     int q;
@@ -273,14 +187,7 @@ int main() {
         int s, d;
         cin >> s >> d;
 
-        auto prev = dijkstra_dense(s, adj_matrix);
-        auto time = [&](int d, int s, bool rev = false) -> double {
-            double t = 0;
-            fill(A[r - 1].begin(), A[r - 1].end(), 0);
-            path(prev, d, s, t, r - 1, rev);
-            for (int i = 0; i < c - 1; i++) update(get_pivot(i), A[r - 1][i], t);
-            return t + simplex(A, pivots);
-        };
-        cout << fixed << setprecision(6) << s << " " << d << " " << -time(d, s, true) << " " << time(d, s) << "\n";
+        auto [c_pos, c_neg, dist] = path(s, d);
+        cout << fixed << setprecision(6) << s << " " << d << " " << -solve_linear_program(A, b, c_neg).first + dist << " " << solve_linear_program(A, b, c_pos).first + dist << "\n";
     }
 }
