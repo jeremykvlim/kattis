@@ -85,7 +85,7 @@ pair<T, vector<T>> solve_linear_program(const vector<vector<T>> &A, const vector
     }
     if (!simplex(2)) return {numeric_limits<T>::infinity(), {}};
 
-    vector<T> solution(n);
+    vector<T> solution(n, 0);
     for (int i = 0; i < m; i++)
         if (basic[i] < n) solution[basic[i]] = tableau[i][n + 1];
     return {tableau[m][n + 1], solution};
