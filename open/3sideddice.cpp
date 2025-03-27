@@ -1,7 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-
 template <typename T>
 struct Point {
     T x, y;
