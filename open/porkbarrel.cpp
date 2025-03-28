@@ -74,30 +74,64 @@ struct WeightedDisjointSets {
 
     int & compress(int v) {
         if (sets[v] == v) return sets[v];
-        while (weight[sets[v]].first <= weight[v].first) sets[v] = sets[sets[v]];
+        while (weight[sets[v]].first <= weight[v].first) {
+            size[sets[v]] -= size[v];
+            sets[v] = sets[sets[v]];
+        }
         return sets[v];
     }
 
-    int find(int u, int w = INT_MAX - 1) {
-        while (weight[u].first <= w) u = compress(u);
-        return u;
+    int find(int v, int w = INT_MAX - 1) {
+        while (weight[v].first <= w) v = compress(v);
+        return v;
+    }
+
+    void detach(int v) {
+        if (sets[v] == v) return;
+        detach(sets[v]);
+        size[sets[v]] -= size[v];
+    }
+
+    int attach(int v, int w = INT_MAX - 1) {
+        while (weight[v].first <= w) {
+            size[sets[v]] += size[v];
+            v = sets[v];
+        }
+        return v;
     }
 
     void link(int u, int v, pair<int, int> w) {
+        detach(u);
+        detach(v);
         while (u != v) {
-            u = find(u, w.first);
-            v = find(v, w.first);
+            u = attach(u, w.first);
+            v = attach(v, w.first);
             if (size[u] < size[v]) swap(u, v);
-            size[u] += size[v];
             swap(compress(v), u);
             swap(weight[v], w);
         }
+        attach(u);
     }
 
-    void cut(int v) {
-        compress(v) = v;
-        size[v] = 1;
-        weight[v] = {INT_MAX, 0};
+    void cut(int v, int w) {
+        while (sets[v] != v) {
+            if (weight[v].first == w) {
+                int u = v;
+                while (sets[u] != u) {
+                    u = sets[u];
+                    size[u] -= size[v];
+                }
+                sets[v] = v;
+                weight[v] = {INT_MAX, 0};
+                return;
+            }
+            compress(v) = v;
+        }
+    }
+
+    void cut(int u, int v, int w) {
+        cut(u, w);
+        cut(v, w);
     }
 
     int path_max(int u, int v) {
@@ -119,7 +153,7 @@ struct WeightedDisjointSets {
                 return -1;
             } else if (weight[t].first > w.first) {
                 int i = weight[t].second;
-                cut(t);
+                cut(t, weight[t].first);
                 link(u, v, w);
                 return i;
             }
