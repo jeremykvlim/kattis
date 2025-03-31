@@ -11,10 +11,10 @@ int main() {
         for (int i = 0; i < n; i++) {
             cin >> la[i] >> lo[i];
 
-            double t = la[i] * M_PI / 180, p = lo[i] * M_PI / 180;
-            x[i] = cos(t) * cos(p);
-            y[i] = cos(t) * sin(p);
-            z[i] = sin(t);
+            auto theta = la[i] * M_PI / 180, phi = lo[i] * M_PI / 180;
+            x[i] = cos(theta) * cos(phi);
+            y[i] = cos(theta) * sin(phi);
+            z[i] = sin(theta);
         }
 
         double dist = -1;
