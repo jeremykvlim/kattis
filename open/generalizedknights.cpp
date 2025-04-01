@@ -261,19 +261,19 @@ int main() {
     auto [X, Y, _] = linear_diophantine_solution(A, B, C);
 
     long double a1 = A.real(), b1 = A.imag(),
-                a2 = B.real(), b2 = B.imag(),
-                c1 = X.real(), c2 = X.imag(),
-                c3 = Y.real(), c4 = Y.imag();
+            a2 = B.real(), b2 = B.imag(),
+            c1 = X.real(), c2 = X.imag(),
+            c3 = Y.real(), c4 = Y.imag();
 
-    vector<array<array<long double, 3>, 2>> equations(4);
-    equations[0][0] = {a2, -b2, -c1};
-    equations[0][1] = {-a2, b2, c1};
-    equations[1][0] = {b2, a2, -c2};
-    equations[1][1] = {-b2, -a2, c2};
-    equations[2][0] = {-a1, b1, -c3};
-    equations[2][1] = {a1, -b1, c3};
-    equations[3][0] = {-b1, -a1, -c4};
-    equations[3][1] = {b1, a1, c4};
+    vector<array<array<long double, 3>, 2>> eqns(4);
+    eqns[0][0] = {a2, -b2, -c1};
+    eqns[0][1] = {-a2, b2, c1};
+    eqns[1][0] = {b2, a2, -c2};
+    eqns[1][1] = {-b2, -a2, c2};
+    eqns[2][0] = {-a1, b1, -c3};
+    eqns[2][1] = {a1, -b1, c3};
+    eqns[3][0] = {-b1, -a1, -c4};
+    eqns[3][1] = {b1, a1, c4};
 
     unordered_set<Point<__int128>, Hash> candidates;
     auto add = [&](Point<long double> p) {
@@ -285,7 +285,7 @@ int main() {
     for (int mask = 0; mask < 1 << 4; mask++) {
         vector<Line<long double>> lines;
         for (int i = 0; i < 4; i++) {
-            auto [ai, bi, ci] = equations[i][(mask >> i) & 1];
+            auto [ai, bi, ci] = eqns[i][(mask >> i) & 1];
             lines.emplace_back(Line(ai, bi, ci));
         }
 
