@@ -71,10 +71,9 @@ int main() {
                 unordered_set<int> temp;
                 for (int u : adj_list[v]) q.emplace(u);
 
-                for (int u : unconnected) {
+                for (int u : unconnected) 
                     if (no_tube[v].count(u)) temp.emplace(u);
                     else q.emplace(u);
-                }
                 unconnected = temp;
             }
         }
