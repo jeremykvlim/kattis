@@ -24,8 +24,8 @@ struct Hash {
 };
 
 template <typename T>
-bool approximately_equal(const T &v1, const T &v2) {
-    return fabs(v1 - v2) <= 1e-5;
+bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
+    return fabs(v1 - v2) <= epsilon;
 }
 
 template <typename T>
@@ -208,16 +208,12 @@ int main() {
                 auto a = angle(v), theta = acos(euclidean_dist(v) / (2 * R));
                 intervals.emplace_back(a - theta, false);
                 intervals.emplace_back(a + theta, true);
-                if (a - theta > a + theta) {
+                if (theta < 0) {
                     intervals.emplace_back(0, false);
                     intervals.emplace_back(2 * M_PI, true);
                 }
             }
-
-            sort(intervals.begin(), intervals.end(), [&](const auto &p1, const auto &p2) {
-                if (fabs(p1.first - p2.first) > 1e-8) return p1.first < p2.first;
-                return p1.second < p2.second;
-            });
+            sort(intervals.begin(), intervals.end(), [&](const auto &p1, const auto &p2) {return !approximately_equal(p1.first, p2.first, 1e-8) ? p1.first < p2.first : p1.second < p2.second;});
 
             for (auto [angle, end] : intervals) {
                 if (!end) overlaps++;
