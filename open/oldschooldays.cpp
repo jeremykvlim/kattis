@@ -362,8 +362,8 @@ constexpr unsigned long long MODULO = 1e6 + 3;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
 template <typename T>
-bool approximately_equal(const T &v1, const T &v2) {
-    return fabs(v1 - v2) <= 1e-5;
+bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
+    return fabs(v1 - v2) <= epsilon;
 }
 
 template <typename T>
