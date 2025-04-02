@@ -96,13 +96,12 @@ int main() {
             q.emplace(u);
         }
 
-        for (int u : unconnected) {
+        for (int u : unconnected)
             if (no_tube[v].count(u)) temp.emplace(u);
             else {
                 tree.emplace_back(u, v);
                 q.emplace(u);
             }
-        }
         unconnected = temp;
     }
 
