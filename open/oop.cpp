@@ -64,7 +64,7 @@ struct Trie {
         for (auto s : strings) {
             int node = 0;
             for (char c : s) {
-                int pos = c - 'a';
+                int pos = c - a;
 
                 node = T[node].next[pos];
                 while (T[node].depth > s.size() / 2 + 1) node = T[node].link;
