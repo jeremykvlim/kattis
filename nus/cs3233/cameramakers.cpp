@@ -208,10 +208,6 @@ int main() {
                 auto a = angle(v), theta = acos(euclidean_dist(v) / (2 * R));
                 intervals.emplace_back(a - theta, false);
                 intervals.emplace_back(a + theta, true);
-                if (theta < 0) {
-                    intervals.emplace_back(0, false);
-                    intervals.emplace_back(2 * M_PI, true);
-                }
             }
             sort(intervals.begin(), intervals.end(), [&](const auto &p1, const auto &p2) {return !approximately_equal(p1.first, p2.first, 1e-8) ? p1.first < p2.first : p1.second < p2.second;});
 
