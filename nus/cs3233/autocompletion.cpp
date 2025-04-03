@@ -50,10 +50,10 @@ struct Trie {
             if (T[node].end)
                 if (!--k) return word;
 
-            for (int c = 0; c < 26; c++)
+            for (int c = 0; c < r; c++)
                 if (T[node].next[c] != -1) {
                     if (T[T[node].next[c]].count >= k) {
-                        word += 'a' + c;
+                        word += c + a;
                         node = T[node].next[c];
                         break;
                     } else k -= T[T[node].next[c]].count;
