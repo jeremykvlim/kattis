@@ -438,11 +438,11 @@ int main() {
     dp[0][0][0] = 1;
     vector<modint> a;
     for (int i = 0; i < 1 << (2 * n); i++) {
-        modint si = 0;
+        modint ai = 0;
         for (int m1 = 0; m1 < 1 << n; m1++)
             for (int m2 = 0; m2 < 1 << n; m2++)
                 if (dp[i][m1][m2]) {
-                    si += dp[i][m1][m2];
+                    ai += dp[i][m1][m2];
                     for (int m3 = 0; m3 < 1 << n; m3++) {
                         for (int j = 0; j < n; j++)
                             if ((m3 >> j) & 1)
@@ -457,7 +457,7 @@ int main() {
                         next:;
                     }
                 }
-        a.emplace_back(si);
+        a.emplace_back(ai);
     }
     auto c = berlekamp_massey(a);
     a.resize(c.size());
