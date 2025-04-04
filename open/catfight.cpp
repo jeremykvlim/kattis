@@ -124,7 +124,7 @@ double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
 }
 
 template <typename T>
-double squared_dist(const Point<T> &a, const Point<T> &b) {
+double squared_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
     return (double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y);
 }
 

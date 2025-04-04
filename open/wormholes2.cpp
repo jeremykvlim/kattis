@@ -117,7 +117,7 @@ struct Point3D {
 };
 
 template <typename T>
-double euclidean_dist(const Point3D<T> &a, const Point3D<T> &b) {
+double euclidean_dist(const Point3D<T> &a, const Point3D<T> &b = {0, 0, 0}) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y) + (double) (a.z - b.z) * (a.z - b.z));
 }
 
