@@ -261,9 +261,9 @@ int main() {
     auto [X, Y, _] = linear_diophantine_solution(A, B, C);
 
     long double a1 = A.real(), b1 = A.imag(),
-            a2 = B.real(), b2 = B.imag(),
-            c1 = X.real(), c2 = X.imag(),
-            c3 = Y.real(), c4 = Y.imag();
+                a2 = B.real(), b2 = B.imag(),
+                c1 = X.real(), c2 = X.imag(),
+                c3 = Y.real(), c4 = Y.imag();
 
     vector<array<array<long double, 3>, 2>> eqns(4);
     eqns[0][0] = {a2, -b2, -c1};
