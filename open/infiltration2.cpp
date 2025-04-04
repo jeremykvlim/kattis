@@ -5,8 +5,7 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n;
-    for (int t = 1; cin >> n; t++) {
+    for (int n, t = 1; cin >> n; t++) {
         vector<__int128> cells(n, 0);
         for (int i = 0; i < n; i++) {
             string s;
