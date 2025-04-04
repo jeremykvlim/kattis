@@ -119,12 +119,7 @@ struct Point {
 };
 
 template <typename T>
-T squared_dist(const Point<T> &p) {
-    return p.x * p.x + p.y * p.y;
-}
-
-template <typename T>
-double squared_dist(const Point<T> &a, const Point<T> &b) {
+double squared_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
     return (double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y);
 }
 
@@ -142,7 +137,7 @@ int main() {
         if (!prev.empty()) {
             sort(prev.begin(), prev.end());
             prev.erase(unique(prev.begin(), prev.end()), prev.end());
-            
+
             vector<int> possible;
             for (int k = 0; k < 12; k++)
                 if (find(prev.begin(), prev.end(), cat + Point(dx[k], dy[k])) != prev.end()) possible.emplace_back(k);
