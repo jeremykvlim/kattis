@@ -403,8 +403,8 @@ int main() {
     for (auto &a : s) cin >> a;
     s.emplace(s.begin(), i == j);
 
-    auto C = berlekamp_massey(s);
+    auto c = berlekamp_massey(s);
     modint value = 0;
-    for (int k = 0; k < C.size(); k++) value += s[2 * n - 1 - k] * C[k];
+    for (int k = 0; k < C.size(); k++) value += s[2 * n - 1 - k] * c[k];
     cout << value;
 }
