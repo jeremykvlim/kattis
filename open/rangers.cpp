@@ -49,8 +49,7 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n, tc = 1;
-    while (cin >> n) {
+    for (int n, tc = 1; cin >> n; tc++) {
         vector<array<int, 6>> bases(n);
         for (auto &[x, y, z, vx, vy, vz] : bases) cin >> x >> y >> z >> vx >> vy >> vz;
 
@@ -134,6 +133,6 @@ int main() {
                 }
             }
         }
-        cout << "Case " << tc++ << ": " << count << "\n";
+        cout << "Case " << tc << ": " << count << "\n";
     }
 }
