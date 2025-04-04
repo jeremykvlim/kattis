@@ -1,6 +1,146 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
+    return fabs(v1 - v2) <= epsilon;
+}
+
+template <typename T>
+struct Point {
+    T x, y;
+
+    Point() {}
+    Point(T x, T y) : x(x), y(y) {}
+
+    template <typename U>
+    Point(U x, U y) : x(x), y(y) {}
+
+    template <typename U>
+    Point(const Point<U> &p) : x((T) p.x), y((T) p.y) {}
+
+    const auto begin() const {
+        return &x;
+    }
+
+    const auto end() const {
+        return &y + 1;
+    }
+
+    Point operator-() const {
+        return {-x, -y};
+    }
+
+    bool operator<(const Point &p) const {
+        return !approximately_equal(x, p.x) ? x < p.x : y < p.y;
+    }
+
+    bool operator>(const Point &p) const {
+        return !approximately_equal(x, p.x) ? x > p.x : y > p.y;
+    }
+
+    bool operator==(const Point &p) const {
+        if constexpr (is_floating_point_v<T>) return approximately_equal(x, p.x) && approximately_equal(y, p.y);
+        return x == p.x && y == p.y;
+    }
+
+    bool operator!=(const Point &p) const {
+        if constexpr (is_floating_point_v<T>) return !approximately_equal(x, p.x) || !approximately_equal(y, p.y);
+        return x != p.x || y != p.y;
+    }
+
+    bool operator<=(const Point &p) const {
+        return *this < p || *this == p;
+    }
+
+    bool operator>=(const Point &p) const {
+        return *this > p || *this == p;
+    }
+
+    Point operator+(const Point &p) const {
+        return {x + p.x, y + p.y};
+    }
+
+    Point operator+(const T &v) const {
+        return {x + v, y + v};
+    }
+
+    Point & operator+=(const Point &p) {
+        x += p.x;
+        y += p.y;
+        return *this;
+    }
+
+    Point & operator+=(const T &v) {
+        x += v;
+        y += v;
+        return *this;
+    }
+
+    Point operator-(const Point &p) const {
+        return {x - p.x, y - p.y};
+    }
+
+    Point operator-(const T &v) const {
+        return {x - v, y - v};
+    }
+
+    Point & operator-=(const Point &p) {
+        x -= p.x;
+        y -= p.y;
+        return *this;
+    }
+
+    Point & operator-=(const T &v) {
+        x -= v;
+        y -= v;
+        return *this;
+    }
+
+    Point operator*(const T &v) const {
+        return {x * v, y * v};
+    }
+
+    Point & operator*=(const T &v) {
+        x *= v;
+        y *= v;
+        return *this;
+    }
+
+    Point operator/(const T &v) const {
+        return {x / v, y / v};
+    }
+
+    Point & operator/=(const T &v) {
+        x /= v;
+        y /= v;
+        return *this;
+    }
+};
+
+template <typename T>
+double squared_dist(const Point<T> &a, const Point<T> &b) {
+    return (double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y);
+}
+
+template <typename T>
+struct Circle {
+    Point<T> origin;
+    T radius;
+    int i;
+
+    Circle() {}
+    Circle(const Point<T> &o, const T &r, const int &i) : origin(o), radius(r), i(i) {}
+
+    bool operator<(const Circle &c) {
+        return radius != c.radius ? radius < c.radius : origin < c.origin;
+    }
+
+    bool encloses(const Circle &c) const {
+        return radius > c.radius && squared_dist(origin, c.origin) < radius * radius;
+    }
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -8,49 +148,58 @@ int main() {
     int n;
     cin >> n;
 
-    vector<array<int, 6>> circles(n);
-    for (int i = 0; i < n; i++) {
-        cin >> circles[i][0] >> circles[i][1] >> circles[i][2] >> circles[i][3] >> circles[i][4];
+    vector<Circle<int>> circles(n);
+    vector<array<int, 2>> energy(n + 1);
+    for (int i = 1; i <= n; i++) {
+        int x, y, r, a, b;
+        cin >> x >> y >> r >> a >> b;
 
-        circles[i][5] = i + 1;
+        circles[i - 1] = {{x, y}, r, i};
+        energy[i] = {a, b};
     }
-    sort(circles.begin(), circles.end(), [](auto a1, auto a2) {return a1[2] < a2[2];});
+    sort(circles.begin(), circles.end());
 
-    vector<int> energy(n, 0), dp(n, 0), count(n, 0), parent(n, 0), required(n, 0);
-    int most = 0;
-    for (int i = 0; i < n; i++) {
+    int e = 0;
+    vector<int> parent(n + 1, 0), depth(n + 1, 0), total(n + 1, 0);
+    vector<pair<int, int>> peak(n + 1, {0, 0});
+    for (int i = n - 2; ~i; i--)
         for (int j = i + 1; j < n; j++)
-            if (pow(circles[i][0] - circles[j][0], 2) + pow(circles[i][1] - circles[j][1], 2) < pow(circles[j][2], 2)) {
-                if (!parent[i]) parent[i] = j;
-
-                energy[i] += ++count[i] & 1 ? circles[i][3] : circles[i][4];
-                dp[i] = max(dp[i], energy[i]);
+            if (circles[j].encloses(circles[i])) {
+                int c1 = circles[i].i, c2 = circles[j].i;
+                parent[c1] = c2;
+                depth[c1] = depth[c2] + 1;
+                for (int d = 0;; d++) {
+                    if (peak[c1].first < total[c1]) peak[c1] = {total[c1], d};
+                    if (d == depth[c1]) break;
+                    total[c1] += energy[c1][(d & 1)];
+                }
+                e += peak[c1].first;
+                break;
             }
+    cout << e << "\n";
 
-        most += dp[i];
-        for (int j = count[i], curr = energy[i]; ~j; j--) {
-            if (curr == dp[i]) required[i] = j;
-            curr -= j & 1 ? circles[i][3] : circles[i][4];
-        }
-    }
-
-    cout << most << "\n";
-    vector<bool> drawn(n, false), skip(n);
+    vector<bool> affected(n + 1, false), drawn(n + 1, false), skip(n + 1, false);
     for (int _ = 0; _ < n; _++) {
-        fill(skip.begin(), skip.end(), false);
-        int i = -1;
-        for (int j = 0; j < n; j++) {
-            if (skip[j]) skip[parent[j]] = true;
-            if (drawn[j] || skip[j]) continue;
-            if (energy[j] == dp[j] && (i == -1 || circles[j][5] < circles[i][5])) i = j;
-            if (count[j] == required[j]) skip[parent[j]] = true;
+        int j = -1;
+        for (int i = 0; i < n; i++) {
+            int c = circles[i].i;
+            affected[c] = false;
+            if (skip[c] || depth[c] == peak[c].second && !drawn[c])
+                if (parent[c]) skip[parent[c]] = true;
+            if (skip[c]) continue;
+            if (total[c] == peak[c].first && !drawn[c] && (j < 0 || circles[j].i > c)) j = i;
         }
 
-        drawn[i] = true;
-        for (int j = 0; j < i; j++)
-            if (pow(circles[j][0] - circles[i][0], 2) + pow(circles[j][1] - circles[i][1], 2) < pow(circles[i][2], 2))
-                energy[j] -= count[j]-- & 1 ? circles[j][3] : circles[j][4];
-
-        cout << circles[i][5] << " ";
+        int c1 = circles[j].i;
+        cout << c1 << " ";
+        drawn[c1] = affected[c1] = true;
+        for (int i = n - 1; ~i; i--) {
+            int c2 = circles[i].i;
+            skip[c2] = false;
+            if (parent[c2] && affected[parent[c2]]) {
+                affected[c2] = true;
+                total[c2] -= energy[c2][--depth[c2] & 1];
+            }
+        }
     }
 }
