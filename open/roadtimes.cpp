@@ -2,23 +2,10 @@
 using namespace std;
 
 template <typename T>
-struct Matrix {
-    int r, c;
-    vector<vector<T>> mat;
-
-    Matrix(int n) : Matrix(n, n) {}
-    Matrix(int row, int col, int v = 0) : r(row), c(col), mat(row, vector<T>(col, v)) {}
-
-    auto & operator[](int i) {
-        return mat[i];
-    }
-};
-
-template <typename T>
-pair<T, vector<T>> solve_linear_program(const vector<vector<T>> &A, const vector<T> &b, const vector<T> &c) {
+pair<T, vector<T>> linear_program_solution(const vector<vector<T>> &A, const vector<T> &b, const vector<T> &c) {
     int m = b.size(), n = c.size();
 
-    Matrix<T> tableau(m + 2, n + 2);
+    vector<vector<T>> tableau(m + 2, vector<double>(n + 2));
     vector<T> basic(m), non_basic(n + 1);
     for (int i = 0; i < m; i++) {
         for (int j = 0; j < n; j++) tableau[i][j] = A[i][j];
@@ -188,6 +175,6 @@ int main() {
         cin >> s >> d;
 
         auto [c_pos, c_neg, dist] = path(s, d);
-        cout << fixed << setprecision(6) << s << " " << d << " " << -solve_linear_program(A, b, c_neg).first + dist << " " << solve_linear_program(A, b, c_pos).first + dist << "\n";
+        cout << fixed << setprecision(6) << s << " " << d << " " << -linear_program_solution(A, b, c_neg).first + dist << " " << linear_program_solution(A, b, c_pos).first + dist << "\n";
     }
 }
