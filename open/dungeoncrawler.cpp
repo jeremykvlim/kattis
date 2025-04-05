@@ -29,6 +29,8 @@ int main() {
 
     vector<long long> time(q, LLONG_MAX);
     for (int s = 0; s < n; s++) {
+        if (queries[s].empty()) continue;
+        
         vector<int> in(n), out(n), prev(n, -1);
         vector<long long> dist(n);
 
@@ -64,7 +66,7 @@ int main() {
                 continue;
             }
 
-            for (int l = in[k], r = l, j = k; l = in[j], r = out[j], j = prev[j]) {
+            for (int l = in[k], r = l, j = k;; l = in[j], r = out[j], j = prev[j]) {
                 time[i] = min(time[i], total + 2 * dist[j] - max(pref[l], suff[r]));
                 if (ancestor(j, t)) {
                     time[i] -= 2 * dist[j];
