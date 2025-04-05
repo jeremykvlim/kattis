@@ -397,18 +397,21 @@ int main() {
                 if (!(d % ppfs[j])) divmasks[d] |= 1 << j;
         }
 
+    vector<modint> fact(N + 1, 1);
+    for (int i = 1; i <= N; i++) fact[i] = fact[i - 1] * i;
+
     vector<vector<modint>> C(N + 1, vector<modint>(N + 1));
     for (int n = 0; n <= N; n++) {
         C[n][0] = C[n][n] = 1;
-        for (int k = 1; k <= n; k++) C[n][k] = n * C[n - 1][k - 1];
+        for (int k = 1; k < n; k++) C[n][k] = C[n - 1][k - 1] + C[n - 1][k];
     }
 
     vector<vector<modint>> dp(N + 1, vector<modint>(1 << size, 0));
     dp[0][0] = 1;
-    for (int i = 1; i <= N; i++)
+    for (int i = 0; i <= N; i++)
         for (int mask = 0; mask < 1 << size; mask++)
-            for (int d : divs)
-                if (i >= d) dp[i][mask | divmasks[d]] += dp[i - d][mask] * C[N - i + d - 1][d - 1];
+            for (int k = 1; k <= N - i; k++)
+                if (!(K % k)) dp[i + k][mask | divmasks[k]] += dp[i][mask] * fact[k - 1] * C[N - i - 1][k - 1];
 
     cout << dp[N].back();
 }
