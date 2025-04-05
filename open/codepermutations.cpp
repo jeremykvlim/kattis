@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -397,10 +397,9 @@ int main() {
                 if (!(d % ppfs[j])) divmasks[d] |= 1 << j;
         }
 
-    vector<vector<modint>> C(N + 1, vector<modint>(N + 1, 0));
-    C[0][0] = 1;
-    for (int n = 1; n <= N; n++) {
-        C[n][0] = 1;
+    vector<vector<modint>> C(N + 1, vector<modint>(N + 1));
+    for (int n = 0; n <= N; n++) {
+        C[n][0] = C[n][n] = 1;
         for (int k = 1; k <= n; k++) C[n][k] = n * C[n - 1][k - 1];
     }
 
