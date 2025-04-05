@@ -25,75 +25,97 @@ struct Hash {
     }
 };
 
+template <typename T>
+tuple<T, T, T> extended_gcd(const T &a, const T &b) {
+    if (b == (T) 0) return {a, (T) 1, (T) 0};
+
+    auto divmod = [&](const T &x, const T &y) -> pair<T, T> {
+        auto div = [&](const T &x, const T &y) {
+            auto numer = x * conj(y);
+            auto denom = norm(y);
+            auto round_div = [&](auto part) {
+                return (part >= 0) ? (part + denom / 2) / denom : (part - denom / 2) / denom;
+            };
+            return complex<long long>(round_div(numer.real()), round_div(numer.imag()));
+        };
+        auto q = div(x, y), r = x - q * y;
+        return {q, r};
+    };
+
+    auto [q, r] = divmod(a, b);
+    auto [g, s, t] = extended_gcd(b, r);
+    return {g, t, s - t * q};
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n, r0, c0, a0, b0, p0;;
-    cin >> n >> r0 >> c0 >> a0 >> b0 >> p0;
+    int n;
+    cin >> n;
 
-    if (!r0 && !c0) {
-        cout << "0";
+    auto normalize = [&](complex<long long> &Z) {
+        if (Z == complex<long long>{0, 0}) return Z;
+        if (Z.real() < 0 || !Z.real() && Z.imag() < 0) Z = -Z;
+        return Z;
+    };
+
+    vector<complex<long long>> pos(n), gcds(n);
+    vector<int> p(n);
+    for (int i = 0; i < n; i++) {
+        long long r, c, a, b;
+        cin >> r >> c >> a >> b >> p[i];
+
+        pos[i] = {r, c};
+        auto [g, s, t] = extended_gcd(complex<long long>{a, b}, complex<long long>{b, a});
+        gcds[i] = normalize(g);
+    }
+
+    if (!pos[0].real() && !pos[0].imag()) {
+        cout << 0;
         exit(0);
     }
 
-    vector<array<int, 5>> cards(n - 1);
-    for (auto &[r, c, a, b, p] : cards) cin >> r >> c >> a >> b >> p;
+    gp_hash_table<pair<long long, long long>, long long, Hash> dist;
+    priority_queue pq(
+            [&](const auto &p1, const auto &p2) -> bool {
+                return p1.first != p2.first ? p1.first > p2.first
+                                            : p1.second.real() != p2.second.real() ? p1.second.real() > p2.second.real()
+                                                                                   : p1.second.imag() > p2.second.imag();
+                }, vector<pair<long long, complex<long long>>>());
 
-    auto reduce = [&](int a, int b) -> pair<int, int> {
-        int g = __gcd(a, b);
-
-        if (((a / g) & 1) && ((b / g) & 1)) return {2, g};
-        return {1, g};
-    };
-
-    auto s = reduce(a0, b0);
-    gp_hash_table<pair<int, int>, long long, Hash> dist;
-    auto relax = [&](long long d, auto v) -> bool {
+    auto relax = [&](const complex<long long> &Z, long long d) -> void {
+        pair<long long, long long> v{Z.real(), Z.imag()};
         if (dist.find(v) == dist.end() || dist[v] > d) {
             dist[v] = d;
-            return true;
+            pq.emplace(d, Z);
         }
-        return false;
     };
-    relax(p0, s);
-    for (auto [r, c, a, b, p] : cards)
-        if (r == r0 && c == c0) relax(p, reduce(a, b));
 
-    priority_queue<pair<long long, pair<int, int>>, vector<pair<long long, pair<int, int>>>, greater<>> pq;
-    for (auto [v, d] : dist) pq.emplace(d, v);
+    for (int i = 0; i < n; i++)
+        if (pos[i] == pos[0]) relax(gcds[i], p[i]);
 
-    auto reachable = [&](pair<int, int> state, int r = 0, int c = 0) -> bool {
-        auto [t, g] = state;
-        if ((r - r0) % g || (c - c0) % g) return false;
-
-        return t == 1 || !(((r - r0) / g) + ((c - c0) / g) & 1);
+    auto divides = [&](const complex<long long> &Z1, const complex<long long> &Z2) {
+        auto N = norm(Z1);
+        return !((Z2.real() * Z1.real() + Z2.imag() * Z1.imag()) % N) && !((Z2.imag() * Z1.real() - Z2.real() * Z1.imag()) % N);
     };
 
     while (!pq.empty()) {
         auto [d, v] = pq.top();
         pq.pop();
 
-        if (dist[v] != d) continue;
+        if (dist[{v.real(), v.imag()}] != d) continue;
 
-        if (reachable(v)) {
-            cout << d << "\n";
+        if (divides(v, pos[0])) {
+            cout << d;
             exit(0);
         }
 
-        auto [t1, g1] = v;
-        for (auto [r, c, a, b, p] : cards) {
-            if (!reachable(v, r, c)) continue;
-
-            auto [t2, g2] = reduce(a, b);
-            int g = __gcd(g1, g2);
-
-            pair<int, int> u{t1, g};
-            if (t1 != t2) u.first = !(((t1 == 1 ? g1 : g2) / g) & 1) ? 2 : 1;
-            if (u == v) continue;
-
-            if (relax(d + p, u)) pq.emplace(d + p, u);
-        }
+        for (int i = 0; i < n; i++)
+            if (divides(v, pos[i] - pos[0])) {
+                auto [g, s, t] = extended_gcd(v, gcds[i]);
+                relax(normalize(g), d + p[i]);
+            }
     }
     cout << -1;
 }
