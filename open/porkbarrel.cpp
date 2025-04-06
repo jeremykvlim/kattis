@@ -139,10 +139,10 @@ struct WeightedDisjointSets {
 
         for (;;) {
             if (weight[u].first > weight[v].first) swap(u, v);
-            if (compress(u) == v) break;
-            u = compress(u);
+            int t = compress(u);
+            if (t == v) return u;
+            u = t;
         }
-        return u;
     }
 
     int unite(int u, int v, pair<int, int> w) {
