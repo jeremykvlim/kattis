@@ -80,9 +80,9 @@ int main() {
     priority_queue pq(
             [&](const auto &p1, const auto &p2) -> bool {
                 return p1.first != p2.first ? p1.first > p2.first
-                                            : p1.second.real() != p2.second.real() ? p1.second.real() > p2.second.real()
-                                                                                   : p1.second.imag() > p2.second.imag();
-                }, vector<pair<long long, complex<long long>>>());
+                                            : p1.second.real() != p2.second.real() ? p1.second.real() < p2.second.real()
+                                                                                   : p1.second.imag() < p2.second.imag();
+            }, vector<pair<long long, complex<long long>>>());
 
     auto relax = [&](const complex<long long> &Z, long long d) -> void {
         pair<long long, long long> v{Z.real(), Z.imag()};
@@ -92,8 +92,11 @@ int main() {
         }
     };
 
-    for (int i = 0; i < n; i++)
+    vector<complex<long long>> delta(n);
+    for (int i = 0; i < n; i++) {
         if (pos[i] == pos[0]) relax(gcds[i], p[i]);
+        if (i) delta[i] = pos[i] - pos[0];
+    }
 
     auto divides = [&](const complex<long long> &Z1, const complex<long long> &Z2) {
         auto N = norm(Z1);
@@ -111,8 +114,8 @@ int main() {
             exit(0);
         }
 
-        for (int i = 0; i < n; i++)
-            if (divides(v, pos[i] - pos[0])) {
+        for (int i = 1; i < n; i++)
+            if (divides(v, delta[i])) {
                 auto [g, s, t] = extended_gcd(v, gcds[i]);
                 relax(normalize(g), d + p[i]);
             }
