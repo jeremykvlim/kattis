@@ -1,14 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-vector<complex<double>> quadratic_roots(double a, double b, double c) {
-    if (fabs(a) < 1e-8 && fabs(b) < 1e-8) return {};
-    if (fabs(a) < 1e-8) return {(-c / b)};
-
-    complex<double> discriminant(b * b - 4 * a * c, 0);
-    return {(-b + sqrt(discriminant)) / (2 * a), (-b - sqrt(discriminant)) / (2 * a)};
-}
-
 struct DisjointSets {
     vector<int> sets;
 
@@ -43,6 +35,14 @@ tuple<vector<pair<int, int>>, vector<vector<bool>>> kruskal(int n, vector<array<
         }
 
     return {mst, in_mst};
+}
+
+vector<complex<double>> quadratic_roots(double a, double b, double c) {
+    if (fabs(a) < 1e-8 && fabs(b) < 1e-8) return {};
+    if (fabs(a) < 1e-8) return {(-c / b)};
+
+    complex<double> discriminant(b * b - 4 * a * c, 0);
+    return {(-b + sqrt(discriminant)) / (2 * a), (-b - sqrt(discriminant)) / (2 * a)};
 }
 
 int main() {
@@ -83,11 +83,6 @@ int main() {
         auto quadratic_slope = [&](auto a, auto b, auto x) {
             return 2 * a * x + b;
         };
-
-        auto eval = [&](auto a, auto b, auto c, auto x) -> int {
-            return a * x * x + b * x + c;
-        };
-
         for (auto &[x, indices] : events) {
             auto &[i, j, k, l] = indices;
             if (quadratic_slope(eqns[i][j][0], eqns[i][j][1], x) < quadratic_slope(eqns[k][l][0], eqns[k][l][1], x)) {
@@ -96,7 +91,10 @@ int main() {
             }
         }
         sort(events.begin(), events.end());
-
+        
+        auto eval = [&](auto a, auto b, auto c, auto x) -> int {
+            return a * x * x + b * x + c;
+        };
         vector<array<int, 3>> edges;
         for (int i = 0; i < n; i++)
             for (int j = 0; j < i; j++) edges.push_back({eval(eqns[i][j][0], eqns[i][j][1], eqns[i][j][2], 0), i, j});
