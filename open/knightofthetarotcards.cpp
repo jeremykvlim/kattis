@@ -100,7 +100,7 @@ int main() {
 
     auto divides = [&](const complex<long long> &Z1, const complex<long long> &Z2) {
         auto N = norm(Z1);
-        return !((Z2.real() * Z1.real() + Z2.imag() * Z1.imag()) % N) && !((Z2.imag() * Z1.real() - Z2.real() * Z1.imag()) % N);
+        return !((Z1.real() * Z2.real() + Z1.imag() * Z2.imag()) % N) && !((Z1.real() * Z2.imag() - Z1.imag() * Z2.real()) % N);
     };
 
     while (!pq.empty()) {
