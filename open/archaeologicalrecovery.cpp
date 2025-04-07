@@ -62,7 +62,7 @@ int main() {
         for (int i : ids) F[j] += f[i] * w[dot[i][j]];
 
     vector<int> tzs(t_max);
-    for (int i = 0; i < t_max; i++) tzs[i] = __builtin_ctzll(abs((!F[i].imag() || F[i].real() == F[i].imag()) ? F[i].real() : F[i].imag()));
+    for (int i = 0; i < t_max; i++) tzs[i] = countr_zero((unsigned long long) abs((!F[i].imag() || F[i].real() == F[i].imag()) ? F[i].real() : F[i].imag()));
 
     vector<int> configs;
     for (int i = t_max - 1; i; i--)
