@@ -70,7 +70,7 @@ int main() {
     for (auto row : count) base += accumulate(row.begin(), row.end(), 0LL);
     if (v <= s) {
         cout << base;
-        return 0;
+        exit(0);
     }
 
     auto least = LLONG_MAX;
