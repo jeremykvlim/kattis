@@ -27,6 +27,7 @@ int main() {
                 if (c == ',' || c == ')') {
                     int u = st.top();
                     st.pop();
+                    
                     int v = st.top();
                     adj_list[u].emplace_back(v);
                     adj_list[v].emplace_back(u);
@@ -80,6 +81,4 @@ int main() {
         cout << "different\n";
         done:;
     }
-
-    return 0;
 }
