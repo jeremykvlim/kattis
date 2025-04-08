@@ -32,7 +32,7 @@ int main() {
                         int r = R + dr[k], c = C + dc[k];
                         if (0 <= r && r < y && 0 <= c && c < x) {
                             lower |= grid[r][c] < grid[i][j];
-                            if (grid[r][c] == grid[i][j] && !visited[r][c]){
+                            if (grid[r][c] == grid[i][j] && !visited[r][c]) {
                                 visited[r][c] = true;
                                 q.emplace(r, c);
                             }

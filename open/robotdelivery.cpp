@@ -70,7 +70,7 @@ int main() {
     int d = -1;
     vector<int> dx{1, 0, -1, 0}, dy{0, 1, 0, -1};
     vector<vector<int>> time(n, vector<int>(n, -1));
-    queue<pair<int,int>> q;
+    queue<pair<int, int>> q;
     for (int i = 0; i < n; i++) {
         auto [sr, sc] = robots[i];
         vector<vector<int>> dist(R, vector<int>(C, -1));

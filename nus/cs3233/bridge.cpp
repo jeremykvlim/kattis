@@ -32,7 +32,7 @@ int main() {
     for (int &t : times) cin >> t;
     sort(times.begin(), times.end());
 
-    vector<pair<int ,int>> groups;
+    vector<pair<int, int>> groups;
     cout << t(n - 1, times, groups) << "\n";
     for (auto [p1, p2] : groups) {
         if (p2) cout << p1 << " " << p2 << "\n";

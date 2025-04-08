@@ -25,6 +25,6 @@ int main() {
     }
     cout << one + two << "\n";
     for (auto &sc : schedule) sc.resize(n);
-    for (int s = schedule.size(); schedule.size() < w; ) schedule.emplace_back(schedule[schedule.size() % s]);
+    for (int s = schedule.size(); schedule.size() < w;) schedule.emplace_back(schedule[schedule.size() % s]);
     for (auto &sc : schedule) cout << sc << "\n";
 }

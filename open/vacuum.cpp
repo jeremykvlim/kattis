@@ -10,7 +10,7 @@ int main() {
 
     vector<int> tubes(n);
     for (int &t : tubes) cin >> t;
-    sort(tubes.begin(),tubes.end());
+    sort(tubes.begin(), tubes.end());
 
     int air = -1;
     for (int i = n - 1, j = 0; j < n; j++) {

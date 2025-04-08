@@ -123,7 +123,7 @@ int main() {
         vector<tuple<int, int, int, int>> queries(q);
         vector<array<int, 3>> k_order_statistics(2 * q);
         for (int i = 0; i < q; i++) {
-            int l, r, u ,v;
+            int l, r, u, v;
             cin >> l >> r >> u >> v;
 
             queries[i] = {l - 1, r, u, v};

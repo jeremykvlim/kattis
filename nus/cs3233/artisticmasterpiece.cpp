@@ -10,7 +10,7 @@ int main() {
     cin >> n >> r >> s;
 
     vector<pair<int, int>> offsets;
-    for (int dy = 0; ; dy++) {
+    for (int dy = 0;; dy++) {
         int dx = r - dy * dy * dy * dy;
         if (dx < 0) break;
 

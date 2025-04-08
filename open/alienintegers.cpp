@@ -39,7 +39,7 @@ int main() {
                 if (d == 9) r += dl * pow(10, i) + dm * pow(10, i + 1);
             }
             for (int d = digits[i]; ~d; d--)
-                if (!count[d]){
+                if (!count[d]) {
                     l += d * pow(10, i);
                     break;
                 }

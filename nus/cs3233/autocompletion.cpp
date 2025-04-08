@@ -90,7 +90,7 @@ int main() {
 
         string text;
         int node = 0;
-        for (int i = 0; i < s.size(); )
+        for (int i = 0; i < s.size()
             if (s[i] == '#') {
                 int tab = 0;
                 for (; i < s.size() && s[i] == '#'; i++, tab++);

@@ -29,7 +29,7 @@ int main() {
         cin >> U >> _ >> V;
 
         int u = indices[U], v = indices[V];
-        if (status[u] == 1 && !status[v]) { 
+        if (status[u] == 1 && !status[v]) {
             cout << 1;
             exit(0);
         }
