@@ -44,11 +44,10 @@ int main() {
     unordered_map<vector<int>, int, Hash> indices{{perm, 0}};
     priority_queue pq(
             [&](const auto &p1, const auto &p2) -> bool {
-                auto count = [&](const vector<int>& v) -> int {
+                auto count = [&](const vector<int> &v) -> int {
                     int c = 0;
                     for (int i = 1; i <= n; i++)
-                        if (v[i] != i)
-                            c += (s[i][v[i]] ? 1 : 2);
+                        if (v[i] != i) c += !s[i][v[i]] + 1;
                     return c;
                 };
                 return count(p1.first) + p1.second > count(p2.first) + p2.second;
