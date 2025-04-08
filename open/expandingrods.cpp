@@ -4,7 +4,7 @@ using namespace std;
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    
+
     double L, n, C;
     while (cin >> L >> n >> C && L != -1 && n != -1 && C != -1) {
         C *= n;

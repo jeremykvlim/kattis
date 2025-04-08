@@ -126,7 +126,7 @@ T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-    
+
     int n, m;
     cin >> n >> m;
 
