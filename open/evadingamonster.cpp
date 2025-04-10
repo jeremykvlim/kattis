@@ -65,12 +65,11 @@ int main() {
             adj_list[v].emplace(dp[t], t);
         }
 
-        dp[v] = min(moves + 1, (int) 1e9);
+        adj_matrix[u][v] = dp[v] = min(dp[v], moves + 1);
+        adj_list[u].emplace(dp[v], v);
+
         adj_matrix[v][u] = 1e9;
         adj_list[v].emplace(1e9, u);
-
-        adj_matrix[u][v] = dp[v];
-        adj_list[u].emplace(dp[v], v);
     }
 
     auto dfs = [&](auto &&self, int v = 1, int prev = -1) -> int {
