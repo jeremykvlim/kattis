@@ -13,7 +13,7 @@ struct BlockCutTree {
     };
 
     void tarjan(vector<vector<int>> &adj_list) {
-        vector<int> order(n + 1), low(n + 1);
+        vector<int> order(n + 1, 0), low(n + 1, 0);
         stack<int> st;
         int count = 0;
 
