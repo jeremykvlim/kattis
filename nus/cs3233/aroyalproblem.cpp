@@ -3,7 +3,7 @@ using namespace std;
 
 struct BlockCutTree {
     int n;
-    vector<vector<int>> BCT, components, lift;
+    vector<vector<int>> BCT, bccs, lift;
     vector<int> node_id, depth, in, out;
     vector<bool> cutpoint;
 
@@ -28,10 +28,10 @@ struct BlockCutTree {
 
                         if (low[u] >= order[v]) {
                             cutpoint[v] = (order[v] > 1 || order[u] > 2);
-                            components.emplace_back(vector<int>{v});
+                            bccs.emplace_back(vector<int>{v});
 
-                            while (components.back().back() != u) {
-                                components.back().emplace_back(st.top());
+                            while (bccs.back().back() != u) {
+                                bccs.back().emplace_back(st.top());
                                 st.pop();
                             }
                         }
@@ -42,7 +42,7 @@ struct BlockCutTree {
     }
 
     void build() {
-        int node = components.size();
+        int node = bccs.size();
         for (int v = 1; v <= n; v++)
             if (cutpoint[v]) node_id[v] = node++;
 
@@ -53,7 +53,7 @@ struct BlockCutTree {
         in.resize(m);
         out.resize(m);
         node = 0;
-        for (auto &comp : components) {
+        for (auto &comp : bccs) {
             for (int v : comp)
                 if (!cutpoint[v]) node_id[v] = node;
                 else {
@@ -100,7 +100,7 @@ struct BlockCutTree {
     }
 
     bool iscutpoint(int node) {
-        return node >= components.size();
+        return node >= bccs.size();
     }
 };
 
@@ -121,7 +121,6 @@ int main() {
     }
 
     BlockCutTree bct(n, adj_list);
-
     while (d--) {
         int p, q, r, s;
         cin >> p >> q >> r >> s;
