@@ -17,7 +17,7 @@ struct BlockCutTree {
         stack<int> st;
         int count = 0;
 
-        auto dfs = [&](auto &&self, int v = 1, int prev = -1) -> void {
+        auto dfs = [&](auto &&self, int v, int prev = -1) -> void {
             order[v] = low[v] = ++count;
             st.emplace(v);
             for (int u : adj_list[v])
@@ -38,7 +38,8 @@ struct BlockCutTree {
                     } else low[v] = min(low[v], order[u]);
                 }
         };
-        dfs(dfs);
+        for (int v = 1; v <= n; v++)
+            if (!order[v]) dfs(dfs, v);
     }
 
     void build() {
