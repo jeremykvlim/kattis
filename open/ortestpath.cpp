@@ -228,7 +228,6 @@ int main() {
             }
         }
     }
-
     if (!~c) {
         cout << -1;
         exit(0);
