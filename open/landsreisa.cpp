@@ -200,7 +200,6 @@ int main(){
     int i = 0, j = 0;
     simulated_annealing([&]() {
         tie(i, j) = sample();
-
         int a = tour[i - 1], b = tour[i], c = tour[j], d = (j + 1 == n ? tour[0] : tour[j + 1]);
         return dist[a][c] + dist[b][d] - dist[a][b] - dist[c][d];
     }, [&]() {
@@ -210,10 +209,8 @@ int main(){
     auto len = length(tour);
     while (len > 63) {
         auto t = tour;
-        for (int _ = 0; _ < 2; _++) {
-            tie(i, j) = sample();
-            reverse(t.begin() + i, t.begin() + j + 1);
-        }
+        tie(i, j) = sample();
+        reverse(t.begin() + i, t.begin() + j + 1);
         two_opt(t);
 
         auto l = length(t);
