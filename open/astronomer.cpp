@@ -166,7 +166,7 @@ int main() {
         exit(0);
     }
 
-    shuffle(coords.begin(), coords.end(), mt19937(random_device()()));
+    shuffle(coords.begin(), coords.end(), mt19937(random_device{}()));
     for (int i = 0; i < n; i++) {
         auto check = [&](auto curr) {
             vector<pair<double, int>> angles;

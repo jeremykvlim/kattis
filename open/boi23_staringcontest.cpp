@@ -10,7 +10,7 @@ int main() {
 
     vector<int> p(n);
     iota(p.begin(), p.end(), 1);
-    shuffle(p.begin(), p.end(), mt19937(random_device()()));
+    shuffle(p.begin(), p.end(), mt19937(random_device{}()));
 
     int i = p[0], a_max = 0;
     vector<int> b(n + 1);

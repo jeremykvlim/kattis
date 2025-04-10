@@ -143,7 +143,7 @@ int main() {
     iota(indices.begin(), indices.end(), 0);
     bitset<100> sensors(0);
     while (n--) {
-        shuffle(indices.begin(), indices.end(), mt19937(random_device()()));
+        shuffle(indices.begin(), indices.end(), mt19937(random_device{}()));
 
         auto temp = ~bitset<100>();
         for (int i : indices)
