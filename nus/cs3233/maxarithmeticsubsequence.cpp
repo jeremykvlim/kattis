@@ -24,9 +24,7 @@ int main() {
         auto len = -1LL;
         for (int fails = 0; fails < 175;) {
             int j = rng() % n, offset;
-            do {
-                offset = rng() % (2 * c + 1) - c;
-            } while (!offset || j + offset < 0 || j + offset >= n);
+            do offset = rng() % (2 * c + 1) - c; while (!offset || j + offset < 0 || j + offset >= n);
 
             auto l = a[j], r = a[j], diff = abs(a[j + offset] - a[j]);
             while (seen.count(l - diff)) l -= diff;
