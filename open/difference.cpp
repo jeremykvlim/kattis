@@ -1,30 +1,24 @@
 #include <bits/stdc++.h>
-#include <tr2/dynamic_bitset>
 using namespace std;
-using namespace tr2;
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    vector<int> a(1);
+    vector<int> a{0};
     int m;
     cin >> a[0] >> m;
 
-    dynamic_bitset<> bs(m + 1);
-    bs.set();
-    bs[0] = bs[a[0]] = false;
-
+    vector<bool> seen(m + 1, false);
+    seen[0] = seen[a[0]] = true;
     int n = 1;
-    for (int prev = 0, d; bs[m]; prev = d, n++) {
-        d = bs.find_next(prev);
-        bs[d] = false;
-        if (a[n - 1] + d <= m) bs[a[n - 1] + d] = false;
+    for (int d = 1; !seen[m]; n++) {
+        while (seen[d]) d++;
+        
+        if (a[n - 1] + d <= m) seen[a[n - 1] + d] = true;
         for (int ai : a)
-            if (a[n - 1] + d - ai <= m) bs[a[n - 1] + d - ai] = false;
-
+            if (a[n - 1] + d - ai <= m) seen[a[n - 1] + d - ai] = true;
         a.emplace_back(a[n - 1] + d);
     }
-
     cout << n;
 }
