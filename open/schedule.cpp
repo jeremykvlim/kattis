@@ -14,9 +14,9 @@ int main() {
         (one < two ? one : two)++;
         schedule.assign(one + two, "");
         auto s = string(one, '1') + string(two, '2');
-        do {
+        do
             for (int i = one + two - 1; ~i; i--) schedule[i] += s[i];
-        } while (next_permutation(s.begin() + 1, s.end()));
+        while (next_permutation(s.begin() + 1, s.end()));
     }
 
     if (one + two > w) {
