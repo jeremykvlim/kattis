@@ -6,6 +6,7 @@ struct Trie {
         LOWER = 97,
         UPPER = 65,
         NUM = 48,
+        SYM = 32,
         NA = 0
     };
 
