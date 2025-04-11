@@ -169,13 +169,13 @@ int main() {
 
     auto points = 0LL;
     for (int i = 0; i < n; i++) {
-        auto v1 = convex_hull[(i + 1) % n] - convex_hull[i], v2 = convex_hull[(i + 3) % n] - convex_hull[(i + 2) % n];
-        auto cp = cross(v1, v2);
-        if (cp < 0 || !cp && abs(cross(v1, convex_hull[(i + 3) % n] - convex_hull[i])) != abs(get<0>(extended_gcd(v1.x, v1.y)))) {
+        auto u = convex_hull[(i + 1) % n] - convex_hull[i], v = convex_hull[(i + 3) % n] - convex_hull[(i + 2) % n];
+        auto cp = cross(u, v);
+        if (cp < 0 || !cp && abs(cross(u, convex_hull[(i + 3) % n] - convex_hull[i])) != abs(get<0>(extended_gcd(u.x, u.y)))) {
             cout << "infinitely many";
             exit(0);
         }
-        if (cp) points += count(v1, -v2, convex_hull[(i + 1) % n], convex_hull[(i + 2) % n]);
+        if (cp) points += count(u, -v, convex_hull[(i + 1) % n], convex_hull[(i + 2) % n]);
     }
     cout << points;
 }
