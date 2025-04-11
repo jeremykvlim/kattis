@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-string shunting_yard(string infix) {
+string shunting_yard(const string &infix) {
     auto isop = [&](char c) {
         return c == '|' || c == '&' || c == '~';
     };
