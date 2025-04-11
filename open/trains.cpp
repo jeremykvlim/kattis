@@ -3,18 +3,18 @@ using namespace std;
 
 int main() {
     ios::sync_with_stdio(false);
-    cin.tie(0);
+    cin.tie(nullptr);
 
     int T;
     cin >> T;
 
     while (T--) {
-        int N;
-        cin >> N;
+        int n;
+        cin >> n;
 
         vector<vector<array<int, 3>>> adj_list;
         unordered_map<string, int> compress;
-        while (N--) {
+        while (n--) {
             int S;
             cin >> S;
 

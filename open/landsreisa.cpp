@@ -134,7 +134,7 @@ void simulated_annealing(const F1 &cost, const F2 &change, const double &tempera
     }
 }
 
-int main(){
+int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
