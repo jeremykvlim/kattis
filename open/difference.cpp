@@ -1,5 +1,7 @@
 #include <bits/stdc++.h>
+#include <tr2/dynamic_bitset>
 using namespace std;
+using namespace tr2;
 
 int main() {
     ios::sync_with_stdio(false);
@@ -9,17 +11,17 @@ int main() {
     int m;
     cin >> a[0] >> m;
 
-    auto b = make_unique<bitset<(int) 2e8 + 1>>();
-    b->set();
-    (*b)[0] = (*b)[a[0]] = false;
+    dynamic_bitset<> bs(m + 1);
+    bs.set();
+    bs[0] = bs[a[0]] = false;
 
     int n = 1;
-    for (int prev = 0, d; (*b)[m]; prev = d, n++) {
-        d = b->_Find_next(prev);
-        (*b)[d] = false;
-        if (a[n - 1] + d < b->size()) (*b)[a[n - 1] + d] = false;
+    for (int prev = 0, d; bs[m]; prev = d, n++) {
+        d = bs.find_next(prev);
+        bs[d] = false;
+        if (a[n - 1] + d <= m) bs[a[n - 1] + d] = false;
         for (int ai : a)
-            if (a[n - 1] + d - ai < b->size()) (*b)[a[n - 1] + d - ai] = false;
+            if (a[n - 1] + d - ai <= m) bs[a[n - 1] + d - ai] = false;
 
         a.emplace_back(a[n - 1] + d);
     }
