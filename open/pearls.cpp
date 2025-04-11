@@ -19,7 +19,7 @@ int main() {
 
     string path, temp;
     vector<char> dir{'S', 'E', 'N', 'W'};
-    vector<int> dx{1, 0, -1, 0}, dy{0, 1, 0, -1}, d{1, 2, 0, 3};
+    vector<int> dx{1, 0, -1, 0}, dy{0, 1, 0, -1};
     vector<vector<bool>> visited(n + 2, vector<bool>(m + 2, false));
     for (int i = 0; i <= n + 1; i++)
         for (int j = 0; j <= m + 1; j++) visited[i][j] = !(1 <= i && i <= n && 1 <= j && j <= m);
@@ -37,7 +37,7 @@ int main() {
 
             if (visited[x][y]) return;
             visited[x][y] = true;
-            for (int d2 : d) {
+            for (int d2 : {1, 2, 0, 3}) {
                 if ((d1 ^ d2) == 2 || (d1 == d2 && s[i] == 'B') || (d1 != d2 && (s[i] == 'W' || s[i] == '-' || s[(i + 1) % k] == 'B' || s[(i + k - 1) % k] == 'B'))) continue;
 
                 bool undo1 = false, undo2 = false;
