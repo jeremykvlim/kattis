@@ -376,7 +376,7 @@ int main() {
         if (i < n) dp[i] += 2 * dp[i - 1];
         if (i == 1 || i == n - 1) dp[i] += dp[i - 1] * (n == 2 ? 2 : 1);
         if (i + 1 < n) dp[i + 1] += 4 * dp[i - 1];
-        if (i + 2 < n) dp[i + 2] += 2 * dp[i - 1] ;
+        if (i + 2 < n) dp[i + 2] += 2 * dp[i - 1];
     }
     cout << dp.back();
 }

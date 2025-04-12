@@ -15,7 +15,7 @@ int main() {
     while (l + 1 < r && n > 0) {
         mid = l + min(n >= s + 1 ? dp[n - s - 1] + 1 : 1, r - l);
 
-        cout << "? " ;
+        cout << "? ";
         for (int i = l + 1; i <= mid; i++) cout << i << " ";
         cout << "\n" << flush;
 

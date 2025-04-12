@@ -20,7 +20,7 @@ int main() {
 
             vector<pair<int, string>> stations(S);
             int prev_i = -1, prev_t = -1;
-            for (auto &[t, name]  : stations) {
+            for (auto &[t, name] : stations) {
                 string time;
                 cin >> time >> name;
 
