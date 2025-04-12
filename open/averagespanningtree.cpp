@@ -8,7 +8,7 @@ struct Matrix {
 
     Matrix(int n) : Matrix(n, n) {}
     Matrix(int row, int col, int v = 0) : r(row), c(col), mat(row, vector<T>(col, v)) {}
-    
+
     auto & operator[](int i) {
         return mat[i];
     }
@@ -45,14 +45,15 @@ T rref(Matrix<T> &matrix) {
     return rank < n ? 0 : det;
 }
 
-double kirchoffs_theorem(int n, const vector<pair<int, int>> &edges) {
+template <typename T>
+T kirchoffs_theorem(int n, const vector<pair<int, int>> &edges) {
     vector<int> degree(n, 0);
     for (auto [u, v] : edges) {
         degree[u]++;
         degree[v]++;
     }
 
-    Matrix<double> laplacian(n - 1);
+    Matrix<T> laplacian(n - 1);
     for (int i = 0; i < n - 1; i++) laplacian[i][i] = degree[i];
     for (auto [u, v] : edges)
         if (u != n - 1 && v != n - 1) {
@@ -92,7 +93,7 @@ int main() {
                 temp.emplace_back(a2 - (a2 > b1), b2 - (b2 > b1));
             }
 
-        total += weights[i] * kirchoffs_theorem(v - 1, temp);
+        total += weights[i] * kirchoffs_theorem<double>(v - 1, temp);
     }
-    cout << fixed << setprecision(5) << total / kirchoffs_theorem(v, edges);
+    cout << fixed << setprecision(5) << total / kirchoffs_theorem<double>(v, edges);
 }
