@@ -154,29 +154,6 @@ vector<Point<T>> monotone_chain(vector<Point<T>> points, bool collinear = false)
     return convex_hull;
 }
 
-template <typename T>
-struct SparseTable {
-    vector<vector<T>> ST;
-    function<T(T, T)> f;
-
-    SparseTable() {}
-    SparseTable(vector<T> v, function<T(T, T)> func) : f(move(func)) {
-        if (v.empty()) return;
-        int n = __lg(v.size()) + 1;
-        ST.resize(n);
-        ST.front() = v;
-        for (int i = 1; i < n; i++) {
-            ST[i].resize(v.size() - (1 << i) + 1);
-            for (int j = 0; j <= v.size() - (1 << i); j++)
-                ST[i][j] = f(ST[i - 1][j], ST[i - 1][j + (1 << (i - 1))]);
-        }
-    }
-
-    auto size() {
-        return ST.size();
-    }
-};
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
