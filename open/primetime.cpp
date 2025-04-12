@@ -22,7 +22,7 @@ int main() {
         for (int j = p - 1; j > prev; j--) {
             int k = j + 1;
             dp[j][0] = dp[k][2];
-            for (int pf: pfs[j])
+            for (int pf : pfs[j])
                 if (dp[j][0] >= min(j / pf, dp[j / pf][2])) {
                     dp[j][0] = min(j / pf, dp[j / pf][2]);
                     k = j / pf;
