@@ -196,21 +196,21 @@ int main() {
 
     auto convex_hull = monotone_chain(celery, true);
     int s = convex_hull.size();
-    vector<vector<int>> lift(n, vector<int>(__lg(n)));
+    vector<vector<int>> lift(n, vector<int>(__lg(n) + 1));
     for (int l = 0, r = 1, d = 0; l < n; l++) {
         while (cross(alexa[l], convex_hull[d], convex_hull[(d + 1) % s]) < 0 || cross(alexa[l], convex_hull[d], convex_hull[(d + s - 1) % s]) < 0) d = (d + 1) % s;
         while (cross(alexa[l], convex_hull[d], alexa[r]) < 0) r = (r + 1) % n;
         lift[l][0] = (r - l - 1 + n) % n;
     }
 
-    for (int i = 1; i < __lg(n); i++)
+    for (int i = 1; i <= __lg(n); i++)
         for (int j = 0; j < n; j++)
             lift[j][i] = min(n, lift[j][i - 1] + lift[(j + lift[j][i - 1]) % n][i - 1]);
 
     int count = 1e9;
     for (int l = 0; l < n; l++) {
         int c = 1;
-        for (int i = __lg(n) - 1, j = l, temp = n - 1; ~i && temp >= 0; i--)
+        for (int i = __lg(n), j = l, temp = n - 1; ~i && temp >= 0; i--)
             if (temp >= lift[j][i]) {
                 temp -= lift[j][i];
                 j = (j + lift[j][i]) % n;
