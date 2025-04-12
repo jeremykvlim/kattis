@@ -123,18 +123,7 @@ double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
-template <typename F1, typename F2>
-void simulated_annealing(const F1 &cost, const F2 &change, const double &temperature = 0.01, const double &cooling_rate = 0.999999, const int &time_limit = 1e3) {
-    mt19937 rng(random_device{}());
-    uniform_real_distribution<double> urd(0, 1);
-    auto start = chrono::steady_clock::now();
-    for (auto t = temperature; chrono::steady_clock::now() - start < chrono::milliseconds(time_limit); t *= cooling_rate) {
-        auto delta = cost();
-        if (delta < 0 || exp(-delta / t) > urd(rng)) change();
-    }
-}
-
-int main() {
+int main(){
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
@@ -188,28 +177,15 @@ int main() {
     two_opt(tour);
 
     mt19937 rng(random_device{}());
-    auto sample = [&]() -> pair<int, int> {
+    auto len = length(tour);
+    while (len > 63) {
+        auto t = tour;        
         int i = -1, j = -1;
         while (i == j) {
             i = rng() % (n - 1) + 1;
             j = rng() % (n - 1) + 1;
         }
-        return minmax(i, j);
-    };
-
-    int i = 0, j = 0;
-    simulated_annealing([&]() {
-        tie(i, j) = sample();
-        int a = tour[i - 1], b = tour[i], c = tour[j], d = (j + 1 == n ? tour[0] : tour[j + 1]);
-        return dist[a][c] + dist[b][d] - dist[a][b] - dist[c][d];
-    }, [&]() {
-        reverse(tour.begin() + i, tour.begin() + j + 1);
-    });
-
-    auto len = length(tour);
-    while (len > 63) {
-        auto t = tour;
-        tie(i, j) = sample();
+        if (i > j) swap(i, j);
         reverse(t.begin() + i, t.begin() + j + 1);
         two_opt(t);
 
