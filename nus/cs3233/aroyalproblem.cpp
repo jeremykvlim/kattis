@@ -49,7 +49,7 @@ struct BlockCutTree {
 
         int m = node;
         BCT.resize(m);
-        lift.assign(m, vector<int>(__lg(m)));
+        lift.assign(m, vector<int>(__lg(m) + 1));
         depth.resize(m);
         in.resize(m);
         out.resize(m);
@@ -70,7 +70,7 @@ struct BlockCutTree {
             if (~prev) {
                 depth[v] = depth[prev] + 1;
                 lift[v][0] = prev;
-                for (int i = 1; i < __lg(m); i++) lift[v][i] = lift[lift[v][i - 1]][i - 1];
+                for (int i = 1; i <= __lg(m); i++) lift[v][i] = lift[lift[v][i - 1]][i - 1];
             }
 
             for (int u : BCT[v])
@@ -89,7 +89,7 @@ struct BlockCutTree {
         if (ancestor(v, u)) return v;
 
         if (depth[u] < depth[v]) swap(u, v);
-        for (int i = __lg(BCT.size()) - 1; ~i; i--)
+        for (int i = __lg(BCT.size()); ~i; i--)
             if (!ancestor(lift[u][i], v)) u = lift[u][i];
 
         return lift[u][0];
