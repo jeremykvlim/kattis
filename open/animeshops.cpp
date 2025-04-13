@@ -25,7 +25,7 @@ int main() {
         adj_list[b - 1].emplace_back(a - 1);
     }
 
-    vector dist(n, array<array<int, 2>, 2> {-1, -1, -1, -1});
+    vector<array<array<int, 2>, 2>> dist(n, {-1, -1, -1, -1});
     priority_queue<array<int, 3>, vector<array<int, 3>>, greater<>> pq;
     for (int i = 0; i < n; i++) 
         if (shop[i]) pq.push({0, i, i});
