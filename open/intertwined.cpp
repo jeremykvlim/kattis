@@ -184,31 +184,28 @@ int main() {
                 cout << i;
                 exit(0);
             }
-
             continue;
         }
 
         vector<int> indices;
-        if (!temp.empty()) {
-            sort(temp.begin(), temp.end(), [&](auto p1, auto p2) {return p1.first < p2.first;});
-            if (temp.front().first != Point<long long>{0, 0}) temp.insert(temp.begin(), {Point<long long>{0, 0}, 0});
+        sort(temp.begin(), temp.end(), [&](auto p1, auto p2) {return p1.first < p2.first;});
+        if (temp.front().first != Point<long long>{0, 0}) temp.insert(temp.begin(), {Point<long long>{0, 0}, 0});
 
-            deque<pair<Point<long long>, int>> half_hull{{Point<long long>{0, 0}, 0}};
-            vector<vector<int>> adj_list(temp.size());
-            for (int j = 1; j < temp.size(); j++) add(half_hull, adj_list, {temp[j].first, j});
+        deque<pair<Point<long long>, int>> half_hull{{Point<long long>{0, 0}, 0}};
+        vector<vector<int>> adj_list(temp.size());
+        for (int j = 1; j < temp.size(); j++) add(half_hull, adj_list, {temp[j].first, j});
 
-            int v = 0;
-            for (auto len = d; len >= 0;) {
-                auto it = find_if(adj_list[v].rbegin(), adj_list[v].rend(), [&](int u) {return len >= euclidean_dist(temp[v].first, temp[u].first);});
-                if (it == adj_list[v].rend()) break;
+        int v = 0;
+        for (auto len = d; len >= 0;) {
+            auto it = find_if(adj_list[v].rbegin(), adj_list[v].rend(), [&](int u) {return len >= euclidean_dist(temp[v].first, temp[u].first);});
+            if (it == adj_list[v].rend()) break;
 
-                int u = *it;
-                len -= euclidean_dist(temp[v].first, temp[u].first);
-                v = u;
-                indices.emplace_back(temp[u].second);
-            }
-            if (indices.empty()) goto next;
+            int u = *it;
+            len -= euclidean_dist(temp[v].first, temp[u].first);
+            v = u;
+            indices.emplace_back(temp[u].second);
         }
+        if (indices.empty()) goto next;
 
         count = 0;
         d -= euclidean_dist(points[indices[0]].first);
