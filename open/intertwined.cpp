@@ -214,7 +214,7 @@ int main() {
 
         for (int j : indices) order.emplace_back(points[j].second);
         if (order.size() >= 3)
-            for (int k = order.size() - 2, l = order.size() - 1; ~k; k--)
+            for (int k = order.size() - 2, l = order.size() - 1; k; k--)
                 if (order[k - 1] == order[l - 1] && order[k] == order[l]) {
                     double len = 0;
                     for (int j = k; j < l; j++) len += euclidean_dist(coords[order[j + 1]], coords[order[j]]);
