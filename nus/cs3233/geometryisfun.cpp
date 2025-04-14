@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -484,6 +484,11 @@ T cross(Point<T> a, Point<T> b) {
 }
 
 template <typename T>
+T cross(Point<T> a, Point<T> b, Point<T> c) {
+    return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+}
+
+template <typename T>
 T area_of_parallelogram(Point<T> a, Point<T> b, Point<T> c) {
     Point<T> u = b - a, v = c - a;
     return abs(cross(u, v));
@@ -528,11 +533,6 @@ T dist_between_convex_polygons(vector<Point<T>> P, vector<Point<T>> Q) {
     T dist = 0;
     for (int i = 0; i < m.size(); i++) dist += area_of_parallelogram({0, 0}, m[i], m[(i + 1) % m.size()]) - area_of_parallelogram(m[0], m[i], m[(i + 1) % m.size()]);
     return dist;
-}
-
-template <typename T>
-T cross(Point<T> a, Point<T> b, Point<T> c) {
-    return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
 template <typename T>
