@@ -187,7 +187,6 @@ int main() {
             continue;
         }
 
-        vector<int> indices;
         sort(temp.begin(), temp.end(), [&](auto p1, auto p2) {return p1.first < p2.first;});
         if (temp.front().first != Point<long long>{0, 0}) temp.insert(temp.begin(), {Point<long long>{0, 0}, 0});
 
@@ -195,6 +194,7 @@ int main() {
         vector<vector<int>> adj_list(temp.size());
         for (int j = 1; j < temp.size(); j++) add(half_hull, adj_list, {temp[j].first, j});
 
+        vector<int> indices;
         int v = 0;
         for (auto len = d; len >= 0;) {
             auto it = find_if(adj_list[v].rbegin(), adj_list[v].rend(), [&](int u) {return len >= euclidean_dist(temp[v].first, temp[u].first);});
