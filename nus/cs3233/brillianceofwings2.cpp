@@ -153,11 +153,11 @@ int main() {
 
     WeightedDisjointSets wdsu(n);
     for (auto [u, v] : shared)
-        if (wdsu.find(u) != wdsu.find(v)) wdsu.link(u, v, {0, -1});
+        if (wdsu.find(u) != wdsu.find(v)) wdsu.unite(u, v, {0, -1});
 
     for (int i = 0; i < edges.size(); i++) {
         auto [u, v] = edges[i];
-        if (wdsu.find(u) != wdsu.find(v)) wdsu.link(u, v, {i + 1, i});
+        if (wdsu.find(u) != wdsu.find(v)) wdsu.unite(u, v, {i + 1, i});
     }
 
     for (auto [c, d] : t2) {
