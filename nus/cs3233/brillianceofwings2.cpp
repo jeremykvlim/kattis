@@ -136,7 +136,7 @@ int main() {
         t1.emplace(minmax(u - 1, v - 1));
     }
 
-    vector<pair<int, int>> shared, extra;
+    vector<pair<int, int>> shared, t2;
     for (int i = 0; i < n - 1; i++) {
         int u, v;
         cin >> u >> v;
@@ -145,7 +145,7 @@ int main() {
         if (t1.count(e)) {
             t1.erase(e);
             shared.emplace_back(e);
-        } else extra.emplace_back(e);
+        } else t2.emplace_back(e);
     }
 
     vector<pair<int, int>> edges(t1.begin(), t1.end());
@@ -160,7 +160,7 @@ int main() {
         if (wdsu.find(u) != wdsu.find(v)) wdsu.link(u, v, {i + 1, i});
     }
 
-    for (auto [c, d] : extra) {
+    for (auto [c, d] : t2) {
         int i = wdsu.unite(c, d, {0, -2});
         if (i != -2) {
             auto [a, b] = edges[i];
