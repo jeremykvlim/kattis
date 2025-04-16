@@ -17,7 +17,7 @@ pair<T, vector<int>> dreyfus_wagner(int n, const vector<array<int, 3>> &edges, c
 
     for (int m1 = 1; m1 < 1 << t; m1++) {
         for (int v = 0; v < n; v++)
-            for (int m2 = (m1 - 1) & m1; m2; m2 = (m2 - 1) & m1) {
+            for (int m2 = (m1 - 1) & m1; m2; --m2 &= m1) {
                 T d = dist[m2][v] + dist[m1 ^ m2][v] - cost[v];
                 if (dist[m1][v] > d) {
                     dist[m1][v] = d;
