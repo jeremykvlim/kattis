@@ -100,6 +100,7 @@ int main() {
         for (int i = 0; i < m; i++)
             for (int j = 0; j < n; j++) {
                 if (grid[i][j] == '#') continue;
+                
                 int u = index(i, j);
                 for (int k = 0; k < 4; k++) {
                     int x = i + dx[k], y = j + dy[k];
