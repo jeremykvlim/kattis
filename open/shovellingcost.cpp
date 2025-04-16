@@ -1,6 +1,77 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+pair<T, vector<int>> dreyfus_wagner(int n, const vector<array<int, 3>> &edges, const vector<int> &terminals, const vector<T> &cost) {
+    int t = terminals.size();
+    vector<vector<array<int, 3>>> adj_list(n);
+    for (int i = 0; i < edges.size(); i++) {
+        auto [u, v, w] = edges[i];
+        adj_list[u].push_back({v, w, i});
+    }
+
+    T inf = numeric_limits<T>::max() >> 2;
+    vector<vector<T>> dist(1 << t, vector<T>(n, inf));
+    for (int i = 0; i < t; i++) dist[1 << i][terminals[i]] = 0;
+    vector<vector<pair<int, int>>> prev(1 << t, vector<pair<int, int>>(n, {-1, -1}));
+
+    for (int m1 = 1; m1 < 1 << t; m1++) {
+        for (int v = 0; v < n; v++)
+            for (int m2 = (m1 - 1) & m1; m2; m2 = (m2 - 1) & m1) {
+                T d = dist[m2][v] + dist[m1 ^ m2][v] - cost[v];
+                if (dist[m1][v] > d) {
+                    dist[m1][v] = d;
+                    prev[m1][v] = {m2, -1};
+                }
+            }
+
+        priority_queue<pair<T, int>, vector<pair<T, int>>, greater<>> pq;
+        for (int v = 0; v < n; v++) pq.emplace(dist[m1][v], v);
+
+        while (!pq.empty()) {
+            auto [d, v] = pq.top();
+            pq.pop();
+
+            if (d != dist[m1][v]) continue;
+
+            for (auto [u, w, i] : adj_list[v])
+                if (dist[m1][u] > dist[m1][v] + w) {
+                    dist[m1][u] = dist[m1][v] + w;
+                    prev[m1][u] = {v, i};
+                    pq.emplace(dist[m1][u], u);
+                }
+        }
+    }
+
+    T total = inf;
+    int v = -1;
+    for (int u = 0; u < n; u++) {
+        T d = dist.back()[u] + cost[u];
+        if (total > d) {
+            total = d;
+            v = u;
+        }
+    }
+
+    vector<vector<bool>> visited(1 << t, vector<bool>(n, false));
+    vector<int> steiner;
+    auto dfs = [&](auto &&self, int m1, int v) -> void {
+        if (visited[m1][v]) return;
+
+        visited[m1][v] = true;
+        steiner.emplace_back(v);
+
+        auto [m2, i] = prev[m1][v];
+        if (!~m2) return;
+        if (!~i) {
+            self(self, m2, v);
+            self(self, m1 ^ m2, v);
+        } else self(self, m1, m2);
+    };
+    dfs(dfs, (1 << t) - 1, v);
+    return {total, steiner};
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -9,87 +80,36 @@ int main() {
     while (cin >> n >> m && n && m) {
         vector<string> grid(m);
         for (auto &row : grid) cin >> row;
-        auto temp = grid;
 
-        vector<vector<vector<array<int, 5>>>> dp(1 << 4, vector<vector<array<int, 5>>>(m, vector<array<int, 5>>(n, {(int) 1e9, -1, -1, -1, -1})));
-        auto dreyfus_wagner = [&]() {
-            int houses = 0;
-            for (int i = 0; i < m; i++)
-                for (int j = 0; j < n; j++)
-                    if (isupper(grid[i][j])) dp[1 << houses++][i][j][0] = 0;
+        auto index = [&](int i, int j) {
+            return i * n + j;
+        };
 
-            vector<int> dx{1, 0, -1, 0}, dy{0, 1, 0, -1};
-            for (int m1 = 1; m1 < 1 << 4; m1++) {
-                for (int i = 0; i < m; i++)
-                    for (int j = 0; j < n; j++)
-                        for (int m2 = (m1 - 1) & m1; m2; --m2 &= m1) {
-                            int d = dp[m2][i][j][0] + dp[m1 ^ m2][i][j][0] - (grid[i][j] == 'o');
-                            if (dp[m1][i][j][0] > d) {
-                                dp[m1][i][j][0] = d;
-                                dp[m1][i][j][1] = 0;
-                                dp[m1][i][j][4] = m2;
-                            }
-                        }
+        vector<int> cost(n * m, 1e6), terminals;
+        for (int i = 0; i < m; i++)
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == '#') continue;
 
-                deque<pair<int, int>> dq;
-                for (int i = 0; i < m; i++)
-                    for (int j = 0; j < n; j++)
-                        if (dp[m1][i][j][0] != 1e9) dq.emplace_back(i, j);
+                int v = index(i, j);
+                cost[v] = grid[i][j] == 'o';
+                if (isupper(grid[i][j])) terminals.emplace_back(v);
+            }
 
-                while (!dq.empty()) {
-                    auto [i, j] = dq.front();
-                    dq.pop_front();
-
-                    for (int k = 0; k < 4; k++) {
-                        int x = i + dx[k], y = j + dy[k];
-                        if (!(0 <= x && x < m && 0 <= y && y < n) || grid[x][y] == '#') continue;
-                        int w = grid[x][y] == 'o', d = dp[m1][i][j][0] + w;
-                        if (dp[m1][x][y][0] > d) {
-                            dp[m1][x][y][0] = d;
-                            dp[m1][x][y][1] = 1;
-                            dp[m1][x][y][2] = i;
-                            dp[m1][x][y][3] = j;
-                            if (w) dq.emplace_back(x, y);
-                            else dq.emplace_front(x, y);
-                        }
-                    }
+        vector<array<int, 3>> edges;
+        vector<int> dx{1, 0, -1, 0}, dy{0, 1, 0, -1};
+        for (int i = 0; i < m; i++)
+            for (int j = 0; j < n; j++) {
+                if (grid[i][j] == '#') continue;
+                int u = index(i, j);
+                for (int k = 0; k < 4; k++) {
+                    int x = i + dx[k], y = j + dy[k];
+                    if (!(0 <= x && x < m && 0 <= y && y < n) || grid[x][y] == '#') continue;
+                    int v = index(x, y);
+                    edges.push_back({u, v, cost[v]});
                 }
             }
-        };
-        dreyfus_wagner();
 
-        int d = 1e9, r = -1, c = -1;
-        for (int i = 0; i < m; i++)
-            for (int j = 0; j < n; j++)
-                if (d > dp.back()[i][j][0]) {
-                    d = dp.back()[i][j][0];
-                    r = i;
-                    c = j;
-                }
-
-        if (~r && ~c) {
-            vector<vector<vector<bool>>> used(1 << 4, vector<vector<bool>>(m, vector<bool>(n, false)));
-            vector<vector<bool>> visited(m, vector<bool>(n, false));
-            auto dfs = [&](auto &&self, int mask, int i, int j) {
-                if (used[mask][i][j]) return;
-                used[mask][i][j] = visited[i][j] = true;
-
-                if (!dp[mask][i][j][1]) {
-                    self(self, dp[mask][i][j][4], i, j);
-                    self(self, mask ^ dp[mask][i][j][4], i, j);
-                } else if (dp[mask][i][j][1] == 1) self(self, mask, dp[mask][i][j][2], dp[mask][i][j][3]);
-            };
-            dfs(dfs, (1 << 4) - 1, r, c);
-
-            for (int i = 0; i < m; i++)
-                for (int j = 0; j < n; j++)
-                    if (visited[i][j] && grid[i][j] == 'o') grid[i][j] = '.';
-        }
-
-        int count = 0;
-        for (int i = 0; i < m; i++)
-            for (int j = 0; j < n; j++)
-                if (temp[i][j] == 'o' && grid[i][j] == '.') count++;
-        cout << count << "\n";
+        auto [total, steiner] = dreyfus_wagner(n * m, edges, terminals, cost);
+        cout << total << "\n";
     }
 }
