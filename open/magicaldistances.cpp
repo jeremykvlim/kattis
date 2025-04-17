@@ -71,7 +71,7 @@ int main() {
     dfs(dfs);
 
     int lg = __lg(n) + 1;
-    vector<vector<int>> lift(n + 1, vector<int>(lg)), OR_lift(n + 1, vector<int>(lg));
+    vector<vector<int>> lift(n + 1, vector<int>(lg, 0)), OR_lift(n + 1, vector<int>(lg, 0));
     for (int v = 1; v <= n; v++) tie(lift[v][0], OR_lift[v][0]) = bfs_edge[v];
 
     for (int i = 1; i < lg; i++)
