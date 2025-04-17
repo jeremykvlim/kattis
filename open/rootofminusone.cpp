@@ -17,27 +17,28 @@ T pow(T base, U exponent, T mod) {
     return value;
 }
 
-long long tonelli_shanks(long long n, long long p) {
+template <typename T>
+T tonelli_shanks(T n, T p) {
     if (p == 2) return n;
     if (p % 4 == 3) return pow(n, (p + 1) / 4, p);
 
-    auto q = p - 1;
+    T q = p - 1;
     int s = 0;
     while (!(q & 1)) {
         q >>= 1;
         s++;
     }
 
-    auto legendre = [&](long long a, long long p) -> int {
+    auto legendre = [&](T a, T p) -> int {
         if (!a) return 0;
         return pow(a, (p - 1) / 2, p) != p - 1 ? 1 : -1;
     };
 
-    auto z = 2LL;
+    T z = 2;
     while (legendre(z, p) != -1) z++;
 
     int m = s;
-    auto c = pow(z, q, p), t = pow(n, q, p), r = pow(n, (q + 1) / 2, p);
+    T c = pow(z, q, p), t = pow(n, q, p), r = pow(n, (q + 1) / 2, p);
     while (t != 1) {
         auto temp = t;
 
@@ -47,7 +48,7 @@ long long tonelli_shanks(long long n, long long p) {
             i++;
         }
 
-        auto b = pow(c, 1LL << (m - i - 1), p);
+        T b = pow(c, 1LL << (m - i - 1), p);
         m = i;
         c = mul(b, b, p);
         t = mul(t, mul(b, b, p), p);
