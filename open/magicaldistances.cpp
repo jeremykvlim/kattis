@@ -38,9 +38,9 @@ int main() {
         adj_list[b].emplace_back(a, w);
     }
 
+    vector<vector<int>> adj_list_bfs(n + 1);
     vector<pair<int, int>> bfs_edge(n + 1, {0, 0});
     vector<int> depth(n + 1, 0);
-    vector<vector<int>> adj_list_bfs(n + 1);
     vector<bool> visited(n + 1, 0);
     visited[1] = 1;
     queue<int> q;
