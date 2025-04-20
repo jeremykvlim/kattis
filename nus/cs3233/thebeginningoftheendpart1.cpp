@@ -54,11 +54,11 @@ struct SegmentTree {
         return min(l + i, r - (i >> 1));
     }
 
-    void modify(const int &v, const int &pos) {
-        modify(1, v, pos, 0, n);
+    void modify(const int &pos, const int &v) {
+        modify(1, pos, v, 0, n);
     }
 
-    void modify(int i, const int &v, const int &pos, int l, int r) {
+    void modify(int i, const int &pos, const int &v, int l, int r) {
         ST[i].count++;
         if (l + 1 == r) {
             apply(i, v);
@@ -68,8 +68,8 @@ struct SegmentTree {
         push(i);
 
         int m = midpoint(l, r);
-        if (pos < m) modify(i << 1, v, pos, l, m);
-        else modify(i << 1 | 1, v, pos, m, r);
+        if (pos < m) modify(i << 1, pos, v, l, m);
+        else modify(i << 1 | 1, pos, v, m, r);
 
         pull(i);
     }
