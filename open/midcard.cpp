@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -399,19 +399,19 @@ struct SegmentTree {
         return min(l + i, r - (i >> 1));
     }
 
-    void modify(const int &pos, const int &val) {
-        modify(1, pos, val, 0, n);
+    void modify(const int &pos, const int &v) {
+        modify(1, pos, v, 0, n);
     }
 
-    void modify(int i, const int &pos, const int &val, int l, int r) {
+    void modify(int i, const int &pos, const int &v, int l, int r) {
         if (l + 1 == r) {
-            ST[i] = val;
+            ST[i] = v;
             return;
         }
 
         int m = midpoint(l, r);
-        if (pos < m) modify(i << 1, pos, val, l, m);
-        else modify(i << 1 | 1, pos, val, m, r);
+        if (pos < m) modify(i << 1, pos, v, l, m);
+        else modify(i << 1 | 1, pos, v, m, r);
 
         pull(i);
     }
@@ -468,7 +468,7 @@ int main() {
         } else {
             int p, s, t;
             cin >> p >> s >> t;
-            
+
             st.modify(p - 1, t - s + 1);
         }
     }
