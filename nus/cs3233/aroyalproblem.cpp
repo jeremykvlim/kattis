@@ -49,7 +49,7 @@ struct BlockCutTree {
 
         int m = node;
         BCT.resize(m);
-        lift.assign(m, vector<int>(__lg(m) + 1));
+        lift.assign(__lg(m) + 1, vector<int>(m));
         depth.resize(m);
         in.resize(m);
         out.resize(m);
@@ -69,8 +69,8 @@ struct BlockCutTree {
             in[v] = count++;
             if (~prev) {
                 depth[v] = depth[prev] + 1;
-                lift[v][0] = prev;
-                for (int i = 1; i <= __lg(m); i++) lift[v][i] = lift[lift[v][i - 1]][i - 1];
+                lift[0][v] = prev;
+                for (int i = 1; i <= __lg(m); i++) lift[i][v] = lift[i - 1][lift[i - 1][v]];
             }
 
             for (int u : BCT[v])
@@ -90,9 +90,9 @@ struct BlockCutTree {
 
         if (depth[u] < depth[v]) swap(u, v);
         for (int i = __lg(BCT.size()); ~i; i--)
-            if (!ancestor(lift[u][i], v)) u = lift[u][i];
+            if (!ancestor(lift[i][u], v)) u = lift[i][u];
 
-        return lift[u][0];
+        return lift[0][u];
     }
 
     bool on_path(int v, int u, int t) {
@@ -132,10 +132,10 @@ int main() {
         auto path = [&]() {
             if (bct.depth[pq] == bct.depth[rs]) return pq != rs;
             else if (bct.depth[pq] > bct.depth[rs]) {
-                int t = bct.lift[pq][0];
+                int t = bct.lift[0][pq];
                 return !bct.on_path(r, s, pq) && (!bct.on_path(r, s, t) || bct.iscutpoint(pq));
             } else {
-                int t = bct.lift[rs][0];
+                int t = bct.lift[0][rs];
                 return !bct.on_path(p, q, rs) && (!bct.on_path(p, q, t) || !bct.iscutpoint(rs));
             }
         };
