@@ -72,17 +72,16 @@ int main() {
 
     SegmentTree st(k);
     vector<long long> dp1(m + 1, -1e18), dp2(k, -1e18);
-    dp1[0] = 0;
     int i = lower_bound(times.begin(), times.end(), 0) - times.begin();
-    dp2[i] = 0;
+    dp1[0] = dp2[i] = 0;
     st.assign(i, 0);
     for (auto [c, t] : customers) {
         i = upper_bound(times.begin(), times.end(), t - p[c]) - times.begin();
         auto v = max(st.range_query(0, i).value, dp1[c]) + 1;
         if (v < 0) continue;
 
-        dp1[c] = max(dp1[c], v);
         i = lower_bound(times.begin(), times.end(), t + r[c]) - times.begin();
+        dp1[c] = max(dp1[c], v);
         dp2[i] = max(dp2[i], v);
         st.assign(i, dp2[i]);
     }
