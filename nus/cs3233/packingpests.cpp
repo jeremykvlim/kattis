@@ -36,12 +36,6 @@ struct SegmentTree {
     vector<Segment> ST;
     vector<long long> lazy;
 
-    SegmentTree(int n, const vector<int> &a) : n(n), ST(2 * n), lazy(n) {
-        int m = bit_ceil(a.size());
-        for (int i = 0; i < a.size(); i++) ST[(i + m) % n + n] = a[i];
-        build();
-    }
-
     void build() {
         for (int i = n - 1; i; i--) pull(i);
     }
@@ -119,6 +113,12 @@ struct SegmentTree {
 
         int m = midpoint(l, r);
         return range_query(i << 1, ql, qr, l, m) + range_query(i << 1 | 1, ql, qr, m, r);
+    }
+
+    SegmentTree(int n, const vector<int> &a) : n(n), ST(2 * n), lazy(n) {
+        int m = bit_ceil(a.size());
+        for (int i = 0; i < a.size(); i++) ST[(i + m) % n + n] = a[i];
+        build();
     }
 };
 
