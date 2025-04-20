@@ -71,13 +71,13 @@ int main() {
     dfs(dfs);
 
     int lg = __lg(n) + 1;
-    vector<vector<int>> lift(n + 1, vector<int>(lg, 0)), OR_lift(n + 1, vector<int>(lg, 0));
-    for (int v = 1; v <= n; v++) tie(lift[v][0], OR_lift[v][0]) = bfs_edge[v];
+    vector<vector<int>> lift(lg, vector<int>(n + 1, 0)), OR_lift(lg, vector<int>(n + 1, 0));
+    for (int v = 1; v <= n; v++) tie(lift[0][v], OR_lift[0][v]) = bfs_edge[v];
 
     for (int i = 1; i < lg; i++)
         for (int v = 1; v <= n; v++) {
-            lift[v][i] = lift[lift[v][i - 1]][i - 1];
-            OR_lift[v][i] = OR_lift[v][i - 1] | OR_lift[lift[v][i - 1]][i - 1];
+            lift[i][v] = lift[i - 1][lift[i - 1][v]];
+            OR_lift[i][v] = OR_lift[i - 1][v] | OR_lift[i - 1][lift[i - 1][v]];
         }
 
     vector<unordered_map<int, pair<int, int>>> memo(n + 1);
@@ -89,20 +89,20 @@ int main() {
         int diff = depth[u] - depth[v], OR_u = 0, OR_v = 0;
         for (int k = 0; k < lg; k++)
             if ((diff >> k) & 1) {
-                OR_u |= OR_lift[u][k];
-                u = lift[u][k];
+                OR_u |= OR_lift[k][u];
+                u = lift[k][u];
             }
         if (u == v) return memo[u][v] = memo[v][u] = {u, OR_u};
 
         for (int i = lg - 1; ~i; i--)
-            if (lift[u][i] != lift[v][i]) {
-                OR_u |= OR_lift[u][i];
-                OR_v |= OR_lift[v][i];
-                u = lift[u][i];
-                v = lift[v][i];
+            if (lift[i][u] != lift[i][v]) {
+                OR_u |= OR_lift[i][u];
+                OR_v |= OR_lift[i][v];
+                u = lift[i][u];
+                v = lift[i][v];
             }
 
-        return memo[u][v] = memo[v][u] = {lift[u][0], OR_u | OR_v};
+        return memo[u][v] = memo[v][u] = {lift[0][u], OR_u | OR_v};
     };
 
     auto ancestor = [&](int v, int u) {
