@@ -20,10 +20,7 @@ struct SegmentTree {
         }
 
         auto operator+=(const Segment &seg) {
-            if (value <= seg.value) {
-                value = seg.value;
-                i = seg.i;
-            }
+            if (value <= seg.value) return seg;
             return *this;
         }
 
