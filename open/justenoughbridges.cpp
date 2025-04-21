@@ -23,7 +23,7 @@ struct Hash {
     }
 };
 
-tuple<vector<int>, vector<int>, int> hopcroft_karp(int n, int m, vector<pair<int, int>> edges) {
+tuple<vector<int>, vector<int>, int> hopcroft_karp(int n, int m, const vector<pair<int, int>> &edges) {
     vector<int> adj_list(edges.size()), l(n, -1), r(m, -1), degree(n + 1, 0);
     for (auto [u, v] : edges) degree[u]++;
     for (int i = 1; i <= n; i++) degree[i] += degree[i - 1];
@@ -125,12 +125,12 @@ int main() {
 
     vector<vector<int>> adj_list(2 * n + 1);
     unordered_set<pair<int, int>, Hash> seen;
-    for (auto [u, v] : edges) {
+    for (auto [u, v] : edges) 
         if (l[u] == v && !seen.count({u, v})) {
             adj_list[v + n].emplace_back(u);
             seen.emplace(u, v);
         } else adj_list[u].emplace_back(v + n);
-    }
+    
     auto [sccs, component] = tarjan(2 * n, adj_list);
     int bridges = m - n;
     for (int i = 1; i <= n; i++)
