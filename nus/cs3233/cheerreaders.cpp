@@ -2,15 +2,7 @@
 using namespace std;
 
 struct DisjointSets {
-    int n;
-    unordered_map<int, int> sets, size, prev;
-
-    int add_set() {
-        sets[n] = n;
-        size[n] = 1;
-        prev[n] = -1;
-        return n++;
-    }
+    vector<int> sets, size, prev;
 
     int find(int v) {
         return sets[v] == v ? v : (sets[v] = find(sets[v]));
@@ -27,7 +19,9 @@ struct DisjointSets {
         return false;
     }
 
-    DisjointSets() : n(0) {}
+    DisjointSets(int n) : sets(n), size(n, 1), prev(n, -1) {
+        iota(sets.begin(), sets.end(), 0);
+    }
 };
 
 int main() {
@@ -41,25 +35,26 @@ int main() {
         return (long long) s * (s - 1) / 2;
     };
 
+    int sets = 1;
     auto count = 0LL;
-    DisjointSets dsu;
+    DisjointSets dsu(2 * Q);
     set<array<int, 3>> intervals;
-    auto merge = [&](int v, int u) {
-        if (dsu.unite(v, u)) {
-            int v_set = dsu.find(v), u_set = dsu.prev[u];
-            count += pairs(dsu.size[v_set]) - pairs(dsu.size[v_set] - dsu.size[u_set]) - pairs(dsu.size[u_set]);
+    auto merge = [&](int u, int v) {
+        if (dsu.unite(u, v)) {
+            int u_set = dsu.find(u), v_set = dsu.prev[v];
+            count += pairs(dsu.size[u_set]) - pairs(dsu.size[u_set] - dsu.size[v_set]) - pairs(dsu.size[v_set]);
         }
     };
 
     auto add = [&](int l1, int r1) {
-        int v = -1, overlap = 0;
-        auto it = intervals.lower_bound({l1, r1, v});
+        int u = -1, overlap = 0;
+        auto it = intervals.lower_bound({l1, r1, u});
         while (it != intervals.end() && (*it)[0] <= r1) {
-            auto [l2, r2, u] = *it;
-            if (!~v) v = dsu.find(u);
+            auto [l2, r2, v] = *it;
+            if (!~u) u = dsu.find(v);
             else {
-                merge(v, u);
-                v = dsu.find(v);
+                merge(u, v);
+                u = dsu.find(u);
             }
 
             overlap += r2 - l2 + 1;
@@ -68,11 +63,11 @@ int main() {
         }
 
         if (it != intervals.begin() && (*--it)[1] >= l1) {
-            auto [l2, r2, u] = *it;
-            if (!~v) v = dsu.find(u);
+            auto [l2, r2, v] = *it;
+            if (!~u) u = dsu.find(v);
             else {
-                merge(v, u);
-                v = dsu.find(v);
+                merge(u, v);
+                u = dsu.find(u);
             }
 
             overlap += r2 - l2 + 1;
@@ -81,16 +76,16 @@ int main() {
             intervals.erase(it);
         }
 
-        if (!~v) {
-            v = dsu.add_set();
+        if (!~u) {
+            u = sets++;
             overlap = 1;
         }
 
-        count -= pairs(dsu.size[v]);
-        dsu.size[v] += r1 - l1 + 1 - overlap;
-        count += pairs(dsu.size[v]);
-        intervals.insert({l1, r1, v});
-        return v;
+        count -= pairs(dsu.size[u]);
+        dsu.size[u] += r1 - l1 + 1 - overlap;
+        count += pairs(dsu.size[u]);
+        intervals.insert({l1, r1, u});
+        return u;
     };
 
     while (Q--) {
@@ -98,8 +93,8 @@ int main() {
         cin >> q >> x >> y;
 
         if (q == 1) {
-            int v = add(x, x), u = add(y, y);
-            merge(v, u);
+            int u = add(x, x), v = add(y, y);
+            merge(u, v);
         } else add(x, y);
 
         cout << count << "\n" << flush;
