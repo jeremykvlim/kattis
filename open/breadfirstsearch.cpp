@@ -26,7 +26,6 @@ int main() {
 
     for (int v1 = 1; v1 <= n; v1++) sort(adj_list[v1].begin(), adj_list[v1].end(), [&](int a1, int a2) {return indices[a1] < indices[a2];});
 
-    int count = 0;
     vector<bool> bread(n + 1, false);
     bool change;
     do {
@@ -42,11 +41,7 @@ int main() {
             visited[v] = true;
 
             if (v != a[i]) {
-                if (!bread[a[i]]) {
-                    bread[a[i]] = true;
-                    count++;
-                }
-                change = true;
+                bread[a[i]] = change = true;
                 break;
             }
 
@@ -60,5 +55,5 @@ int main() {
             i++;
         }
     } while (change);
-    cout << count;
+    cout << count_if(bread.begin(), bread.end(), [&](bool b) {return b;});
 }
