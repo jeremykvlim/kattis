@@ -21,7 +21,7 @@ int main() {
         board = temp;
     }
 
-    vector<unsigned long long> adj_masks(nm, 0);
+    vector<long long> adj_masks(nm, 0);
     for (int i = 0; i < nm; i++) {
         int ri = i / m, ci = i % m;
         for (int j = i + 1; j < nm; j++) {
@@ -34,7 +34,7 @@ int main() {
     }
 
     auto cell = [&](int r, int c) {return r * m + c;};
-    vector<vector<unsigned long long>> row_masks(n, {0});
+    vector<vector<long long>> row_masks(n, {0});
     for (int r = 0; r < n; r++)
         for (int c1 = 0; c1 < m; c1++)
             if (board[r][c1] == '.') {
@@ -66,17 +66,17 @@ int main() {
         if (placed + empty[r] < queens) return;
 
         for (auto m1 : row_masks[r]) {
-            int p = popcount(m1);
+            int p = popcount((unsigned long long) m1);
             if (placed + p + empty[r + 1] < queens) continue;
 
             vector<int> cells;
             while (m1) {
-                int i = countr_zero(m1);
+                int i = countr_zero((unsigned long long) m1);
 
                 auto m2 = curr & adj_masks[i];
-                if (popcount(m2) >= 2)
+                if (popcount((unsigned long long) m2) >= 2)
                     for (auto t = m2; t; t &= t - 1) {
-                        int j = countr_zero(t);
+                        int j = countr_zero((unsigned long long) t);
                         if (m2 & adj_masks[j]) goto next;
                     }
                 curr |= 1LL << i;
