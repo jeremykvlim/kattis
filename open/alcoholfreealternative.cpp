@@ -126,58 +126,56 @@ int main() {
     auto [l0, r0, matches0] = hopcroft_karp(n, m, edges);
     auto [cover_b0, cover_a0] = konig(n, m, adj_list_b, l0, r0);
 
-    if (cover_b0.empty() || cover_a0.empty()) {
-        if (cover_a0.empty()) {
-            for (int v = 0; v < m; v++) {
-                if (adj_list_a[v].empty()) continue;
+    if (cover_b0.empty()) {
+        for (int v = 0; v < n; v++) {
+            if (adj_list_b[v].empty()) continue;
 
-                edges.clear();
-                vector<vector<int>> adj_list(n);
-                for (int u = 0; u < n; u++)
-                    for (int t : adj_list_b[u])
-                        if (t != v) {
-                            adj_list[u].emplace_back(t);
-                            edges.emplace_back(u, t);
-                        }
+            edges.clear();
+            vector<vector<int>> adj_list(n);
+            for (int u = 0; u < n; u++)
+                if (u != v) {
+                    adj_list[u] = adj_list_b[u];
+                    for (int t : adj_list[u]) edges.emplace_back(u, t);
+                }
 
-                auto [l1, r1, matches1] = hopcroft_karp(n, m, edges);
-                if (matches1 + 1 == matches0) {
-                    auto [cover_b1, cover_a1] = konig(n, m, adj_list, l1, r1);
-                    if (!cover_b1.empty()) {
-                        cover_a1.emplace_back(v);
-                        tie(cover_b0, cover_a0) = tie(cover_b1, cover_a1);
-                        goto done;
-                    }
+            auto [l1, r1, matches1] = hopcroft_karp(n, m, edges);
+            if (matches1 + 1 == matches0) {
+                auto [cover_b1, cover_a1] = konig(n, m, adj_list, l1, r1);
+                if (!cover_a1.empty()) {
+                    cover_b1.emplace_back(v);
+                    tie(cover_b0, cover_a0) = tie(cover_b1, cover_a1);
+                    goto done;
                 }
             }
-            if (m) cover_a0.emplace_back(0);
-        } else {
-            for (int v = 0; v < n; v++) {
-                if (adj_list_b[v].empty()) continue;
-
-                edges.clear();
-                vector<vector<int>> adj_list(n);
-                for (int u = 0; u < n; u++)
-                    if (u != v) {
-                        adj_list[u] = adj_list_b[u];
-                        for (int t : adj_list[u]) edges.emplace_back(u, t);
-                    }
-
-                auto [l1, r1, matches1] = hopcroft_karp(n, m, edges);
-                if (matches1 + 1 == matches0) {
-                    auto [cover_b1, cover_a1] = konig(n, m, adj_list, l1, r1);
-                    if (!cover_a1.empty()) {
-                        cover_b1.emplace_back(v);
-                        tie(cover_b0, cover_a0) = tie(cover_b1, cover_a1);
-                        goto done;
-                    }
-                }
-            }
-            if (n) cover_b0.emplace_back(0);
         }
-    }
-    done:;
+        if (n) cover_b0.emplace_back(0);
+    } else if (cover_a0.empty()) {
+        for (int v = 0; v < m; v++) {
+            if (adj_list_a[v].empty()) continue;
 
+            edges.clear();
+            vector<vector<int>> adj_list(n);
+            for (int u = 0; u < n; u++)
+                for (int t : adj_list_b[u])
+                    if (t != v) {
+                        adj_list[u].emplace_back(t);
+                        edges.emplace_back(u, t);
+                    }
+
+            auto [l1, r1, matches1] = hopcroft_karp(n, m, edges);
+            if (matches1 + 1 == matches0) {
+                auto [cover_b1, cover_a1] = konig(n, m, adj_list, l1, r1);
+                if (!cover_b1.empty()) {
+                    cover_a1.emplace_back(v);
+                    tie(cover_b0, cover_a0) = tie(cover_b1, cover_a1);
+                    goto done;
+                }
+            }
+        }
+        if (m) cover_a0.emplace_back(0);
+    }
+
+    done:;
     cout << cover_b0.size() + cover_a0.size() << "\n";
     for (int v : cover_b0) cout << beers[v] << "\n";
     for (int v : cover_a0) cout << alts[v] << "\n";
