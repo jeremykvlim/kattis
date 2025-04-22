@@ -23,8 +23,7 @@ int main() {
 
         indices[a[i]] = i;
     }
-
-    for (int v1 = 1; v1 <= n; v1++) sort(adj_list[v1].begin(), adj_list[v1].end(), [&](int a1, int a2) {return indices[a1] < indices[a2];});
+    for (int v = 1; v <= n; v++) sort(adj_list[v].begin(), adj_list[v].end(), [&](int a1, int a2) {return indices[a1] < indices[a2];});
 
     vector<bool> bread(n + 1, false);
     bool change;
