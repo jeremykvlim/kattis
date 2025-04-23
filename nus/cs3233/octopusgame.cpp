@@ -49,14 +49,17 @@ struct Treap {
         return i;
     }
 
-    void split(int i, const pair<long long, int> &key, int &l, int &r) {
-        if (!i) l = r = 0;
-        else if (T[i].key > key) {
-            split(T[i].r, key, T[i].r, r);
-            pull(l = i);
+    pair<int, int> split(int i, const pair<long long, int> &key) {
+        if (!i) return {0, 0};
+
+        if (T[i].key > key) {
+            auto [l, r] = split(T[i].r, key);
+            T[i].r = l;
+            return {pull(i), r};
         } else {
-            split(T[i].l, key, l, T[i].l);
-            pull(r = i);
+            auto [l, r] = split(T[i].l, key);
+            T[i].l = r;
+            return {l, pull(i)};
         }
     }
 
@@ -76,8 +79,7 @@ struct Treap {
         int i = nodes++;
         T[i] = key;
 
-        int l = 0, r = 0;
-        split(root, T[i].key, l, r);
+        auto [l, r] = split(root, key);
         return root = meld(meld(l, i), r);
     }
 
