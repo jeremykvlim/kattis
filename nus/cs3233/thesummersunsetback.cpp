@@ -63,8 +63,8 @@ struct LaminarTree {
         }
     }
 
-    vector<vector<bool>> subtree_masks() {
-        vector<vector<bool>> masks(n - 1, vector<bool>(2 * n - 1, false));
+    vector<dynamic_bitset<>> subtree_masks() {
+        vector<dynamic_bitset<>> masks(n - 1, dynamic_bitset<>(2 * n - 1));
         for (int i = 0; i < n - 1; i++) {
             masks[i][LT[i + n][0]] = true;
             stack<int> st;
@@ -172,17 +172,14 @@ int main() {
         LaminarTree lt(k, edges);
         for (auto mask : lt.subtree_masks()) {
             int cut = 0;
-            for (int j = 0; j < U; j++) {
-                int u = indices[unassigned[j][0]], v = indices[unassigned[j][1]];
-                if ((~u && mask[u]) ^ (~v && mask[v])) cut++;
-            }
+            for (auto [u, v, w] : edges)
+                if (mask[u] ^ mask[v]) cut++;
             if (!cut) continue;
 
             if (m > cut) {
                 m = cut;
                 dynamic_bitset<> temp(s);
-                for (int j = 0; j < k; j++)
-                    if (mask[j]) temp.set(components[i][j]);
+                for (int j = mask.find_first(); j < k; j = mask.find_next(j)) temp[components[i][j]] = true;
                 events = temp;
             }
         }
