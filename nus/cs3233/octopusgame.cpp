@@ -89,7 +89,7 @@ struct Treap {
         if (!i) return 0;
         if (T[i].key == key) return meld(T[i].l, T[i].r);
 
-        if (key > T[i].key) T[i].l = erase(T[i].l, key);
+        if (T[i].key < key) T[i].l = erase(T[i].l, key);
         else T[i].r = erase(T[i].r, key);
 
         return pull(i);
