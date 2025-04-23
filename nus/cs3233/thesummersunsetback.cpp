@@ -172,14 +172,14 @@ int main() {
 
         LaminarTree lt(k, edges);
         for (auto mask : lt.subtree_masks()) {
-            int count = 0;
+            int cut = 0;
             for (int j = 0; j < U; j++) {
                 int u = indices[unassigned[j][0]], v = indices[unassigned[j][1]];
-                if ((~u && mask[u]) ^ (~v && mask[v])) count++;
+                if ((~u && mask[u]) ^ (~v && mask[v])) cut++;
             }
 
-            if (count && count < m) {
-                m = count;
+            if (cut && cut < m) {
+                m = cut;
                 dynamic_bitset<> temp(s);
                 for (int j = 0; j < k; j++)
                     if (mask[j]) temp.set(components[i][j]);
