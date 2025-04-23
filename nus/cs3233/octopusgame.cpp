@@ -49,7 +49,7 @@ struct Treap {
         return i;
     }
 
-    void split(int i, pair<long long, int> key, int &l, int &r) {
+    void split(int i, const pair<long long, int> &key, int &l, int &r) {
         if (!i) l = r = 0;
         else if (T[i].key > key) {
             split(T[i].r, key, T[i].r, r);
