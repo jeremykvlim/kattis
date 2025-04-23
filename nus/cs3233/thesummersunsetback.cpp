@@ -20,10 +20,10 @@ struct LaminarTree {
 
         vector<bool> add(2 * n - 1, true);
         for (int i = 0; i < n - 1; i++) {
-            vector<bool> visited(n + i, false);
-            vector<int> order(n - i, -1), dist(n + i, 0);
+            vector<bool> visited(i + n, false);
+            vector<int> order(n - i, -1), dist(i + n, 0);
             priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
-            for (int v = 0; v < n + i; v++)
+            for (int v = 0; v < i + n; v++)
                 if (add[v]) {
                     for (auto [u, w] : adj_list[v]) dist[v] += w;
                     pq.emplace(dist[v], v);
@@ -49,15 +49,15 @@ struct LaminarTree {
             add[u] = add[v] = false;
             adj_list[u].clear();
             adj_list[v].clear();
-            LT[n + i].emplace_back(u);
-            LT[n + i].emplace_back(v);
+            LT[i + n].emplace_back(u);
+            LT[i + n].emplace_back(v);
 
-            for (int s = 0; s < n + i; s++)
+            for (int s = 0; s < i + n; s++)
                 if (add[s])
                     for (auto &[t, w] : adj_list[s]) {
                         if (t == u || t == v) {
-                            t = n + i;
-                            adj_list[n + i].emplace_back(s, w);
+                            t = i + n;
+                            adj_list[i + n].emplace_back(s, w);
                         }
                     }
         }
