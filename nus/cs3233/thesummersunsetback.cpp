@@ -30,7 +30,7 @@ struct LaminarTree {
                 }
 
             for (int j = 0; j < n - i; j++)
-                while (!~order[j] && !pq.empty()) {
+                while (!~order[j]) {
                     auto [d, v] = pq.top();
                     pq.pop();
 
@@ -79,7 +79,6 @@ struct LaminarTree {
                             masks[i][u] = true;
                             st.emplace(u);
                         }
-
             }
         }
         return masks;
@@ -177,8 +176,9 @@ int main() {
                 int u = indices[unassigned[j][0]], v = indices[unassigned[j][1]];
                 if ((~u && mask[u]) ^ (~v && mask[v])) cut++;
             }
+            if (!cut) continue;
 
-            if (cut && cut < m) {
+            if (m > cut) {
                 m = cut;
                 dynamic_bitset<> temp(s);
                 for (int j = 0; j < k; j++)
