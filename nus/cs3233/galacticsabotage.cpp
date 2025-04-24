@@ -5,10 +5,11 @@ struct SegmentTree {
     struct Segment {
         int value, freq;
 
-        Segment() : value(INT_MAX), freq(1) {}
+        Segment() : value(INT_MAX), freq(0) {}
 
         auto & operator=(const int &v) {
             value = v;
+            freq = 1;
             return *this;
         }
 
