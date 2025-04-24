@@ -245,8 +245,8 @@ unsigned long long area_of_union_of_rectangles(vector<array<T, 4>> rectangles) {
     vector<pair<T, int>> y(2 * n);
     for (int i = 0; i < n; i++) {
         auto [xl, xr, yd, yu] = rectangles[i];
-        y[2 * i] = {yd, i};
-        y[2 * i + 1] = {yu, i + n};
+        y[2 * i] = {yd, 2 * i};
+        y[2 * i + 1] = {yu, 2 * i + 1};
     }
     sort(y.begin(), y.end());
 
@@ -256,12 +256,7 @@ unsigned long long area_of_union_of_rectangles(vector<array<T, 4>> rectangles) {
 
     vector<T> y_gaps(coords.size() - 1);
     for (int i = 0; i < coords.size() - 1; i++) y_gaps[i] = coords[i + 1] - coords[i];
-
-    for (auto [yi, i] : y) {
-        int j = lower_bound(coords.begin(), coords.end(), yi) - coords.begin();
-        if (i < n) rectangles[i][2] = j;
-        else rectangles[i - n][3] = j;
-    }
+    for (auto [yi, i] : y) rectangles[i / 2][2 + (i & 1)] = lower_bound(coords.begin(), coords.end(), yi) - coords.begin();
 
     vector<array<T, 4>> sweep(2 * n);
     for (int i = 0; i < n; i++) {
