@@ -38,7 +38,7 @@ struct SegmentTree {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
     }
 
-    void apply(int i, int v) {
+    void apply(int i, const int &v) {
         ST[i] += v;
         if (i < n) lazy[i] += v;
     }
