@@ -8,21 +8,20 @@ int main() {
     int n;
     cin >> n;
 
-    vector<int> array(n);
-    for (int &a : array) cin >> a;
+    vector<int> a(n);
+    for (int &ai : a) cin >> ai;
 
     auto dist = 0LL;
     priority_queue<long long> pq;
     for (int i = 1; i < n; i++) {
-        pq.emplace(array[i]);
-        dist += array[i];
-        
-        if (!pq.empty() && pq.top() > array[i]) {
-            dist -= pq.top() - array[i];
+        pq.emplace(a[i]);
+        dist += a[i];
+
+        if (!pq.empty() && pq.top() > a[i]) {
+            dist -= pq.top() - a[i];
             pq.pop();
-            pq.emplace(array[i]);
+            pq.emplace(a[i]);
         }
     }
-
     cout << dist;
 }
