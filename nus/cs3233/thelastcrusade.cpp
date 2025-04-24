@@ -435,7 +435,7 @@ int main() {
     int S, S_;
     cin >> C >> C_ >> S >> S_;
 
-    vector<vector<int>> A055290 = {
+    vector<vector<int>> A055290{
             {},
             {},
             {0, 1, 1, 1, 1, 1},
