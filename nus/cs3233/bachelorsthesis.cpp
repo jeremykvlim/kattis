@@ -15,7 +15,7 @@ int main() {
 
     if (n == k) {
         tree<int, null_type, less_equal<>, rb_tree_tag, tree_order_statistics_node_update> t, t_rev;
-        long long inversions = 0, inversions_rev = 0;
+        auto inversions = 0LL, inversions_rev = 0LL;
 
         reverse(a.begin(), a.end());
         auto a_rev = a;
