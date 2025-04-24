@@ -14,7 +14,7 @@ int main() {
     for (int &ai : a) cin >> ai;
 
     if (n == k) {
-        tree<int, null_type, less_equal<>, rb_tree_tag, tree_order_statistics_node_update> t, t_rev;
+        tree<int, null_type, less_equal<>, rb_tree_tag, tree_order_statistics_node_update> ost, ost_rev;
         auto inversions = 0LL, inversions_rev = 0LL;
 
         reverse(a.begin(), a.end());
@@ -22,13 +22,13 @@ int main() {
         reverse(a_rev.begin(), a_rev.end());
 
         for (int ai : a) {
-            t.insert(ai);
-            inversions += t.order_of_key(ai);
+            ost.insert(ai);
+            inversions += ost.order_of_key(ai);
         }
 
         for (int ai : a_rev) {
-            t_rev.insert(ai);
-            inversions_rev += t_rev.order_of_key(ai);
+            ost_rev.insert(ai);
+            inversions_rev += ost_rev.order_of_key(ai);
         }
 
         if (inversions <= inversions_rev) cout << inversions << "\n0";
