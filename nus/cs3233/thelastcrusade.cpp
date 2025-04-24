@@ -454,7 +454,7 @@ int main() {
         for (int j = 1; j < A055290[i].size(); j++) a[i][j] = a[i][j - 1] + A055290[i][j];
     }
 
-    vector<vector<modint>> c(6);
+    vector<vector<modint>> c(S_ + 1);
     for (int i = S; i <= S_; i++) {
         if (i == 1) {
             c[i] = {1};
