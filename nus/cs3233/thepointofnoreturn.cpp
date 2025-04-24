@@ -40,9 +40,9 @@ int main() {
 
     vector<int> rank(n);
     for (int i = 0; i < n; i++) rank[i] = lower_bound(temp.begin(), temp.end(), titles[i]) - temp.begin() + 1;
-
-    FenwickTree<int> fw(n + 1);
+    
     vector<int> l(n);
+    FenwickTree<int> fw(n + 1);
     for (int i = n - 1; ~i; i--) {
         l[i] = rank[i] - fw.pref_sum(rank[i]);
         fw.update(rank[i], 1);
@@ -53,6 +53,7 @@ int main() {
         diff[l[i]]++;
         diff[i + 1]--;
     }
+    
     for (int i = 1; i <= n; i++) {
         count[i] = count[i - 1] + diff[i];
         pref[i] = pref[i - 1] + count[i];
