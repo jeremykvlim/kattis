@@ -78,7 +78,6 @@ auto rerooting_dp(int n, const vector<T> &edges) {
     return dp;
 }
 
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
