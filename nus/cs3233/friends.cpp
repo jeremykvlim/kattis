@@ -15,7 +15,6 @@ int bron_kerbosch(int n, vector<unsigned __int128> adj_list) {
         };
         int pivot = lsb(p | x);
 
-
         auto candidates = p & ~adj_list[pivot];
         while (candidates && cliques <= 1e3) {
             int v = lsb(candidates);
