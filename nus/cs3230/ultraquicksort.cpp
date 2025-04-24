@@ -14,11 +14,11 @@ int main() {
     for (int &e : a) cin >> e;
     reverse(a.begin(), a.end());
 
-    tree<int, null_type, less_equal<>, rb_tree_tag, tree_order_statistics_node_update> t;
+    tree<int, null_type, less_equal<>, rb_tree_tag, tree_order_statistics_node_update> ost;
     auto inversions = 0LL;
     for (int e : a) {
-        t.insert(e);
-        inversions += t.order_of_key(e);
+        ost.insert(e);
+        inversions += ost.order_of_key(e);
     }
 
     cout << inversions;
