@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -438,7 +438,7 @@ int main() {
         auto c_good = 0LL, mod_product = 1LL;
         auto count = [&](long long n, long long c, auto &fact, auto &fact_inv, int mod) {
             auto choices = 2 * C(n - 1, c - 1, mod, fact, fact_inv);
-            c_good = crt(c_good, mod_product, choices(), mod);
+            c_good = crt(c_good, mod_product, (long long) choices(), (long long) mod).first;
             mod_product *= mod;
         };
         count(n, c, fact1, fact_inv1, MODULO1);
