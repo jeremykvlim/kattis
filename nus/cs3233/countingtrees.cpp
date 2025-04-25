@@ -378,9 +378,10 @@ pair<T, T> bezout(T a, T b) {
     return {y - (b / a) * x, x};
 }
 
-long long crt(long long a, long long m, long long b, long long n) {
-    auto g = __gcd(m, n);
-    if ((b - a) % g) return -1;
+template <typename T>
+pair<T, T> crt(T a, T m, T b, T n) {
+    T g = __gcd(m, n);
+    if ((b - a) % g) return {0, -1};
 
     if (n > m) {
         swap(a, b);
@@ -389,11 +390,14 @@ long long crt(long long a, long long m, long long b, long long n) {
 
     a %= m;
     b %= n;
-    auto mod = m / g * n;
-    auto [x, y] = bezout(m / g, n / g);
-    auto X = a * (n / g) % mod * y % mod + b * (m / g) % mod * x % mod;
-    if (X < 0) X += mod;
-    return X;
+    T lcm = m / g * n;
+
+    m /= g;
+    n /= g;
+    auto [x, y] = bezout(m, n);
+    T r = ((__int128) a * n * y + (__int128) b * m * x) % lcm;
+    if (r < 0) r += lcm;
+    return {r, lcm};
 }
 
 int main() {
