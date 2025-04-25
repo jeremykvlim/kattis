@@ -379,23 +379,23 @@ pair<T, T> bezout(T a, T b) {
 }
 
 template <typename T>
-pair<T, T> crt(T a, T m, T b, T n) {
-    T g = __gcd(m, n);
+pair<T, T> crt(T a, T n, T b, T m) {
+    T g = __gcd(n, m);
     if ((b - a) % g) return {0, -1};
 
-    if (n > m) {
+    if (m > n) {
         swap(a, b);
-        swap(m, n);
+        swap(n, m);
     }
 
-    a %= m;
-    b %= n;
-    T lcm = m / g * n;
+    a %= n;
+    b %= m;
+    T lcm = n / g * m;
 
-    m /= g;
     n /= g;
-    auto [x, y] = bezout(m, n);
-    T r = ((__int128) a * n * y + (__int128) b * m * x) % lcm;
+    m /= g;
+    auto [x, y] = bezout(n, m);
+    T r = ((__int128) a * m * y + (__int128) b * n * x) % lcm;
     if (r < 0) r += lcm;
     return {r, lcm};
 }
