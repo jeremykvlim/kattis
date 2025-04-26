@@ -117,7 +117,7 @@ int main() {
         else {
             for (int spf = 2; spf * spf <= n; spf == 2 ? spf++ : spf += 2)
                 if (!(n % spf)) {
-                    cout << spf << " " << n - spf + 1 << "\n";
+                    cout << spf << " " << n - spf + 1;
                     break;
                 }
         }
