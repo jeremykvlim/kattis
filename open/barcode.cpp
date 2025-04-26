@@ -327,12 +327,12 @@ BarrettModInt<T> operator/(U lhs, const BarrettModInt<T> &rhs) {
     return BarrettModInt<T>(lhs) /= rhs;
 }
 
-template <typename U, typename T>
+template <typename T, typename U>
 U & operator<<(U &stream, const BarrettModInt<T> &v) {
     return stream << v();
 }
 
-template <typename U, typename T>
+template <typename T, typename U>
 U & operator>>(U &stream, BarrettModInt<T> &v) {
     typename common_type<typename BarrettModInt<T>::I, long long>::type x;
     stream >> x;

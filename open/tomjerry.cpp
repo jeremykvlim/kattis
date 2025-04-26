@@ -456,12 +456,12 @@ MontgomeryModInt<T> operator/(U lhs, const MontgomeryModInt<T> &rhs) {
     return MontgomeryModInt<T>(lhs) /= rhs;
 }
 
-template <typename U, typename T>
+template <typename T, typename U>
 U & operator<<(U &stream, const MontgomeryModInt<T> &v) {
     return stream << v();
 }
 
-template <typename U, typename T>
+template <typename T, typename U>
 U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     typename common_type<typename MontgomeryModInt<T>::T, long long>::type x;
     stream >> x;
