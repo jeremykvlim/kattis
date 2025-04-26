@@ -409,8 +409,7 @@ int main() {
     auto set_id = [&](int i) -> int {
         if (id[i] == -1) {
             id[i] = sets++;
-            m--;
-            if (i) m++;
+            if (!i) m--;
         }
         return id[i];
     };
