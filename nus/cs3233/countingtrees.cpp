@@ -379,7 +379,7 @@ pair<T, T> bezout(T a, T b) {
 }
 
 template <typename T>
-pair<T, T> crt(T a, T n, T b, T m) {
+pair<T, T> chinese_remainder_theorem(T a, T n, T b, T m) {
     T g = __gcd(n, m);
     if ((b - a) % g) return {0, -1};
 
@@ -438,7 +438,7 @@ int main() {
         auto c_good = 0LL, mod_product = 1LL;
         auto count = [&](long long n, long long c, auto &fact, auto &fact_inv, int mod) {
             auto choices = 2 * C(n - 1, c - 1, mod, fact, fact_inv);
-            c_good = crt(c_good, mod_product, (long long) choices(), (long long) mod).first;
+            c_good = chinese_remainder_theorem(c_good, mod_product, (long long) choices(), (long long) mod).first;
             mod_product *= mod;
         };
         count(n, c, fact1, fact_inv1, MODULO1);

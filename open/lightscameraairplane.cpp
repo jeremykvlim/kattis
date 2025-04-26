@@ -9,7 +9,7 @@ pair<T, T> bezout(T a, T b) {
 }
 
 template <typename T>
-pair<T, T> crt(T a, T n, T b, T m) {
+pair<T, T> chinese_remainder_theorem(T a, T n, T b, T m) {
     T g = __gcd(n, m);
     if ((b - a) % g) return {0, -1};
 
@@ -83,7 +83,7 @@ int main() {
                 if (fixed) {
                     if (j == (a - 1 + ki) % ki) f[i] += ti <= a && a <= takeoffs;
                 } else {
-                    auto [r, lcm] = crt(a, m, (j + 1) % ki, ki);
+                    auto [r, lcm] = chinese_remainder_theorem(a, m, (j + 1) % ki, ki);
                     if (lcm != -1) f[i] += count(r, lcm, ti);
                 }
             }
@@ -96,7 +96,7 @@ int main() {
                 if (fixed) {
                     if (j == (a - 1 + ki) % ki) self(self, ti, true, c[i][j], a);
                 } else {
-                    auto [r, lcm] = crt(a, m, (j + 1) % ki, ki);
+                    auto [r, lcm] = chinese_remainder_theorem(a, m, (j + 1) % ki, ki);
                     if (lcm != -1) self(self, ti, lcm > T, c[i][j], r, lcm > T ? 1 : lcm);
                 }
             }
