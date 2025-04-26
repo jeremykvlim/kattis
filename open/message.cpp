@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -103,6 +103,8 @@ bool isprime(unsigned long long n) {
 template <typename M>
 struct ModInt {
     using T = typename decay<decltype(M::value)>::type;
+    using U = typename conditional<is_same<T, unsigned int>::value, unsigned long long, typename conditional<is_same<T, unsigned long long>::value, unsigned __int128, void>::type>::type;
+    using I = typename conditional<is_same<T, unsigned int>::value, int, typename conditional<is_same<T, unsigned long long>::value, long long, void>::type>::type;
 
     T value;
     static bool prime_mod;
@@ -113,14 +115,12 @@ struct ModInt {
 
     constexpr ModInt() : value() {}
 
-    template <typename U>
-    ModInt(const U &x) {
+    ModInt(const I &x) {
         value = normalize(x);
     }
 
-    template <typename U>
-    static T normalize(const U &x) {
-        U v = x;
+    static T normalize(const I &x) {
+        I v = x;
         if (!(-mod() <= x && x < mod())) v = x % mod();
         return v < 0 ? v + mod() : v;
     }
@@ -129,32 +129,32 @@ struct ModInt {
         return value;
     }
 
-    template <typename U>
-    explicit operator U() const {
-        return (U) value;
+    template <typename V>
+    explicit operator V() const {
+        return (V) value;
     }
 
-    constexpr static T mod() {
+    constexpr static I mod() {
         return M::value;
     }
 
     inline auto & operator+=(const ModInt &v) {
-        if ((long long) (value += v.value) >= mod()) value -= mod();
+        if ((I) (value += v.value) >= mod()) value -= mod();
         return *this;
     }
 
     inline auto & operator-=(const ModInt &v) {
-        if ((long long) (value -= v.value) < 0) value += mod();
+        if ((I) (value -= v.value) < 0) value += mod();
         return *this;
     }
 
-    template <typename U>
-    inline auto & operator+=(const U &v) {
+    template <typename V>
+    inline auto & operator+=(const V &v) {
         return *this += ModInt(v);
     }
 
-    template <typename U>
-    inline auto & operator-=(const U &v) {
+    template <typename V>
+    inline auto & operator-=(const V &v) {
         return *this -= ModInt(v);
     }
 
@@ -178,20 +178,20 @@ struct ModInt {
         return (ModInt) 0 - *this;
     }
 
-    template <typename U = M>
-    typename enable_if<is_same<typename ModInt<U>::T, unsigned int>::value, ModInt>::type &operator*=(const ModInt &v) {
-        value = normalize((unsigned long long) value * v.value);
+    template <typename V = M>
+    typename enable_if<is_same<typename ModInt<V>::T, unsigned int>::value, ModInt>::type &operator*=(const ModInt &v) {
+        value = normalize((U) value * v.value);
         return *this;
     }
 
-    template <typename U = M>
-    typename enable_if<is_same<typename ModInt<U>::T, unsigned long long>::value, ModInt>::type &operator*=(const ModInt &v) {
+    template <typename V = M>
+    typename enable_if<is_same<typename ModInt<V>::T, unsigned long long>::value, ModInt>::type &operator*=(const ModInt &v) {
         value = normalize(mul(value, v.value, mod()));
         return *this;
     }
 
-    template <typename U = M>
-    typename enable_if<!is_integral<typename ModInt<U>::T>::value, ModInt>::type &operator*=(const ModInt &v) {
+    template <typename V = M>
+    typename enable_if<!is_integral<typename ModInt<V>::T>::value, ModInt>::type &operator*=(const ModInt &v) {
         value = normalize(value * v.value);
         return *this;
     }
@@ -325,12 +325,12 @@ ModInt<T> operator/(U lhs, const ModInt<T> &rhs) {
     return ModInt<T>(lhs) /= rhs;
 }
 
-template <typename U, typename T>
+template <typename T, typename U>
 U & operator<<(U &stream, const ModInt<T> &v) {
     return stream << v();
 }
 
-template <typename U, typename T>
+template <typename T, typename U>
 U & operator>>(U &stream, ModInt<T> &v) {
     typename common_type<typename ModInt<T>::T, long long>::type x;
     stream >> x;
