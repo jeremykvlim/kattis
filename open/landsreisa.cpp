@@ -124,7 +124,9 @@ double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
 }
 
 template <typename T>
-pair<vector<int>, double> travelling_salesman(int n, const vector<Point<T>> &points, const vector<int> &starts) {
+pair<vector<int>, double> travelling_salesman(const vector<Point<T>> &points, const vector<int> &starts) {
+    int n = points.size();
+
     vector<vector<double>> dist(n, vector<double>(n));
     for (int i = 0; i < n; i++)
         for (int j = 0; j < n; j++) dist[i][j] = euclidean_dist(points[i], points[j]);
@@ -164,7 +166,7 @@ pair<vector<int>, double> travelling_salesman(int n, const vector<Point<T>> &poi
             for (int i = 1; i < n - 1; i++)
                 for (int j = i + 1; j < n; j++) {
                     int a = tour[i - 1], b = tour[i], c = tour[j], d = (j + 1 == n ? tour[0] : tour[j + 1]);
-                    if (dist[a][c] + dist[b][d] < dist[a][b] + dist[c][d] - 1e-9) {
+                    if (dist[a][c] + dist[b][d] < dist[a][b] + dist[c][d] - 1e-5) {
                         reverse(tour.begin() + i, tour.begin() + j + 1);
                         change = true;
                     }
@@ -203,7 +205,80 @@ pair<vector<int>, double> travelling_salesman(int n, const vector<Point<T>> &poi
             }
         }
     }
+    if (n > 20) return {tour, len};
 
+    vector<double> min1(n, 1e20), min2(n, 1e20);
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            if (i != j) {
+                if (min1[i] > dist[i][j]) {
+                    min2[i] = min1[i];
+                    min1[i] = dist[i][j];
+                } else min2[i] = min(min2[i], dist[i][j]);
+            }
+    if (2 * len < accumulate(min1.begin(), min1.end(), 0) + accumulate(min2.begin(), min2.end(), 0) + 1e-5) return {tour, len};
+
+    vector<vector<int>> adj_list(n);
+    for (int u = 0; u < n; u++) {
+        for (int v = 0; v < n; v++)
+            if (u != v) adj_list[u].emplace_back(v);
+        sort(adj_list[u].begin(), adj_list[u].end(), [&](int v, int t) { return dist[u][v] < dist[u][t]; });
+    }
+
+    vector<int> t{0};
+    vector<vector<double>> memo(1 << n, vector<double>(n, 1e20));
+    auto dfs = [&](auto &&self, int mask = 1, int v = 0, double cost = 0) {
+        if (memo[mask][v] <= cost || len <= cost) return;
+        memo[mask][v] = cost;
+
+        if (mask == (1 << n) - 1) {
+            auto l = cost + dist[v][0];
+            if (len > l) {
+                len = l;
+                tour = t;
+            }
+            return;
+        }
+
+        vector<int> unvisited;
+        for (int u = 0; u < n; u++)
+            if (!((mask >> u) & 1)) unvisited.emplace_back(u);
+
+        auto next = 1e20, back = 1e20;
+        for (int u : unvisited) {
+            next = min(next, dist[v][u]);
+            back = min(back, dist[u][0]);
+        }
+
+        auto prim = [&]() -> double {
+            int m = unvisited.size();
+            if (m <= 1) return 0;
+
+            vector<bool> visited(m, false);
+            vector<double> d(m, 1e18);
+            d[0] = 0;
+            double weight = 0;
+            for (int _ = 0; _ < m; _++) {
+                int u = -1;
+                for (int i = 0; i < m; i++)
+                    if (!visited[i] && (u < 0 || d[i] < d[u])) u = i;
+                visited[u] = true;
+                weight += d[u];
+                for (int v = 0; v < m; v++)
+                    if (!visited[v]) d[v] = min(d[v], dist[unvisited[u]][unvisited[v]]);
+            }
+            return weight;
+        };
+        if (cost + prim() + next + back >= len) return;
+
+        for (int u : adj_list[v])
+            if (!((mask >> u) & 1)) {
+                t.emplace_back(u);
+                self(self, mask | (1 << u), u, cost + dist[v][u]);
+                t.pop_back();
+            }
+    };
+    dfs(dfs);
     return {tour, len};
 }
 
@@ -217,5 +292,5 @@ int main() {
     vector<Point<double>> points(n);
     for (auto &[x, y] : points) cin >> x >> y;
     
-    for (int v : travelling_salesman(n, points, {0}).first) cout << v << " ";
+    for (int v : travelling_salesman(points, {0}).first) cout << v << " ";
 }
