@@ -113,7 +113,7 @@ int main() {
     }
 
     if (k == 2) {
-        if (isprime(n)) cout << "IMPOSSIBLE\n";
+        if (isprime(n)) cout << "IMPOSSIBLE";
         else {
             for (int spf = 2; spf * spf <= n; spf == 2 ? spf++ : spf += 2)
                 if (!(n % spf)) {
