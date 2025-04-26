@@ -432,10 +432,9 @@ struct VoronoiDiagram {
             if (super_triangle) remove[i] = !(a < n && b < n && c < n);
             voronoi_vertices[i] = circumcenter(array<Point<T>, 3>{points[a], points[b], points[c]});
 
-            vector<pair<int, int>> triangle_edges{{a, b}, {b, c}, {c, a}};
+            vector<pair<int, int>> triangle_edges{minmax(a, b), minmax(b, c), minmax(c, a)};
             for (auto [u, v] : triangle_edges)
                 if (u < n && v < n) {
-                    if (u > v) swap(u, v);
                     if (seen.count({u, v})) {
                         int j = seen[{u, v}];
                         voronoi_edges.emplace_back(voronoi_vertices[i], voronoi_vertices[j]);
