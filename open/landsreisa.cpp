@@ -123,39 +123,36 @@ double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
-int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
-
-    int n;
-    cin >> n;
-
-    vector<Point<double>> points(n);
-    for (auto &[x, y] : points) cin >> x >> y;
-
+template <typename T>
+pair<vector<int>, double> travelling_salesman(int n, const vector<Point<T>> &points, const vector<int> &starts) {
     vector<vector<double>> dist(n, vector<double>(n));
     for (int i = 0; i < n; i++)
         for (int j = 0; j < n; j++) dist[i][j] = euclidean_dist(points[i], points[j]);
 
-    vector<int> tour(n, 0);
-    vector<bool> visited(n, false);
-    visited[0] = true;
-    for (int i = 1, v = 0; i < n; i++) {
-        int u = -1;
-        auto d = 1e9;
-        for (int j = 0; j < n; j++)
-            if (!visited[j] && dist[v][j] < d) {
-                d = dist[v][j];
-                u = j;
-            }
+    auto nearest_neighbour = [&](int s) {
+        vector<int> tour(n, -1);
+        tour[0] = s;
+        vector<bool> visited(n, false);
+        visited[s] = true;
+        for (int i = 1, v = 0; i < n; i++) {
+            int u = -1;
+            auto d = 1e9;
+            for (int t = 0; t < n; t++)
+                if (!visited[t] && d > dist[v][t]) {
+                    d = dist[v][t];
+                    u = t;
+                }
 
-        tour[i] = u;
-        visited[u] = true;
-        v = u;
-    }
+            tour[i] = u;
+            visited[u] = true;
+            v = u;
+        }
 
-    auto length = [&](const vector<int> &tour) -> double {
-        double len = dist[tour[n - 1]][tour[0]];
+        return tour;
+    };
+
+    auto length = [&](const vector<int> &tour) {
+        auto len = dist[tour[n - 1]][tour[0]];
         for (int i = 0; i < n - 1; i++) len += dist[tour[i]][tour[i + 1]];
         return len;
     };
@@ -174,26 +171,51 @@ int main() {
                 }
         } while (change);
     };
-    two_opt(tour);
 
     mt19937 rng(random_device{}());
-    auto len = length(tour);
-    while (len > 63) {
-        auto t = tour;        
-        int i = -1, j = -1;
-        while (i == j) {
-            i = rng() % (n - 1) + 1;
-            j = rng() % (n - 1) + 1;
-        }
-        if (i > j) swap(i, j);
-        reverse(t.begin() + i, t.begin() + j + 1);
-        two_opt(t);
+    vector<int> tour;
+    double len;
 
-        auto l = length(t);
-        if (len > l) {
-            len = l;
-            tour = t;
+    auto heuristic = [&]() -> bool {
+        return len > 63;
+    };
+
+    for (int s : starts) {
+        tour = nearest_neighbour(s);
+        two_opt(tour);
+
+        len = length(tour);
+        while (heuristic()) {
+            auto t = tour;
+            int i = -1, j = -1;
+            while (i == j) {
+                i = rng() % (n - 1) + 1;
+                j = rng() % (n - 1) + 1;
+            }
+            if (i > j) swap(i, j);
+            reverse(t.begin() + i, t.begin() + j + 1);
+            two_opt(t);
+
+            auto l = length(t);
+            if (len > l) {
+                len = l;
+                tour = t;
+            }
         }
     }
-    for (int v : tour) cout << v << " ";
+
+    return {tour, len};
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n;
+    cin >> n;
+
+    vector<Point<double>> points(n);
+    for (auto &[x, y] : points) cin >> x >> y;
+    
+    for (int v : travelling_salesman(n, points, {0}).first) cout << v << " ";
 }
