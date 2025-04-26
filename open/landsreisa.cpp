@@ -123,7 +123,7 @@ double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
-int main(){
+int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
