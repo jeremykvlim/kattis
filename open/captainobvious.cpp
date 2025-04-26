@@ -397,6 +397,6 @@ int main() {
             for (int j = 0; j < k; j++) a[j] -= a[j + 1] * curr;
         }
 
-        cout << m - inner_product(p.begin(), p.end(), a.begin(), (modint) 0, plus<>(), [&](auto x, auto y) {return x * y;}) << "\n";
+        cout << m - inner_product(p.begin(), p.end(), a.begin(), (modint) 0, plus<>(), [&](auto x, auto y) { return x * y; }) << "\n";
     }
 }

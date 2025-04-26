@@ -9,13 +9,13 @@ struct Hash {
 
     template <typename T>
     size_t operator()(const T &v) const {
-        if constexpr (requires {tuple_size<T>::value;})
+        if constexpr (requires { tuple_size<T>::value; })
             return apply([](const auto &...e) {
                 size_t h = 0;
                 (combine(h, e), ...);
                 return h;
             }, v);
-        else if constexpr (requires {declval<T>().begin(); declval<T>().end();} && !is_same_v<T, string>) {
+        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
             size_t h = 0;
             for (const auto &e : v) combine(h, e);
             return h;
@@ -59,7 +59,7 @@ int main() {
 
     vector<int> pref(14);
     iota(pref.begin(), pref.end(), 0);
-    partial_sum(pref.begin(), pref.end(), pref.begin(), [](int x, int y) {return x + y + 1;});
+    partial_sum(pref.begin(), pref.end(), pref.begin(), [](int x, int y) { return x + y + 1; });
 
     if (people > pref[13]) cout << "impossible";
     else {

@@ -174,7 +174,7 @@ int main() {
     points.emplace_back(Point<double>(n + 1, 0), points.size());
 
     auto convex_hull = monotone_chain(points);
-    sort(convex_hull.begin(), convex_hull.end(), [&](auto p1, auto p2) {return p1.second < p2.second;});
+    sort(convex_hull.begin(), convex_hull.end(), [&](auto p1, auto p2) { return p1.second < p2.second; });
 
     for (int i = 1, j = 0; i <= n; i++) {
         while (j < convex_hull.size() && points[convex_hull[j].second].first.x < i) j++;

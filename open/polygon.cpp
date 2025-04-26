@@ -139,7 +139,7 @@ int main() {
 
         vector<int> indices(2 * n);
         iota(indices.begin(), indices.end(), 0);
-        sort(indices.begin(), indices.end(), [&](int i, int j) {return points[i] < points[j] || points[i] == points[j] && i > j;});
+        sort(indices.begin(), indices.end(), [&](int i, int j) { return points[i] < points[j] || points[i] == points[j] && i > j; });
 
         auto cmp = [&](int i, int j) {
             int cross_product = cross(points[j] - points[i], points[j] - points[j + n]);

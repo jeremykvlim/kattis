@@ -163,7 +163,7 @@ struct KDTree {
         if (l >= r) return -1;
 
         int m = l + (r - l) / 2;
-        nth_element(points.begin() + l, points.begin() + m, points.begin() + r, [dir](const auto &a, const auto &b) {return !dir ? a.x < b.x : a.y < b.y;});
+        nth_element(points.begin() + l, points.begin() + m, points.begin() + r, [dir](const auto &a, const auto &b) { return !dir ? a.x < b.x : a.y < b.y; });
 
         int j = i++;
         KDT[j] = points[m];

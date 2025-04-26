@@ -34,13 +34,13 @@ int main() {
     }
 
     for (int i = 0; i < n; i++) {
-        auto it1 = lower_bound(cities.begin() + i + 1, cities.end(), cities[i][0] + cities[i][1], [](auto &c, int y) {return c[0] < y;});
+        auto it1 = lower_bound(cities.begin() + i + 1, cities.end(), cities[i][0] + cities[i][1], [](auto &c, int y) { return c[0] < y; });
         if (it1 != cities.end()) {
             int j = it1 - cities.begin();
             adj_list[i].emplace_back(j + n, cities[i][2] + cities[j][0] - cities[i][0]);
         }
 
-        auto it2 = lower_bound(rev.begin() + n - i, rev.end(), cities[i][0] - cities[i][1], [](auto &c, int y) {return c[0] > y;});
+        auto it2 = lower_bound(rev.begin() + n - i, rev.end(), cities[i][0] - cities[i][1], [](auto &c, int y) { return c[0] > y; });
         if (it2 != rev.end()) {
             int j = n - 1 - (it2 - rev.begin());
             adj_list[i].emplace_back(j + 2 * n, cities[i][2] + abs(cities[j][0] - cities[i][0]));

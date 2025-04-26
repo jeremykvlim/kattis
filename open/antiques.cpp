@@ -37,7 +37,7 @@ int main() {
             return;
         }
 
-        if (!any_of(knockoffs[v].begin(), knockoffs[v].end(), [&](int u) {return !visited[a[u]];})) self(self, v + 1, depth);
+        if (!any_of(knockoffs[v].begin(), knockoffs[v].end(), [&](int u) { return !visited[a[u]]; })) self(self, v + 1, depth);
 
         if (count[v]) {
             visited[v] = true;

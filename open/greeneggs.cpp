@@ -225,7 +225,7 @@ int main() {
         }
 
         for (auto line : boxes[ast.root].lines) {
-            line.erase(find_if(line.rbegin(), line.rend(), [](char c) {return !isspace(c);}).base(), line.end());
+            line.erase(find_if(line.rbegin(), line.rend(), [](char c) { return !isspace(c); }).base(), line.end());
             cout << line << "\n";
         }
     }

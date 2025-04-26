@@ -29,6 +29,6 @@ int main() {
             if (2 * p.size() - pi[i - 1] <= n) len.emplace_back(pi[i - 1]);
     }
 
-    sort(preds.begin(), preds.end(), [](auto p1, auto p2) {return p1.second < p2.second;});
+    sort(preds.begin(), preds.end(), [](auto p1, auto p2) { return p1.second < p2.second; });
     for (auto &[p, len] : preds) cout << p << "\n";
 }

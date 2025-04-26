@@ -181,7 +181,7 @@ int main() {
         }
         dfs(dfs);
 
-        if (all_of(visited.begin(), visited.end(), [&](bool b) {return b;})) {
+        if (all_of(visited.begin(), visited.end(), [&](bool b) { return b; })) {
             cout << "YES\n";
             continue;
         }

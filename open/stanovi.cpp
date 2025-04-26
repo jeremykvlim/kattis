@@ -9,7 +9,7 @@ int main() {
     cin >> n >> m >> K;
 
     int l = max(n, m);
-    auto deviation = [&](int a, int b) {return (long long) ((a * b) - K) * ((a * b) - K);};
+    auto deviation = [&](int a, int b) { return (long long) ((a * b) - K) * ((a * b) - K); };
 
     vector<vector<long long>> dp1(l + 1, vector<long long>(l + 1)),
                               dp2(l + 1, vector<long long>(l + 1)),

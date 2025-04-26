@@ -439,7 +439,7 @@ int main() {
         fw_r.update(j + 1, intervals[i].second);
     }
 
-    if (ranges::none_of(views::iota(0, m), [&](int i) {return l[i] && r[i] && dist[i];})) {
+    if (ranges::none_of(views::iota(0, m), [&](int i) { return l[i] && r[i] && dist[i]; })) {
         cout << "shovel time!";
         exit(0);
     }

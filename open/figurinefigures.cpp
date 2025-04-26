@@ -437,5 +437,5 @@ int main() {
     for (int &e : c) e = e ? 1 : 0;
     c = convolve(c, c);
 
-    cout << fixed << setprecision(4) << 4 * biggest << " " << 4 * smallest << " " << count_if(c.begin(), c.end(), [](auto e) {return e;}) << " " << 4 * (double) total / n;
+    cout << fixed << setprecision(4) << 4 * biggest << " " << 4 * smallest << " " << count_if(c.begin(), c.end(), [](auto e) { return e; }) << " " << 4 * (double) total / n;
 }

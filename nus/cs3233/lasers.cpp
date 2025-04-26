@@ -156,8 +156,8 @@ int main() {
                     break;
                 }
 
-            auto prev = [&](int i) {return (i - 1 + n) % n;};
-            auto next = [&](int i) {return (i + 1) % n;};
+            auto prev = [&](int i) { return (i - 1 + n) % n; };
+            auto next = [&](int i) { return (i + 1) % n; };
 
             vector<int> child(n);
             iota(child.begin(), child.end(), 0);

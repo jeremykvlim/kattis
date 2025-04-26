@@ -12,7 +12,7 @@ int main() {
     dict.erase(unique(dict.begin(), dict.end()), dict.end());
 
     int size = dict.size();
-    auto longest = max_element(dict.begin(), dict.end(), [&](auto s1, auto s2) {return s1.size() < s2.size();})->size();
+    auto longest = max_element(dict.begin(), dict.end(), [&](auto s1, auto s2) { return s1.size() < s2.size(); })->size();
     vector<vector<int>> adj_list(size);
     vector<unordered_map<string, vector<int>>> indices(longest);
     for (int i = 0; i < size; i++)

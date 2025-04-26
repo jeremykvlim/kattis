@@ -32,7 +32,7 @@ int main() {
     vector<array<int, 3>> edges(m);
     for (auto &[a, b, c] : edges) cin >> a >> b >> c;
 
-    auto cmp = [&](int i, int j) {return edges[i][2] != edges[j][2] ? edges[i][2] > edges[j][2] : i < j;};
+    auto cmp = [&](int i, int j) { return edges[i][2] != edges[j][2] ? edges[i][2] > edges[j][2] : i < j; };
     set<int, decltype(cmp)> roads(cmp);
     for (int i = 0; i < m; i++) roads.emplace(i);
 

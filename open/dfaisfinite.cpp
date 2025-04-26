@@ -59,7 +59,7 @@ int main() {
         }
     }
 
-    if (all_of(final.begin(), final.end(), [&](int fi) {return !visited1[fi] || !visited2[fi];})) {
+    if (all_of(final.begin(), final.end(), [&](int fi) { return !visited1[fi] || !visited2[fi]; })) {
         cout << "finite";
         exit(0);
     }

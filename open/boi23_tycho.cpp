@@ -37,7 +37,7 @@ int main() {
     r.erase(unique(r.begin(), r.end()), r.end());
 
     int m = r.size();
-    FenwickTree<long long> fw(m + 1, [](long long x, long long y) {return min(x, y);});
+    FenwickTree<long long> fw(m + 1, [](long long x, long long y) { return min(x, y); });
     vector<long long> dp(n + 1, 0);
     auto damage = LLONG_MAX, lowest = LLONG_MAX;
     for (int i = 0; i <= n; i++) {

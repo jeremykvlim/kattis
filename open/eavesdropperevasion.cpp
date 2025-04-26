@@ -10,7 +10,7 @@ void balanced_shuffle(I l, I r) {
     unordered_map<T, int> freq;
     for (auto it = l; it < r; it++) freq[*it]++;
 
-    priority_queue pq([](const auto &t1, const auto &t2) -> bool {return get<4>(t1) != get<4>(t2) ? get<4>(t1) > get<4>(t2) : get<0>(t1) > get<0>(t2);},
+    priority_queue pq([](const auto &t1, const auto &t2) -> bool { return get<4>(t1) != get<4>(t2) ? get<4>(t1) > get<4>(t2) : get<0>(t1) > get<0>(t2); },
                       vector<tuple<T, int, int, double, double>>());
     
     int n = distance(l, r);

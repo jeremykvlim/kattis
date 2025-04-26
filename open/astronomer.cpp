@@ -154,7 +154,7 @@ int main() {
     for (auto &[x, y] : coords) cin >> x >> y;
 
     if (s >= t) {
-        sort(coords.begin(), coords.end(), [&](auto p1, auto p2) {return euclidean_dist(p1) < euclidean_dist(p2);});
+        sort(coords.begin(), coords.end(), [&](auto p1, auto p2) { return euclidean_dist(p1) < euclidean_dist(p2); });
         cout << fixed << setprecision(6) << t * euclidean_dist(coords[k - 1]);
         exit(0);
     }

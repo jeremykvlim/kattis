@@ -9,13 +9,13 @@ struct Hash {
 
     template <typename T>
     size_t operator()(const T &v) const {
-        if constexpr (requires {tuple_size<T>::value;})
+        if constexpr (requires { tuple_size<T>::value; })
             return apply([](const auto &...e) {
                 size_t h = 0;
                 (combine(h, e), ...);
                 return h;
             }, v);
-        else if constexpr (requires {declval<T>().begin(); declval<T>().end();} && !is_same_v<T, string>) {
+        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
             size_t h = 0;
             for (const auto &e : v) combine(h, e);
             return h;
@@ -209,7 +209,7 @@ int main() {
                 intervals.emplace_back(a - theta, false);
                 intervals.emplace_back(a + theta, true);
             }
-            sort(intervals.begin(), intervals.end(), [&](const auto &p1, const auto &p2) {return !approximately_equal(p1.first, p2.first, 1e-8) ? p1.first < p2.first : p1.second < p2.second;});
+            sort(intervals.begin(), intervals.end(), [&](const auto &p1, const auto &p2) { return !approximately_equal(p1.first, p2.first, 1e-8) ? p1.first < p2.first : p1.second < p2.second; });
 
             for (auto [angle, end] : intervals) {
                 if (!end) overlaps++;

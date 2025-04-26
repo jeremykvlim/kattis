@@ -163,7 +163,7 @@ long long primitive_root(T m) {
     sort(pfs.begin(), pfs.end());
     pfs.erase(unique(pfs.begin(), pfs.end()), pfs.end());
     for (auto g = 2LL; g < m; g++)
-        if (gcd(g, m) == 1 && all_of(pfs.begin(), pfs.end(), [&](auto pf) {return pow((T) g, phi / pf, m) != 1;})) return g;
+        if (gcd(g, m) == 1 && all_of(pfs.begin(), pfs.end(), [&](auto pf) { return pow((T) g, phi / pf, m) != 1; })) return g;
 
     return -1;
 }

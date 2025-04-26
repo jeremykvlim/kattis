@@ -100,5 +100,5 @@ int main() {
     }
 
     auto [prev, weights] = edmonds(adj_list_transpose);
-    cout << accumulate(weights.begin(), weights.end(), 0LL, [&](auto d, auto w) {return d + w;});
+    cout << accumulate(weights.begin(), weights.end(), 0LL, [&](auto d, auto w) { return d + w; });
 }

@@ -10,7 +10,7 @@ int main() {
 
     vector<pair<int, int>> kodamas(n);
     for (auto &[a, c] : kodamas) cin >> a >> c;
-    sort(kodamas.begin(), kodamas.end(), [&](auto p1, auto p2) {return p1.second != p2.second ? p1.second > p2.second : p1.first < p2.first;});
+    sort(kodamas.begin(), kodamas.end(), [&](auto p1, auto p2) { return p1.second != p2.second ? p1.second > p2.second : p1.first < p2.first; });
     kodamas.erase(unique(kodamas.begin(), kodamas.end()), kodamas.end());
 
     n = kodamas.size();
@@ -31,7 +31,7 @@ int main() {
     vector<int> dp(n, 0), seen(size, -1);
     vector<vector<int>> pref_max_a(size, vector<int>(size, -1)), pref_min_c(size, vector<int>(size, INT_MAX)), suff_min_dp(size, vector<int>(size, INT_MAX));
     auto query = [&](int c = INT_MAX) {
-        auto it = find_if(pref_min_c.begin(), pref_min_c.end(), [c](const auto &block) {return block.back() < c;});
+        auto it = find_if(pref_min_c.begin(), pref_min_c.end(), [c](const auto &block) { return block.back() < c; });
         if (it == pref_min_c.end()) return INT_MAX;
 
         int l = -1;

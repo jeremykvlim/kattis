@@ -31,7 +31,7 @@ int main() {
 
     vector<array<int, 3>> roads(m);
     for (auto &[x, y, t] : roads) cin >> x >> y >> t;
-    sort(roads.begin(), roads.end(), [](auto r1, auto r2) {return r1[2] > r2[2];});
+    sort(roads.begin(), roads.end(), [](auto r1, auto r2) { return r1[2] > r2[2]; });
 
     vector<array<int, 4>> queries(u);
     for (int i = 0; i < u; i++) {
@@ -40,7 +40,7 @@ int main() {
 
         queries[i] = {a, b, p, i};
     }
-    sort(queries.begin(), queries.end(), [](auto q1, auto q2) {return q1[2] < q2[2];});
+    sort(queries.begin(), queries.end(), [](auto q1, auto q2) { return q1[2] < q2[2]; });
 
     DisjointSets dsu(n + 1);
     vector<bool> safe(u);

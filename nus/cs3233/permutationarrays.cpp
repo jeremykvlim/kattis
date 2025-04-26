@@ -370,7 +370,7 @@ struct DisjointSets {
 
         int p = find(sets[v]);
         auto temp = perm[v];
-        transform(perm[sets[v]].begin(), perm[sets[v]].end(), perm[v].begin(), [temp](int i) {return temp[i];});
+        transform(perm[sets[v]].begin(), perm[sets[v]].end(), perm[v].begin(), [temp](int i) { return temp[i]; });
         return sets[v] = p;
     }
 
@@ -458,10 +458,10 @@ int main() {
             int root = dsu.find(0);
             if (v_set == root || (u_set != root && v_set != root && dsu.size[u_set] < dsu.size[v_set])) {
                 dsu.unite(v, u);
-                transform(dsu.perm[v].begin(), dsu.perm[v].end(), dsu.perm[u_set].begin(), [&](int f) {return pu_inv[f_inv[f]];});
+                transform(dsu.perm[v].begin(), dsu.perm[v].end(), dsu.perm[u_set].begin(), [&](int f) { return pu_inv[f_inv[f]]; });
             } else {
                 dsu.unite(u, v);
-                transform(dsu.perm[u].begin(), dsu.perm[u].end(), dsu.perm[v_set].begin(), [&](int i) {return pv_inv[f[i]];});
+                transform(dsu.perm[u].begin(), dsu.perm[u].end(), dsu.perm[v_set].begin(), [&](int i) { return pv_inv[f[i]]; });
             }
             m--;
         }

@@ -58,7 +58,7 @@ int main() {
         set<int> s;
         for (int x : vertices2) s.emplace(in[x]);
 
-        sort(vertices1.begin(), vertices1.end(), [&](int x, int y) {return leaf_depth[x] > leaf_depth[y];});
+        sort(vertices1.begin(), vertices1.end(), [&](int x, int y) { return leaf_depth[x] > leaf_depth[y]; });
         for (int x : vertices1) {
             int l = in[p[x]], r = out[p[x]] - 1;
             if (giant[x]) {

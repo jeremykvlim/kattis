@@ -121,7 +121,7 @@ int main() {
                 }
 
     auto prune = [&](auto &v) {
-        sort(v.begin(), v.end(), [&](int u, int v) {return in[u] < in[v];});
+        sort(v.begin(), v.end(), [&](int u, int v) { return in[u] < in[v]; });
         v.erase(unique(v.begin(), v.end()), v.end());
     };
     prune(base_V);
@@ -144,7 +144,7 @@ int main() {
         prune(V);
         if (V.size() != base_V.size()) {
             auto add = [&](int v) {
-                int i = lower_bound(V.begin(), V.end(), v, [&](int u, int v) {return in[u] < in[v];}) - V.begin();
+                int i = lower_bound(V.begin(), V.end(), v, [&](int u, int v) { return in[u] < in[v]; }) - V.begin();
                 if (i) V.emplace_back(lca(V[i - 1], v).first);
                 if (i < V.size() - 1) V.emplace_back(lca(v, V[i + 1]).first);
             };
@@ -172,7 +172,7 @@ int main() {
         vector<int> active(E.size());
         iota(active.begin(), active.end(), 0);
         int cost = 0;
-        for (int b = __lg((*max_element(E.begin(), E.end(), [](auto e1, auto e2) {return e1[2] < e2[2];}))[2]); ~b; b--) {
+        for (int b = __lg((*max_element(E.begin(), E.end(), [](auto e1, auto e2) { return e1[2] < e2[2]; }))[2]); ~b; b--) {
             DisjointSets dsu(V.size());
             vector<int> temp;
             for (int i : active) {

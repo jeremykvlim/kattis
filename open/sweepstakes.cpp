@@ -9,13 +9,13 @@ struct Hash {
 
     template <typename T>
     size_t operator()(const T &v) const {
-        if constexpr (requires {tuple_size<T>::value;})
+        if constexpr (requires { tuple_size<T>::value; })
             return apply([](const auto &...e) {
                 size_t h = 0;
                 (combine(h, e), ...);
                 return h;
             }, v);
-        else if constexpr (requires {declval<T>().begin(); declval<T>().end();} && !is_same_v<T, string>) {
+        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
             size_t h = 0;
             for (const auto &e : v) combine(h, e);
             return h;
@@ -32,8 +32,8 @@ void update(pair<vector<double>, int> &distribution, double p) {
         if (i) poly[i] += poly[i - 1] * p;
     }
 
-    int l = find_if(poly.begin(), poly.end(), [](auto value) {return value > 1e-14;}) - poly.begin(),
-        r = find_if(poly.rbegin(), poly.rend(), [](auto value) {return value > 1e-14;}) - poly.rbegin();
+    int l = find_if(poly.begin(), poly.end(), [](auto value) { return value > 1e-14; }) - poly.begin(),
+        r = find_if(poly.rbegin(), poly.rend(), [](auto value) { return value > 1e-14; }) - poly.rbegin();
 
     poly = {poly.begin() + l, poly.end() - r};
     offset += l;

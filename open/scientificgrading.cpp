@@ -2,7 +2,7 @@
 using namespace std;
 
 int sgn(vector<pair<__int128, __int128>> v) {
-    sort(v.begin(), v.end(), [](auto p1, auto p2) {return p1.second > p2.second;});
+    sort(v.begin(), v.end(), [](auto p1, auto p2) { return p1.second > p2.second; });
 
     pair<__int128, __int128> p = {0, 0};
     auto &[s, e] = p;

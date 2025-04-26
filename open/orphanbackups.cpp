@@ -15,7 +15,7 @@ int main() {
         else files.emplace(s);
     }
 
-    if (files.empty() && all_of(images.begin(), images.end(), [&](auto p) {return !p.second;})) {
+    if (files.empty() && all_of(images.begin(), images.end(), [&](auto p) { return !p.second; })) {
         cout << "No mismatches.\n";
         exit(0);
     }

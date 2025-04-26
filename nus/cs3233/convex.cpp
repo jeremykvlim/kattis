@@ -10,9 +10,9 @@ int main() {
     for (int i = 1; i < 500; i++)
         for (int j = 1; j < 500; j++)
             if (__gcd(i, j) == 1) coords.emplace_back(i, j);
-    sort(coords.begin(), coords.end(), [](auto p1, auto p2) {return p1.first + p1.second < p2.first + p2.second;});
+    sort(coords.begin(), coords.end(), [](auto p1, auto p2) { return p1.first + p1.second < p2.first + p2.second; });
     while (coords.size() > s) coords.pop_back();
-    sort(coords.begin(), coords.end(), [](auto p1, auto p2) {return p1.second * p2.first < p1.first * p2.second;});
+    sort(coords.begin(), coords.end(), [](auto p1, auto p2) { return p1.second * p2.first < p1.first * p2.second; });
 
     int n;
     cin >> n;

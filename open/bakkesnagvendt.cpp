@@ -137,7 +137,7 @@ struct SuffixArray {
     SuffixArray(string &s, int r = 128) : s(s), ascii(s.begin(), s.end()) {
         SA = sais(ascii, r);
         kasai();
-        st = SparseTable<int>(lcp, [](int x, int y) {return min(x, y);});
+        st = SparseTable<int>(lcp, [](int x, int y) { return min(x, y); });
     }
 };
 

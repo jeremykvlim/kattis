@@ -189,7 +189,7 @@ int main() {
             }
         }
 
-        if (all_of(visited.begin(), visited.end(), [&](bool b) {return b;})) cout << len << "\n";
+        if (all_of(visited.begin(), visited.end(), [&](bool b) { return b; })) cout << len << "\n";
         else cout << "-1\n";
     }
 }

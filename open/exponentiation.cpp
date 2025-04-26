@@ -24,7 +24,7 @@ int main() {
         } else {
             auto t = towers[x_indices[i]];
             t.emplace_back(x_indices[j]);
-            sort(t.rbegin(), t.rend(), [&](int i, int j) {return height[i] < height[j];});
+            sort(t.rbegin(), t.rend(), [&](int i, int j) { return height[i] < height[j]; });
 
             int l = 0, r = height.size(), mid;
             while (l + 1 < r) {

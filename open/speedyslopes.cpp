@@ -43,7 +43,7 @@ int main() {
             exit(0);
         }
 
-        if (any_of(dp[r0][c0].begin(), dp[r0][c0].end(), [&](auto p) {return p.first <= t0 && p.second >= v0;})) continue;
+        if (any_of(dp[r0][c0].begin(), dp[r0][c0].end(), [&](auto p) { return p.first <= t0 && p.second >= v0; })) continue;
 
         for (auto it = dp[r0][c0].begin(); it != dp[r0][c0].end();) {
             if (it->first >= t0 && it->second <= v0) it = dp[r0][c0].erase(it);

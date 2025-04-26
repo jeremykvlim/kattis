@@ -9,7 +9,7 @@ struct QueryDecomposition {
 
     vector<int> mo(const vector<int> &a, const vector<int> &b, int k) {
         vector<int> answers(queries.size());
-        sort(queries.begin(), queries.end(), [&](auto q1, auto q2) {return make_pair(q1[0] / size, q1[1]) < make_pair(q2[0] / size, q2[1]);});
+        sort(queries.begin(), queries.end(), [&](auto q1, auto q2) { return make_pair(q1[0] / size, q1[1]) < make_pair(q2[0] / size, q2[1]); });
 
         int L = 0, R = -1, ans = 0;
 

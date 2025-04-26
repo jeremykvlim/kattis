@@ -21,7 +21,7 @@ int main() {
 
     vector<int> order(n);
     iota(order.begin(), order.end(), 0);
-    sort(order.begin(), order.end(), [&](int i, int j) {return d[i] > d[j];});
+    sort(order.begin(), order.end(), [&](int i, int j) { return d[i] > d[j]; });
 
     int sum = 2e9;
     vector<int> state(n, 0);

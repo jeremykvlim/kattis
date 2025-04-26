@@ -129,7 +129,7 @@ bool valid(int p1, int p2, vector<bool> visited, vector<vector<int>> between) {
 }
 
 void unlock(int curr, int prev, vector<bool> visited, vector<vector<int>> &between, vector<Point<int>> &pos, vector<string> &patterns, string p = "") {
-    if (all_of(visited.begin(), visited.end(), [&](auto b) {return b;})) {
+    if (all_of(visited.begin(), visited.end(), [&](auto b) { return b; })) {
         patterns.emplace_back(p);
         return;
     }
@@ -177,5 +177,5 @@ int main() {
             }
         }
 
-    cout << count_if(patterns.begin(), patterns.end(), [&](auto p) {return equal(s.begin(), s.end(), p.begin(), [](char c1, char s1) {return c1 == '?' || c1 == s1;});});
+    cout << count_if(patterns.begin(), patterns.end(), [&](auto p) { return equal(s.begin(), s.end(), p.begin(), [](char c1, char s1) { return c1 == '?' || c1 == s1; }); });
 }

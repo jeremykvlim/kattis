@@ -43,9 +43,9 @@ int main() {
     int index = 1;
     for (auto &[p, i] : indices) i = index++;
     for (auto &[g, p, b] : values) p = indices[p];
-    sort(values.begin(), values.end(), [&](auto v1, auto v2) {return v1[0] != v2[0] ? v1[0] > v2[0] : v1[1] < v2[1];});
+    sort(values.begin(), values.end(), [&](auto v1, auto v2) { return v1[0] != v2[0] ? v1[0] > v2[0] : v1[1] < v2[1]; });
 
-    FenwickTree2D<int> fw(max(n, k) + 1, index + 1, [](int x, int y) {return max(x, y);});
+    FenwickTree2D<int> fw(max(n, k) + 1, index + 1, [](int x, int y) { return max(x, y); });
     for (auto [g, p, b] : values)
         if (!b)
             for (int i = 0; i <= k; i++) fw.update(p, i, fw.range_query(p, i) + 1);

@@ -156,7 +156,7 @@ int main() {
             if (!(x == x1 || x == x2 || y == y1 || y == y2)) possible[i] = false;
         }
 
-        if (all_of(possible.begin(), possible.end(), [&](bool b) {return !b;})) {
+        if (all_of(possible.begin(), possible.end(), [&](bool b) { return !b; })) {
             cout << "Impossible";
             exit(0);
         }

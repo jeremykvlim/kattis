@@ -38,8 +38,8 @@ int main() {
     vector<int> ranks_g(n + 1), ranks_h(n + 1);
     iota(ranks_g.begin(), ranks_g.end(), 0);
     iota(ranks_h.begin(), ranks_h.end(), 0);
-    stable_sort(ranks_g.begin() + 1, ranks_g.end(), [&](int i, int j) {return g[i] < g[j];});
-    stable_sort(ranks_h.begin() + 1, ranks_h.end(), [&](int i, int j) {return h[i] < h[j];});
+    stable_sort(ranks_g.begin() + 1, ranks_g.end(), [&](int i, int j) { return g[i] < g[j]; });
+    stable_sort(ranks_h.begin() + 1, ranks_h.end(), [&](int i, int j) { return h[i] < h[j]; });
 
     vector<int> indices(n + 1);
     for (int i = 1; i <= n; i++) indices[ranks_g[i]] = i;

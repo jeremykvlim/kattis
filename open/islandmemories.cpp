@@ -33,7 +33,7 @@ int main() {
 
     vector<int> indices(m);
     iota(indices.begin(), indices.end(), 0);
-    sort(indices.begin(), indices.end(), [&](int i, int j) {return all[i].size() < all[j].size();});
+    sort(indices.begin(), indices.end(), [&](int i, int j) { return all[i].size() < all[j].size(); });
 
     vector<int> seen1(n, -1), seen2(n, -1);
     for (int i : indices) {

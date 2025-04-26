@@ -10,7 +10,7 @@ int main() {
         string s, t;
         cin >> s >> t;
 
-        auto ctoi = [](char c) {return c == 'S';};
+        auto ctoi = [](char c) { return c == 'S'; };
         array<vector<int>, 2> pref_s{vector<int>(L + 1, 0), vector<int>(L + 1, 0)}, pref_t{vector<int>(L + 1, 0), vector<int>(L + 1, 0)}, indices;
         for (int i = 0; i < L; i++) {
             for (int b = 0; b < 2; b++) {

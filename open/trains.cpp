@@ -49,7 +49,7 @@ int main() {
         cin >> source >> destination;
 
         int src = compress[source], dest = compress[destination];
-        sort(adj_list[src].begin(), adj_list[src].end(), [&](auto a1, auto a2) {return a1[1] < a2[1];});
+        sort(adj_list[src].begin(), adj_list[src].end(), [&](auto a1, auto a2) { return a1[1] < a2[1]; });
         vector<pair<int, int>> trains;
         for (auto [_, dsrc, asrc] : adj_list[src]) {
             vector<int> arrive(compress.size(), INT_MAX);

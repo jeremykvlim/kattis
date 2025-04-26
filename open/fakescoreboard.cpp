@@ -15,7 +15,7 @@ bool gale_ryser(const vector<int> &row_sums, const vector<int> &col_sums, int r 
     if (c == m) return !active;
     if (col_sums[c] > active) return false;
 
-    sort(indices.begin(), indices.end(), [&](int i, int j) {return row_sums[i] > row_sums[j];});
+    sort(indices.begin(), indices.end(), [&](int i, int j) { return row_sums[i] > row_sums[j]; });
     auto temp = row_sums;
     for (int i = 0, remaining = col_sums[c]; i < active && remaining; i++, remaining--) temp[indices[i]]--;
 
@@ -59,8 +59,8 @@ int main() {
         for (int &pi : problems) cin >> pi;
         for (int &tj : teams) cin >> tj;
 
-        if (!all_of(problems.begin(), problems.end(), [&](int pi) {return pi <= p;}) ||
-            !all_of(teams.begin(), teams.end(), [&](int tj) {return tj <= t;}) ||
+        if (!all_of(problems.begin(), problems.end(), [&](int pi) { return pi <= p; }) ||
+            !all_of(teams.begin(), teams.end(), [&](int tj) { return tj <= t; }) ||
             !gale_ryser(teams, problems)) {
             cout << "Impossible\n\n";
             continue;

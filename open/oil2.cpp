@@ -155,9 +155,9 @@ int main() {
             if (c.y != a.y) temp.emplace_back(c.y > a.y ? Line<long long>{{c.x - a.x, c.y - a.y}, {d.x - a.x, c.y - a.y}} :
                                                           Line<long long>{{a.x - d.x, a.y - c.y}, {a.x - c.x, a.y - c.y}});
 
-        sort(temp.begin(), temp.end(), [&](auto &l1, auto &l2) {return cross(l1.a, l2.a) < 0;});
+        sort(temp.begin(), temp.end(), [&](auto &l1, auto &l2) { return cross(l1.a, l2.a) < 0; });
 
-        priority_queue pq([](auto &l1, auto &l2) {return cross(l1.b, l2.b) > 0;}, vector<Line<long long>>());
+        priority_queue pq([](auto &l1, auto &l2) { return cross(l1.b, l2.b) > 0; }, vector<Line<long long>>());
         auto most = 0LL, sum = 0LL;
         for (auto l : temp) {
             auto [c, d] = l;

@@ -45,7 +45,7 @@ int main() {
             edges[i].second = i + 1;
         }
 
-        if (count_if(dsu1.sets.begin(), dsu1.sets.end(), [i = 0](int s) mutable {return s == i++;}) != 1) {
+        if (count_if(dsu1.sets.begin(), dsu1.sets.end(), [i = 0](int s) mutable { return s == i++; }) != 1) {
             cout << "-1\n";
             continue;
         }

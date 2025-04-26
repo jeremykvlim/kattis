@@ -15,7 +15,7 @@ int main() {
 
         most = max(most, f);
     }
-    sort(components.begin(), components.end(), [&](auto p1, auto p2) {return p1.second > p2.second;});
+    sort(components.begin(), components.end(), [&](auto p1, auto p2) { return p1.second > p2.second; });
 
     int total = 0;
     vector<long long> dp(2 * most + 1, 1e16);

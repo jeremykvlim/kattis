@@ -34,7 +34,7 @@ int main() {
         exit(0);
     }
 
-    for (auto &neighbors : adj_list) sort(neighbors.begin(), neighbors.end(), [&](int u, int v) {return order[u] < order[v];});
+    for (auto &neighbors : adj_list) sort(neighbors.begin(), neighbors.end(), [&](int u, int v) { return order[u] < order[v]; });
 
     vector<int> l;
     vector<bool> visited(n, false);

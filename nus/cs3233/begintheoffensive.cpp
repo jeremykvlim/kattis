@@ -43,7 +43,7 @@ int main() {
         }
     }
 
-    SparseTable<long long> st(x, [&](auto x, auto y) {return x & y;});
+    SparseTable<long long> st(x, [&](auto x, auto y) { return x & y; });
     int kmax = -1;
     for (int k = 1; k <= n; k++) {
         for (int l = 0; l < n; l += k)

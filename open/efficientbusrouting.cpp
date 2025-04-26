@@ -30,7 +30,7 @@ int main() {
         adj_list[v - 1].emplace_back(u - 1);
     }
 
-    int root = find_if(adj_list.begin(), adj_list.end(), [&](auto neighbors) {return neighbors.size() > 1;}) - adj_list.begin();
+    int root = find_if(adj_list.begin(), adj_list.end(), [&](auto neighbors) { return neighbors.size() > 1; }) - adj_list.begin();
     auto leaves = dfs(adj_list, root);
 
     int size = leaves.size();

@@ -14,7 +14,7 @@ int main() {
         count[digits.back()]++;
     }
 
-    if (none_of(count.begin(), count.end(), [&](int c) {return !c;})) {
+    if (none_of(count.begin(), count.end(), [&](int c) { return !c; })) {
         cout << "Impossible";
         exit(0);
     }

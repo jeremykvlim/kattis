@@ -126,7 +126,7 @@ int main() {
                 r = i + dp2[i];
                 segments.emplace_back(dp2[i], i);
             }
-        sort(segments.begin(), segments.end(), [](const auto &p1, const auto &p2) {return p1.first != p2.first ? p1.first > p2.first : p1.second < p2.second;});
+        sort(segments.begin(), segments.end(), [](const auto &p1, const auto &p2) { return p1.first != p2.first ? p1.first > p2.first : p1.second < p2.second; });
 
         cout << "CASE " << n << "\n";
         for (int i = 0; i < segments.size() && i < k; i++) {

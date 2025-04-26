@@ -26,7 +26,7 @@ int main() {
     for (int i = 0; i < n; i++) dp[n][i] = 1e9;
 
     for (int i = n - 1; ~i; i--) {
-        int count = count_if(rank.begin(), rank.begin() + pos[i], [i](auto r) {return i > r;}) + 2;
+        int count = count_if(rank.begin(), rank.begin() + pos[i], [i](auto r) { return i > r; }) + 2;
 
         for (int j = 0; j <= n; j++) {
             if (i > rank[j]) count++;

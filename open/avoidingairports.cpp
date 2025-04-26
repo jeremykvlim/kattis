@@ -151,7 +151,7 @@ int main() {
         times[2 * i] = {s, i, false};
         times[2 * i + 1] = {e, i, true};
     }
-    sort(times.begin(), times.end(), [](auto t1, auto t2) {return get<0>(t1) != get<0>(t2) ? get<0>(t1) < get<0>(t2) : get<2>(t1) < get<2>(t2);});
+    sort(times.begin(), times.end(), [](auto t1, auto t2) { return get<0>(t1) != get<0>(t2) ? get<0>(t1) < get<0>(t2) : get<2>(t1) < get<2>(t2); });
 
     vector<long long> dp(m, LLONG_MAX);
     vector<deque<Point<long long>>> half_hulls(n + 1);

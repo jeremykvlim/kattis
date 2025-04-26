@@ -49,7 +49,7 @@ int main() {
 
     vector<pair<int, int>> vertices;
     for (int i = 1; i <= V; i++) vertices.emplace_back(i, degrees[i - 1]);
-    sort(vertices.begin(), vertices.end(), [&](auto v1, auto v2) {return v1.second != v2.second ? v1.second > v2.second : v1.first < v2.first;});
+    sort(vertices.begin(), vertices.end(), [&](auto v1, auto v2) { return v1.second != v2.second ? v1.second > v2.second : v1.first < v2.first; });
 
     DisjointSets dsu(V + 1);
     vector<pair<int, int>> edges;
@@ -74,10 +74,10 @@ int main() {
             vertices[candidates[i]].second--;
             dsu.unite(u, v);
         }
-        sort(vertices.begin(), vertices.end(), [&](auto v1, auto v2) {return v1.second != v2.second ? v1.second > v2.second : v1.first < v2.first;});
+        sort(vertices.begin(), vertices.end(), [&](auto v1, auto v2) { return v1.second != v2.second ? v1.second > v2.second : v1.first < v2.first; });
     }
 
-    if (any_of(vertices.begin(), vertices.end(), [&](auto v) {return v.second;})) {
+    if (any_of(vertices.begin(), vertices.end(), [&](auto v) { return v.second; })) {
         cout << "IMPOSSIBLE";
         exit(0);
     }

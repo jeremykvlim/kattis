@@ -75,6 +75,6 @@ int main() {
                     out[component[v]]++;
                 }
 
-        cout << max(count_if(in.begin() + 1, in.end(), [](int d) {return !d;}), count_if(out.begin() + 1, out.end(), [](int d) {return !d;})) << "\n";
+        cout << max(count_if(in.begin() + 1, in.end(), [](int d) { return !d; }), count_if(out.begin() + 1, out.end(), [](int d) { return !d; })) << "\n";
     }
 }

@@ -17,7 +17,7 @@ int main() {
         plants[i] = {x, y, f, i};
         y_max = max(y, y_max);
     }
-    sort(plants.begin(), plants.end(), [](auto p1, auto p2) {return p1[0] == p2[0] ? p1[1] < p2[1] : p1[0] < p2[0];});
+    sort(plants.begin(), plants.end(), [](auto p1, auto p2) { return p1[0] == p2[0] ? p1[1] < p2[1] : p1[0] < p2[0]; });
 
     vector<int> energy(n), next(n, -1);
     vector<pair<int, int>> dp(y_max + 1, {0, 0});

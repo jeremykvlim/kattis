@@ -23,7 +23,7 @@ int main() {
 
         indices[a[i]] = i;
     }
-    for (int v = 1; v <= n; v++) sort(adj_list[v].begin(), adj_list[v].end(), [&](int a1, int a2) {return indices[a1] < indices[a2];});
+    for (int v = 1; v <= n; v++) sort(adj_list[v].begin(), adj_list[v].end(), [&](int a1, int a2) { return indices[a1] < indices[a2]; });
 
     vector<bool> bread(n + 1, false);
     bool change;
@@ -54,5 +54,5 @@ int main() {
             i++;
         }
     } while (change);
-    cout << count_if(bread.begin(), bread.end(), [&](bool b) {return b;});
+    cout << count_if(bread.begin(), bread.end(), [&](bool b) { return b; });
 }

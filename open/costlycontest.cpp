@@ -24,5 +24,5 @@ int main() {
     while (~total && !solvable[total]) total--;
     if (total) threshold = t / total + 1;
 
-    cout << max(k, (int) count_if(slowness.begin(), slowness.end(), [&](int s) {return s < threshold;}));
+    cout << max(k, (int) count_if(slowness.begin(), slowness.end(), [&](int s) { return s < threshold; }));
 }

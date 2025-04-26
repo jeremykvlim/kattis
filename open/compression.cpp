@@ -93,7 +93,7 @@ int main() {
         }
     }
 
-    SparseTable<int> st_x(X, [](int x, int y) {return max(x, y);}), st_pos(pos, [](int x, int y) {return max(x, y);}), st_neg(neg, [](int x, int y) {return max(x, y);});
+    SparseTable<int> st_x(X, [](int x, int y) { return max(x, y); }), st_pos(pos, [](int x, int y) { return max(x, y); }), st_neg(neg, [](int x, int y) { return max(x, y); });
     vector<vector<tuple<int, long long, int>>> funcs(n + 1);
     vector<long long> dp(n + 1, 1e18);
     dp[0] = 0;

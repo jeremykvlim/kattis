@@ -11,7 +11,7 @@ int main() {
     vector<pair<int, int>> tasks(n);
     for (auto &[t, d] : tasks) cin >> t >> d;
 
-    long long l = 1, r = 1, m, total = accumulate(tasks.begin(), tasks.end(), 0LL, [](auto t, auto p) {return t + p.first;}), resets = 0;
+    long long l = 1, r = 1, m, total = accumulate(tasks.begin(), tasks.end(), 0LL, [](auto t, auto p) { return t + p.first; }), resets = 0;
     auto complete = [&](auto attempts) {
         auto remaining = attempts * c, required = 0LL;
         int count = 0;

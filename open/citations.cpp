@@ -39,7 +39,7 @@ int main() {
 
         if (curr.size() == 1) return;
 
-        sort(curr.begin() + 1, curr.end(), [](auto p1, auto p2) {return p1.first * p2.second < p2.first * p1.second;});
+        sort(curr.begin() + 1, curr.end(), [](auto p1, auto p2) { return p1.first * p2.second < p2.first * p1.second; });
         vector<long long> suff(curr.size(), 0);
         for (int i = curr.size() - 1; i; i--) {
             suff[i - 1] = suff[i] + curr[i].second;

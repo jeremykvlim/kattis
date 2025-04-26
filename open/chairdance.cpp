@@ -55,7 +55,7 @@ int main() {
                 }
             players = temp;
 
-            auto it = find_if(players.begin(), players.end(), [](int p) {return ~p;});
+            auto it = find_if(players.begin(), players.end(), [](int p) { return ~p; });
             sum = it - players.begin();
             prod = 1;
             remaining /= g;

@@ -23,7 +23,7 @@ bool valid_digit(vector<vector<char>> &board, int r, int c) {
 void backtrack(vector<vector<char>> &board, vector<vector<char>> &solution, bool &unique) {
     auto solved = [&]() -> bool {
         return !any_of(board.begin(), board.end(), [&](auto row) {
-            return any_of(row.begin(), row.end(), [&](char c) {return c == '0';});
+            return any_of(row.begin(), row.end(), [&](char c) { return c == '0'; });
         });
     };
 

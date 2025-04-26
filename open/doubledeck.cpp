@@ -34,7 +34,7 @@ int main() {
         indices[xi].emplace_front(i);
     }
 
-    FenwickTree<int> fw(n * k + 1, [](int x, int y) {return max(x, y);});
+    FenwickTree<int> fw(n * k + 1, [](int x, int y) { return max(x, y); });
     for (int i = 0; i < n * k; i++) {
         int xi;
         cin >> xi;

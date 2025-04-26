@@ -72,7 +72,7 @@ void cut4(string &s) {
     int l = rng() % (j - k);
     auto s1 = s.substr(k + 1, l) + (char) tolower(s[k]) + s.substr(0, k), s2 = s.substr(j + 1) + (char) toupper(s[j]) + s.substr(k + l + 1, j - k - l - 1);
     if (s[j] == s[k]) {
-        transform(s2.begin(), s2.end(), s2.begin(), [](char c) {return islower(c) ? toupper(c) : tolower(c);});
+        transform(s2.begin(), s2.end(), s2.begin(), [](char c) { return islower(c) ? toupper(c) : tolower(c); });
         reverse(s2.begin(), s2.end());
     }
 

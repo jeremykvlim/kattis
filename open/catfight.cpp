@@ -134,7 +134,7 @@ pair<pair<int, int>, double> closest_pair(const vector<Point<T>> &points) {
 
     vector<pair<Point<T>, int>> sorted(n);
     for (int i = 0; i < n; i++) sorted[i] = {points[i], i};
-    sort(sorted.begin(), sorted.end(), [](auto p1, auto p2) {return p1.first == p2.first ? p1.second < p2.second : p1.first < p2.first;});
+    sort(sorted.begin(), sorted.end(), [](auto p1, auto p2) { return p1.first == p2.first ? p1.second < p2.second : p1.first < p2.first; });
 
     auto d = DBL_MAX;
     int a = -1, b = -1;
@@ -147,8 +147,8 @@ pair<pair<int, int>, double> closest_pair(const vector<Point<T>> &points) {
         }
     };
 
-    auto sq = [](double v) -> double {return v * v;};
-    auto cmp = [](auto p1, auto p2) {return p1.first.y < p2.first.y;};
+    auto sq = [](double v) -> double { return v * v; };
+    auto cmp = [](auto p1, auto p2) { return p1.first.y < p2.first.y; };
     multiset<pair<Point<T>, int>, decltype(cmp)> ms(cmp);
     vector<typename decltype(ms)::const_iterator> its(n);
     for (int i = 0, j = 0; i < n; i++) {
@@ -213,7 +213,7 @@ struct KDTree {
         if (l >= r) return -1;
 
         int m = l + (r - l) / 2;
-        nth_element(points.begin() + l, points.begin() + m, points.begin() + r, [dir](const auto &a, const auto &b) {return !dir ? a.x < b.x : a.y < b.y;});
+        nth_element(points.begin() + l, points.begin() + m, points.begin() + r, [dir](const auto &a, const auto &b) { return !dir ? a.x < b.x : a.y < b.y; });
 
         int j = i++;
         KDT[j] = {points[m], dir};

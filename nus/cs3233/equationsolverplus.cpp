@@ -65,12 +65,12 @@ int main() {
 
         auto match = rref(A);
         for (auto row : A)
-            if (none_of(row.begin(), row.begin() + n, [&](auto e) {return abs(e) > 1e-9;}) && abs(row[n]) > 1e-9) {
+            if (none_of(row.begin(), row.begin() + n, [&](auto e) { return abs(e) > 1e-9; }) && abs(row[n]) > 1e-9) {
                 cout << "inconsistent\n";
                 goto next;
             }
 
-        if (all_of(match.begin(), match.begin() + n, [&](int r) {return r != -1;}))
+        if (all_of(match.begin(), match.begin() + n, [&](int r) { return r != -1; }))
             for (int c = 0; c < n; c++) cout << fixed << setprecision(3) << A[match[c]][n] << " ";
         else {
             vector<int> cols;
@@ -80,7 +80,7 @@ int main() {
             vector<string> x(n, "?");
             for (int c1 = 0; c1 < n; c1++)
                 if (match[c1] != -1)
-                    if (!any_of(cols.begin(), cols.end(), [&](int c2) {return abs(A[match[c1]][c2]) > 1e-9;})) x[c1] = to_string(A[match[c1]][n]);
+                    if (!any_of(cols.begin(), cols.end(), [&](int c2) { return abs(A[match[c1]][c2]) > 1e-9; })) x[c1] = to_string(A[match[c1]][n]);
 
             for (auto e : x) cout << e << " ";
         }

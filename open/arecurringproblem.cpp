@@ -9,13 +9,13 @@ struct Hash {
 
     template <typename T>
     size_t operator()(const T &v) const {
-        if constexpr (requires {tuple_size<T>::value;})
+        if constexpr (requires { tuple_size<T>::value; })
             return apply([](const auto &...e) {
                 size_t h = 0;
                 (combine(h, e), ...);
                 return h;
             }, v);
-        else if constexpr (requires {declval<T>().begin(); declval<T>().end();} && !is_same_v<T, string>) {
+        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
             size_t h = 0;
             for (const auto &e : v) combine(h, e);
             return h;
@@ -34,7 +34,7 @@ int main() {
     auto dfs1 = [&](auto &&self, vector<long long> seq, vector<long long> start) -> map<long long, long long> {
         if (memo.count({seq, start})) return memo[{seq, start}];
         if (!seq[0]) {
-            if (all_of(seq.begin(), seq.end(), [](auto e) {return !e;})) return memo[{seq, start}] = {{0, 1}};
+            if (all_of(seq.begin(), seq.end(), [](auto e) { return !e; })) return memo[{seq, start}] = {{0, 1}};
             else return memo[{seq, start}] = {};
         }
 
@@ -120,7 +120,7 @@ int main() {
     };
     dfs2(dfs2, seq, seq);
 
-    sort(rec.begin(), rec.end(), [](auto a1, auto a2) {return a1[2] != a2[2] ? a1[2] < a2[2] : a1[0] < a2[0];});
+    sort(rec.begin(), rec.end(), [](auto a1, auto a2) { return a1[2] != a2[2] ? a1[2] < a2[2] : a1[0] < a2[0]; });
     auto [c, a, s] = rec[n - 1];
     s.resize(10);
     cout << c.size() << "\n";

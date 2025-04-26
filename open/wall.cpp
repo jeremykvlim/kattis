@@ -438,7 +438,7 @@ int main() {
     }
     sum *= st.p2[n - 1];
     iota(indices.begin(), indices.end(), 0);
-    sort(indices.begin(), indices.end(), [&](int i, int j) {return c[i] < c[j];});
+    sort(indices.begin(), indices.end(), [&](int i, int j) { return c[i] < c[j]; });
 
     for (int i = 0; i < 2 * n; i++) {
         sum -= (st.p2[n] * n + st[1].product * n - st[1].pref - st[1].suff) * (c[indices[i]] - (!i ? 0 : c[indices[i - 1]]));

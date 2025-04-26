@@ -369,13 +369,13 @@ struct Hash {
 
     template <typename T>
     size_t operator()(const T &v) const {
-        if constexpr (requires {tuple_size<T>::value;})
+        if constexpr (requires { tuple_size<T>::value; })
             return apply([](const auto &...e) {
                 size_t h = 0;
                 (combine(h, e), ...);
                 return h;
             }, v);
-        else if constexpr (requires {declval<T>().begin(); declval<T>().end();} && !is_same_v<T, string>) {
+        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
             size_t h = 0;
             for (const auto &e : v) combine(h, e);
             return h;

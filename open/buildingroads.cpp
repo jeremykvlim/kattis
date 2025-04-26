@@ -148,7 +148,7 @@ int main() {
     vector<vector<int>> indices(n, vector<int>(n, 0));
     for (int i = 0; i < n; i++) {
         iota(indices[i].begin(), indices[i].end(), 0);
-        sort(indices[i].begin(), indices[i].end(), [&](int j, int k) {return dist[i][j] < dist[i][k];});
+        sort(indices[i].begin(), indices[i].end(), [&](int j, int k) { return dist[i][j] < dist[i][k]; });
     }
     for (int i = 0; i < n; i++) len = min(len, dist[i][indices[i][n - 1]] * 2);
 

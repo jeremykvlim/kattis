@@ -165,7 +165,7 @@ int main() {
     vector<pair<Point<long long>, char>> route;
     for (int i = east.size() - 1; i; i--) route.emplace_back(east[i - 1] - east[i], 'N');
     for (int i = north.size() - 1; i; i--) route.emplace_back(north[i - 1] - north[i], 'E');
-    sort(route.begin(), route.end(), [&](auto p1, auto p2) {return cross(p1.first, p2.first) > 0;});
+    sort(route.begin(), route.end(), [&](auto p1, auto p2) { return cross(p1.first, p2.first) > 0; });
 
     for (auto [point, direction] : route)
         while (point.x--) cout << direction;

@@ -10,7 +10,7 @@ int main() {
 
     deque<pair<int, int>> deck;
     unordered_map<int, int> freq;
-    auto cmp = [](auto p1, auto p2) {return p1.first != p2.first ? p1.first > p2.first : p1.second < p2.second;};
+    auto cmp = [](auto p1, auto p2) { return p1.first != p2.first ? p1.first > p2.first : p1.second < p2.second; };
     set<pair<int, int>, decltype(cmp)> cards(cmp);
 
     auto put = [&](bool top) {

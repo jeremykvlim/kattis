@@ -15,7 +15,7 @@ auto rerooting_dp(int n, const vector<T> &edges) {
     auto dfs = [&](auto &&self, int v = 0) -> void {
         order.emplace_back(v);
         for (auto [u, w, i] : adj_list[v]) {
-            adj_list[u].erase(remove_if(adj_list[u].begin(), adj_list[u].end(), [i, v](const auto &e) {return e[0] == v && e[2] == (i ^ 1);}), adj_list[u].end());
+            adj_list[u].erase(remove_if(adj_list[u].begin(), adj_list[u].end(), [i, v](const auto &e) { return e[0] == v && e[2] == (i ^ 1); }), adj_list[u].end());
             parent_edge[u] = {i ^ 1, w};
             self(self, u);
         }

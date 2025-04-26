@@ -9,7 +9,7 @@ int main() {
     while (cin >> n && n) {
         vector<array<int, 3>> d(2 * n + 1, {0, 0, 0});
         for (int i = 1; i <= 2 * n; i++) cin >> d[i][0] >> d[i][1] >> d[i][2];
-        sort(d.begin(), d.end(), [](auto a1, auto a2) {return a1[0] != a2[0] ? a1[0] < a2[0] : a1[1] != a2[1] ? a1[1] < a2[1] : a1[2] > a2[2];});
+        sort(d.begin(), d.end(), [](auto a1, auto a2) { return a1[0] != a2[0] ? a1[0] < a2[0] : a1[1] != a2[1] ? a1[1] < a2[1] : a1[2] > a2[2]; });
 
         vector<vector<vector<bool>>> dp(2 * n + 1, vector<vector<bool>>(2 * n + 1, vector<bool>(2 * n + 1, false)));
         auto arrange = [&](auto &&self, bool first, int count = 0, int i = 0, int j = 0) -> bool {

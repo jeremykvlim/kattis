@@ -9,13 +9,13 @@ struct Hash {
 
     template <typename T>
     size_t operator()(const T &v) const {
-        if constexpr (requires {tuple_size<T>::value;})
+        if constexpr (requires { tuple_size<T>::value; })
             return apply([](const auto &...e) {
                 size_t h = 0;
                 (combine(h, e), ...);
                 return h;
             }, v);
-        else if constexpr (requires {declval<T>().begin(); declval<T>().end();} && !is_same_v<T, string>) {
+        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
             size_t h = 0;
             for (const auto &e : v) combine(h, e);
             return h;
@@ -214,7 +214,7 @@ int main() {
         for (int i = 0; i < m; i++) border[i][0] = border[i][n - 1] = true;
         for (int i = 0; i < n; i++) border[0][i] = border[m - 1][i] = true;
 
-        auto valid = [&](auto p) -> bool {return 0 <= p.x && p.x < m && 0 <= p.y && p.y < n;};
+        auto valid = [&](auto p) -> bool { return 0 <= p.x && p.x < m && 0 <= p.y && p.y < n; };
         vector<Point<int>> drdc1{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}, drdc2{{1, 1}, {1, 0}, {1, -1}, {0, 1}, {0, -1}, {-1, 1}, {-1, 0}, {-1, -1}};
         for (int i : order) {
             auto s = tile(connect[i].x, m, n), d = tile(connect[i].y, m, n);

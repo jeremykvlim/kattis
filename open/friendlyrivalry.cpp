@@ -159,7 +159,7 @@ int main() {
     for (int i = 0; i < c; i++)
         for (int j = i + 1; j < c; j++) dist.emplace_back(euclidean_dist(coords[i], coords[j]));
     sort(dist.begin(), dist.end());
-    dist.erase(unique(dist.begin(), dist.end(), [&](double d1, double d2) {return abs(d1 - d2) < 1e-9;}), dist.end());
+    dist.erase(unique(dist.begin(), dist.end(), [&](double d1, double d2) { return abs(d1 - d2) < 1e-9; }), dist.end());
 
     double distance = 0;
     vector<int> blue;

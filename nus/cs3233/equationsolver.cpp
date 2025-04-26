@@ -65,12 +65,12 @@ int main() {
 
         auto match = rref(A);
         for (auto row : A)
-            if (none_of(row.begin(), row.begin() + n, [&](auto e) {return abs(e) > 1e-9;}) && abs(row[n]) > 1e-9) {
+            if (none_of(row.begin(), row.begin() + n, [&](auto e) { return abs(e) > 1e-9; }) && abs(row[n]) > 1e-9) {
                 cout << "inconsistent\n";
                 goto next;
             }
 
-        if (all_of(match.begin(), match.begin() + n, [&](int r) {return r != -1;}))
+        if (all_of(match.begin(), match.begin() + n, [&](int r) { return r != -1; }))
             for (int c = 0; c < n; c++) cout << fixed << setprecision(3) << A[match[c]][n] << " ";
         else cout << "multiple";
 

@@ -177,7 +177,7 @@ int main() {
         auto temp = points;
         for (int j = 0; j < temp.size(); j++) temp[j].second = j;
 
-        temp.erase(remove_if(temp.begin(), temp.end(), [&](auto p) {return p.first.x < 0 || p.first.y < 0;}), temp.end());
+        temp.erase(remove_if(temp.begin(), temp.end(), [&](auto p) { return p.first.x < 0 || p.first.y < 0; }), temp.end());
         if (temp.empty()) {
             next:;
             if (++count == 4) {
@@ -187,7 +187,7 @@ int main() {
             continue;
         }
 
-        sort(temp.begin(), temp.end(), [&](auto p1, auto p2) {return p1.first < p2.first;});
+        sort(temp.begin(), temp.end(), [&](auto p1, auto p2) { return p1.first < p2.first; });
         if (temp.front().first != Point<long long>{0, 0}) temp.insert(temp.begin(), {Point<long long>{0, 0}, 0});
 
         deque<pair<Point<long long>, int>> half_hull{{Point<long long>{0, 0}, 0}};
@@ -197,7 +197,7 @@ int main() {
         vector<int> indices;
         int v = 0;
         for (auto len = d; len >= 0;) {
-            auto it = find_if(adj_list[v].rbegin(), adj_list[v].rend(), [&](int u) {return len >= euclidean_dist(temp[v].first, temp[u].first);});
+            auto it = find_if(adj_list[v].rbegin(), adj_list[v].rend(), [&](int u) { return len >= euclidean_dist(temp[v].first, temp[u].first); });
             if (it == adj_list[v].rend()) break;
 
             int u = *it;

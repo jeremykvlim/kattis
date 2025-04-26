@@ -174,14 +174,14 @@ int main() {
         iota(indices.begin(), indices.end(), 0);
 
         vector<int> pref_s(n);
-        sort(indices.begin(), indices.end(), [&](int i, int j) {return cross(points[i] - s, points[j] - s) > 0;});
+        sort(indices.begin(), indices.end(), [&](int i, int j) { return cross(points[i] - s, points[j] - s) > 0; });
         for (int i = 1; i < n; i++) pref_s[indices[i]] = pref_s[indices[i - 1]] + (cross(points[indices[i - 1]] - s, points[indices[i]] - s) > 0);
 
         vector<int> pref_e(n);
-        sort(indices.begin(), indices.end(), [&](int i, int j) {return cross(points[i] - e, points[j] - e) < 0;});
+        sort(indices.begin(), indices.end(), [&](int i, int j) { return cross(points[i] - e, points[j] - e) < 0; });
         for (int i = 1; i < n; i++) pref_e[indices[i]] = pref_e[indices[i - 1]] + (cross(points[indices[i - 1]] - e, points[indices[i]] - e) < 0);
 
-        sort(indices.begin(), indices.end(), [&](int i, int j) {return pref_s[i] < pref_s[j] || (pref_s[i] == pref_s[j] && pref_e[i] < pref_e[j]);});
+        sort(indices.begin(), indices.end(), [&](int i, int j) { return pref_s[i] < pref_s[j] || (pref_s[i] == pref_s[j] && pref_e[i] < pref_e[j]); });
         FenwickTree<int> fw(n + 1);
         auto inversions = 0LL;
         for (int i = 0; i < n; i++) {

@@ -43,7 +43,7 @@ int main() {
         e[i] = compress[e[i]];
     }
 
-    vector<FenwickTree<int>> fws(__lg(n) + 1, FenwickTree<int>(2 * n + 1, [](int x, int y) {return max(x, y);}));
+    vector<FenwickTree<int>> fws(__lg(n) + 1, FenwickTree<int>(2 * n + 1, [](int x, int y) { return max(x, y); }));
     for (int i = 1; i <= n; i++)
         if (s[i] < e[i]) fws[0].update(s[i], e[i]);
 

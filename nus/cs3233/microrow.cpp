@@ -18,7 +18,7 @@ int main() {
 
     vector<vector<array<int, 3>>> rows;
     for (int i = 0; i < n; i++) {
-        auto it = lower_bound(rows.begin(), rows.end(), microbes[i][1], [](const auto &a, int s) {return a.back()[1] > s;});
+        auto it = lower_bound(rows.begin(), rows.end(), microbes[i][1], [](const auto &a, int s) { return a.back()[1] > s; });
 
         if (it == rows.end()) rows.push_back({microbes[i]});
         else it->emplace_back(microbes[i]);

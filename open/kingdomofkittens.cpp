@@ -205,7 +205,7 @@ int main() {
                 return false;
             };
 
-            return all_of(points.begin(), points.end(), [&](auto c) {return vertex_or_on_side(c);});
+            return all_of(points.begin(), points.end(), [&](auto c) { return vertex_or_on_side(c); });
         };
 
         if (size > 6 || !forms_hull()) {

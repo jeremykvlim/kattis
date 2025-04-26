@@ -14,7 +14,7 @@ int main() {
         auto check = [&](vector<int> &v) {
             vector<int> p(n);
             iota(p.begin(), p.end(), 0);
-            sort(p.begin(), p.end(), [&](int i, int j) {return v[i] < v[j];});
+            sort(p.begin(), p.end(), [&](int i, int j) { return v[i] < v[j]; });
             if (v[p[0]] != v[p[1]]) {
                 count += v[p[1]] - v[p[0]];
                 v[p[0]] = v[p[1]];

@@ -425,8 +425,8 @@ int main() {
     }
 
     auto divs1 = divisors(pfs1), divs2 = divisors(pfs2);
-    sort(divs1.begin(), divs1.end(), [](auto p1, auto p2) {return p1.first < p2.first;});
-    sort(divs2.rbegin(), divs2.rend(), [](auto p1, auto p2) {return p1.first < p2.first;});
+    sort(divs1.begin(), divs1.end(), [](auto p1, auto p2) { return p1.first < p2.first; });
+    sort(divs2.rbegin(), divs2.rend(), [](auto p1, auto p2) { return p1.first < p2.first; });
 
     auto diff = DBL_MAX;
     modint d;

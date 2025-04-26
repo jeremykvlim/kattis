@@ -13,7 +13,7 @@ int main() {
         cin >> a >> b >> t;
         auto A = llround(a * 100), B = llround(b * 100), T = llround(t * 100);
 
-        auto atp = [&](auto x) {return (x * (10000 + T) + 5000) / 10000;};
+        auto atp = [&](auto x) { return (x * (10000 + T) + 5000) / 10000; };
         auto search = [&](auto p) {
             long long l = -1, r = p + 1, m, value;
             while (l + 1 < r) {

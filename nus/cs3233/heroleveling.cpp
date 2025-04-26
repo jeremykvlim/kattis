@@ -20,7 +20,7 @@ int main() {
 
     vector<int> indices(n);
     iota(indices.begin(), indices.end(), 0);
-    sort(indices.begin(), indices.end(), [&](int i, int j) {return m[i] < m[j];});
+    sort(indices.begin(), indices.end(), [&](int i, int j) { return m[i] < m[j]; });
     int trauma = INT_MAX, c = n * t_max;
     vector<long long> dp(c + 1);
     for (int t = 0; t <= t_max; t++) {
@@ -37,7 +37,7 @@ int main() {
             dp = temp;
         }
 
-        int j = find_if(dp.begin(), dp.end(), [&](auto level) {return level >= l;}) - dp.begin();
+        int j = find_if(dp.begin(), dp.end(), [&](auto level) { return level >= l; }) - dp.begin();
         if (j > c) continue;
         trauma = min(trauma, j + k * t);
     }

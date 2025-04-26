@@ -46,8 +46,8 @@ vector<T> rref(Matrix<T> &matrix) {
 
     vector<T> solution(m - 1, -1);
     for (int i = 0; i < n; i++) {
-        int l = find_if(matrix[i].begin(), matrix[i].end(), [](auto value) {return fabs(value) > 1e-9;}) - matrix[i].begin(),
-                r = find_if(matrix[i].rbegin() + 1, matrix[i].rend(), [](auto value) {return fabs(value) > 1e-9;}) - matrix[i].rbegin();
+        int l = find_if(matrix[i].begin(), matrix[i].end(), [](auto value) { return fabs(value) > 1e-9; }) - matrix[i].begin(),
+                r = find_if(matrix[i].rbegin() + 1, matrix[i].rend(), [](auto value) { return fabs(value) > 1e-9; }) - matrix[i].rbegin();
 
         if (l + 1 == m - r) solution[l] = exp(matrix[i][m - 1]);
     }

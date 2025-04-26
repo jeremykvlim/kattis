@@ -46,7 +46,7 @@ int main() {
     for (int i = 0; i < n; i++) sd.update(i, i, min(abs(i - s + 1), n - abs(i - s + 1)));
 
     for (auto [d, t1] : edges) {
-        auto index = [&](int i) {return (i + n) % n;};
+        auto index = [&](int i) { return (i + n) % n; };
 
         int t2 = (t1 + 1) % n, dp1 = sd.query(t1), dp2 = sd.query(t2);
         if (dp1 == dp2) continue;

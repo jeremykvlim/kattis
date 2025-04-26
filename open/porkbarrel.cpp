@@ -180,7 +180,7 @@ int main() {
 
             weights[i] = edges[i][2];
         }
-        sort(edges.begin() + 1, edges.end(), [](auto a1, auto a2) {return a1[2] > a2[2];});
+        sort(edges.begin() + 1, edges.end(), [](auto a1, auto a2) { return a1[2] > a2[2]; });
         sort(weights.begin() + 1, weights.end());
 
         WeightedDisjointSets wdsu(n + 1);

@@ -47,7 +47,7 @@ int main() {
             }
         }
         sort(masks.begin(), masks.end());
-        masks.erase(unique(masks.begin(), masks.end(), [](auto p1, auto p2) {return p1.first == p1.second;}), masks.end());
+        masks.erase(unique(masks.begin(), masks.end(), [](auto p1, auto p2) { return p1.first == p1.second; }), masks.end());
         return masks;
     };
     auto l = process(pile1), r = process(pile2);

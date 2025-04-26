@@ -80,7 +80,7 @@ int main() {
                 continue;
             }
 
-            if (all_of(t.begin(), t.end(), [&](char c) {return isalpha(c);})) {
+            if (all_of(t.begin(), t.end(), [&](char c) { return isalpha(c); })) {
                 int sgn2 = 1;
                 if (j && equation[j - 1] == "/") sgn2 = -1;
                 A[i][atoms.count(t) ? atoms[t] : atoms[t] = atoms.size()] += sgn1 * sgn2;

@@ -30,6 +30,6 @@ int main() {
         s.emplace_back(turn(m));
     }
 
-    sort(s.begin(), s.end(), [&](string& s1, string& s2) {return s1 + s2 < s2 + s1;});
+    sort(s.begin(), s.end(), [&](string& s1, string& s2) { return s1 + s2 < s2 + s1; });
     for (auto &str : s) cout << str;
 }

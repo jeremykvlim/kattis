@@ -46,7 +46,7 @@ int main() {
         indices[a[i]].emplace_back(i);
     }
 
-    SparseTable<int> st(last, [](int x, int y) {return max(x, y);});
+    SparseTable<int> st(last, [](int x, int y) { return max(x, y); });
     auto dfs = [&](auto &&self, vector<int> curr = {-1}, int v = 0) {
         for (int j = 0; j <= biggest; j++) {
             for (int i = st.size() - 1; ~i; i--)

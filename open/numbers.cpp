@@ -23,7 +23,7 @@ int main() {
             total += s[i] - '0';
         }
 
-        int total = accumulate(s.begin(), s.end(), 0, [](auto t, auto c) {return t + c - '0';});
+        int total = accumulate(s.begin(), s.end(), 0, [](auto t, auto c) { return t + c - '0'; });
         while (total & (total - 1)) {
             total += 8;
             s += "8";

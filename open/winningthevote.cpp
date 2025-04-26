@@ -30,7 +30,7 @@ int main() {
         else if (signums[i] == 1) allies[1].emplace_back(i);
     }
 
-    int required = max(1 - accumulate(tellers.begin(), tellers.end(), 0, [&](int i, int j) {return i + signums[j];}), 0);
+    int required = max(1 - accumulate(tellers.begin(), tellers.end(), 0, [&](int i, int j) { return i + signums[j]; }), 0);
 
     vector<long long> dp(required + 2, INT_MAX);
     dp[0] = dp[required + 1] = 0;

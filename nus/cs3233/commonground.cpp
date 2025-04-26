@@ -323,11 +323,11 @@ int main() {
             sort(intervals.begin(), intervals.end());
             intervals.erase(unique(intervals.begin(), intervals.end()), intervals.end());
 
-            sort(intervals.begin(), intervals.end(), [&](auto i1, auto i2) {return i1.first != i2.first ? i1.first < i2.first : i1.second > i2.second;});
-            intervals.erase(unique(intervals.begin(), intervals.end(), [&](auto i1, auto i2) {return i1.first == i2.first;}), intervals.end());
+            sort(intervals.begin(), intervals.end(), [&](auto i1, auto i2) { return i1.first != i2.first ? i1.first < i2.first : i1.second > i2.second; });
+            intervals.erase(unique(intervals.begin(), intervals.end(), [&](auto i1, auto i2) { return i1.first == i2.first; }), intervals.end());
 
             auto max_r = LLONG_MIN;
-            intervals.erase(remove_if(intervals.begin(), intervals.end(), [&](auto i) {return ((max_r = max(max_r, i.second)) != i.second);}), intervals.end());
+            intervals.erase(remove_if(intervals.begin(), intervals.end(), [&](auto i) { return ((max_r = max(max_r, i.second)) != i.second); }), intervals.end());
 
             __int128 a = 0;
             if (!intervals.empty()) {

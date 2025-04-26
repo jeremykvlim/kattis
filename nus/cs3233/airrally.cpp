@@ -51,7 +51,7 @@ struct SplayTree {
             return !i || l != i && r != i;
         };
 
-        auto child = [&](int i, int parent) {return ST[parent].family[1] == i;};
+        auto child = [&](int i, int parent) { return ST[parent].family[1] == i; };
 
         auto rotate = [&](int i) {
             int j = ST[i].family[2], k = ST[j].family[2];

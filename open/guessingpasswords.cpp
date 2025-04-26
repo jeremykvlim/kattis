@@ -108,7 +108,7 @@ int main() {
     for (int i = n + 1; i < g.size(); i++) {
         vector<int> cols(c);
         iota(cols.begin(), cols.end(), 0);
-        sort(cols.begin(), cols.end(), [&](int j, int k) {return y_count[j] < y_count[k];});
+        sort(cols.begin(), cols.end(), [&](int j, int k) { return y_count[j] < y_count[k]; });
 
         int temp = y;
         for (int j : cols)

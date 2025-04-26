@@ -106,7 +106,7 @@ int main() {
     string s;
     vector<int> numbers;
     while (cin >> s) {
-        if (any_of(s.begin(), s.end(), [&](char c) {return !isdigit(c);}) || s[0] == '0' || s.size() > 10) {
+        if (any_of(s.begin(), s.end(), [&](char c) { return !isdigit(c); }) || s[0] == '0' || s.size() > 10) {
             cout << 0;
             exit(0);
         }

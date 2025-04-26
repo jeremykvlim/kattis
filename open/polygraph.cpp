@@ -46,7 +46,7 @@ int main() {
                 }
         }
 
-        sort(bitmasks.begin(), bitmasks.end(), [](auto b1, auto b2) {return b1.to_string() < b2.to_string();});
+        sort(bitmasks.begin(), bitmasks.end(), [](auto b1, auto b2) { return b1.to_string() < b2.to_string(); });
         string cities(n, '-');
         for (auto mask : bitmasks) {
             int msb = mask.find_first();

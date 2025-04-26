@@ -512,7 +512,7 @@ int main() {
         SuffixArray sa(s);
         vector<int> lcp = sa.kasai(), indices(n - 1), len(n);
         iota(indices.begin(), indices.end(), 0);
-        sort(indices.begin(), indices.end(), [&](int i, int j) {return lcp[i] > lcp[j];});
+        sort(indices.begin(), indices.end(), [&](int i, int j) { return lcp[i] > lcp[j]; });
         for (int i = 0; i < n; i++) len[i] = n - i;
 
         DisjointSets dsu(n);

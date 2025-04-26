@@ -17,7 +17,7 @@ int main() {
         sum_p += p;
     }
     trades.emplace_back(-sum_s, -sum_p);
-    sort(trades.begin(), trades.end(), [](auto p1, auto p2) {return atan2(p1.first, p1.second) > atan2(p2.first, p2.second);});
+    sort(trades.begin(), trades.end(), [](auto p1, auto p2) { return atan2(p1.first, p1.second) > atan2(p2.first, p2.second); });
 
     int j = -1;
     for (int i = 0; i <= n; i++) {

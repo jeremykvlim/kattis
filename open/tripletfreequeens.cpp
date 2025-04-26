@@ -33,7 +33,7 @@ int main() {
         }
     }
 
-    auto cell = [&](int r, int c) {return r * m + c;};
+    auto cell = [&](int r, int c) { return r * m + c; };
     vector<vector<long long>> row_masks(n, {0});
     for (int r = 0; r < n; r++)
         for (int c1 = 0; c1 < m; c1++)

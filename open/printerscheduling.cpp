@@ -45,7 +45,7 @@ int main() {
             print = temp;
 
             for (int k : adj_list[i]) print.emplace_back(k);
-            sort(print.begin(), print.end(), [&](int i, int j) {return d[i] - p[i] < d[j] - p[j];});
+            sort(print.begin(), print.end(), [&](int i, int j) { return d[i] - p[i] < d[j] - p[j]; });
 
             for (int k = 0; k < min(m, (int) print.size()); k++) {
                 p[print[k]]--;

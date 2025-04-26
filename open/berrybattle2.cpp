@@ -9,13 +9,13 @@ struct Hash {
 
     template <typename T>
     size_t operator()(const T &v) const {
-        if constexpr (requires {tuple_size<T>::value;})
+        if constexpr (requires { tuple_size<T>::value; })
             return apply([](const auto &...e) {
                 size_t h = 0;
                 (combine(h, e), ...);
                 return h;
             }, v);
-        else if constexpr (requires {declval<T>().begin(); declval<T>().end();} && !is_same_v<T, string>) {
+        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
             size_t h = 0;
             for (const auto &e : v) combine(h, e);
             return h;
@@ -42,7 +42,7 @@ int main() {
         for (int i = l; i <= r; i++)
             if (count(s.begin() + i, s.begin() + min(r + 1, i + 4), 'b') == pick) possible.emplace_back(self(self, l, i - 1) ^ self(self, i + 4, r), i);
         sort(possible.begin(), possible.end());
-        possible.erase(unique(possible.begin(), possible.end(), [&](auto p1, auto p2) {return p1.first == p2.first;}), possible.end());
+        possible.erase(unique(possible.begin(), possible.end(), [&](auto p1, auto p2) { return p1.first == p2.first; }), possible.end());
 
         int mex = 0;
         for (auto [m, i] : possible) {
