@@ -32,6 +32,7 @@ struct CentroidDecomposition {
             return v;
         };
         int c = dfs2(dfs2, subtree_size[root], root);
+        removed[c] = true;
 
         queue<int> q;
         auto process = [&](int s, bool subtree = false) {
@@ -68,8 +69,6 @@ struct CentroidDecomposition {
         };
         process(c);
 
-        removed[c] = true;
-
         for (int v : adj_list[c])
             if (!removed[v]) process(v, true);
 
@@ -77,7 +76,6 @@ struct CentroidDecomposition {
             if (!removed[v]) decompose(b, indices, v);
     }
 };
-
 
 int main() {
     ios::sync_with_stdio(false);
