@@ -48,7 +48,7 @@ int main() {
 
     int count = 0;
     vector<bool> visited(V + 1, false);
-    vector<int> component(V + 1, 0), g_component(V + 1, 0);
+    vector<int> component(V + 1, 0), component_gcd(V + 1, 0);
     for (int v = 1; v <= V; v++)
         if (!visited[v]) {
             visited[v] = true;
@@ -73,7 +73,7 @@ int main() {
 
             for (auto [x, y, z]: edges)
                 if (component[x] == count && component[y] == count) {
-                    g_component[count] = !g_component[count] ? 2 * z : __gcd(g_component[count], 2 * z);
+                    component_gcd[count] = !component_gcd[count] ? 2 * z : __gcd(component_gcd[count], 2 * z);
                     if (parent[x] != make_pair(y, z) && parent[y] != make_pair(x, z)) {
                         int sum = 0;
                         while (x != y)
@@ -92,29 +92,29 @@ int main() {
                                 x = ux;
                                 y = uy;
                             }
-                        g_component[count] = !g_component[count] ? sum + z : __gcd(g_component[count], sum + z);
+                        component_gcd[count] = !component_gcd[count] ? sum + z : __gcd(component_gcd[count], sum + z);
                     }
                 }
         }
-    vector<int> g(V + 1, 0);
-    for (int i = 1; i <= V; i++) g[i] = g_component[component[i]];
+    vector<int> gcd(V + 1, 0);
+    for (int i = 1; i <= V; i++) gcd[i] = component_gcd[component[i]];
 
     for (int i = 1; i <= V; i++) {
         for (int j = 1; j <= V; j++)
             if (dist[i][j] == 1e9) cout << "-1 ";
             else {
-                auto len = [&](__int128 d, __int128 gcd) -> __int128 {
-                    if (!gcd) return d % K ? -1 : d;
+                auto len = [&](__int128 d, __int128 g) -> __int128 {
+                    if (!g) return d % K ? -1 : d;
 
                     auto r = (d + K) % K;
                     if (!r) return d;
 
-                    auto x = linear_congruence_solution(gcd, (__int128) K - r, (__int128) K);
+                    auto x = linear_congruence_solution(g, (__int128) K - r, (__int128) K);
                     if (x == -1) return -1;
-                    return d + gcd * x;
+                    return d + g * x;
                 };
 
-                auto l = len(dist[i][j], g[i]);
+                auto l = len(dist[i][j], gcd[i]);
                 if (l == -1) cout << "-1 ";
                 else if (l < 1e7) cout << (int) l << " ";
                 else cout << setw(7) << setfill('0') << (int) (l % (int) 1e7) << " ";
