@@ -10,7 +10,7 @@ pair<T, T> bezout(T a, T b) {
 
 template <typename T>
 T linear_congruence_solution(T a, T b, T n) {
-    auto g = __gcd(a, n);
+    T g = __gcd(a, n);
     if (b % g) return -1;
 
     a /= g;
