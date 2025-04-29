@@ -27,17 +27,17 @@ int main() {
 
     vector<int> dist(1e8, 1e9);
     dist[0] = 0;
-    vector<queue<int>> bucket(4);
-    bucket[0].emplace(0);
+    vector<queue<int>> buckets(4);
+    buckets[0].emplace(0);
     int queued = 1, b = 0, dv = 0;
     while (queued) {
-        while (bucket[b].empty()) {
+        while (buckets[b].empty()) {
             b = (b + 1) % 4;
             dv++;
         }
 
-        int v = bucket[b].front();
-        bucket[b].pop();
+        int v = buckets[b].front();
+        buckets[b].pop();
         queued--;
 
         if (dist[v] != dv) continue;
@@ -58,7 +58,7 @@ int main() {
 
             if (dist[u] > dv + c) {
                 dist[u] = dv + c;
-                bucket[(b + c) % 4].emplace(u);
+                buckets[(b + c) % 4].emplace(u);
                 queued++;
             }
         }
