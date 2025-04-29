@@ -269,8 +269,7 @@ unsigned long long area_of_union_of_rectangles(vector<array<T, 4>> rectangles) {
     auto a = 0ULL;
     SegmentTree st(y_gaps.size(), y_gaps);
     auto y_range = y.back().first - y.front().first, prev = sweep[0][0];
-    for (int i = 0; i < 2 * n; i++) {
-        auto [x, yd, yu, j] = sweep[i];
+    for (auto [x, yd, yu, i] : sweep) {
         if (prev != x) {
             auto [v, f] = st[1];
 
@@ -279,7 +278,7 @@ unsigned long long area_of_union_of_rectangles(vector<array<T, 4>> rectangles) {
 
             prev = x;
         }
-        st.modify(yd, yu, j & 1 ? -1 : 1);
+        st.modify(yd, yu, i & 1 ? -1 : 1);
     }
     return a;
 }
