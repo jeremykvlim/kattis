@@ -16,6 +16,7 @@ struct Trie {
 
         TrieNode(int range = 26) : next(range, -1), link(-1) {}
     };
+
     vector<TrieNode> T;
     ascii a;
     int r, count;
