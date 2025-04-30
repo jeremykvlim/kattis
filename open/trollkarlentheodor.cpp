@@ -12,15 +12,15 @@ int main() {
     for (int &hi : h) cin >> hi;
 
     auto valid = [&](auto m) {
-        auto sum = 0LL;
+        auto total = 0LL;
         for (int hi : h) {
             auto life = -(m * a - hi);
             if (life > 0) {
-                sum += (life + s - 1) / s;
-                if (sum > m) return false;
+                total += (life + s - 1) / s;
+                if (total > m) return false;
             }
         }
-        return sum <= m;
+        return total <= m;
     };
 
     long long l = 0, r = 0, m;
