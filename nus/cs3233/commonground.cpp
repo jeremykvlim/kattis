@@ -328,7 +328,7 @@ int main() {
             auto max_r = LLONG_MIN;
             intervals.erase(remove_if(intervals.begin(), intervals.end(), [&](auto i) { return ((max_r = max(max_r, i.second)) != i.second); }), intervals.end());
 
-            __int128 a = 0;
+            auto a = 0ULL;
             if (!intervals.empty()) {
                 auto [l, r] = intervals.back();
                 a = (r - l) * (r - l);
