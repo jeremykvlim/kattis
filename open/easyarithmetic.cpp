@@ -362,7 +362,7 @@ constexpr unsigned long long MODULO = 998244353;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
 struct SegmentTree {
-    static vector<modint> p10;
+    static inline vector<modint> p10;
 
     struct Segment {
         modint sum, l, r;
@@ -458,8 +458,6 @@ struct SegmentTree {
         build();
     }
 };
-
-vector<modint> SegmentTree::p10;
 
 int main() {
     ios::sync_with_stdio(false);
