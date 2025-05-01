@@ -71,7 +71,7 @@ int main() {
                     }
             }
 
-            for (auto [x, y, z]: edges)
+            for (auto [x, y, z] : edges)
                 if (component[x] == count && component[y] == count) {
                     component_gcd[count] = !component_gcd[count] ? 2 * z : __gcd(component_gcd[count], 2 * z);
                     if (parent[x] != make_pair(y, z) && parent[y] != make_pair(x, z)) {
