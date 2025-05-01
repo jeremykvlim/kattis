@@ -103,7 +103,6 @@ int main() {
     for (int c = 0; c <= n; c++) fws.emplace_back(times[c].size() + 1, [&](int x, int y) { return max(x, y); });
     for (int i = 0; i < k; i++) {
         auto [u, v, t, d] = trains[i];
-
         int dp = 0;
         for (auto [c, layer] : cd[v]) {
             if (times[c].empty()) continue;
@@ -122,7 +121,6 @@ int main() {
 
     for (int v = 1; v <= n; v++) {
         int x = 0;
-
         for (auto [c, layer] : cd[v]) {
             if (times[c].empty()) continue;
 
