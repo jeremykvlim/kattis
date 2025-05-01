@@ -195,9 +195,9 @@ int main() {
     vector<int> moves;
     while (st[i].count) {
         char c = st[st.subtree_max(i)].c;
-        int j = (st[i].pos_l[c == 'C'] == 1e9 ? 1 : st[i].pos_l[c == 'C'] + 1);
-        moves.emplace_back(j);
-        auto [l, r] = st.split(i, j);
+        int k = (st[i].pos_l[c == 'C'] == 1e9 ? 1 : st[i].pos_l[c == 'C'] + 1);
+        moves.emplace_back(k);
+        auto [l, r] = st.split(i, k);
         if (l) st.flip(l);
         i = st.meld(r, l);
     }
