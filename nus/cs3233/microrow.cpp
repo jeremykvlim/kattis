@@ -26,6 +26,6 @@ int main() {
 
     vector<int> R(n);
     for (int r = 0; r < rows.size(); r++)
-        for (auto [p, s, i]: rows[r]) R[i] = r + 1;
+        for (auto [p, s, i] : rows[r]) R[i] = r + 1;
     for (int r : R) cout << r << " ";
 }
