@@ -2,7 +2,7 @@
 using namespace std;
 
 struct Treap {
-    static mt19937_64 rng;
+    static inline mt19937_64 rng;
 
     struct TreapNode {
         int l, r, size;
@@ -101,8 +101,6 @@ struct Treap {
         return T[i];
     }
 };
-
-mt19937_64 Treap::rng(random_device{}());
 
 int main() {
     ios::sync_with_stdio(false);
