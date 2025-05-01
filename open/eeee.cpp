@@ -53,8 +53,8 @@ int main() {
     vector<vector<int>> adj_list(n + 1);
     for (int i = 0; i < n; i++) {
         int s1 = acronyms[i].find(' '), s2 = acronyms[i].find(' ', s1 + 1),
-            k = stoi(acronyms[i].substr(s1 + 1, s2 == string::npos ? string::npos : s2 - (s1 + 1))),
-            j = s2 == string::npos ? acronyms[i].size() : s2 + 1;
+                k = stoi(acronyms[i].substr(s1 + 1, s2 == string::npos ? string::npos : s2 - (s1 + 1))),
+                j = s2 == string::npos ? acronyms[i].size() : s2 + 1;
 
         while (k--) {
             int s3 = acronyms[i].find(' ', j);
@@ -75,30 +75,24 @@ int main() {
             if (component[v] != component[u]) dag[component[v]].emplace_back(component[u]);
     }
 
-    vector<int> degree(sccs + 1, 0);
     for (auto &neighbours : dag) {
         sort(neighbours.begin(), neighbours.end());
         neighbours.erase(unique(neighbours.begin(), neighbours.end()), neighbours.end());
-        for (int v : neighbours) degree[v]++;
     }
 
-    queue<int> q;
-    for (int i = 1; i <= sccs; i++)
-        if (!degree[i]) q.emplace(i);
-
-    vector<int> topo;
-    while (!q.empty()) {
-        int v = q.front();
-        q.pop();
-
-        topo.emplace_back(v);
+    vector<int> order;
+    vector<bool> visited(sccs + 1, false);
+    auto dfs = [&](auto &&self, int v) -> void {
+        visited[v] = true;
         for (int u : dag[v])
-            if (!--degree[u]) q.emplace(u);
-    }
+            if (!visited[u]) self(self, u);
+        order.emplace_back(v);
+    };
+    for (int i = 1; i <= sccs; i++)
+        if (!visited[i]) dfs(dfs, i);
 
     vector<bitset<(int) 3e4 + 1>> reach(sccs + 1);
-    for (int i = sccs - 1; ~i; i--) {
-        int v = topo[i];
+    for (int v : order) {
         reach[v][v] = true;
         for (int u : dag[v]) reach[v] |= reach[u];
     }
