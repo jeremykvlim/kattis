@@ -122,15 +122,15 @@ int main() {
         return moves;
     };
 
-    const int all = 1 << 18;
-    vector<int> encoded(all, 1e9);
+    const int mask = 1 << 18;
+    vector<int> encoded(mask, 1e9);
     for (int bk = 0; bk < 64; bk++)
         for (int w1 = 0; w1 < 64; w1++)
             for (int w2 = 0; w2 < 64; w2++)
-                for (auto &boards : symm) encoded[(bk << 12) | (w1 << 6) | w2] = min(encoded[(bk << 12) | (w1 << 6) | w2], boards[bk] | (boards[w1] << 6) | (boards[w2] << 12));
+                for (auto &boards : symm) encoded[(bk << 12) | (w1 << 6) | w2] = min(encoded[(bk << 12) | (w1 << 6) | w2], (boards[bk] << 12) | (boards[w1] << 6) | boards[w2]);
 
     auto decode = [&](int v) -> array<int, 3> {
-        return {v & 63, (v >> 6) & 63, (v >> 12) & 63};
+        return {(v >> 12) & 63, (v >> 6) & 63, v & 63};
     };
 
     auto encode = [&](const array<int, 3> &p) {
@@ -139,7 +139,7 @@ int main() {
 
     vector<pair<int, int>> possible;
     int s = encode(pos);
-    vector<array<bool, 2>> reachable(all, {false, false});
+    vector<array<bool, 2>> reachable(mask, {false, false});
     reachable[s][0] = true;
     deque<pair<int, int>> dq{{s, 0}};
     while (!dq.empty()) {
@@ -158,9 +158,9 @@ int main() {
             }
     }
 
-    vector<array<vector<int>, 2>> adj_list(all);
-    vector<array<int, 2>> moves(all, {-1, -1}), degree(all, {0, 0});
-    vector<array<bool, 2>> wins(all, {false, false});
+    vector<array<vector<int>, 2>> adj_list(mask);
+    vector<array<int, 2>> moves(mask, {-1, -1}), degree(mask, {0, 0});
+    vector<array<bool, 2>> wins(mask, {false, false});
 
     auto win = [&](int v, int turn, int m = 0) {
         if (~moves[v][turn]) return;
