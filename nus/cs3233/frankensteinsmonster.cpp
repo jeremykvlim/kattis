@@ -159,20 +159,19 @@ int main() {
     }
 
     vector<array<vector<int>, 2>> adj_list(all);
-    vector<array<int, 2>> moves(all, {0, 0}), degree(all, {0, 0});
-    vector<array<bool, 2>> visited(all, {false, false}), wins(all, {false, false});
+    vector<array<int, 2>> moves(all, {-1, -1}), degree(all, {0, 0});
+    vector<array<bool, 2>> wins(all, {false, false});
 
     auto win = [&](int v, int turn, int m = 0) {
-        if (visited[v][turn]) return;
-        visited[v][turn] = wins[v][turn] = true;
+        if (~moves[v][turn]) return;
         moves[v][turn] = m;
+        wins[v][turn] = true;
         dq.emplace_front(v, turn);
     };
 
     auto lose = [&](int v, int turn, int m, bool force = false) {
-        if (visited[v][turn]) return;
+        if (~moves[v][turn]) return;
         if (force || !--degree[v][turn]) {
-            visited[v][turn] = true;
             moves[v][turn] = m;
             dq.emplace_back(v, turn);
         }
@@ -210,7 +209,7 @@ int main() {
         }
 
     while (!dq.empty()) {
-        if (visited[s][0]) break;
+        if (~moves[s][0]) break;
 
         auto [v, turn] = dq.front();
         dq.pop_front();
@@ -230,11 +229,11 @@ int main() {
     for (;;) {
         for (const auto &p : legal_moves(pos)) {
             int v = encode(p);
-            if (!visited[v][1] || wins[v][1] || moves[v][1] >= moves[s][0]) continue;
+            if (!~moves[v][1] || wins[v][1] || moves[v][1] >= moves[s][0]) continue;
 
             int i = mismatch(p.begin(), p.end(), pos.begin()).first - p.begin(),
-                rank = pos[i] >> 3, file = pos[i] & 7,
-                next_rank = p[i] >> 3, next_file = p[i] & 7;
+                    rank = pos[i] >> 3, file = pos[i] & 7,
+                    next_rank = p[i] >> 3, next_file = p[i] & 7;
             cout << pieces[i] << " " << (char) (file + 'a') << (char) (rank + '1') << " " << (char) (next_file + 'a') << (char) (next_rank + '1') << "\n" << flush;
 
             if (!moves[v][1]) exit(0);
