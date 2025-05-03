@@ -197,9 +197,7 @@ int main() {
 
     for (auto [v, turn] : possible)
         if (v != s && turn && !degree[v][1]) {
-            auto p = decode(v);
-
-            if (attacked(p, 0)) {
+            if (attacked(decode(v), 0)) {
                 win(v, 0);
                 lose(v, 1, 0, true);
             } else {
