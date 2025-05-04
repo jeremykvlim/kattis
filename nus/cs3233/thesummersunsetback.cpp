@@ -6,8 +6,9 @@ using namespace tr2;
 struct LaminarTree {
     int n;
     vector<vector<int>> LT;
+    vector<int> cut;
 
-    LaminarTree(int n, const vector<array<int, 3>> &edges) : n(n), LT(2 * n - 1) {
+    LaminarTree(int n, const vector<array<int, 3>> &edges) : n(n), LT(2 * n - 1), cut(n - 1) {
         build(edges);
     }
 
@@ -18,18 +19,19 @@ struct LaminarTree {
             adj_list[v].emplace_back(u, w);
         }
 
-        vector<bool> add(2 * n - 1, true);
-        for (int i = 0; i < n - 1; i++) {
-            vector<bool> visited(i + n, false);
-            vector<int> order(n - i, -1), dist(i + n, 0);
+        vector<bool> active(2 * n - 1, true);
+        for (int phase = n, p = n; phase > 1 && p < 2 * n - 1; phase--, p++) {
+            vector<bool> visited(p, false);
+            vector<int> order(phase, -1), dist(p, 0);
             priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
-            for (int v = 0; v < i + n; v++)
-                if (add[v]) {
+            for (int v = 0; v < p; v++)
+                if (active[v]) {
                     for (auto [u, w] : adj_list[v]) dist[v] += w;
                     pq.emplace(dist[v], v);
                 }
 
-            for (int j = 0; j < n - i; j++)
+            auto temp = dist;
+            for (int j = 0; j < phase; j++)
                 while (!~order[j]) {
                     auto [d, v] = pq.top();
                     pq.pop();
@@ -45,43 +47,40 @@ struct LaminarTree {
                         }
                 }
 
-            int u = order[n - i - 1], v = order[n - i - 2];
-            add[u] = add[v] = false;
+            int u = order[phase - 1], v = order[phase - 2];
+            cut[p - n] = temp[u] - dist[u];
+            active[u] = active[v] = false;
             adj_list[u].clear();
             adj_list[v].clear();
-            LT[i + n].emplace_back(u);
-            LT[i + n].emplace_back(v);
+            LT[p].emplace_back(u);
+            LT[p].emplace_back(v);
 
-            for (int s = 0; s < i + n; s++)
-                if (add[s])
+            for (int s = 0; s < p; s++)
+                if (active[s])
                     for (auto &[t, w] : adj_list[s]) {
                         if (t == u || t == v) {
-                            t = i + n;
-                            adj_list[i + n].emplace_back(s, w);
+                            t = p;
+                            adj_list[p].emplace_back(s, w);
                         }
                     }
         }
     }
 
-    vector<dynamic_bitset<>> subtree_masks() {
-        vector<dynamic_bitset<>> masks(n - 1, dynamic_bitset<>(2 * n - 1));
-        for (int i = 0; i < n - 1; i++) {
-            masks[i][LT[i + n][0]] = true;
-            stack<int> st;
-            st.emplace(LT[i + n][0]);
-            while (!st.empty()) {
-                int v = st.top();
-                st.pop();
+    pair<int, vector<bool>> minimum_cut() {
+        auto it = min_element(cut.begin(), cut.end());
+        int min_cut = *it, i = it - cut.begin();
+        vector<bool> side(n, false);
+        stack<int> st;
+        st.emplace(LT[i + n][0]);
+        while (!st.empty()) {
+            int v = st.top();
+            st.pop();
 
-                if (v >= n)
-                    for (int u : LT[v])
-                        if (!masks[i][u]) {
-                            masks[i][u] = true;
-                            st.emplace(u);
-                        }
-            }
+            if (v < n) side[v] = true;
+            else
+                for (int u : LT[v]) st.emplace(u);
         }
-        return masks;
+        return {min_cut, side};
     }
 };
 
@@ -170,18 +169,15 @@ int main() {
         if (edges.empty()) continue;
 
         LaminarTree lt(k, edges);
-        for (auto mask : lt.subtree_masks()) {
-            int cut = 0;
-            for (auto [u, v, w] : edges)
-                if (mask[u] ^ mask[v]) cut++;
-            if (!cut) continue;
+        auto [cut, side] = lt.minimum_cut();
+        if (!cut) continue;
 
-            if (m > cut) {
-                m = cut;
-                dynamic_bitset<> temp(s);
-                for (int j = mask.find_first(); j < k; j = mask.find_next(j)) temp[components[i][j]] = true;
-                events = temp;
-            }
+        if (m > cut) {
+            m = cut;
+            dynamic_bitset<> temp(s);
+            for (int j = 0; j < k; j++)
+                if (side[j]) temp[components[i][j]] = true;
+            events = temp;
         }
     }
 
