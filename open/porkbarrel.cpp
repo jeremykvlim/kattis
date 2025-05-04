@@ -125,7 +125,7 @@ struct WeightedDisjointSets {
                 weight[v] = {INT_MAX, 0};
                 return;
             }
-            compress(v) = v;
+            v = compress(v);
         }
     }
 
