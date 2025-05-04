@@ -107,7 +107,7 @@ struct WeightedDisjointSets {
             u = attach(u, w.first);
             v = attach(v, w.first);
             if (size[u] < size[v]) swap(u, v);
-            swap(compress(v), u);
+            swap(sets[v], u);
             swap(weight[v], w);
         }
         attach(u);
@@ -139,9 +139,8 @@ struct WeightedDisjointSets {
 
         for (;;) {
             if (weight[u].first > weight[v].first) swap(u, v);
-            int t = compress(u);
-            if (t == v) return u;
-            u = t;
+            if (sets[u] == v) return u;
+            u = sets[u];
         }
     }
 
