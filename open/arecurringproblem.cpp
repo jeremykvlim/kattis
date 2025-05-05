@@ -1,5 +1,7 @@
 #include <bits/stdc++.h>
+#include <ext/pb_ds/assoc_container.hpp>
 using namespace std;
+using namespace __gnu_pbds;
 
 struct Hash {
     template <typename T>
@@ -30,9 +32,9 @@ int main() {
     int n;
     cin >> n;
 
-    unordered_map<pair<vector<long long>, vector<long long>>, map<long long, long long>, Hash> memo;
-    auto dfs1 = [&](auto &&self, vector<long long> seq, vector<long long> start) -> map<long long, long long> {
-        if (memo.count({seq, start})) return memo[{seq, start}];
+    cc_hash_table<pair<vector<long long>, vector<long long>>, vector<pair<long long, long long>>, Hash> memo;
+    auto dfs1 = [&](auto &&self, const vector<long long> &seq, const vector<long long> &start) -> vector<pair<long long, long long>> {
+        if (memo.find({seq, start}) != memo.end()) return memo[{seq, start}];
         if (!seq[0]) {
             if (all_of(seq.begin(), seq.end(), [](auto e) { return !e; })) return memo[{seq, start}] = {{0, 1}};
             else return memo[{seq, start}] = {};
@@ -41,7 +43,7 @@ int main() {
         if (seq.size() > 1)
             if (self(self, {seq.begin(), seq.end() - 1}, {start.begin(), start.end() - 1}).empty()) return memo[{seq, start}] = {};
 
-        map<long long, long long> m;
+        gp_hash_table<long long, long long> m;
         for (int ci = 1; ci <= seq[0]; ci++)
             for (int ai = 1; ci * ai <= seq[0]; ai++) {
                 vector<long long> s = seq, st{ai};
@@ -54,7 +56,10 @@ int main() {
                 for (auto [e, freq] : self(self, s, st)) m[e + ci * start.back()] += freq;
                 next:;
             }
-        return memo[{seq, start}] = m;
+
+        vector<pair<long long, long long>> v{m.begin(), m.end()};
+        sort(v.begin(), v.end());
+        return memo[{seq, start}] = v;
     };
 
     vector<long long> seq;
@@ -81,8 +86,8 @@ int main() {
     dfs1(dfs1, seq, seq);
 
     vector<array<vector<long long>, 3>> rec;
-    auto dfs2 = [&](auto &&self, vector<long long> seq, vector<long long> start, vector<long long> c = {}, vector<long long> a = {}) {
-        if (!memo.count({seq, start}) || memo[{seq, start}].empty()) return;
+    auto dfs2 = [&](auto &&self, const vector<long long> &seq, const vector<long long> &start, vector<long long> c = {}, vector<long long> a = {}) {
+        if (memo.find({seq, start}) == memo.end() || memo[{seq, start}].empty()) return;
         if (!seq[0] && !memo[{seq, start}].empty()) {
             reverse(c.begin(), c.end());
             reverse(a.begin(), a.end());
@@ -120,7 +125,7 @@ int main() {
     };
     dfs2(dfs2, seq, seq);
 
-    sort(rec.begin(), rec.end(), [](auto a1, auto a2) { return a1[2] != a2[2] ? a1[2] < a2[2] : a1[0] < a2[0]; });
+    nth_element(rec.begin(), rec.begin() + n - 1, rec.end(), [](auto a1, auto a2) { return a1[2] != a2[2] ? a1[2] < a2[2] : a1[0] < a2[0]; });
     auto [c, a, s] = rec[n - 1];
     s.resize(10);
     cout << c.size() << "\n";
