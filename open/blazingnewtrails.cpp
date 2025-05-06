@@ -1,8 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-using ll = long long;
-
 struct WeightedDisjointSets {
     vector<int> sets, size;
     vector<pair<int, int>> weight;
