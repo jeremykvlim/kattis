@@ -207,6 +207,12 @@ struct Line {
 };
 
 template <typename T>
+Line<T> perpendicular_bisector(const Point<T> &a, const Point<T> &b) {
+    Point<T> midpoint{a.x + (b.x - a.x) / 2, a.y + (b.y - a.y) / 2}, dir{a.y - b.y, b.x - a.x};
+    return {midpoint, dir + midpoint};
+}
+
+template <typename T>
 bool parallel(const Line<T> &l1, const Line<T> &l2) {
     return !sgn(cross(l1.b - l1.a, l2.b - l2.a));
 }
@@ -226,18 +232,24 @@ Point<T> non_collinear_intersection(const Line<T> &l1, const Line<T> &l2) {
     return l1.a + (l1.b - l1.a) * cross(l2.a - l1.a, l2.b - l2.a) / cross(l1.b - l1.a, l2.b - l2.a);
 }
 
-template <typename T>
+template<typename T>
 struct VoronoiDiagram {
-    int n;
-    bool super_triangle;
+    struct QuadEdge {
+        int dest, onext, oprev, symm;
+        bool valid;
+
+        QuadEdge() : dest(-1), onext(-1), oprev(-1), symm(-1), valid(false) {}
+    };
+
+    vector<QuadEdge> edges;
+    vector<pair<int, int>> delaunay_edges;
     vector<Point<T>> points, voronoi_vertices;
-    vector<array<int, 3>> triangles;
     vector<Line<T>> voronoi_edges;
+    vector<vector<int>> triangles;
     vector<int> edge_match;
 
-    VoronoiDiagram(vector<Point<T>> p, bool add_super_triangle = false) : n(p.size()) {
-        super_triangle = add_super_triangle;
-        if (super_triangle) {
+    VoronoiDiagram(vector<Point<T>> p, bool add_super_triangle = false) {
+        if (add_super_triangle) {
             T xl = p[0].x, xr = p[0].x, yl = p[0].y, yr = p[0].y;
             for (auto [x, y] : p) {
                 xl = min(xl, x);
@@ -252,200 +264,293 @@ struct VoronoiDiagram {
             p.emplace_back(xm - delta, ym);
         }
         points = p;
-        delaunay_triangulation(p);
-        build_diagram();
+        if (points.size() <= 1) return;
+        build_diagram(delaunay_triangulation());
     }
 
-    void delaunay_triangulation(vector<Point<T>> p) {
-        unordered_map<Point<T>, int, Hash> indices;
-        for (int i = 0; i < p.size(); i++) indices[p[i]] = i;
-        sort(p.begin(), p.end());
+    int delaunay_triangulation() {
+        int n = points.size();
 
-        struct QuadEdge {
-            int o, rotate;
-            Point<T> s;
+        vector<int> indices(n);
+        iota(indices.begin(), indices.end(), 0);
+        sort(indices.begin(), indices.end(), [&](int i, int j) { return points[i] < points[j]; });
 
-            QuadEdge(const Point<T> p = {numeric_limits<T>::max(), numeric_limits<T>::max()}) : s(p) {}
-        };
-        vector<QuadEdge> edges;
+        auto temp = points;
+        int r = 0;
+        vector<int> compress(n, 0);
+        for (int i : indices)
+            if (i == indices[0] || temp[i] != temp[indices[r - 1]]) {
+                indices[r] = i;
+                points[r++] = temp[i];
+                compress[i] = i;
+            } else compress[i] = indices[r - 1];
 
-        auto symm = [&](int i) {
-            return edges[edges[i].rotate].rotate;
-        };
+        vector<int> freed;
+        auto edge_id = [&]() -> int {
+            if (freed.empty()) {
+                edges.emplace_back();
+                return edges.size() - 1;
+            }
 
-        auto onext = [&](int i) {
-            return edges[i].o;
-        };
-
-        auto oprev = [&](int i) {
-            return edges[onext(edges[i].rotate)].rotate;
-        };
-
-        auto lnext = [&](int i) {
-            return oprev(symm(i));
-        };
-
-        auto rprev = [&](int i) {
-            return onext(symm(i));
-        };
-
-        auto src = [&](int i) {
-            return edges[i].s;
-        };
-
-        auto dest = [&](int i) {
-            return src(symm(i));
-        };
-
-        auto splice = [&](int i, int j) {
-            swap(edges[edges[edges[i].o].rotate].o, edges[edges[edges[j].o].rotate].o);
-            swap(edges[i].o, edges[j].o);
-        };
-
-        auto add_edge = [&](const Point<T> &a, const Point<T> &b) {
-            int i = edges.size();
-            edges.emplace_back(a);
-            edges.emplace_back();
-            edges.emplace_back(b);
-            edges.emplace_back();
-
-            edges[i].o = edges[i + 3].rotate = i;
-            edges[i].rotate = edges[i + 3].o = i + 1;
-            edges[i + 1].o = edges[i + 2].rotate = i + 3;
-            edges[i + 1].rotate = edges[i + 2].o = i + 2;
+            int i = freed.back();
+            freed.pop_back();
             return i;
         };
 
+        auto splice = [&](int i) {
+            int j = edges[i].onext, k = edges[i].oprev;
+            edges[j].oprev = k;
+            edges[k].onext = j;
+            edges[i].valid = false;
+        };
+
+        auto splice_next = [&](int i, int j) {
+            int k = edges[j].onext;
+            edges[i].onext = k;
+            edges[i].oprev = j;
+            edges[j].onext = edges[k].oprev = i;
+        };
+
+        auto splice_prev = [&](int i, int j) {
+            int k = edges[j].oprev;
+            edges[i].oprev = k;
+            edges[i].onext = j;
+            edges[j].oprev = edges[k].onext = i;
+        };
+
+        auto add_edge = [&](int u, int v) -> pair<int, int> {
+            int i = edge_id(), j = edge_id();
+            edges[i].onext = edges[i].oprev = edges[j].symm = i;
+            edges[j].onext = edges[j].oprev = edges[i].symm = j;
+            edges[i].dest = v;
+            edges[j].dest = u;
+            edges[i].valid = edges[j].valid = true;
+            return {i, j};
+        };
+
         auto delete_edge = [&](int i) {
-            splice(i, oprev(i));
-            splice(symm(i), oprev(symm(i)));
+            int j = edges[i].symm;
+            splice(i);
+            splice(j);
+            freed.emplace_back(i);
+            freed.emplace_back(j);
         };
 
-        auto connect = [&](int i, int j) {
-            Point<T> a = dest(i), b = src(j);
-
-            int k = add_edge(a, b);
-            splice(k, lnext(i));
-            splice(symm(k), j);
-            return k;
+        auto lnext = [&](int i) -> pair<int, int> {
+            return {edges[edges[i].oprev].dest, edges[edges[i].oprev].symm};
         };
 
-        auto left_of = [&](int i, const Point<T> &p) {
-            return cross(dest(i), src(i), p) < 0;
+        auto rprev = [&](int i) -> pair<int, int> {
+            return {edges[i].dest, edges[edges[i].symm].onext};
         };
 
-        auto right_of = [&](int i, const Point<T> &p) {
-            return cross(dest(i), src(i), p) > 0;
-        };
-
-        auto guibas_stolfi = [&](auto &&self, const vector<Point<T>> &s) -> pair<int, int> {
-            int size = s.size();
-            if (size <= 3) {
-                int i = add_edge(s[0], s[1]), j = add_edge(s[1], s.back());
-                if (size == 2) return {i, symm(i)};
-
-                splice(symm(i), j);
-
-                T cross_product = cross(s[1], s[2], s[0]);
-                int k = !sgn(cross_product) ? -1 : connect(j, i);
-                if (cross_product < 0) return {symm(k), k};
-                return {i, symm(j)};
-            }
-
-            auto [ldo, ldi] = self(self, {s.begin(), s.begin() + size / 2});
-            auto [rdi, rdo] = self(self, {s.begin() + size / 2, s.end()});
-
-            for (;;) {
-                if (left_of(ldi, src(rdi))) ldi = lnext(ldi);
-                else if (right_of(rdi, src(ldi))) rdi = rprev(rdi);
-                else break;
-            }
-
-            int base = connect(symm(rdi), ldi);
-            if (src(ldo) == src(ldi)) ldo = symm(base);
-            if (src(rdi) == src(rdo)) rdo = base;
-
-            for (;;) {
-                auto valid = [&](int i) {
-                    return right_of(base, dest(i));
-                };
-
-                int lc = onext(symm(base)), rc = oprev(base);
-                bool vl = valid(lc), vr = valid(rc);
-                if (!vl && !vr) break;
-
-                if (vl)
-                    while (point_in_circumcircle({dest(base), src(base), dest(lc)}, dest(onext(lc))).first) {
-                        int temp = onext(lc);
-                        delete_edge(lc);
-                        lc = temp;
-                    }
-
-                if (vr)
-                    while (point_in_circumcircle({dest(base), src(base), dest(rc)}, dest(oprev(rc))).first) {
-                        int temp = oprev(rc);
-                        delete_edge(rc);
-                        rc = temp;
-                    }
-
-                if (!vl || (vr && point_in_circumcircle({src(rc), dest(lc), src(lc)}, dest(rc)).first)) base = connect(rc, symm(base));
-                else base = connect(symm(base), symm(lc));
-            }
-            return {ldo, rdo};
-        };
-
-        int l = guibas_stolfi(guibas_stolfi, p).first;
-        queue<int> q;
-        q.emplace(l);
-
-        while (left_of(l, dest(onext(l)))) l = onext(l);
-
-        vector<bool> visited(edges.size(), false);
-        vector<Point<T>> all;
-        auto left_from_edge = [&](int start, bool add) {
-            int e = start;
+        auto min_walk = [&](pair<int, int> &p) {
+            int start = p.second;
+            auto q = p;
             do {
-                if (add) all.emplace_back(src(e));
-                visited[e] = true;
-                q.emplace(symm(e));
-                e = lnext(e);
-            } while (e != start);
+                q = rprev(q.second);
+                p = min(p, q);
+            } while (q.second != start);
         };
-        left_from_edge(l, false);
-        while (!q.empty()) {
-            int v = q.front();
-            q.pop();
 
-            if (!visited[v]) left_from_edge(v, true);
-        }
+        auto max_walk = [&](pair<int, int> &p) {
+            int start = p.second;
+            auto q = p;
+            do {
+                q = rprev(q.second);
+                p = max(p, q);
+            } while (q.second != start);
+        };
 
-        for (int i = 0; i + 2 < all.size(); i += 3) triangles.push_back({indices[all[i]], indices[all[i + 1]], indices[all[i + 2]]});
+        auto left_of = [&](int a, int b, int c) {
+            return cross(points[a], points[b], points[c]) > 0;
+        };
+
+        auto right_of = [&](int a, int b, int c) {
+            return cross(points[a], points[b], points[c]) < 0;
+        };
+
+        auto lower_common_tangent = [&](int i, int base_i, int j, int base_j) -> array<int, 4> {
+            for (;;) {
+                auto [i_src, i_d] = lnext(base_i);
+                if (left_of(j, i, i_src)) {
+                    tie(i, base_i) = {i_src, i_d};
+                    continue;
+                }
+                auto [j_src, j_d] = rprev(base_j);
+                if (right_of(i, j, j_src)) {
+                    tie(j, base_j) = {j_src, j_d};
+                    continue;
+                }
+                break;
+            }
+            return {i, base_i, j, base_j};
+        };
+
+        auto in_circle = [&](int a, int b, int c, int d) {
+            return point_in_circumcircle({points[a], points[b], points[c]}, points[d]).first;
+        };
+
+        auto guibas_stolfi = [&](auto &&self, int l, int r) -> pair<int, int> {
+            if (r - l == 2) {
+                auto [i, j] = add_edge(l, l + 1);
+                return {l, i};
+            }
+
+            if (r - l == 3) {
+                auto [a, b] = add_edge(l, l + 1);
+                auto [c, d] = add_edge(l + 1, l + 2);
+
+                if (left_of(l, l + 1, l + 2)) {
+                    auto [e, f] = add_edge(l, l + 2);
+                    splice_prev(a, e);
+                    splice_prev(c, b);
+                    splice_prev(f, d);
+                    return {l, a};
+                } else if (right_of(l, l + 1, l + 2)) {
+                    auto [e, f] = add_edge(l, l + 2);
+                    splice_next(a, e);
+                    splice_next(c, b);
+                    splice_next(f, d);
+                    return {l + 1, b};
+                } else {
+                    splice_next(b, c);
+                    return {l, a};
+                }
+            }
+
+            int m = l + (r - l) / 2;
+            auto pl = self(self, l, m), pr = self(self, m, r);
+            max_walk(pl);
+            min_walk(pr);
+            auto [i, base_i] = pl;
+            auto [j, base_j] = pr;
+
+            auto [ldi_src, ldi, rdi_src, rdi] = lower_common_tangent(i, base_i, j, base_j);
+            auto [rdo_src, rdo, ldo_src, ldo] = lower_common_tangent(j, base_j, i, base_i);
+            rdi = edges[rdi].oprev;
+            rdo = edges[rdo].oprev;
+
+            auto [base_symm, base] = add_edge(ldi_src, rdi_src);
+            splice_prev(base_symm, ldi);
+            splice_next(base, rdi);
+            if (ldi_src == ldo_src) ldo = base_symm;
+            if (rdi_src == rdo_src) rdo = base;
+
+            while (ldi_src != ldo_src || rdi_src != rdo_src) {
+                int l_dest = edges[ldi].dest, r_dest = edges[rdi].dest;
+
+                bool vl = ldi != ldo, vr = rdi != rdo;
+                if (vl && edges[ldi].onext != base_symm)
+                    if (in_circle(ldi_src, rdi_src, l_dest, edges[edges[ldi].onext].dest)) {
+                        int temp = edges[ldi].onext;
+                        delete_edge(ldi);
+                        ldi = temp;
+                        continue;
+                    }
+
+                if (vr && edges[rdi].oprev != base)
+                    if (in_circle(r_dest, ldi_src, rdi_src, edges[edges[rdi].oprev].dest)) {
+                        int temp = edges[rdi].oprev;
+                        delete_edge(rdi);
+                        rdi = temp;
+                        continue;
+                    }
+
+                bool v = !vr;
+                if (vl && vr) {
+                    if (right_of(ldi_src, rdi_src, r_dest)) v = true;
+                    else if (right_of(l_dest, ldi_src, rdi_src)) v = false;
+                    else v = in_circle(ldi_src, rdi_src, r_dest, l_dest);
+                }
+
+                if (v) {
+                    int temp = edges[edges[ldi].symm].onext;
+                    auto [a, b] = add_edge(l_dest, rdi_src);
+                    splice_prev(a, temp);
+                    splice_next(b, rdi);
+                    ldi = temp;
+                    ldi_src = l_dest;
+                } else {
+                    int temp = edges[edges[rdi].symm].oprev;
+                    auto [a, b] = add_edge(r_dest, ldi_src);
+                    splice_next(a, temp);
+                    splice_prev(b, ldi);
+                    rdi = temp;
+                    rdi_src = r_dest;
+                }
+            }
+            return {ldi_src, base_symm};
+        };
+
+        int base = 0;
+        if (r >= 2) base = guibas_stolfi(guibas_stolfi, 0, r).second;
+        points = temp;
+        for (auto &e : edges) e.dest = indices[e.dest];
+        for (int i = 0; i < edges.size(); i++)
+            if (edges[i].valid)
+                if (i >= edges[i].symm) delaunay_edges.emplace_back(edges[i].dest, edges[edges[i].symm].dest);
+
+        for (int v = 0; v < n; v++)
+            if (v != compress[v]) delaunay_edges.emplace_back(v, compress[v]);
+
+        return base;
     }
 
-    void build_diagram() {
-        vector<bool> remove;
-        if (super_triangle) remove.resize(triangles.size(), false);
-        voronoi_vertices.resize(triangles.size());
-        unordered_map<pair<int, int>, int, Hash> seen;
-        for (int i = 0; i < triangles.size(); i++) {
-            auto [a, b, c] = triangles[i];
-            if (super_triangle) remove[i] = !(a < n && b < n && c < n);
-            voronoi_vertices[i] = circumcenter(array<Point<T>, 3>{points[a], points[b], points[c]});
+    void build_diagram(int base) {
+        if (!base) return;
 
-            vector<pair<int, int>> triangle_edges{minmax(a, b), minmax(b, c), minmax(c, a)};
-            for (auto [u, v] : triangle_edges)
-                if (u < n && v < n) {
-                    if (seen.count({u, v})) {
-                        int j = seen[{u, v}];
-                        voronoi_edges.emplace_back(voronoi_vertices[i], voronoi_vertices[j]);
-                        edge_match.emplace_back(u);
-                    } else seen[{u, v}] = i;
+        int m = edges.size();
+        unordered_set<pair<int, int>, Hash> seen;
+        vector<int> indices(m, -1);
+        auto left_from_edge = [&](int start, int i = -1) {
+            int e = start;
+            do {
+                if (!~i) {
+                    e = edges[e].symm;
+                    indices[e] = -2;
+                } else {
+                    auto [u, v] = minmax(indices[edges[e].symm], indices[e]);
+                    triangles[u].emplace_back(i);
+                    triangles[v].emplace_back(i);
+                    if (!seen.count({u, v})) {
+                        seen.emplace(u, v);
+                        voronoi_edges.emplace_back(voronoi_vertices[u], voronoi_vertices[v]);
+                        edge_match.emplace_back(i);
+                    }
                 }
-        }
+                e = edges[e].onext;
+            } while (e != start);
+        };
+        left_from_edge(base);
+        for (int e = 0; e < m; e++)
+            if (indices[e] == -1) {
+                int f = edges[edges[e].symm].oprev, g = edges[edges[f].symm].oprev;
+                voronoi_vertices.emplace_back(circumcenter(array<Point<T>, 3>{points[edges[e].dest], points[edges[f].dest], points[edges[g].dest]}));
+                indices[e] = indices[f] = indices[g] = voronoi_vertices.size() - 1;
+            }
+        for (int e = 0; e < m; e++)
+            if (indices[e] == -2) {
+                int f = edges[e].symm;
+                if (indices[f] == -2) {
+                    auto [a, b] = perpendicular_bisector(points[edges[f].dest], points[edges[e].dest]);
+                    auto dir = b - a;
+                    voronoi_vertices.emplace_back(a + (dir / 2));
+                    voronoi_vertices.emplace_back(a - (dir / 2));
+                    indices[e] = voronoi_vertices.size() - 2;
+                    indices[f] = voronoi_vertices.size() - 1;
+                } else {
+                    auto v = points[edges[e].dest] - points[edges[f].dest];
+                    voronoi_vertices.emplace_back(voronoi_vertices[indices[f]] + Point<T>(-v.y, v.x));
+                    indices[e] = voronoi_vertices.size() - 1;
+                }
+            }
+        vector<int> bases(points.size(), -1);
+        for (int e = 0; e < m; e++) bases[edges[e].dest] = edges[e].symm;
 
-        if (!super_triangle) return;
-        voronoi_vertices.erase(remove_if(voronoi_vertices.begin(), voronoi_vertices.end(), [i = 0, &remove](const auto &) mutable { return remove[i++]; }));
-        triangles.erase(remove_if(triangles.begin(), triangles.end(), [i = 0, &remove](const auto &) mutable { return remove[i++]; }));
+        triangles.resize(voronoi_vertices.size());
+        for (int i = 0; i < points.size(); i++)
+            if (bases[i] >= 0) left_from_edge(bases[i], i);
     }
 };
 
