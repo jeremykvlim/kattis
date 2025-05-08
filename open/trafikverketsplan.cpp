@@ -18,7 +18,7 @@ int main() {
     }
 
     int lg = __lg(n) + 1;
-    vector<vector<int>> lift(lg, vector<int>(n + 1, 0)), OR_lift(lg, vector<int>(n + 1, 0));
+    vector<vector<int>> lift(lg, vector<int>(n + 1, 0));
     vector<int> up(n + 1, 0), down(n + 1, 0), depth(n + 1, 0);
     vector<bool> visited(n + 1, false);
     visited[1] = true;
