@@ -245,8 +245,7 @@ struct VoronoiDiagram {
     vector<pair<int, int>> delaunay_edges;
     vector<Point<T>> points, voronoi_vertices;
     vector<Line<T>> voronoi_edges;
-    vector<vector<int>> triangles;
-    vector<int> edge_match;
+    vector<int> vertex_match, edge_match;
 
     VoronoiDiagram(vector<Point<T>> p, bool add_super_triangle = false) {
         if (add_super_triangle) {
@@ -511,8 +510,7 @@ struct VoronoiDiagram {
                     indices[e] = -2;
                 } else {
                     auto [u, v] = minmax(indices[edges[e].symm], indices[e]);
-                    triangles[u].emplace_back(i);
-                    triangles[v].emplace_back(i);
+                    vertex_match[u] = vertex_match[v] = i;
                     if (!seen.count({u, v})) {
                         seen.emplace(u, v);
                         voronoi_edges.emplace_back(voronoi_vertices[u], voronoi_vertices[v]);
@@ -548,7 +546,7 @@ struct VoronoiDiagram {
         vector<int> bases(points.size(), -1);
         for (int e = 0; e < m; e++) bases[edges[e].dest] = edges[e].symm;
 
-        triangles.resize(voronoi_vertices.size());
+        vertex_match.resize(voronoi_vertices.size());
         for (int i = 0; i < points.size(); i++)
             if (bases[i] >= 0) left_from_edge(bases[i], i);
     }
@@ -569,7 +567,7 @@ int main() {
     for (int i = 0; i < vd.voronoi_vertices.size(); i++) {
         auto cc = vd.voronoi_vertices[i];
         auto [in, on] = point_in_polygon(polygon, cc);
-        if (in || on) range = max(range, euclidean_dist(cc, polygon[vd.triangles[i][0]]));
+        if (in || on) range = max(range, euclidean_dist(cc, polygon[vd.vertex_match[i]]));
     }
 
     for (int i = 0; i < vd.voronoi_edges.size(); i++) {
