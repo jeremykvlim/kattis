@@ -153,7 +153,6 @@ int main() {
             add(t);
             prune(vt);
         }
-
         for (int i = 0; i < vt.size(); i++) indices[vt[i]] = i;
 
         vector<array<int, 3>> edges;
