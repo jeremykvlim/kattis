@@ -561,7 +561,7 @@ pair<T, vector<pair<int, int>>> kruskal(int n, vector<tuple<T, int, int>> edges)
 }
 
 template <typename T>
-pair<T, vector<pair<int, int>>> euclidean_mst(int n, vector<Point<T>> points) {
+pair<T, vector<pair<int, int>>> euclidean_mst(int n, const vector<Point<T>> &points) {
     VoronoiDiagram<T> vd(points);
     auto e = vd.delaunay_edges;
 
