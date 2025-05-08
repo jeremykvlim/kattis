@@ -270,23 +270,27 @@ struct VoronoiDiagram {
         auto splice_next = [&](int i, int j) {
             int k = edges[j].onext;
             edges[i].onext = k;
+            edges[k].oprev = i;
             edges[i].oprev = j;
-            edges[j].onext = edges[k].oprev = i;
+            edges[j].onext = i;
         };
 
         auto splice_prev = [&](int i, int j) {
             int k = edges[j].oprev;
             edges[i].oprev = k;
+            edges[k].onext = i;
             edges[i].onext = j;
-            edges[j].oprev = edges[k].onext = i;
+            edges[j].oprev = i;
         };
 
         auto add_edge = [&](int u, int v) -> pair<int, int> {
             int i = edge_id(), j = edge_id();
-            edges[i].onext = edges[i].oprev = edges[j].symm = i;
-            edges[j].onext = edges[j].oprev = edges[i].symm = j;
+            edges[i].onext = edges[i].oprev = i;
+            edges[j].onext = edges[j].oprev = j;
             edges[i].dest = v;
             edges[j].dest = u;
+            edges[i].symm = j;
+            edges[j].symm = i;
             edges[i].valid = edges[j].valid = true;
             return {i, j};
         };
@@ -538,7 +542,36 @@ struct DisjointSets {
     }
 };
 
-int main(){
+template <typename T>
+pair<T, vector<pair<int, int>>> kruskal(int n, vector<tuple<T, int, int>> edges) {
+    DisjointSets dsu(n);
+    sort(edges.begin(), edges.end());
+
+    T len = 0;
+    vector<pair<int, int>> mst;
+    for (auto [w, u, v] : edges) {
+        if (dsu.unite(u, v)) {
+            len += w;
+            mst.emplace_back(u, v);
+            if (mst.size() == n - 1) break;
+        }
+    }
+
+    return {len, mst};
+}
+
+template <typename T>
+pair<T, vector<pair<int, int>>> euclidean_mst(int n, vector<Point<T>> points) {
+    VoronoiDiagram<T> vd(points);
+    auto e = vd.delaunay_edges;
+
+    vector<tuple<T, int, int>> edges;
+    for (auto [u, v] : e) edges.emplace_back(euclidean_dist(points[u], points[v]), u, v);
+
+    return kruskal(n, edges);
+}
+
+int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
@@ -548,17 +581,5 @@ int main(){
     vector<Point<double>> points(n);
     for (auto &[x, y] : points) cin >> x >> y;
 
-    VoronoiDiagram<double> vd(points);
-    auto edges = vd.delaunay_edges;
-    sort(edges.begin(), edges.end(), [&](auto i, auto j) -> bool { return squared_dist(points[i.first], points[i.second]) < squared_dist(points[j.first], points[j.second]); });
-
-    DisjointSets dsu(n);
-    int count = 0;
-    double len = 0;
-    for (auto [u, v] : edges)
-        if (dsu.unite(u, v)) {
-            len += euclidean_dist(points[u], points[v]);
-            if (++count == n - 1) break;
-        }
-    cout << fixed << setprecision(2) << len;
+    cout << fixed << setprecision(2) << euclidean_mst(n, points).first;
 }
