@@ -52,8 +52,8 @@ int main() {
         if (depth[u] < depth[v]) swap(u, v);
 
         int diff = depth[u] - depth[v];
-        for (int k = 0; k < lg; k++)
-            if ((diff >> k) & 1) u = lift[k][u];
+        for (int i = 0; i < lg; i++)
+            if ((diff >> i) & 1) u = lift[i][u];
 
         if (u == v) return u;
 
