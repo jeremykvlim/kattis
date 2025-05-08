@@ -95,11 +95,11 @@ struct DominatorTree {
         return DT[u];
     }
 
-    int kth_ancestor(int v, int k) {
-        if (!k) return v;
+    int level_ancestor(int v, int l) {
+        if (!l) return v;
 
         for (int i = 0; i <= __lg(n); i++)
-            if ((k >> i) & 1) v = lift[i][v];
+            if ((l >> i) & 1) v = lift[i][v];
         return v;
     }
 
@@ -231,7 +231,7 @@ int main() {
             while (l + 1 < r) {
                 m = l + (r - l) / 2;
 
-                if (valid(dt.kth_ancestor(v, m))) l = m;
+                if (valid(dt.level_ancestor(v, m))) l = m;
                 else r = m;
             }
             dp[v][1] += l + 1;
