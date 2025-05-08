@@ -208,8 +208,6 @@ struct VoronoiDiagram {
     vector<pair<int, int>> delaunay_edges;
     vector<Point<T>> points, voronoi_vertices;
     vector<Line<T>> voronoi_edges;
-    vector<vector<int>> triangles;
-    vector<int> edge_match;
 
     VoronoiDiagram(vector<Point<T>> p, bool add_super_triangle = false) {
         if (add_super_triangle) {
@@ -478,12 +476,9 @@ struct VoronoiDiagram {
                     indices[e] = -2;
                 } else {
                     auto [u, v] = minmax(indices[edges[e].symm], indices[e]);
-                    triangles[u].emplace_back(i);
-                    triangles[v].emplace_back(i);
                     if (!seen.count({u, v})) {
                         seen.emplace(u, v);
                         voronoi_edges.emplace_back(voronoi_vertices[u], voronoi_vertices[v]);
-                        edge_match.emplace_back(i);
                     }
                 }
                 e = edges[e].onext;
@@ -515,7 +510,6 @@ struct VoronoiDiagram {
         vector<int> bases(points.size(), -1);
         for (int e = 0; e < m; e++) bases[edges[e].dest] = edges[e].symm;
 
-        triangles.resize(voronoi_vertices.size());
         for (int i = 0; i < points.size(); i++)
             if (bases[i] >= 0) left_from_edge(bases[i], i);
     }
