@@ -87,10 +87,10 @@ int main() {
         if (depth[u] < depth[v]) swap(u, v);
 
         int diff = depth[u] - depth[v], OR_u = 0, OR_v = 0;
-        for (int k = 0; k < lg; k++)
-            if ((diff >> k) & 1) {
-                OR_u |= OR_lift[k][u];
-                u = lift[k][u];
+        for (int i = 0; i < lg; i++)
+            if ((diff >> i) & 1) {
+                OR_u |= OR_lift[i][u];
+                u = lift[i][u];
             }
         if (u == v) return memo[u][v] = memo[v][u] = {u, OR_u};
 
