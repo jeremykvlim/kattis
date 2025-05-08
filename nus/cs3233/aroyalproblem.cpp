@@ -81,15 +81,17 @@ struct BlockCutTree {
         dfs(dfs);
     }
 
+    bool ancestor(int v, int u) {
+        return in[v] <= in[u] && in[u] < out[v];
+    }
+
     int lca(int u, int v) {
-        auto ancestor = [&](int v, int u) {
-            return in[v] <= in[u] && in[u] < out[v];
-        };
         if (ancestor(u, v)) return u;
         if (ancestor(v, u)) return v;
 
         if (depth[u] < depth[v]) swap(u, v);
-        for (int i = __lg(BCT.size()); ~i; i--)
+        
+        for (int i = __lg(n); ~i; i--)
             if (!ancestor(lift[i][u], v)) u = lift[i][u];
 
         return lift[0][u];
