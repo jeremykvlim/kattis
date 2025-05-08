@@ -87,10 +87,10 @@ int main() {
         if (depth[u] < depth[v]) swap(u, v);
 
         int diff = depth[u] - depth[v], OR_u = 0, OR_v = 0;
-        for (int i = 0; i < lg; i++)
-            if ((diff >> i) & 1) {
-                OR_u |= OR_lift[i][u];
-                u = lift[i][u];
+        for (int k = 0; k < lg; k++)
+            if ((diff >> k) & 1) {
+                OR_u |= OR_lift[k][u];
+                u = lift[k][u];
             }
         if (u == v) return memo[u][v] = memo[v][u] = {u, OR_u};
 
@@ -109,25 +109,25 @@ int main() {
         return in[v] <= in[u] && in[u] < out[v];
     };
 
-    vector<int> base_V;
-    vector<array<int, 3>> base_E;
+    vector<int> base_v;
+    vector<array<int, 3>> base_e;
     for (int v = 1; v <= n; v++)
         for (auto [u, w] : adj_list[v])
             if (v < u)
                 if (bfs_edge[u] != make_pair(v, w) && bfs_edge[v] != make_pair(u, w)) {
-                    base_V.emplace_back(v);
-                    base_V.emplace_back(u);
-                    base_E.push_back({v, u, w});
+                    base_v.emplace_back(v);
+                    base_v.emplace_back(u);
+                    base_e.push_back({v, u, w});
                 }
 
     auto prune = [&](auto &v) {
         sort(v.begin(), v.end(), [&](int u, int v) { return in[u] < in[v]; });
         v.erase(unique(v.begin(), v.end()), v.end());
     };
-    prune(base_V);
-    int size = base_V.size();
-    for (int i = 1; i < size; i++) base_V.emplace_back(lca(base_V[i - 1], base_V[i]).first);
-    prune(base_V);
+    prune(base_v);
+    int size = base_v.size();
+    for (int i = 1; i < size; i++) base_v.emplace_back(lca(base_v[i - 1], base_v[i]).first);
+    prune(base_v);
 
     int Q;
     cin >> Q;
@@ -138,45 +138,45 @@ int main() {
         cin >> s >> t;
         if (s > t) swap(s, t);
 
-        auto V = base_V;
-        V.emplace_back(s);
-        V.emplace_back(t);
-        prune(V);
-        if (V.size() != base_V.size()) {
+        auto vt = base_v;
+        vt.emplace_back(s);
+        vt.emplace_back(t);
+        prune(vt);
+        if (vt.size() != base_v.size()) {
             auto add = [&](int v) {
-                int i = lower_bound(V.begin(), V.end(), v, [&](int u, int v) { return in[u] < in[v]; }) - V.begin();
-                if (i) V.emplace_back(lca(V[i - 1], v).first);
-                if (i < V.size() - 1) V.emplace_back(lca(v, V[i + 1]).first);
+                int i = lower_bound(vt.begin(), vt.end(), v, [&](int u, int v) { return in[u] < in[v]; }) - vt.begin();
+                if (i) vt.emplace_back(lca(vt[i - 1], v).first);
+                if (i < vt.size() - 1) vt.emplace_back(lca(v, vt[i + 1]).first);
             };
 
             add(s);
             add(t);
-            prune(V);
+            prune(vt);
         }
 
-        for (int i = 0; i < V.size(); i++) indices[V[i]] = i;
+        for (int i = 0; i < vt.size(); i++) indices[vt[i]] = i;
 
-        vector<array<int, 3>> E;
-        for (auto [u, v, w] : base_E) E.push_back({indices[u], indices[v], w});
+        vector<array<int, 3>> edges;
+        for (auto [u, v, w] : base_e) edges.push_back({indices[u], indices[v], w});
 
         stack<int> st;
-        for (int v : V) {
+        for (int v : vt) {
             while (!st.empty() && !(ancestor(st.top(), v))) st.pop();
             if (!st.empty()) {
                 int u = st.top();
-                E.push_back({indices[u], indices[v], lca(u, v).second});
+                edges.push_back({indices[u], indices[v], lca(u, v).second});
             }
             st.emplace(v);
         }
 
-        vector<int> active(E.size());
+        vector<int> active(edges.size());
         iota(active.begin(), active.end(), 0);
         int cost = 0;
-        for (int b = __lg((*max_element(E.begin(), E.end(), [](auto e1, auto e2) { return e1[2] < e2[2]; }))[2]); ~b; b--) {
-            DisjointSets dsu(V.size());
+        for (int b = __lg((*max_element(edges.begin(), edges.end(), [](auto e1, auto e2) { return e1[2] < e2[2]; }))[2]); ~b; b--) {
+            DisjointSets dsu(vt.size());
             vector<int> temp;
             for (int i : active) {
-                auto [u, v, w] = E[i];
+                auto [u, v, w] = edges[i];
                 if (!((w >> b) & 1)) {
                     dsu.unite(u, v);
                     temp.emplace_back(i);
