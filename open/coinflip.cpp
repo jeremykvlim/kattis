@@ -1,9 +1,10 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void cooley_tukey(int n, vector<complex<double>> &v) {
+template <typename T, typename R>
+void cooley_tukey(int n, vector<T> &v, R root) {
     static vector<int> rev;
-    static vector<complex<double>> twiddles;
+    static vector<T> twiddles;
 
     if (rev.size() != n) {
         rev.resize(n);
@@ -15,7 +16,7 @@ void cooley_tukey(int n, vector<complex<double>> &v) {
         twiddles.resize(n, 1);
 
         for (int k = m; k < n; k <<= 1) {
-            auto w = polar(1., M_PI / k);
+            auto w = root(k);
             for (int i = k; i < k << 1; i++) twiddles[i] = i & 1 ? twiddles[i >> 1] * w : twiddles[i >> 1];
         }
     }
@@ -32,20 +33,43 @@ void cooley_tukey(int n, vector<complex<double>> &v) {
             }
 }
 
-vector<double> convolve(const vector<double> &a, const vector<double> &b) {
-    int n = bit_ceil(a.size() + b.size() - 1);
+template <typename T>
+vector<T> convolve(const vector<T> &a, const vector<T> &b) {
+    int da = a.size(), db = b.size(), n = bit_ceil((unsigned) da + db - 1);
+    if (n <= 16 || min(da, db) <= __lg(n)) {
+        vector<T> p(da), q(db);
+        for (int i = 0; i < da; i++) p[i] = a[i];
+        for (int i = 0; i < db; i++) q[i] = b[i];
+        if (da > db) {
+            swap(p, q);
+            swap(da, db);
+        }
 
-    vector<complex<double>> dft(n);
-    for (int i = 0; i < a.size(); i++) dft[i].real(a[i]);
-    for (int i = 0; i < b.size(); i++) dft[i].imag(b[i]);
-    cooley_tukey(n, dft);
+        vector<T> r(da + db - 1, 0);
+        for (int i = 0; i < db; i++) r[i] = q[i];
+        for (int i = da + db - 2; ~i; i--) {
+            T v = 0;
+            for (int j = 0; j <= min(i, da - 1); j++) v += p[j] * r[i - j];
+            r[i] = v;
+        }
+        return r;
+    }
 
+    vector<complex<T>> dft(n);
+    for (int i = 0; i < da; i++) dft[i].real(a[i]);
+    for (int i = 0; i < db; i++) dft[i].imag(b[i]);
+
+    auto root = [](int k) {
+        return polar((T) 1, M_PI / k);
+    };
+
+    cooley_tukey(n, dft, root);
     for (auto &v : dft) v *= v;
-    cooley_tukey(n, dft);
+    cooley_tukey(n, dft, root);
     reverse(dft.begin() + 1, dft.end());
 
-    vector<double> c(a.size() + b.size() - 1, 0.5);
-    for (int i = 0; i < c.size(); i++) c[i] *= dft[i].imag() / n;
+    vector<T> c(da + db - 1, 0.5);
+    for (int i = 0; i < da + db - 1; i++) c[i] *= dft[i].imag() / n;
     return c;
 }
 
