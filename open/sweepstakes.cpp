@@ -63,7 +63,7 @@ int main() {
     for (auto &pi : p) cin >> pi;
     for (auto &qj : q) cin >> qj;
 
-    const int size = 1 << 11;
+    int size = 1 << 11;
     vector<complex<double>> roots(size), F_t(size, 1), F_row(size);
     for (int i = 0; i < size; i++) roots[i] = polar(1., -2 * M_PI * i / size);
     for (auto pi : p) {
