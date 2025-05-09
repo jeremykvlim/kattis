@@ -384,7 +384,7 @@ int main() {
     }
 
     if (!x || !y) {
-        cout << pow(2ULL, (x ^ y) - 1, MODULO);
+        cout << modint::pow(2, (x ^ y) - 1);
         exit(0);
     }
 
