@@ -36,18 +36,17 @@ void cooley_tukey(int n, vector<T> &v, R root) {
 template <typename T>
 vector<complex<T>> fft(int n, const vector<complex<T>> &f) {
     auto F = f;
-    for (auto &v : F) v = conj(v);
-    cooley_tukey(n, F, [](int k) { return polar((T) 1, M_PI / k); });
-    for (auto &v : F) v = conj(v);
+    cooley_tukey(n, F, [](int k) { return polar((T) 1, -M_PI / k); });
     return F;
 }
 
 template <typename T>
 vector<complex<T>> ifft(int n, const vector<complex<T>> &F) {
     auto f = F;
-    cooley_tukey(n, f, [](int k) { return polar((T) 1, M_PI / k); });
+    cooley_tukey(n, f, [](int k) { return polar((T) 1, -M_PI / k); });
     T n_inv = (T) 1 / n;
     for (auto &v : f) v *= n_inv;
+    reverse(f.begin() + 1, f.end());
     return f;
 }
 
