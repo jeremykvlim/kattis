@@ -361,6 +361,11 @@ bool MontgomeryModInt<M>::prime_mod;
 constexpr unsigned long long MODULO = 998244353;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
+static unsigned long long primitive_root() {
+    if (MODULO == 9223372036737335297 || MODULO == 2524775926340780033 || MODULO == 998244353 || MODULO == 167772161) return 3ULL;
+    if (MODULO == 754974721) return 11ULL;
+}
+
 template <typename T, typename R>
 void cooley_tukey(int n, vector<T> &v, R root) {
     static vector<int> rev;
@@ -393,6 +398,21 @@ void cooley_tukey(int n, vector<T> &v, R root) {
             }
 }
 
+vector<modint> ntt(int n, const vector<modint> &f) {
+    auto F = f;
+    cooley_tukey(n, F, [](int k) { return pow(primitive_root(), (MODULO - 1) / (k << 1), MODULO); });
+    return F;
+}
+
+vector<modint> intt(int n, const vector<modint> &F) {
+    auto f = F;
+    cooley_tukey(n, f, [](int k) { return pow(primitive_root(), (MODULO - 1) / (k << 1), MODULO); });
+    auto n_inv = (modint) 1 / n;
+    for (auto &v : f) v *= n_inv;
+    reverse(f.begin() + 1, f.end());
+    return f;
+}
+
 template <typename T>
 vector<T> convolve(const vector<T> &a, const vector<T> &b) {
     int da = a.size(), db = b.size(), m = da + db - 1, n = bit_ceil((unsigned) m);
@@ -415,32 +435,23 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
         return r;
     }
 
-    auto primitive_root = []() {
-        if (MODULO == 9223372036737335297 || MODULO == 2524775926340780033 || MODULO == 998244353 || MODULO == 167772161) return 3ULL;
-        if (MODULO == 754974721) return 11ULL;
-    };
-
-    auto root = [&](int k) {
-        return pow(primitive_root(), (MODULO - 1) / (k << 1), MODULO);;
-    };
-
-    vector<modint> ntt_a(n), ntt_b(n);
+    vector<modint> ntt_a(n);
     for (int i = 0; i < da; i++) ntt_a[i] = a[i];
-    cooley_tukey(n, ntt_a, root);
-    if (a == b) ntt_b = ntt_a;
+
+    vector<modint> F_a = ntt(n, ntt_a), F_b;
+    if (a == b) F_b = F_a;
     else {
+        vector<modint> ntt_b(n);
         for (int i = 0; i < db; i++) ntt_b[i] = b[i];
-        cooley_tukey(n, ntt_b, root);
+        F_b = ntt(n, ntt_b);
     }
 
-    vector<modint> ntt_c(n);
-    for (int i = 0; i < n; i++) ntt_c[i] = ntt_a[i] * ntt_b[i];
-    cooley_tukey(n, ntt_c, root);
-    reverse(ntt_c.begin() + 1, ntt_c.end());
+    vector<modint> F_c(n);
+    for (int i = 0; i < n; i++) F_c[i] = F_a[i] * F_b[i];
+    auto f_c = intt(n, F_c);
 
-    auto n_inv = (modint) 1 / n;
     vector<T> c(m);
-    for (int i = 0; i < m; i++) c[i] = (ntt_c[i] * n_inv)();
+    for (int i = 0; i < m; i++) c[i] = f_c[i]();
     return c;
 }
 
