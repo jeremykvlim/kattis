@@ -471,7 +471,6 @@ int main() {
     }
 
     int pw = (n + 1) / 2, degree = 9 * pw + 1, size = bit_ceil((unsigned) degree);
-
     auto root = pow(primitive_root(), (MODULO - 1) / size, MODULO);
     vector<modint> roots(size, 1);
     for (int k = 1; k < size; k++) roots[k] = roots[k - 1] * root;
