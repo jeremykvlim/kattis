@@ -46,7 +46,8 @@ template <typename T>
 vector<complex<T>> ifft(int n, const vector<complex<T>> &F) {
     auto f = F;
     cooley_tukey(n, f, [](int k) { return polar((T) 1, M_PI / k); });
-    for (auto &v : f) v /= n;
+    T n_inv = (T) 1 / n;
+    for (auto &v : f) v *= n_inv;
     return f;
 }
 
