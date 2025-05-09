@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -204,17 +204,18 @@ struct MontgomeryModInt {
         return *this *= inv(v);
     }
 
-    MontgomeryModInt inv(const MontgomeryModInt &v) {
-        if (prime_mod) {
-            MontgomeryModInt inv = 1, base = v;
-            T n = mod() - 2;
-            while (n) {
-                if (n & 1) inv *= base;
-                base *= base;
-                n >>= 1;
-            }
-            return inv;
+    static MontgomeryModInt pow(MontgomeryModInt base, T exponent) {
+        MontgomeryModInt v = 1;
+        while (exponent) {
+            if (exponent & 1) v *= base;
+            base *= base;
+            exponent >>= 1;
         }
+        return v;
+    }
+
+    static MontgomeryModInt inv(const MontgomeryModInt &v) {
+        if (prime_mod) return pow(v, mod() - 2);
 
         T x = 0, y = 1, a = v.value, m = mod();
         while (a) {
@@ -361,6 +362,11 @@ bool MontgomeryModInt<M>::prime_mod;
 constexpr unsigned long long MODULO = 998244353;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
+static unsigned long long primitive_root() {
+    if (MODULO == 9223372036737335297 || MODULO == 2524775926340780033 || MODULO == 998244353 || MODULO == 167772161) return 3ULL;
+    if (MODULO == 754974721) return 11ULL;
+}
+
 template <typename T, typename R>
 void cooley_tukey(int n, vector<T> &v, R root) {
     static vector<int> rev;
@@ -393,6 +399,21 @@ void cooley_tukey(int n, vector<T> &v, R root) {
             }
 }
 
+vector<modint> ntt(int n, const vector<modint> &f) {
+    auto F = f;
+    cooley_tukey(n, F, [](int k) { return pow(primitive_root(), (MODULO - 1) / (k << 1), MODULO); });
+    return F;
+}
+
+vector<modint> intt(int n, const vector<modint> &F) {
+    auto f = F;
+    cooley_tukey(n, f, [](int k) { return pow(primitive_root(), (MODULO - 1) / (k << 1), MODULO); });
+    auto n_inv = (modint) 1 / n;
+    for (auto &v : f) v *= n_inv;
+    reverse(f.begin() + 1, f.end());
+    return f;
+}
+
 template <typename T>
 vector<T> convolve(const vector<T> &a, const vector<T> &b) {
     int da = a.size(), db = b.size(), m = da + db - 1, n = bit_ceil((unsigned) m);
@@ -415,32 +436,23 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
         return r;
     }
 
-    auto primitive_root = []() {
-        if (MODULO == 9223372036737335297 || MODULO == 2524775926340780033 || MODULO == 998244353 || MODULO == 167772161) return 3ULL;
-        if (MODULO == 754974721) return 11ULL;
-    };
-
-    auto root = [&](int k) {
-        return pow(primitive_root(), (MODULO - 1) / (k << 1), MODULO);;
-    };
-
-    vector<modint> ntt_a(n), ntt_b(n);
+    vector<modint> ntt_a(n);
     for (int i = 0; i < da; i++) ntt_a[i] = a[i];
-    cooley_tukey(n, ntt_a, root);
-    if (a == b) ntt_b = ntt_a;
+
+    vector<modint> F_a = ntt(n, ntt_a), F_b;
+    if (a == b) F_b = F_a;
     else {
+        vector<modint> ntt_b(n);
         for (int i = 0; i < db; i++) ntt_b[i] = b[i];
-        cooley_tukey(n, ntt_b, root);
+        F_b = ntt(n, ntt_b);
     }
 
-    vector<modint> ntt_c(n);
-    for (int i = 0; i < n; i++) ntt_c[i] = ntt_a[i] * ntt_b[i];
-    cooley_tukey(n, ntt_c, root);
-    reverse(ntt_c.begin() + 1, ntt_c.end());
+    vector<modint> F_c(n);
+    for (int i = 0; i < n; i++) F_c[i] = F_a[i] * F_b[i];
+    auto f_c = intt(n, F_c);
 
-    auto n_inv = (modint) 1 / n;
     vector<T> c(m);
-    for (int i = 0; i < m; i++) c[i] = (ntt_c[i] * n_inv)();
+    for (int i = 0; i < m; i++) c[i] = f_c[i]();
     return c;
 }
 
@@ -458,27 +470,29 @@ int main() {
         exit(0);
     }
 
-    vector<vector<int>> memo(n);
-    memo[0] = {1};
-    memo[1] = vector<int>(10, 1);
+    int pw = (n + 1) / 2, degree = 9 * pw + 1, size = bit_ceil((unsigned) degree);
 
-    auto dfs = [&](auto &&self, int n) {
-        if (!memo[n].empty()) return memo[n];
-        return memo[n] = convolve(self(self, n / 2), self(self, n - n / 2));
-    };
+    auto root = pow(primitive_root(), (MODULO - 1) / size, MODULO);
+    vector<modint> roots(size, 1);
+    for (int k = 1; k < size; k++) roots[k] = roots[k - 1] * root;
 
-    auto poly1 = dfs(dfs, (n + 1) / 2 - 1), poly2 = dfs(dfs, (n + 1) / 2);
-    int deg3 = max(poly1.size(), poly2.size());
-    vector<int> poly3(deg3, 0);
-    for (int i = 0; i < deg3; i++) {
-        if (i < poly1.size()) poly3[i] -= poly1[i];
-        if (i < poly2.size()) poly3[i] += poly2[i];
+    vector<modint> F(size, 10), F1(size), F2(size), F3(size);
+    for (int k = 0; k < size; k++) {
+        if (k) F[k] = ((modint) 1 - modint::pow(roots[k], 10)) / ((modint) 1 - roots[k]);
+        F1[k] = modint::pow(F[k], pw - 1);
+        F2[k] = F1[k] * F[k];
+        F3[k] = modint::pow(F[k], pw - (n & 1));
     }
-    auto poly4 = dfs(dfs, n / 2);
-    poly4.resize(deg3, 0);
-    reverse(poly4.begin(), poly4.end());
+
+    auto f1 = intt(size, F1), f2 = intt(size, F2), f3 = intt(size, F3);
+    vector<int> poly1(degree, 0), poly2(degree, 0);
+    for (int i = 0; i < degree; i++) {
+        poly1[i] = (f2[i] - f1[i])();
+        poly2[i] = f3[i]();
+    }
+    reverse(poly2.begin(), poly2.end());
 
     modint count = 0;
-    for (int e : convolve(poly3, poly4)) count += (long long) e * e;
+    for (int c : convolve(poly1, poly2)) count += (long long) c * c;
     cout << count;
 }
