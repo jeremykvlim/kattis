@@ -1,9 +1,10 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void cooley_tukey(int n, vector<complex<double>> &v) {
+template <typename T, typename R>
+void cooley_tukey(int n, vector<T> &v, R root) {
     static vector<int> rev;
-    static vector<complex<double>> twiddles;
+    static vector<T> twiddles;
 
     if (rev.size() != n) {
         rev.resize(n);
@@ -15,7 +16,7 @@ void cooley_tukey(int n, vector<complex<double>> &v) {
         twiddles.resize(n, 1);
 
         for (int k = m; k < n; k <<= 1) {
-            auto w = polar(1., M_PI / k);
+            auto w = root(k);
             for (int i = k; i < k << 1; i++) twiddles[i] = i & 1 ? twiddles[i >> 1] * w : twiddles[i >> 1];
         }
     }
@@ -35,14 +36,14 @@ void cooley_tukey(int n, vector<complex<double>> &v) {
 vector<complex<double>> fft(int n, const vector<complex<double>> &f) {
     auto F = f;
     for (auto &v : F) v = conj(v);
-    cooley_tukey(n, F);
+    cooley_tukey(n, F, [](int k) { return polar(1., M_PI / k); });
     for (auto &v : F) v = conj(v);
     return F;
 }
 
 vector<complex<double>> ifft(int n, const vector<complex<double>> &F) {
     auto f = F;
-    cooley_tukey(n, f);
+    cooley_tukey(n, f, [](int k) { return polar(1., M_PI / k); });
     for (auto &v : f) v /= n;
     return f;
 }
