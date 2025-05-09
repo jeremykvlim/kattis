@@ -5,13 +5,14 @@ void cooley_tukey(int n, vector<complex<double>> &v) {
     static vector<int> rev;
     static vector<complex<double>> twiddles;
 
-    if (rev.empty() && twiddles.empty()) {
+    if (rev.size() < n && twiddles.size() < n) {
+        int m = max(2, (int) rev.size());
         rev.resize(n);
         twiddles.resize(n, 1);
 
         for (int i = 0; i < n; i++) rev[i] = (rev[i >> 1] | (i & 1) << __lg(n)) >> 1;
 
-        for (int k = 2; k < n; k <<= 1) {
+        for (int k = m; k < n; k <<= 1) {
             auto w = polar(1., M_PI / k);
             for (int i = k; i < k << 1; i++) twiddles[i] = i & 1 ? twiddles[i >> 1] * w : twiddles[i >> 1];
         }
