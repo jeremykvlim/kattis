@@ -64,34 +64,34 @@ int main() {
     for (auto &qj : q) cin >> qj;
 
     const int size = 1 << 11;
-    vector<complex<double>> roots(size), G_t(size, 1), G_row(size);
+    vector<complex<double>> roots(size), F_t(size, 1), F_row(size);
     for (int i = 0; i < size; i++) roots[i] = polar(1., -2 * M_PI * i / size);
     for (auto pi : p) {
-        fill(G_row.begin(), G_row.end(), 1);
+        fill(F_row.begin(), F_row.end(), 1);
         for (auto qj : q) {
             auto p_mine = pi + qj, p_no_mine = 1 - p_mine;
-            for (int i = 0; i < size; i++) G_row[i] *= p_mine * roots[i] + complex<double>(p_no_mine, 0);
+            for (int i = 0; i < size; i++) F_row[i] *= p_mine * roots[i] + complex<double>(p_no_mine, 0);
         }
-        for (int i = 0; i < size; i++) G_t[i] *= G_row[i];
+        for (int i = 0; i < size; i++) F_t[i] *= F_row[i];
     }
-    auto f_t = ifft(size, G_t);
+    auto f_t = ifft(size, F_t);
 
-    vector<complex<double>> G_s(size), G_t_not_s(size);
+    vector<complex<double>> F_s(size), F_t_not_s(size);
     while (Q--) {
         int s;
         cin >> s;
 
-        fill(G_s.begin(), G_s.end(), 1);
+        fill(F_s.begin(), F_s.end(), 1);
         for (int _ = 0; _ < s; _++) {
             int r, c;
             cin >> r >> c;
 
             auto p_mine = p[r - 1] + q[c - 1], p_no_mine = 1 - p_mine;
-            for (int i = 0; i < size; i++) G_s[i] *= p_mine * roots[i] + complex<double>(p_no_mine, 0);
+            for (int i = 0; i < size; i++) F_s[i] *= p_mine * roots[i] + complex<double>(p_no_mine, 0);
         }
-        for (int i = 0; i < size; i++) G_t_not_s[i] = G_t[i] / G_s[i];
+        for (int i = 0; i < size; i++) F_t_not_s[i] = F_t[i] / F_s[i];
 
-        auto f_s = ifft(size, G_s), f_t_not_s = ifft(size, G_t_not_s);
+        auto f_s = ifft(size, F_s), f_t_not_s = ifft(size, F_t_not_s);
         for (int i = 0; i <= s; i++) cout << fixed << setprecision(6) << (!(0 <= t - i && t - i <= m * n - s) ? 0 : f_s[i % size].real() * f_t_not_s[(t - i) % size].real() / f_t[t % size].real()) << " ";
         cout << "\n";
     }
