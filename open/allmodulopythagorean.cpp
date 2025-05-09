@@ -361,48 +361,81 @@ bool MontgomeryModInt<M>::prime_mod;
 constexpr unsigned long long MODULO = 998244353;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
+template <typename T, typename R>
+void cooley_tukey(int n, vector<T> &v, R root) {
+    static vector<int> rev;
+    static vector<modint> twiddles;
+
+    if (rev.size() != n) {
+        rev.resize(n);
+        for (int i = 0; i < n; i++) rev[i] = (rev[i >> 1] | (i & 1) << __lg(n)) >> 1;
+    }
+
+    if (twiddles.size() < n) {
+        int m = max(2, (int) twiddles.size());
+        twiddles.resize(n, 1);
+
+        for (int k = m; k < n; k <<= 1) {
+            auto w = root(k);
+            for (int i = k; i < k << 1; i++) twiddles[i] = i & 1 ? twiddles[i >> 1] * w : twiddles[i >> 1];
+        }
+    }
+
+    for (int i = 0; i < n; i++)
+        if (i < rev[i]) swap(v[i], v[rev[i]]);
+
+    for (int k = 1; k < n; k <<= 1)
+        for (int i = 0; i < n; i += k << 1)
+            for (int j = 0; j < k; j++) {
+                auto t = v[i + j + k] * twiddles[j + k];
+                v[i + j + k] = v[i + j] - t;
+                v[i + j] += t;
+            }
+}
+
 template <typename T>
 vector<T> convolve(const vector<T> &a, const vector<T> &b) {
-    int n = bit_ceil(a.size() + b.size() - 1);
-    vector<int> rev(n, 0);
-    for (int i = 0; i < n; i++) rev[i] = (rev[i >> 1] | (i & 1) << __lg(n)) >> 1;
+    int da = a.size(), db = b.size(), n = bit_ceil((unsigned) da + db - 1);
+    if (n <= 16 || min(da, db) <= __lg(n)) {
+        vector<modint> p(da), q(db);
+        for (int i = 0; i < da; i++) p[i] = a[i];
+        for (int i = 0; i < db; i++) q[i] = b[i];
+        if (da > db) {
+            swap(p, q);
+            swap(da, db);
+        }
+
+        vector<T> r(n, 0);
+        for (int i = 0; i < db; i++) r[i] = q[i]();
+        for (int i = n - 1; ~i; i--) {
+            modint v = 0;
+            for (int j = 0; j <= min(i, da - 1); j++) v += p[j] * r[i - j];
+            r[i] = v();
+        }
+        return r;
+    }
 
     auto primitive_root = []() {
         if (MODULO == 9223372036737335297 || MODULO == 2524775926340780033 || MODULO == 998244353 || MODULO == 167772161) return 3ULL;
         if (MODULO == 754974721) return 11ULL;
     };
-    auto g = primitive_root();
 
-    vector<modint> twiddles(n, 1);
-    for (int k = 2; k < n; k <<= 1) {
-        modint w = pow(g, (MODULO - 1) / (k << 1), MODULO);
-        for (int i = k; i < k << 1; i++) twiddles[i] = i & 1 ? twiddles[i >> 1] * w : twiddles[i >> 1];
-    }
-
-    auto ntt = [&](vector<modint> &v) {
-        for (int i = 0; i < n; i++)
-            if (i < rev[i]) swap(v[i], v[rev[i]]);
-
-        for (int k = 1; k < n; k <<= 1)
-            for (int i = 0; i < n; i += k << 1)
-                for (int j = 0; j < k; j++) {
-                    auto t = v[i + j + k] * twiddles[j + k];
-                    v[i + j + k] = v[i + j] - t;
-                    v[i + j] += t;
-                }
+    auto root = [&](int k) {
+        return pow(primitive_root(), (MODULO - 1) / (k << 1), MODULO);;
     };
+
     vector<modint> ntt_a(n), ntt_b(n);
     for (int i = 0; i < a.size(); i++) ntt_a[i] = a[i];
-    ntt(ntt_a);
+    cooley_tukey(n, ntt_a, root);
     if (a == b) ntt_b = ntt_a;
     else {
         for (int i = 0; i < b.size(); i++) ntt_b[i] = b[i];
-        ntt(ntt_b);
+        cooley_tukey(n, ntt_b, root);
     }
 
     vector<modint> ntt_c(n);
     for (int i = 0; i < n; i++) ntt_c[i] = ntt_a[i] * ntt_b[i];
-    ntt(ntt_c);
+    cooley_tukey(n, ntt_c, root);
     reverse(ntt_c.begin() + 1, ntt_c.end());
 
     auto n_inv = (modint) 1 / n;
