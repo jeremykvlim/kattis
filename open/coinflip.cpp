@@ -68,8 +68,9 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
     cooley_tukey(n, dft, root);
     reverse(dft.begin() + 1, dft.end());
 
+    auto n_inv = (T) 1 / n;
     vector<T> c(m, 0.5);
-    for (int i = 0; i < m; i++) c[i] *= dft[i].imag() / n;
+    for (int i = 0; i < m; i++) c[i] *= dft[i].imag() * n_inv;
     return c;
 }
 
