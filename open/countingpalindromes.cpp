@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -380,7 +380,7 @@ int main() {
     }
 
     if (p == 2 || p == 5) {
-        modint count = 0, c = pow(10ULL, (n - 1) / 2, MODULO);
+        modint count = 0, c = modint::pow(10, (n - 1) / 2);
         for (int x = 1; x < 10; x++)
             if (x % p == k) count += c;
         cout << count;
@@ -401,7 +401,7 @@ int main() {
         cycle_weights[i] = pow(10, i, p);
         if (j > 0) cycle_weights[i] = (cycle_weights[i] + pow(10, j, p)) % p;
     }
-    
+
     if (n & 1)
         for (auto i = half - remaining, j = half + remaining; i <= j; i++, j--)
             if (i == j) leftover_weights.emplace_back(pow(10, i, p));
