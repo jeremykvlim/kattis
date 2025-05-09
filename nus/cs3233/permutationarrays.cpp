@@ -467,6 +467,6 @@ int main() {
         }
 
         if (zero) cout << "0\n" << flush;
-        else cout << pow(fact(), m, MODULO) << "\n" << flush;
+        else cout << modint::pow(fact(), m) << "\n" << flush;
     }
 }
