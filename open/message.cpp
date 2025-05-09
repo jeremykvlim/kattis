@@ -200,17 +200,18 @@ struct ModInt {
         return *this *= inv(v);
     }
 
-    ModInt inv(const ModInt &v) {
-        if (prime_mod) {
-            ModInt inv = 1, base = v;
-            T n = mod() - 2;
-            while (n) {
-                if (n & 1) inv *= base;
-                base *= base;
-                n >>= 1;
-            }
-            return inv;
+    static ModInt pow(ModInt base, T exponent) {
+        ModInt v = 1;
+        while (exponent) {
+            if (exponent & 1) v *= base;
+            base *= base;
+            exponent >>= 1;
         }
+        return v;
+    }
+
+    static ModInt inv(const ModInt &v) {
+        if (prime_mod) return pow(v, mod() - 2);
 
         T x = 0, y = 1, a = v.value, m = mod();
         while (a) {
@@ -443,6 +444,6 @@ int main() {
                 if (fsm[i][c] < s) count[i][fsm[i][c]]++;
 
         count = matpow(count, n);
-        cout << pow(26ULL, n, m) - accumulate(count[0].begin(), count[0].end(), (modint) 0) << "\n";
+        cout << modint::pow(26, n) - accumulate(count[0].begin(), count[0].end(), (modint) 0) << "\n";
     }
 }

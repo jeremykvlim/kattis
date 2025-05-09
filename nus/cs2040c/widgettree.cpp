@@ -202,18 +202,19 @@ struct BarrettModInt {
         return *this *= inv(v);
     }
 
-    BarrettModInt inv(const BarrettModInt &v) {
-        if (prime_mod) {
-            BarrettModInt inv = 1, base = v;
-            J n = mod() - 2;
-            while (n) {
-                if (n & 1) inv *= base;
-                base *= base;
-                n >>= 1;
-            }
-            return inv;
+    static BarrettModInt pow(BarrettModInt base, J exponent) {
+        BarrettModInt v = 1;
+        while (exponent) {
+            if (exponent & 1) v *= base;
+            base *= base;
+            exponent >>= 1;
         }
-        
+        return v;
+    }
+
+    static BarrettModInt inv(const BarrettModInt &v) {
+        if (prime_mod) return pow(v, mod() - 2);
+
         H x = 0, y = 1, a = v.value, m = mod();
         while (a) {
             H t = m / a;

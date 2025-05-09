@@ -204,17 +204,18 @@ struct MontgomeryModInt {
         return *this *= inv(v);
     }
 
-    MontgomeryModInt inv(const MontgomeryModInt &v) {
-        if (prime_mod) {
-            MontgomeryModInt inv = 1, base = v;
-            T n = mod() - 2;
-            while (n) {
-                if (n & 1) inv *= base;
-                base *= base;
-                n >>= 1;
-            }
-            return inv;
+    static MontgomeryModInt pow(MontgomeryModInt base, T exponent) {
+        MontgomeryModInt v = 1;
+        while (exponent) {
+            if (exponent & 1) v *= base;
+            base *= base;
+            exponent >>= 1;
         }
+        return v;
+    }
+
+    static MontgomeryModInt inv(const MontgomeryModInt &v) {
+        if (prime_mod) return pow(v, mod() - 2);
 
         T x = 0, y = 1, a = v.value, m = mod();
         while (a) {
