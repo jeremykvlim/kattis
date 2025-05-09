@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -396,7 +396,7 @@ int main() {
         xr *= 2;
         n -= 2;
     }
-    xr *= pow(3, n / 3, (int) MODULO);
+    xr *= modint::pow(3, n / 3);
 
     cout << xl << " " << xr;
 }
