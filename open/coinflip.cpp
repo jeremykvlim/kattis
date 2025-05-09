@@ -35,7 +35,7 @@ void cooley_tukey(int n, vector<T> &v, R root) {
 
 template <typename T>
 vector<T> convolve(const vector<T> &a, const vector<T> &b) {
-    int da = a.size(), db = b.size(), n = bit_ceil((unsigned) da + db - 1);
+    int da = a.size(), db = b.size(), m = da + db - 1, n = bit_ceil((unsigned) m);
     if (n <= 16 || min(da, db) <= __lg(n)) {
         vector<T> p(da), q(db);
         for (int i = 0; i < da; i++) p[i] = a[i];
@@ -45,9 +45,9 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
             swap(da, db);
         }
 
-        vector<T> r(da + db - 1, 0);
+        vector<T> r(m, 0);
         for (int i = 0; i < db; i++) r[i] = q[i];
-        for (int i = da + db - 2; ~i; i--) {
+        for (int i = m - 1; ~i; i--) {
             T v = 0;
             for (int j = 0; j <= min(i, da - 1); j++) v += p[j] * r[i - j];
             r[i] = v;
@@ -68,8 +68,8 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
     cooley_tukey(n, dft, root);
     reverse(dft.begin() + 1, dft.end());
 
-    vector<T> c(da + db - 1, 0.5);
-    for (int i = 0; i < da + db - 1; i++) c[i] *= dft[i].imag() / n;
+    vector<T> c(m, 0.5);
+    for (int i = 0; i < m; i++) c[i] *= dft[i].imag() / n;
     return c;
 }
 
