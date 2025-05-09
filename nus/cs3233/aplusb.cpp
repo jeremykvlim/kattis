@@ -401,13 +401,13 @@ void cooley_tukey(int n, vector<T> &v, R root) {
 
 vector<modint> ntt(int n, const vector<modint> &f) {
     auto F = f;
-    cooley_tukey(n, F, [](int k) { return pow(primitive_root(), (MODULO - 1) / (k << 1), MODULO); });
+    cooley_tukey(n, F, [](int k) { return modint::pow(primitive_root(), (MODULO - 1) / (k << 1)); });
     return F;
 }
 
 vector<modint> intt(int n, const vector<modint> &F) {
     auto f = F;
-    cooley_tukey(n, f, [](int k) { return pow(primitive_root(), (MODULO - 1) / (k << 1), MODULO); });
+    cooley_tukey(n, f, [](int k) { return modint::pow(primitive_root(), (MODULO - 1) / (k << 1)); });
     auto n_inv = (modint) 1 / n;
     for (auto &v : f) v *= n_inv;
     reverse(f.begin() + 1, f.end());
