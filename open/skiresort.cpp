@@ -4,8 +4,9 @@ using namespace std;
 struct DominatorTree {
     int n;
     vector<int> DT, semidom, sets, label, order, depth, in, out;
-    vector<vector<int>> lift;
-    DominatorTree(int n, const vector<vector<int>> &adj_list, int root = 1) : n(n), DT(n + 1, -1), semidom(n + 1, -1), sets(n + 1, 0), label(n + 1, 0), order(n + 1, -1),
+    vector<vector<int>> adj_list_DT, lift;
+    DominatorTree(int n, const vector<vector<int>> &adj_list, int root = 1) : n(n), DT(n + 1, -1), semidom(n + 1, -1), sets(n + 1, 0), 
+                                                                              label(n + 1, 0), order(n + 1, -1), adj_list_DT(n + 1),
                                                                               depth(n + 1), in(n + 1, 0), out(n + 1, 0), lift(__lg(n) + 1, vector<int>(n + 1, root)) {
         build(adj_list, root);
     }
@@ -46,7 +47,6 @@ struct DominatorTree {
         for (int t = 1; t < count1; t++) DT[node[t]] = node[idom[t]];
         DT[root] = root;
 
-        vector<vector<int>> adj_list_DT(n + 1);
         for (int v = 1; v <= n; v++)
             if (v != root) adj_list_DT[DT[v]].emplace_back(v);
 
