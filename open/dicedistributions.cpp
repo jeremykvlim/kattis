@@ -505,7 +505,7 @@ int main() {
     auto reduce = [&](auto &poly) {
         int g = 0;
         for (int i : poly)
-            if (i) g = gcd(g, i);
+            if (i) g = __gcd(g, i);
 
         for (int &i : poly) i /= g;
     };
