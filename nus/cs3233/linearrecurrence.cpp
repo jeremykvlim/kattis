@@ -465,7 +465,7 @@ int main() {
             continue;
         }
 
-        if (!d || gcd(d, m) != 1) {
+        if (!d || __gcd(d, m) != 1) {
             Matrix<modint> A(n + 1);
             for (int i = 0; i <= n; i++) A[0][i] = a[(i + 1) % (n + 1)];
             for (int i = 1; i < n; i++) A[i][i - 1] = 1;
