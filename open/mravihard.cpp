@@ -17,7 +17,7 @@ int main() {
         cin >> a >> b >> x >> t;
 
         adj_list[a - 1].emplace_back(b - 1);
-        flow[a - 1].emplace_back(x / 100.0);
+        flow[a - 1].emplace_back((double) x / 100);
         superpower[a - 1].emplace_back(t);
     }
 
@@ -45,9 +45,9 @@ int main() {
             return true;
         };
 
-        if (dfs(dfs, m / 1e11)) r = m;
+        if (dfs(dfs, m * 1e-9)) r = m;
         else l = m;
     }
 
-    cout << fixed << setprecision(3) << exp(r / 1e11);
+    cout << fixed << setprecision(3) << exp(r * 1e-9);
 }
