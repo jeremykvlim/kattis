@@ -355,11 +355,8 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 
 template <typename T>
 struct MODULO {
-    static T value;
+    static inline T value;
 };
-
-template <typename T>
-T MODULO<T>::value;
 
 auto &m = MODULO<unsigned int>::value;
 using modint = MontgomeryModInt<MODULO<unsigned int>>;

@@ -109,8 +109,8 @@ struct BarrettModInt {
     using K = unsigned __int128;
 
     I value;
-    static bool prime_mod;
-    static J inv_mod;
+    static inline bool prime_mod;
+    static inline J inv_mod;
     static constexpr int bit_length = sizeof(J) * 8;
 
     static void init() {
@@ -340,12 +340,6 @@ U & operator>>(U &stream, BarrettModInt<T> &v) {
     v = BarrettModInt<T>(x);
     return stream;
 }
-
-template <typename M>
-bool BarrettModInt<M>::prime_mod;
-
-template <typename M>
-unsigned long long BarrettModInt<M>::inv_mod;
 
 constexpr unsigned int MODULO = 1e3;
 using modint = BarrettModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
