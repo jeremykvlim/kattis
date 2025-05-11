@@ -233,7 +233,7 @@ Point<T> non_collinear_intersection(const Line<T> &l1, const Line<T> &l2) {
 }
 
 template<typename T>
-struct VoronoiDiagram {
+struct DelaunayTriangulation {
     struct QuadEdge {
         int dest, onext, oprev, symm;
         bool valid;
@@ -241,13 +241,14 @@ struct VoronoiDiagram {
         QuadEdge() : dest(-1), onext(-1), oprev(-1), symm(-1), valid(false) {}
     };
 
+    int start;
     vector<QuadEdge> edges;
     vector<pair<int, int>> delaunay_edges;
     vector<Point<T>> points, voronoi_vertices;
     vector<Line<T>> voronoi_edges;
     vector<int> vertex_match, edge_match;
 
-    VoronoiDiagram(vector<Point<T>> p, bool add_super_triangle = false) {
+    DelaunayTriangulation(vector<Point<T>> p, bool add_super_triangle = false) {
         if (add_super_triangle) {
             T xl = p[0].x, xr = p[0].x, yl = p[0].y, yr = p[0].y;
             for (auto [x, y] : p) {
@@ -264,10 +265,10 @@ struct VoronoiDiagram {
         }
         points = p;
         if (points.size() <= 1) return;
-        build_diagram(delaunay_triangulation());
+        guibas_stolfi();
     }
 
-    int delaunay_triangulation() {
+    void guibas_stolfi() {
         int n = points.size();
 
         vector<int> indices(n);
@@ -335,6 +336,13 @@ struct VoronoiDiagram {
             freed.emplace_back(j);
         };
 
+        auto connect = [&](int src, int dest, int c, int d) -> pair<int, int> {
+            auto [a, b] = add_edge(src, dest);
+            splice_prev(a, c);
+            splice_next(b, d);
+            return {a, b};
+        };
+
         auto lnext = [&](int i) -> pair<int, int> {
             return {edges[edges[i].oprev].dest, edges[edges[i].oprev].symm};
         };
@@ -390,7 +398,7 @@ struct VoronoiDiagram {
             return point_in_circumcircle({points[a], points[b], points[c]}, points[d]).first;
         };
 
-        auto guibas_stolfi = [&](auto &&self, int l, int r) -> pair<int, int> {
+        auto dnc = [&](auto &&self, int l, int r) -> pair<int, int> {
             if (r - l == 2) {
                 auto [i, j] = add_edge(l, l + 1);
                 return {l, i};
@@ -430,9 +438,7 @@ struct VoronoiDiagram {
             rdi = edges[rdi].oprev;
             rdo = edges[rdo].oprev;
 
-            auto [base_symm, base] = add_edge(ldi_src, rdi_src);
-            splice_prev(base_symm, ldi);
-            splice_next(base, rdi);
+            auto [base_symm, base] = connect(ldi_src, rdi_src, ldi, rdi);
             if (ldi_src == ldo_src) ldo = base_symm;
             if (rdi_src == rdo_src) rdo = base;
 
@@ -465,16 +471,12 @@ struct VoronoiDiagram {
 
                 if (v) {
                     int temp = edges[edges[ldi].symm].onext;
-                    auto [a, b] = add_edge(l_dest, rdi_src);
-                    splice_prev(a, temp);
-                    splice_next(b, rdi);
+                    connect(l_dest, rdi_src, temp, rdi);
                     ldi = temp;
                     ldi_src = l_dest;
                 } else {
                     int temp = edges[edges[rdi].symm].oprev;
-                    auto [a, b] = add_edge(r_dest, ldi_src);
-                    splice_next(a, temp);
-                    splice_prev(b, ldi);
+                    connect(ldi_src, r_dest, ldi, temp);
                     rdi = temp;
                     rdi_src = r_dest;
                 }
@@ -482,8 +484,8 @@ struct VoronoiDiagram {
             return {ldi_src, base_symm};
         };
 
-        int base = 0;
-        if (r >= 2) base = guibas_stolfi(guibas_stolfi, 0, r).second;
+        start = 0;
+        if (r >= 2) start = dnc(dnc, 0, r).second;
         points = temp;
         for (auto &e : edges) e.dest = indices[e.dest];
         for (int i = 0; i < edges.size(); i++)
@@ -492,18 +494,16 @@ struct VoronoiDiagram {
 
         for (int v = 0; v < n; v++)
             if (v != compress[v]) delaunay_edges.emplace_back(v, compress[v]);
-
-        return base;
     }
 
-    void build_diagram(int base) {
-        if (!base) return;
+    void build_voronoi_diagram() {
+        if (!start) return;
 
         int m = edges.size();
         unordered_set<pair<int, int>, Hash> seen;
         vector<int> indices(m, -1);
-        auto left_from_edge = [&](int start, int i = -1) {
-            int e = start;
+        auto left_from_edge = [&](int s, int i = -1) {
+            int e = s;
             do {
                 if (!~i) {
                     e = edges[e].symm;
@@ -518,9 +518,9 @@ struct VoronoiDiagram {
                     }
                 }
                 e = edges[e].onext;
-            } while (e != start);
+            } while (e != s);
         };
-        left_from_edge(base);
+        left_from_edge(start);
         for (int e = 0; e < m; e++)
             if (indices[e] == -1) {
                 int f = edges[edges[e].symm].oprev, g = edges[edges[f].symm].oprev;
@@ -543,12 +543,12 @@ struct VoronoiDiagram {
                     indices[e] = voronoi_vertices.size() - 1;
                 }
             }
-        vector<int> bases(points.size(), -1);
-        for (int e = 0; e < m; e++) bases[edges[e].dest] = edges[e].symm;
+        vector<int> starts(points.size(), -1);
+        for (int e = 0; e < m; e++) starts[edges[e].dest] = edges[e].symm;
 
         vertex_match.resize(voronoi_vertices.size());
         for (int i = 0; i < points.size(); i++)
-            if (bases[i] >= 0) left_from_edge(bases[i], i);
+            if (starts[i] >= 0) left_from_edge(starts[i], i);
     }
 };
 
@@ -562,21 +562,22 @@ int main() {
     vector<Point<double>> polygon(n);
     for (auto &[x, y] : polygon) cin >> x >> y;
 
-    VoronoiDiagram<double> vd(polygon, true);
+    DelaunayTriangulation<double> dt(polygon, true);
+    dt.build_voronoi_diagram();
     double range = 0;
-    for (int i = 0; i < vd.voronoi_vertices.size(); i++) {
-        auto cc = vd.voronoi_vertices[i];
+    for (int i = 0; i < dt.voronoi_vertices.size(); i++) {
+        auto cc = dt.voronoi_vertices[i];
         auto [in, on] = point_in_polygon(polygon, cc);
-        if (in || on) range = max(range, euclidean_dist(cc, polygon[vd.vertex_match[i]]));
+        if (in || on) range = max(range, euclidean_dist(cc, polygon[dt.vertex_match[i]]));
     }
 
-    for (int i = 0; i < vd.voronoi_edges.size(); i++) {
-        auto l1 = vd.voronoi_edges[i];
+    for (int i = 0; i < dt.voronoi_edges.size(); i++) {
+        auto l1 = dt.voronoi_edges[i];
         for (int j = 0; j < n; j++) {
             auto l2 = Line(polygon[j], polygon[(j + 1) % n]);
             if (intersects(l1, l2) && !collinear(l1, l2)) {
                 auto p = non_collinear_intersection(l1, l2), l = max(min(l1.a, l1.b), min(l2.a, l2.b)), r = min(max(l1.a, l1.b), max(l2.a, l2.b));
-                if (l <= p && p <= r) range = max(range, euclidean_dist(p, polygon[vd.edge_match[i]]));
+                if (l <= p && p <= r) range = max(range, euclidean_dist(p, polygon[dt.edge_match[i]]));
             }
         }
     }
