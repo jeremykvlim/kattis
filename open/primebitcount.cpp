@@ -108,8 +108,8 @@ struct MontgomeryModInt {
     using J = typename conditional<is_same<T, unsigned int>::value, long long, typename conditional<is_same<T, unsigned long long>::value, __int128, void>::type>::type;
 
     T value;
-    static pair<T, U> r;
-    static bool prime_mod;
+    static inline pair<T, U> r;
+    static inline bool prime_mod;
     static constexpr int bit_length = sizeof(T) * 8;
 
     static void init() {
@@ -352,12 +352,6 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     v = MontgomeryModInt<T>(x);
     return stream;
 }
-
-template <typename M>
-pair<typename MontgomeryModInt<M>::T, typename MontgomeryModInt<M>::U> MontgomeryModInt<M>::r;
-
-template <typename M>
-bool MontgomeryModInt<M>::prime_mod;
 
 constexpr unsigned long long MODULO = 1e9 + 607;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
