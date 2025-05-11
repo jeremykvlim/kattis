@@ -196,7 +196,7 @@ Line<T> perpendicular_bisector(const Point<T> &a, const Point<T> &b) {
 }
 
 template<typename T>
-struct VoronoiDiagram {
+struct DelaunayTriangulation {
     struct QuadEdge {
         int dest, onext, oprev, symm;
         bool valid;
@@ -204,12 +204,13 @@ struct VoronoiDiagram {
         QuadEdge() : dest(-1), onext(-1), oprev(-1), symm(-1), valid(false) {}
     };
 
+    int start;
     vector<QuadEdge> edges;
     vector<pair<int, int>> delaunay_edges;
     vector<Point<T>> points, voronoi_vertices;
     vector<Line<T>> voronoi_edges;
 
-    VoronoiDiagram(vector<Point<T>> p, bool add_super_triangle = false) {
+    DelaunayTriangulation(vector<Point<T>> p, bool add_super_triangle = false) {
         if (add_super_triangle) {
             T xl = p[0].x, xr = p[0].x, yl = p[0].y, yr = p[0].y;
             for (auto [x, y] : p) {
@@ -226,10 +227,10 @@ struct VoronoiDiagram {
         }
         points = p;
         if (points.size() <= 1) return;
-        build_diagram(delaunay_triangulation());
+        guibas_stolfi();
     }
 
-    int delaunay_triangulation() {
+    void guibas_stolfi() {
         int n = points.size();
 
         vector<int> indices(n);
@@ -268,27 +269,23 @@ struct VoronoiDiagram {
         auto splice_next = [&](int i, int j) {
             int k = edges[j].onext;
             edges[i].onext = k;
-            edges[k].oprev = i;
             edges[i].oprev = j;
-            edges[j].onext = i;
+            edges[j].onext = edges[k].oprev = i;
         };
 
         auto splice_prev = [&](int i, int j) {
             int k = edges[j].oprev;
             edges[i].oprev = k;
-            edges[k].onext = i;
             edges[i].onext = j;
-            edges[j].oprev = i;
+            edges[j].oprev = edges[k].onext = i;
         };
 
         auto add_edge = [&](int u, int v) -> pair<int, int> {
             int i = edge_id(), j = edge_id();
-            edges[i].onext = edges[i].oprev = i;
-            edges[j].onext = edges[j].oprev = j;
+            edges[i].onext = edges[i].oprev = edges[j].symm = i;
+            edges[j].onext = edges[j].oprev = edges[i].symm = j;
             edges[i].dest = v;
             edges[j].dest = u;
-            edges[i].symm = j;
-            edges[j].symm = i;
             edges[i].valid = edges[j].valid = true;
             return {i, j};
         };
@@ -299,6 +296,13 @@ struct VoronoiDiagram {
             splice(j);
             freed.emplace_back(i);
             freed.emplace_back(j);
+        };
+
+        auto connect = [&](int src, int dest, int c, int d) -> pair<int, int> {
+            auto [a, b] = add_edge(src, dest);
+            splice_prev(a, c);
+            splice_next(b, d);
+            return {a, b};
         };
 
         auto lnext = [&](int i) -> pair<int, int> {
@@ -356,7 +360,7 @@ struct VoronoiDiagram {
             return point_in_circumcircle({points[a], points[b], points[c]}, points[d]).first;
         };
 
-        auto guibas_stolfi = [&](auto &&self, int l, int r) -> pair<int, int> {
+        auto dnc = [&](auto &&self, int l, int r) -> pair<int, int> {
             if (r - l == 2) {
                 auto [i, j] = add_edge(l, l + 1);
                 return {l, i};
@@ -396,9 +400,7 @@ struct VoronoiDiagram {
             rdi = edges[rdi].oprev;
             rdo = edges[rdo].oprev;
 
-            auto [base_symm, base] = add_edge(ldi_src, rdi_src);
-            splice_prev(base_symm, ldi);
-            splice_next(base, rdi);
+            auto [base_symm, base] = connect(ldi_src, rdi_src, ldi, rdi);
             if (ldi_src == ldo_src) ldo = base_symm;
             if (rdi_src == rdo_src) rdo = base;
 
@@ -431,16 +433,12 @@ struct VoronoiDiagram {
 
                 if (v) {
                     int temp = edges[edges[ldi].symm].onext;
-                    auto [a, b] = add_edge(l_dest, rdi_src);
-                    splice_prev(a, temp);
-                    splice_next(b, rdi);
+                    connect(l_dest, rdi_src, temp, rdi);
                     ldi = temp;
                     ldi_src = l_dest;
                 } else {
                     int temp = edges[edges[rdi].symm].oprev;
-                    auto [a, b] = add_edge(r_dest, ldi_src);
-                    splice_next(a, temp);
-                    splice_prev(b, ldi);
+                    connect(ldi_src, r_dest, ldi, temp);
                     rdi = temp;
                     rdi_src = r_dest;
                 }
@@ -448,8 +446,8 @@ struct VoronoiDiagram {
             return {ldi_src, base_symm};
         };
 
-        int base = 0;
-        if (r >= 2) base = guibas_stolfi(guibas_stolfi, 0, r).second;
+        start = 0;
+        if (r >= 2) start = dnc(dnc, 0, r).second;
         points = temp;
         for (auto &e : edges) e.dest = indices[e.dest];
         for (int i = 0; i < edges.size(); i++)
@@ -458,18 +456,16 @@ struct VoronoiDiagram {
 
         for (int v = 0; v < n; v++)
             if (v != compress[v]) delaunay_edges.emplace_back(v, compress[v]);
-
-        return base;
     }
 
-    void build_diagram(int base) {
-        if (!base) return;
+    void build_diagram() {
+        if (!start) return;
 
         int m = edges.size();
         unordered_set<pair<int, int>, Hash> seen;
         vector<int> indices(m, -1);
-        auto left_from_edge = [&](int start, int i = -1) {
-            int e = start;
+        auto left_from_edge = [&](int s, int i = -1) {
+            int e = s;
             do {
                 if (!~i) {
                     e = edges[e].symm;
@@ -482,9 +478,9 @@ struct VoronoiDiagram {
                     }
                 }
                 e = edges[e].onext;
-            } while (e != start);
+            } while (e != s);
         };
-        left_from_edge(base);
+        left_from_edge(start);
         for (int e = 0; e < m; e++)
             if (indices[e] == -1) {
                 int f = edges[edges[e].symm].oprev, g = edges[edges[f].symm].oprev;
@@ -507,11 +503,11 @@ struct VoronoiDiagram {
                     indices[e] = voronoi_vertices.size() - 1;
                 }
             }
-        vector<int> bases(points.size(), -1);
-        for (int e = 0; e < m; e++) bases[edges[e].dest] = edges[e].symm;
+        vector<int> starts(points.size(), -1);
+        for (int e = 0; e < m; e++) starts[edges[e].dest] = edges[e].symm;
 
         for (int i = 0; i < points.size(); i++)
-            if (bases[i] >= 0) left_from_edge(bases[i], i);
+            if (starts[i] >= 0) left_from_edge(starts[i], i);
     }
 };
 
@@ -556,8 +552,8 @@ pair<T, vector<pair<int, int>>> kruskal(int n, vector<tuple<T, int, int>> edges)
 
 template <typename T>
 pair<T, vector<pair<int, int>>> euclidean_mst(int n, const vector<Point<T>> &points) {
-    VoronoiDiagram<T> vd(points);
-    auto e = vd.delaunay_edges;
+    DelaunayTriangulation<T> dt(points);
+    auto e = dt.delaunay_edges;
 
     vector<tuple<T, int, int>> edges;
     for (auto [u, v] : e) edges.emplace_back(euclidean_dist(points[u], points[v]), u, v);
