@@ -481,25 +481,26 @@ int main() {
     int A, B, C;
     cin >> A >> B >> C;
 
-    auto read = [&](auto &dice, int &l, int &r) {
+    auto read = [&](int size, int &l, int &r) {
+        vector<int> dice(size);
         for (int &i : dice) {
             cin >> i;
 
             l = min(l, i);
             r = max(r, i);
         }
+        return dice;
     };
 
     int al = 1e6, ar = 0, bl = 1e6, br = 0, cl = 1e6, cr = 0;
-    vector<int> a(A), b(B), c(C);
-    read(a, al, ar);
-    read(b, bl, br);
-    read(c, cl, cr);
+    auto a = read(A, al, ar), b = read(B, bl, br), c = read(C, cl, cr);
 
-    vector<int> polyA(ar - al + 1, 0), polyB(br - bl + 1, 0), polyC(cr - cl + 1, 0);
-    for (int ai : a) polyA[ai - al]++;
-    for (int bi : b) polyB[bi - bl]++;
-    for (int ci : c) polyC[ci - cl]++;
+    auto poly = [&](const auto &dice, int l, int r) {
+        vector<int> poly(r - l + 1, 0);
+        for (int i : dice) poly[i - l]++;
+        return poly;
+    };
+    auto polyA = poly(a, al, ar), polyB = poly(b, bl, br), polyC = poly(c, cl, cr);
 
     auto reduce = [&](auto &poly) {
         int g = 0;
