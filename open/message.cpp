@@ -107,7 +107,7 @@ struct ModInt {
     using I = typename conditional<is_same<T, unsigned int>::value, int, typename conditional<is_same<T, unsigned long long>::value, long long, void>::type>::type;
 
     T value;
-    static bool prime_mod;
+    static inline bool prime_mod;
 
     static void init() {
         prime_mod = mod() == 998244353 || mod() == (unsigned long long) 1e9 + 7 || mod() == (unsigned long long) 1e9 + 9 || mod() == (unsigned long long) 1e6 + 69 || mod() == 2524775926340780033 || isprime(mod());
@@ -339,16 +339,10 @@ U & operator>>(U &stream, ModInt<T> &v) {
     return stream;
 }
 
-template <typename M>
-bool ModInt<M>::prime_mod;
-
 template <typename T>
 struct MODULO {
-    static T value;
+    static inline T value;
 };
-
-template <typename T>
-T MODULO<T>::value;
 
 auto &m = MODULO<unsigned long long>::value;
 using modint = ModInt<MODULO<unsigned long long>>;
