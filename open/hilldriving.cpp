@@ -12,13 +12,13 @@ int main() {
         double a, b, vmax, f;
         int R;
         cin >> a >> b >> vmax >> f >> R;
-
+        
         vector<double> dist(R), slope(R);
         for (int i = 0; i < R; i++) {
             double x, y;
             cin >> x >> y;
 
-            dist[i] = hypot(x / 1e3, y / 1e3);
+            dist[i] = hypot(x * 1e-3, y * 1e-3);
             slope[i] = y / x;
         }
 
