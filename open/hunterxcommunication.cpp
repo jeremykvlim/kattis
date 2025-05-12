@@ -474,14 +474,13 @@ int main() {
         if (k) F[k] = ((modint) 1 - modint::pow(roots[k], 10)) / ((modint) 1 - roots[k]);
         F1[k] = modint::pow(F[k], pw - 1);
         F2[k] = F1[k] * F[k];
-        F3[k] = modint::pow(F[k], pw - (n & 1));
     }
 
-    auto f1 = intt(size, F1), f2 = intt(size, F2), f3 = intt(size, F3);
+    auto f1 = intt(size, F1), f2 = intt(size, F2);
     vector<int> poly1(degree, 0), poly2(degree, 0);
     for (int i = 0; i < degree; i++) {
         poly1[i] = (f2[i] - f1[i])();
-        poly2[i] = f3[i]();
+        poly2[i] = (n & 1 ? f1[i] : f2[i])();
     }
     reverse(poly2.begin(), poly2.end());
 
