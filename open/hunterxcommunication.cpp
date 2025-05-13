@@ -361,93 +361,13 @@ static unsigned long long primitive_root() {
     if (MODULO == 754974721) return 11ULL;
 }
 
-template <typename T, typename R>
-void cooley_tukey(int n, vector<T> &v, R root) {
-    static vector<int> rev;
-    static vector<T> twiddles;
-
-    if (rev.size() != n) {
-        rev.resize(n);
-        for (int i = 0; i < n; i++) rev[i] = (rev[i >> 1] | (i & 1) << __lg(n)) >> 1;
+modint parsevals_theorem(int n, const vector<modint> &F1, const vector<modint> &F2) {
+    modint sum = 0;
+    for (int k = 0; k < n; k++) {
+        int l = (n - k) & (n - 1);
+        sum += F1[k] * F1[l] * F2[k] * F2[l];
     }
-
-    if (twiddles.size() < n) {
-        int m = max(2, (int) twiddles.size());
-        twiddles.resize(n, 1);
-
-        for (int k = m; k < n; k <<= 1) {
-            auto w = root(k);
-            for (int i = k; i < k << 1; i++) twiddles[i] = i & 1 ? twiddles[i >> 1] * w : twiddles[i >> 1];
-        }
-    }
-
-    for (int i = 0; i < n; i++)
-        if (i < rev[i]) swap(v[i], v[rev[i]]);
-
-    for (int k = 1; k < n; k <<= 1)
-        for (int i = 0; i < n; i += k << 1)
-            for (int j = 0; j < k; j++) {
-                auto t = v[i + j + k] * twiddles[j + k];
-                v[i + j + k] = v[i + j] - t;
-                v[i + j] += t;
-            }
-}
-
-vector<modint> ntt(int n, const vector<modint> &f) {
-    auto F = f;
-    cooley_tukey(n, F, [](int k) { return modint::pow(primitive_root(), (MODULO - 1) / (k << 1)); });
-    return F;
-}
-
-vector<modint> intt(int n, const vector<modint> &F) {
-    auto f = F;
-    cooley_tukey(n, f, [](int k) { return modint::pow(primitive_root(), (MODULO - 1) / (k << 1)); });
-    auto n_inv = (modint) 1 / n;
-    for (auto &v : f) v *= n_inv;
-    reverse(f.begin() + 1, f.end());
-    return f;
-}
-
-template <typename T>
-vector<T> convolve(const vector<T> &a, const vector<T> &b) {
-    int da = a.size(), db = b.size(), m = da + db - 1, n = bit_ceil((unsigned) m);
-    if (n <= 16 || min(da, db) <= __lg(n)) {
-        vector<modint> p(da), q(db);
-        for (int i = 0; i < da; i++) p[i] = a[i];
-        for (int i = 0; i < db; i++) q[i] = b[i];
-        if (da > db) {
-            swap(p, q);
-            swap(da, db);
-        }
-
-        vector<T> r(m, 0);
-        for (int i = 0; i < db; i++) r[i] = q[i]();
-        for (int i = m - 1; ~i; i--) {
-            modint v = 0;
-            for (int j = 0; j <= min(i, da - 1); j++) v += p[j] * r[i - j];
-            r[i] = v();
-        }
-        return r;
-    }
-
-    vector<modint> ntt_a(n);
-    for (int i = 0; i < da; i++) ntt_a[i] = a[i];
-
-    vector<modint> F_a = ntt(n, ntt_a), F_b;
-    if (a == b) F_b = F_a;
-    else {
-        vector<modint> ntt_b(n);
-        for (int i = 0; i < db; i++) ntt_b[i] = b[i];
-        F_b = ntt(n, ntt_b);
-    }
-
-    vector<modint> F_c(n);
-    for (int i = 0; i < n; i++) F_c[i] = F_a[i] * F_b[i];
-    auto f_c = intt(n, F_c);
-
-    vector<T> c(m);
-    for (int i = 0; i < m; i++) c[i] = f_c[i]();
-    return c;
+    return sum * modint::inv(n);
 }
 
 int main() {
@@ -464,27 +384,17 @@ int main() {
         exit(0);
     }
 
-    int pw = (n + 1) / 2, degree = 9 * pw + 1, size = bit_ceil((unsigned) degree);
+    int pw = (n + 1) / 2, degree = 9 * pw + 1, size = bit_ceil((unsigned) degree + degree - 1);
     auto root = modint::pow(primitive_root(), (MODULO - 1) / size);
     vector<modint> roots(size, 1);
     for (int k = 1; k < size; k++) roots[k] = roots[k - 1] * root;
 
     vector<modint> F1(size), F2(size);
     for (int k = 0; k < size; k++) {
-        auto base = !k ? 10 : ((modint) 1 - modint::pow(roots[k], 10)) / ((modint) 1 - roots[k]);
-        F1[k] = modint::pow(base, pw - 1);
-        F2[k] = F1[k] * base;
+        auto base = !k ? 10 : ((modint) 1 - modint::pow(roots[k], 10)) / ((modint) 1 - roots[k]),
+             v1 = modint::pow(base, pw - 1), v2 = v1 * base;
+        F1[k] = v2 - v1;
+        F2[k] = n & 1 ? v1 : v2;
     }
-
-    auto f1 = intt(size, F1), f2 = intt(size, F2);
-    vector<int> poly1(degree, 0), poly2(degree, 0);
-    for (int i = 0; i < degree; i++) {
-        poly1[i] = (f2[i] - f1[i])();
-        poly2[i] = (n & 1 ? f1[i] : f2[i])();
-    }
-    reverse(poly2.begin(), poly2.end());
-
-    modint count = 0;
-    for (int c : convolve(poly1, poly2)) count += (long long) c * c;
-    cout << count;
+    cout << parsevals_theorem(size, F1, F2);
 }
