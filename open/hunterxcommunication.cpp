@@ -469,11 +469,11 @@ int main() {
     vector<modint> roots(size, 1);
     for (int k = 1; k < size; k++) roots[k] = roots[k - 1] * root;
 
-    vector<modint> F(size, 10), F1(size), F2(size), F3(size);
+    vector<modint> F1(size), F2(size);
     for (int k = 0; k < size; k++) {
-        if (k) F[k] = ((modint) 1 - modint::pow(roots[k], 10)) / ((modint) 1 - roots[k]);
-        F1[k] = modint::pow(F[k], pw - 1);
-        F2[k] = F1[k] * F[k];
+        auto base = !k ? 10 : ((modint) 1 - modint::pow(roots[k], 10)) / ((modint) 1 - roots[k]);
+        F1[k] = modint::pow(base, pw - 1);
+        F2[k] = F1[k] * base;
     }
 
     auto f1 = intt(size, F1), f2 = intt(size, F2);
