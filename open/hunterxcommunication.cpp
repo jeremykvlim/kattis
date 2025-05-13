@@ -363,9 +363,9 @@ static unsigned long long primitive_root() {
 
 modint parsevals_theorem(int n, const vector<modint> &F1, const vector<modint> &F2) {
     modint sum = 0;
-    for (int k = 0; k < n; k++) {
-        int l = (n - k) & (n - 1);
-        sum += F1[k] * F1[l] * F2[k] * F2[l];
+    for (int i = 0; i < n; i++) {
+        int j = (n - i) & (n - 1);
+        sum += F1[i] * F1[j] * F2[i] * F2[j];
     }
     return sum * modint::inv(n);
 }
