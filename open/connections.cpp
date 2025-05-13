@@ -195,7 +195,7 @@ Line<T> perpendicular_bisector(const Point<T> &a, const Point<T> &b) {
     return {midpoint, dir + midpoint};
 }
 
-template<typename T>
+template <typename T>
 struct DelaunayTriangulation {
     struct QuadEdge {
         int dest, onext, oprev, symm;
