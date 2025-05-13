@@ -24,19 +24,18 @@ struct Hash {
 };
 
 struct WeightedDisjointSets {
-    vector<int> sets, size;
+    vector<int> sets, prio;
     vector<pair<int, int>> weight;
 
-    WeightedDisjointSets(int n) : sets(n), size(n, 1), weight(n, {INT_MAX, 0}) {
+    WeightedDisjointSets(int n) : sets(n), prio(n), weight(n, {INT_MAX, 0}) {
         iota(sets.begin(), sets.end(), 0);
+        iota(prio.begin(), prio.end(), 0);
+        shuffle(prio.begin(), prio.end(), mt19937_64(random_device{}()));
     }
 
     int & compress(int v) {
         if (sets[v] == v) return sets[v];
-        while (weight[sets[v]].first <= weight[v].first) {
-            size[sets[v]] -= size[v];
-            sets[v] = sets[sets[v]];
-        }
+        while (weight[sets[v]].first <= weight[v].first) sets[v] = sets[sets[v]];
         return sets[v];
     }
 
@@ -48,14 +47,10 @@ struct WeightedDisjointSets {
     void detach(int v) {
         if (sets[v] == v) return;
         detach(sets[v]);
-        size[sets[v]] -= size[v];
     }
 
     int attach(int v, int w = INT_MAX - 1) {
-        while (weight[v].first <= w) {
-            size[sets[v]] += size[v];
-            v = sets[v];
-        }
+        while (weight[v].first <= w) v = sets[v];
         return v;
     }
 
@@ -65,7 +60,7 @@ struct WeightedDisjointSets {
         while (u != v) {
             u = attach(u, w.first);
             v = attach(v, w.first);
-            if (size[u] < size[v]) swap(u, v);
+            if (prio[u] < prio[v]) swap(u, v);
             swap(sets[v], u);
             swap(weight[v], w);
         }
@@ -76,10 +71,7 @@ struct WeightedDisjointSets {
         while (sets[v] != v) {
             if (weight[v].first == w) {
                 int u = v;
-                while (sets[u] != u) {
-                    u = sets[u];
-                    size[u] -= size[v];
-                }
+                while (sets[u] != u) u = sets[u];
                 sets[v] = v;
                 weight[v] = {INT_MAX, 0};
                 return;
