@@ -2,23 +2,22 @@
 using namespace std;
 
 struct WeightedDisjointSets {
-    vector<int> sets, prio;
-    vector<pair<int, int>> weight;
+    vector<int> sets, prio, weight;
 
-    WeightedDisjointSets(int n) : sets(n), prio(n), weight(n, {INT_MAX, 0}) {
+    WeightedDisjointSets(int n) : sets(n), prio(n), weight(n, INT_MAX) {
         iota(sets.begin(), sets.end(), 0);
         iota(prio.begin(), prio.end(), 0);
         shuffle(prio.begin(), prio.end(), mt19937_64(random_device{}()));
     }
 
-    int & compress(int v) {
+    int &compress(int v) {
         if (sets[v] == v) return sets[v];
-        while (weight[sets[v]].first <= weight[v].first) sets[v] = sets[sets[v]];
+        while (weight[sets[v]] <= weight[v]) sets[v] = sets[sets[v]];
         return sets[v];
     }
 
     int find(int v, int w = INT_MAX - 1) {
-        while (weight[v].first <= w) v = compress(v);
+        while (weight[v] <= w) v = compress(v);
         return v;
     }
 
@@ -28,16 +27,16 @@ struct WeightedDisjointSets {
     }
 
     int attach(int v, int w = INT_MAX - 1) {
-        while (weight[v].first <= w) v = sets[v];
+        while (weight[v] <= w) v = sets[v];
         return v;
     }
 
-    void link(int u, int v, pair<int, int> w) {
+    void link(int u, int v, int w) {
         detach(u);
         detach(v);
         while (u != v) {
-            u = attach(u, w.first);
-            v = attach(v, w.first);
+            u = attach(u, w);
+            v = attach(v, w);
             if (prio[u] < prio[v]) swap(u, v);
             swap(sets[v], u);
             swap(weight[v], w);
@@ -47,11 +46,11 @@ struct WeightedDisjointSets {
 
     void cut(int v, int w) {
         while (sets[v] != v) {
-            if (weight[v].first == w) {
+            if (weight[v] == w) {
                 int u = v;
                 while (sets[u] != u) u = sets[u];
                 sets[v] = v;
-                weight[v] = {INT_MAX, 0};
+                weight[v] = INT_MAX;
                 return;
             }
             v = compress(v);
@@ -67,26 +66,26 @@ struct WeightedDisjointSets {
         if (find(u) != find(v)) return -1;
 
         for (;;) {
-            if (weight[u].first > weight[v].first) swap(u, v);
+            if (weight[u] > weight[v]) swap(u, v);
             if (sets[u] == v) return u;
             u = sets[u];
         }
     }
 
-    int unite(int u, int v, pair<int, int> w) {
+    int unite(int u, int v, int w) {
         if (u != v) {
             int t = path_max(u, v);
             if (t == -1) {
                 link(u, v, w);
                 return -1;
-            } else if (weight[t].first > w.first) {
-                int i = weight[t].second;
-                cut(t, weight[t].first);
+            } else if (weight[t] > w) {
+                int x = weight[t];
+                cut(t, weight[t]);
                 link(u, v, w);
-                return i;
+                return x;
             }
         }
-        return w.second;
+        return w;
     }
 };
 
@@ -168,30 +167,30 @@ int main() {
     WeightedDisjointSets wdsu(n + 1);
     for (int i : mst) {
         auto [u, v, w] = edges[i];
-        wdsu.unite(u, v, {special_nonspecial[i] ? -1 : w, i});
+        wdsu.unite(u, v, special_nonspecial[i] ? -1 : w);
     }
 
-    priority_queue<array<int, 3>, vector<array<int, 3>>, greater<>> pq;
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
     for (int i = 0; i < m; i++)
         if (special_nonspecial[i] && !in_mst[i]) {
             auto [u, v, w] = edges[i];
-            int j = wdsu.path_max(u, v);
-            if (~j && ~wdsu.weight[j].first) pq.push({w - wdsu.weight[j].first, i, j});
+            int t = wdsu.path_max(u, v);
+            if (~t && ~wdsu.weight[t]) pq.emplace(w - wdsu.weight[t], i);
         }
 
     while (W && !pq.empty()) {
-        auto [d, i, j] = pq.top();
+        auto [d, i] = pq.top();
         pq.pop();
 
         auto [u, v, w] = edges[i];
-        int J = wdsu.path_max(u, v);
-        if (~J && ~wdsu.weight[J].first) {
-            if (J != j || w - wdsu.weight[J].first != d) {
-                pq.push({w - wdsu.weight[J].first, i, J});
+        int t = wdsu.path_max(u, v);
+        if (~t && ~wdsu.weight[t]) {
+            if (w - wdsu.weight[t] != d) {
+                pq.push({w - wdsu.weight[t], i});
                 continue;
             }
-            total += w - wdsu.weight[J].first;
-            wdsu.unite(u, v, {-1, i});
+            total += w - wdsu.weight[t];
+            wdsu.unite(u, v, -1);
             W--;
         }
     }
