@@ -85,6 +85,14 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
     return c;
 }
 
+template <typename T>
+vector<vector<T>> convolution_tree(int n, const vector<vector<T>> &leaves) {
+    vector<vector<T>> ct(n);
+    for (int i = 1; i < n; i <<= 1)
+        for (int j = 0; j < n - i; j += i << 1) ct[j] = convolve(leaves[j], leaves[i + j]);
+    return ct;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -92,8 +100,8 @@ int main() {
     int n;
     cin >> n;
 
-    vector<vector<double>> dp(n);
-    for (auto &poly : dp) {
+    vector<vector<double>> leaves(n);
+    for (auto &poly : leaves) {
         double x;
         cin >> x;
         x /= 100;
@@ -101,8 +109,6 @@ int main() {
         poly = {1 - x, x};
     }
 
-    for (int i = 1; i < n; i <<= 1)
-        for (int j = 0; j < n - i; j += i << 1) dp[j] = convolve(dp[j], dp[i + j]);
-
-    for (int k = 0; k <= n; k++) cout << fixed << setprecision(6) << dp[0][k] << " ";
+    auto ct = convolution_tree(n, leaves);
+    for (int k = 0; k <= n; k++) cout << fixed << setprecision(6) << ct[0][k] << " ";
 }
