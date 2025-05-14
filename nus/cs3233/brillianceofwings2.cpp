@@ -24,23 +24,22 @@ struct Hash {
 };
 
 struct WeightedDisjointSets {
-    vector<int> sets, prio;
-    vector<pair<int, int>> weight;
+    vector<int> sets, prio, weight;
 
-    WeightedDisjointSets(int n) : sets(n), prio(n), weight(n, {INT_MAX, 0}) {
+    WeightedDisjointSets(int n) : sets(n), prio(n), weight(n, INT_MAX) {
         iota(sets.begin(), sets.end(), 0);
         iota(prio.begin(), prio.end(), 0);
         shuffle(prio.begin(), prio.end(), mt19937_64(random_device{}()));
     }
 
-    int & compress(int v) {
+    int &compress(int v) {
         if (sets[v] == v) return sets[v];
-        while (weight[sets[v]].first <= weight[v].first) sets[v] = sets[sets[v]];
+        while (weight[sets[v]] <= weight[v]) sets[v] = sets[sets[v]];
         return sets[v];
     }
 
     int find(int v, int w = INT_MAX - 1) {
-        while (weight[v].first <= w) v = compress(v);
+        while (weight[v] <= w) v = compress(v);
         return v;
     }
 
@@ -50,18 +49,18 @@ struct WeightedDisjointSets {
     }
 
     int attach(int v, int w = INT_MAX - 1) {
-        while (weight[v].first <= w) v = sets[v];
+        while (weight[v] <= w) v = sets[v];
         return v;
     }
 
-    void link(int u, int v, pair<int, int> w) {
+    void link(int u, int v, int w) {
         detach(u);
         detach(v);
         while (u != v) {
-            u = attach(u, w.first);
-            v = attach(v, w.first);
+            u = attach(u, w);
+            v = attach(v, w);
             if (prio[u] < prio[v]) swap(u, v);
-            swap(sets[v], u);
+            swap(compress(v), u);
             swap(weight[v], w);
         }
         attach(u);
@@ -69,14 +68,14 @@ struct WeightedDisjointSets {
 
     void cut(int v, int w) {
         while (sets[v] != v) {
-            if (weight[v].first == w) {
+            if (weight[v] == w) {
                 int u = v;
                 while (sets[u] != u) u = sets[u];
                 sets[v] = v;
-                weight[v] = {INT_MAX, 0};
+                weight[v] = INT_MAX;
                 return;
             }
-            v = compress(v);
+            compress(v) = v;
         }
     }
 
@@ -89,26 +88,27 @@ struct WeightedDisjointSets {
         if (find(u) != find(v)) return -1;
 
         for (;;) {
-            if (weight[u].first > weight[v].first) swap(u, v);
-            if (sets[u] == v) return u;
-            u = sets[u];
+            if (weight[u] > weight[v]) swap(u, v);
+            int t = compress(u);
+            if (t == v) return u;
+            u = t;
         }
     }
 
-    int unite(int u, int v, pair<int, int> w) {
+    int unite(int u, int v, int w) {
         if (u != v) {
             int t = path_max(u, v);
             if (t == -1) {
                 link(u, v, w);
                 return -1;
-            } else if (weight[t].first > w.first) {
-                int i = weight[t].second;
-                cut(t, weight[t].first);
+            } else if (weight[t] > w) {
+                int x = weight[t];
+                cut(t, weight[t]);
                 link(u, v, w);
-                return i;
+                return x;
             }
         }
-        return w.second;
+        return w;
     }
 };
 
@@ -119,43 +119,32 @@ int main() {
     int n;
     cin >> n;
 
-    unordered_set<pair<int, int>, Hash> t1;
-    for (int i = 0; i < n - 1; i++) {
-        int u, v;
-        cin >> u >> v;
+    unordered_set<pair<int, int>, Hash> t1, t2;
+    auto read = [&](auto &t) {
+        for (int _ = 0; _ < n - 1; _++) {
+            int u, v;
+            cin >> u >> v;
 
-        t1.emplace(minmax(u - 1, v - 1));
-    }
-
-    vector<pair<int, int>> shared, t2;
-    for (int i = 0; i < n - 1; i++) {
-        int u, v;
-        cin >> u >> v;
-
-        auto e = minmax(u - 1, v - 1);
-        if (t1.count(e)) {
-            t1.erase(e);
-            shared.emplace_back(e);
-        } else t2.emplace_back(e);
-    }
-
-    vector<pair<int, int>> edges(t1.begin(), t1.end());
-    cout << edges.size() << "\n";
+            t.emplace(minmax(u - 1, v - 1));
+        }
+    };
+    read(t1);
+    read(t2);
 
     WeightedDisjointSets wdsu(n);
-    for (auto [u, v] : shared)
-        if (wdsu.find(u) != wdsu.find(v)) wdsu.unite(u, v, {0, -1});
+    vector<pair<int, int>> edges;
+    for (auto [u, v] : t1)
+        if (t2.count({u, v})) wdsu.unite(u, v, -1);
+        else {
+            edges.emplace_back(u, v);
+            wdsu.unite(u, v, edges.size() - 1);
+        }
 
-    for (int i = 0; i < edges.size(); i++) {
-        auto [u, v] = edges[i];
-        if (wdsu.find(u) != wdsu.find(v)) wdsu.unite(u, v, {i + 1, i});
-    }
-
-    for (auto [c, d] : t2) {
-        int i = wdsu.unite(c, d, {0, -2});
-        if (i != -2) {
+    cout << edges.size() << '\n';
+    for (auto [c, d] : t2)
+        if (!t1.count({c, d})) {
+            int i = wdsu.unite(c, d, -1);
             auto [a, b] = edges[i];
             cout << a + 1 << " " << b + 1 << " " << c + 1 << " " << d + 1 << "\n";
         }
-    }
 }
