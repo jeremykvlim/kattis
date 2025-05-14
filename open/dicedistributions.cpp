@@ -451,7 +451,7 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
 }
 
 template <typename T>
-vector<T> polynomial_inverse(const vector<T> &a, int n) {
+vector<T> polyinv(const vector<T> &a, int n) {
     vector<modint> ntt_a_inv{modint::inv(a[0])};
     while (ntt_a_inv.size() < n) {
         int m = ntt_a_inv.size() << 1;
@@ -516,7 +516,7 @@ int main() {
     auto polyAB = convolve(polyA, polyB);
     int k = polyAB.size() - polyC.size() + 1;
 
-    auto polyC_inv = polynomial_inverse(polyC, k), polyD = convolve(polyAB, polyC_inv);
+    auto polyC_inv = polyinv(polyC, k), polyD = convolve(polyAB, polyC_inv);
     polyD.resize(k);
 
     int D = 0;
