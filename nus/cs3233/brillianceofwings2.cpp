@@ -60,7 +60,7 @@ struct WeightedDisjointSets {
             u = attach(u, w);
             v = attach(v, w);
             if (prio[u] < prio[v]) swap(u, v);
-            swap(compress(v), u);
+            swap(sets[v], u);
             swap(weight[v], w);
         }
         attach(u);
@@ -75,7 +75,7 @@ struct WeightedDisjointSets {
                 weight[v] = INT_MAX;
                 return;
             }
-            compress(v) = v;
+            v = compress(v);
         }
     }
 
@@ -89,9 +89,8 @@ struct WeightedDisjointSets {
 
         for (;;) {
             if (weight[u] > weight[v]) swap(u, v);
-            int t = compress(u);
-            if (t == v) return u;
-            u = t;
+            if (sets[u] == v) return u;
+            u = sets[u];
         }
     }
 
