@@ -32,7 +32,7 @@ struct WeightedDisjointSets {
         shuffle(prio.begin(), prio.end(), mt19937_64(random_device{}()));
     }
 
-    int &compress(int v) {
+    int & compress(int v) {
         if (sets[v] == v) return sets[v];
         while (weight[sets[v]] <= weight[v]) sets[v] = sets[sets[v]];
         return sets[v];
