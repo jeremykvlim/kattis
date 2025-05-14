@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -450,6 +450,79 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
     return c;
 }
 
+template <typename T>
+vector<T> polyinv(const vector<T> &a, int n) {
+    vector<modint> ntt_a_inv{modint::inv(a[0])};
+    while (ntt_a_inv.size() < n) {
+        int m = ntt_a_inv.size() << 1;
+
+        vector<modint> ntt_a(min((int) a.size(), m));
+        for (int i = 0; i < ntt_a.size(); i++) ntt_a[i] = a[i];
+
+        auto temp = convolve(convolve(ntt_a_inv, ntt_a_inv), ntt_a);
+        ntt_a_inv.resize(m);
+        for (int i = 0; i < m; i++) {
+            ntt_a_inv[i] *= 2;
+            if (i < temp.size()) ntt_a_inv[i] -= temp[i];
+        }
+    }
+
+    vector<T> a_inv(n);
+    for (int i = 0; i < n; i++) a_inv[i] = ntt_a_inv[i]();
+    return a_inv;
+}
+
+template <typename T>
+vector<T> polyderiv(const vector<T> &a) {
+    int n = a.size();
+    if (n <= 1) return {0};
+
+    vector<T> D(n - 1);
+    for (int i = 1; i < n; i++) D[i - 1] = ((modint) i * a[i])();
+    return D;
+}
+
+template <typename T>
+vector<T> polyint(const vector<T> &a) {
+    int n = a.size();
+
+    vector<T> I(n + 1, 0);
+    for (int i = 1; i <= n; i++) I[i] = (modint::inv(i) * a[i - 1])();
+    return I;
+}
+
+template <typename T>
+vector<T> polyln(const vector<T> &a, int n) {
+    auto D_lg = convolve(polyderiv(a), polyinv(a, n));
+    D_lg.resize(n - 1);
+    auto I = polyint(D_lg);
+    I.resize(n);
+    return I;
+}
+
+template<typename T>
+vector<T> polyexp(const vector<T> &a, int n) {
+    vector<T> e{(T) 1};
+    while (e.size() < n) {
+        int m = min((int) e.size() << 1, n);
+
+        vector<T> temp = e;
+        temp.resize(m);
+        auto lne = polyln(temp, m);
+
+        vector<T> diff(m, 0);
+        diff[0] = 1;
+        for (int i = 0; i < m; i++) {
+            if (i < a.size()) diff[i] += a[i];
+            diff[i] -= lne[i];
+        }
+        e = convolve(e, diff);
+        e.resize(m);
+    }
+    e.resize(n);
+    return e;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -460,18 +533,22 @@ int main() {
     cin >> n;
 
     int sum = 0;
-    vector<vector<int>> dp(n);
-    for (auto &poly : dp) {
-        int hi;
+    vector<int> h(n);
+    unordered_map<int, int> count;
+    for (int &hi : h) {
         cin >> hi;
 
         sum += hi;
-        poly.resize(hi + 1, 1);
-        poly[0] = 0;
+        count[hi]++;
     }
 
-    for (int i = 1; i < n; i <<= 1)
-        for (int j = 0; j < n - i; j += i << 1) dp[j] = convolve(dp[j], dp[i + j]);
+    int m = sum - n;
+    vector<modint> F(m + 1, 0);
+    for (int k = 1; k <= m; k++) F[k] = modint::inv(k) * n;
 
-    for (int i = 1; i <= sum; i++) cout << (i < n ? 0 : dp[0][i]) << "\n";
+    for (auto [hi, c] : count)
+        for (int k = hi, i = 1; k <= m; k += hi, i++) F[k] -= modint::inv(i) * c;
+
+    auto e = polyexp(F, m + 1);
+    for (int i = 1; i <= sum; i++) cout << (i < n ? 0 : e[i - n]) << "\n";
 }
