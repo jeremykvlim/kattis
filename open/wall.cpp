@@ -422,7 +422,7 @@ int main() {
     for (int &ai : a) cin >> ai;
     for (int &bi : b) cin >> bi;
 
-    SegmentTree st(1 << (__lg(n) + 1), n);
+    SegmentTree st(bit_ceil((unsigned) n), n);
     modint sum = 0;
     vector<int> c(2 * n), indices(2 * n);
     for (int i = 0; i < n; i++) {
