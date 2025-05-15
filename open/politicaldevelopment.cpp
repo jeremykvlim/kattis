@@ -9,12 +9,12 @@ int main() {
     cin >> n >> k;
 
     vector<vector<int>> adj_list1(n), adj_list2(n);
-    vector<int> deg(n);
+    vector<int> D(n);
     for (int i = 0; i < n; i++) {
         int d;
         cin >> d;
 
-        deg[i] = d;
+        D[i] = d;
         while (d--) {
             int j;
             cin >> j;
@@ -25,11 +25,11 @@ int main() {
 
     for (int i = 0; i < n; i++)
         for (int j : adj_list1[i])
-            if (deg[i] < deg[j] || (deg[i] == deg[j] && i < j)) adj_list2[i].emplace_back(j);
+            if (D[i] < D[j] || (D[i] == D[j] && i < j)) adj_list2[i].emplace_back(j);
 
     int size = 0;
     vector<int> count(n, 0);
-    auto dfs = [&](auto self, int v, int s = 1) -> void {
+    auto dfs = [&](auto &&self, int v, int s = 1) -> void {
         size = max(size, s);
         for (int u : adj_list2[v]) count[u]++;
         for (int u : adj_list2[v])
