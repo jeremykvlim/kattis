@@ -36,8 +36,6 @@ int main() {
             if (count[u] >= s) self(self, u, s + 1);
         for (int u : adj_list2[v]) count[u]--;
     };
-
     for (int i = 0; i < n; i++) dfs(dfs, i);
-
     cout << size;
 }
