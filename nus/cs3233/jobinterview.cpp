@@ -3,8 +3,7 @@ using namespace std;
 
 struct SegmentTree {
     static inline vector<long long> A, S;
-    static inline long long C;
-    static inline int cand;
+    static inline int C, cand;
 
     static long long score(int l, int r) {
         return S[l] + (A[r] - A[l + 1]) * (r - l) + C;
@@ -69,7 +68,7 @@ struct SegmentTree {
         return ST[i];
     }
 
-    SegmentTree(int n, const vector<long long> &a, long long c) : n(n), ST(2 * n), qs(n) {
+    SegmentTree(int n, const vector<long long> &a, int c) : n(n), ST(2 * n), qs(n) {
         cand = 0;
         A = a;
         S = vector<long long>(n, 0);
@@ -81,8 +80,7 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n;
-    long long c;
+    int n, c;
     cin >> n >> c;
 
     vector<long long> a(n + 1), k(n + 1);
