@@ -6,7 +6,7 @@ int main() {
     cin.tie(nullptr);
 
     vector<int> fact(10, 1);
-    for (int i = 2; i < 10; i++) fact[i] = i * fact[i - 1];
+    for (int i = 2; i < 10; i++) fact[i] = fact[i - 1] * i;
 
     int n;
     cin >> n;
