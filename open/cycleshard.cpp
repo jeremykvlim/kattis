@@ -384,7 +384,7 @@ int main() {
     modint::init();
 
     vector<modint> fact(300, 1);
-    for (int i = 1; i < 300; i++) fact[i] = i * fact[i - 1];
+    for (int i = 2; i < 300; i++) fact[i] = fact[i - 1] * i;
 
     int t;
     cin >> t;
