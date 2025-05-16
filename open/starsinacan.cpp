@@ -164,6 +164,14 @@ struct Point3D {
     template <typename U>
     Point3D(const Point3D<U> &p) : x((T) p.x), y((T) p.y), z((T) p.z) {}
 
+    const auto begin() const {
+        return &x;
+    }
+
+    const auto end() const {
+        return &z + 1;
+    }
+
     Point3D operator-() const {
         return {-x, -y, -z};
     }

@@ -1,6 +1,28 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+struct Hash {
+    template <typename T>
+    static inline void combine(size_t &h, const T &v) {
+        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
+    }
+
+    template <typename T>
+    size_t operator()(const T &v) const {
+        if constexpr (requires { tuple_size<T>::value; })
+            return apply([](const auto &...e) {
+                size_t h = 0;
+                (combine(h, e), ...);
+                return h;
+            }, v);
+        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
+            size_t h = 0;
+            for (const auto &e : v) combine(h, e);
+            return h;
+        } else return hash<T>{}(v);
+    }
+};
+
 template <typename T>
 bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
     return fabs(v1 - v2) <= epsilon;
@@ -158,17 +180,23 @@ pair<bool, bool> point_in_polygon(const vector<Point<T>> &polygon, const Point<T
 template <typename T>
 struct Point3D {
     T x, y, z;
-    int i;
 
     Point3D() {}
-    Point3D(T x, T y, T z) : x(x), y(y), z(z), i(-1) {}
-    Point3D(T x, T y, T z, int i) : x(x), y(y), z(z), i(i) {}
+    Point3D(T x, T y, T z) : x(x), y(y), z(z) {}
 
     template <typename U>
-    Point3D(U x, U y, U z, int i) : x(x), y(y), z(z), i(i) {}
+    Point3D(U x, U y, U z) : x(x), y(y), z(z) {}
 
     template <typename U>
-    Point3D(const Point3D<U> &p) : x((T) p.x), y((T) p.y), z((T) p.z), i(p.i) {}
+    Point3D(const Point3D<U> &p) : x((T) p.x), y((T) p.y), z((T) p.z) {}
+
+    const auto begin() const {
+        return &x;
+    }
+
+    const auto end() const {
+        return &z + 1;
+    }
 
     Point3D operator-() const {
         return {-x, -y, -z};
@@ -534,9 +562,11 @@ int main() {
         for (int i = 0; i < mid; i++) radius[j[i]] = max(radius[j[i]], R[i]);
 
         bool blocked = false;
+        unordered_map<Point3D<__int128>, int, Hash> indices;
         for (int i = 0; i < n; i++) {
             if (!radius[i]) continue;
-            points.emplace_back(coords[i].x, coords[i].y, squared_dist(coords[i]) + h * h - radius[i] * radius[i], i);
+            points.emplace_back(coords[i].x, coords[i].y, squared_dist(coords[i]) + h * h - radius[i] * radius[i]);
+            indices[points.back()] = i;
 
             if (radius[i] > h) {
                 if (squared_dist(coords[i], start) < (radius[i] - h) * (radius[i] - h) || squared_dist(coords[i], end) < (radius[i] - h) * (radius[i] - h)) {
@@ -549,7 +579,7 @@ int main() {
         if (blocked) r = mid;
         else if (points.size() < 4) l = mid;
         else {
-            points.emplace_back(0, 0, 1e18, n);
+            points.emplace_back(0, 0, 1e18);
             ConvexHull3D convex_hull(points);
             int s = convex_hull.faces.size();
             DisjointSets dsu(s + 1);
@@ -574,7 +604,7 @@ int main() {
                         return (diff > 0 || (__int128) 4 * r1 * r2 > diff * diff);
                     };
 
-                    if (!block(radius[points[x].i], radius[points[y].i])) dsu.unite(f, (g < 0 || upward[g]) ? s : g);
+                    if (!block(radius[indices[points[x]]], radius[indices[points[y]]])) dsu.unite(f, (g < 0 || upward[g]) ? s : g);
                 }
             }
 
