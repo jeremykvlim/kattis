@@ -393,7 +393,7 @@ int main() {
         }
 
     vector<modint> fact(N + 1, 1);
-    for (int i = 1; i <= N; i++) fact[i] = fact[i - 1] * i;
+    for (int i = 2; i <= N; i++) fact[i] = fact[i - 1] * i;
 
     vector<vector<modint>> C(N + 1, vector<modint>(N + 1));
     for (int n = 0; n <= N; n++) {
