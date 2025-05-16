@@ -601,9 +601,9 @@ int main() {
                     int xy = yx ^ 1, x = convex_hull.edge_dest[yx], y = convex_hull.edge_dest[xy], g = convex_hull.edge_face[xy];
 
                     auto rx = radius[indices[points[x]]], ry = radius[indices[points[y]]];
-                    auto x_2D = convert_to_2D(points[x]), y_2D = convert_to_2D(points[y]);
                     if (!(rx > h && ry > h) ||
-                        euclidean_dist(x_2D, y_2D) < sqrt(rx * rx - h * h) + sqrt(ry * ry - h * h)) dsu.unite(f, (!~g || upward[g]) ? s : g);
+                        euclidean_dist(convert_to_2D(points[x]), convert_to_2D(points[y])) >= sqrt(rx * rx - h * h) + sqrt(ry * ry - h * h))
+                        dsu.unite(f, (!~g || upward[g]) ? s : g);
                 }
             }
 
