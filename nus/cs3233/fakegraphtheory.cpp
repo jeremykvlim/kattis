@@ -366,7 +366,7 @@ int main() {
     cin >> n;
 
     vector<modint> fact(2 * n + 1, 1);
-    for (int i = 1; i <= 2 * n; i++) fact[i] = fact[i - 1] * i;
+    for (int i = 2; i <= 2 * n; i++) fact[i] = fact[i - 1] * i;
 
     auto E = [&](auto &&self, int i) -> modint {
         if (i == 1) return 2;
