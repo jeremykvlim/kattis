@@ -366,14 +366,16 @@ struct ConvexHull3D {
 
         stack<int> s;
         ForwardStar list;
+        vector<int> state;
         vector<bool> invalid;
         auto add_face = [&](int ca, int ab, int bc) {
             int i = faces.size();
-            s.emplace(i);
-            valid_faces.emplace_back(i);
-            list.extend();
-            edge_face[ca] = edge_face[ab] = edge_face[bc] = i;
             faces.emplace_back(ca, ab, bc);
+            valid_faces.emplace_back(i);
+            edge_face[ca] = edge_face[ab] = edge_face[bc] = i;
+            s.emplace(i);
+            list.extend();
+            state.emplace_back(0);
             invalid.emplace_back(false);
         };
         add_face(7, 1, 2);
@@ -395,7 +397,7 @@ struct ConvexHull3D {
                     break;
                 }
 
-        vector<int> state(faces.size(), 0), temp(n);
+        vector<int> temp(n);
         while (!s.empty()) {
             int v = s.top();
             s.pop();
@@ -467,7 +469,6 @@ struct ConvexHull3D {
                 list.head[f] = -1;
             }
             for (int f : non_visible) state[f] = 0;
-            state.resize(faces.size(), 0);
         }
 
         valid_faces.erase(remove_if(valid_faces.begin(), valid_faces.end(), [&](int i) { return invalid[i]; }), valid_faces.end());
