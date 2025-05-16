@@ -166,6 +166,11 @@ T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
 }
 
 template <typename T>
+Point<T> midpoint(const Point<T> &a, const Point<T> &b) {
+    return {a.x + (b.x - a.x) / 2, a.y + (b.y - a.y) / 2};
+}
+
+template <typename T>
 Point<T> circumcenter(const array<Point<T>, 3> &triangle) {
     Point<T> a = triangle[0], b = triangle[1], c = triangle[2], ab = a - b, bc = b - c, ca = c - a;
 
@@ -208,8 +213,8 @@ struct Line {
 
 template <typename T>
 Line<T> perpendicular_bisector(const Point<T> &a, const Point<T> &b) {
-    Point<T> midpoint{a.x + (b.x - a.x) / 2, a.y + (b.y - a.y) / 2}, dir{a.y - b.y, b.x - a.x};
-    return {midpoint, dir + midpoint};
+    Point<T> mp = midpoint(a, b), dir{a.y - b.y, b.x - a.x};
+    return {mp, dir + mp};
 }
 
 template <typename T>
