@@ -161,6 +161,11 @@ T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
 }
 
 template <typename T>
+double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
+    return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
+}
+
+template <typename T>
 double squared_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
     return (double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y);
 }
@@ -565,7 +570,7 @@ int main() {
         unordered_map<Point3D<__int128>, int, Hash> indices;
         for (int i = 0; i < n; i++) {
             if (!radius[i]) continue;
-            points.emplace_back(coords[i].x, coords[i].y, squared_dist(coords[i]) + h * h - radius[i] * radius[i]);
+            points.emplace_back(coords[i].x, coords[i].y, squared_dist(coords[i]) - (radius[i] * radius[i] - h * h));
             indices[points.back()] = i;
 
             if (radius[i] > h) {
@@ -594,17 +599,11 @@ int main() {
 
                 for (int yx : {ca, ab, bc}) {
                     int xy = yx ^ 1, x = convex_hull.edge_dest[yx], y = convex_hull.edge_dest[xy], g = convex_hull.edge_face[xy];
+
+                    auto rx = radius[indices[points[x]]], ry = radius[indices[points[y]]];
                     auto x_2D = convert_to_2D(points[x]), y_2D = convert_to_2D(points[y]);
-
-                    auto block = [&](auto rx, auto ry) {
-                        if (!(rx > h && ry > h)) return false;
-                        auto r1 = rx * rx - h * h, r2 = ry * ry - h * h;
-
-                        auto diff = r1 + r2 - squared_dist(x_2D, y_2D);
-                        return (diff > 0 || (__int128) 4 * r1 * r2 > diff * diff);
-                    };
-
-                    if (!block(radius[indices[points[x]]], radius[indices[points[y]]])) dsu.unite(f, (g < 0 || upward[g]) ? s : g);
+                    if (!(rx > h && ry > h) ||
+                        euclidean_dist(x_2D, y_2D) < sqrt(rx * rx - h * h) + sqrt(ry * ry - h * h)) dsu.unite(f, (!~g || upward[g]) ? s : g);
                 }
             }
 
