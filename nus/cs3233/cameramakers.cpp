@@ -150,37 +150,30 @@ double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
-int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
-
-    int n, k;
-    cin >> n >> k;
-
-    auto xl = 1e7, xr = -1e7, yl = 1e7, yr = -1e7;
-    vector<Point<double>> points(n);
-    for (auto &[x, y] : points) {
-        cin >> x >> y;
-
+template <typename T>
+T radius_of_k_enclosing_circle(int k, const vector<Point<T>> &points) {
+    int n = points.size();
+    T xl = 1e20, xr = -1e20, yl = 1e20, yr = -1e20;
+    for (auto [x, y] : points) {
         xl = min(xl, x);
         xr = max(xr, x);
         yl = min(yl, y);
         yr = max(yr, y);
     }
 
-    vector<double> R_l(n, -1);
-    auto valid = [&](double R) -> bool {
+    vector<T> R_l(n, -1);
+    auto valid = [&](T R) -> bool {
         unordered_map<Point<int>, vector<int>, Hash> grid;
         for (int i = 0; i < n; i++) {
-            Point<int> cell = (points[i] - Point<double>{xl, yl}) / (2 * R);
+            Point<int> cell = (points[i] - Point<T>{xl, yl}) / (2 * R);
             grid[cell].emplace_back(i);
         }
 
         for (int i = 0; i < n; i++) {
             if (R_l[i] > R) continue;
 
-            Point<int> p = (points[i] - Point<double>{xl, yl}) / (2 * R);
-            vector<Point<double>> vectors;
+            Point<int> p = (points[i] - Point<T>{xl, yl}) / (2 * R);
+            vector<Point<T>> vectors;
             int count = 1;
             for (int dx = -1; dx <= 1; dx++)
                 for (int dy = -1; dy <= 1; dy++) {
@@ -202,7 +195,7 @@ int main() {
                 continue;
             }
 
-            vector<pair<double, bool>> intervals;
+            vector<pair<T, bool>> intervals;
             int overlaps = 1;
             for (auto v : vectors) {
                 auto a = angle(v), theta = acos(euclidean_dist(v) / (2 * R));
@@ -222,12 +215,25 @@ int main() {
         return false;
     };
 
-    double l = 0, r = sqrt((xr - xl) * (xr - xl) + (yr - yl) * (yr - yl)) / 2 + 1, m;
+    T l = 0, r = sqrt((xr - xl) * (xr - xl) + (yr - yl) * (yr - yl)) / 2 + 1, m;
     while (l + 1e-8 < r && l + l * 1e-8 < r) {
         m = l + (r - l) / 2;
 
         if (valid(m)) r = m;
         else l = m;
     }
-    cout << fixed << setprecision(2) << m;
+    return r;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, k;
+    cin >> n >> k;
+
+    vector<Point<double>> points(n);
+    for (auto &[x, y] : points) cin >> x >> y;
+
+    cout << fixed << setprecision(2) << radius_of_k_enclosing_circle(k, points);
 }
