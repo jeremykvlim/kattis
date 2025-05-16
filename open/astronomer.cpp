@@ -129,6 +129,11 @@ double angle(const Point<T> &p) {
 }
 
 template <typename T>
+Point<T> midpoint(const Point<T> &a, const Point<T> &b) {
+    return {a.x + (b.x - a.x) / 2, a.y + (b.y - a.y) / 2};
+}
+
+template <typename T>
 struct Line {
     Point<T> a, b;
 
@@ -138,8 +143,8 @@ struct Line {
 
 template <typename T>
 Line<T> perpendicular_bisector(const Point<T> &a, const Point<T> &b) {
-    Point<T> midpoint{a.x + (b.x - a.x) / 2, a.y + (b.y - a.y) / 2}, dir{a.y - b.y, b.x - a.x};
-    return {midpoint, dir + midpoint};
+    Point<T> mp = midpoint(a, b), dir{a.y - b.y, b.x - a.x};
+    return {mp, dir + mp};
 }
 
 int main() {
