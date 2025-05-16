@@ -528,13 +528,17 @@ int main() {
     for (int f : convex_hull.valid_faces) {
         auto [a, b, c] = convex_hull.face_vertices(f);
 
-        auto normal = cross(points[a], points[b], points[c]), u = points[b] - points[a];
-        auto normalize = [&](auto &p) {
-            p /= euclidean_dist(p);
+        auto orthonormal_basis = [&]() -> array<Point3D<double>, 3> {
+            auto normal = cross(points[a], points[b], points[c]), u = points[b] - points[a];
+            auto normalize = [&](auto &p) {
+                p /= euclidean_dist(p);
+            };
+            normalize(normal);
+            normalize(u);
+            auto v = cross(normal, u);
+            return {u, v, normal};
         };
-        normalize(normal);
-        normalize(u);
-        auto v = cross(normal, u);
+        auto [u, v, normal] = orthonormal_basis();
 
         double h = 0;
         for (int i = 0; i < n; i++) {
