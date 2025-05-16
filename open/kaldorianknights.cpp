@@ -374,7 +374,7 @@ int main() {
     }
 
     vector<modint> fact(n + 1, 1);
-    for (int i = 1; i <= n; i++) fact[i] = fact[i - 1] * i;
+    for (int i = 2; i <= n; i++) fact[i] = fact[i - 1] * i;
 
     auto ranks = fact[n];
     vector<modint> dp(h + 1);
