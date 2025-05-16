@@ -54,7 +54,7 @@ struct ForwardStar {
     }
 
     void add_edge(int u, int edge_id) {
-        if (next.size() < edge_id) next.resize(edge_id + 1);
+        if (next.size() < edge_id + 1) next.resize(edge_id + 1);
         next[edge_id] = head[u];
         head[u] = edge_id;
     }
