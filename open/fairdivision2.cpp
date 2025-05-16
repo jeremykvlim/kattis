@@ -29,7 +29,6 @@ int main() {
                 if (s > m) goto next;
             }
 
-
             if (!(m % s)) {
                 auto p = q - t;
                 cout << p << " " << q;

@@ -70,7 +70,6 @@ int main() {
             return dp[k] != 1e18;
         };
 
-
         if (valid(mid)) r = mid;
         else l = mid;
     }

@@ -33,7 +33,6 @@ public class allpairspath {
                             if (dist[j][i] != Integer.MAX_VALUE && dist[i][k] != Integer.MAX_VALUE)
                                 dist[j][k] = -Integer.MAX_VALUE;
 
-
             while (q-- > 0) {
                 var query = br.readLine().split(" ");
                 int u = Integer.parseInt(query[0]), v = Integer.parseInt(query[1]), w = dist[u][v];
