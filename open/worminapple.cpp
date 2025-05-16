@@ -29,20 +29,20 @@ struct Point3D {
     }
 
     bool operator<(const Point3D &p) const {
-        return !approximately_equal(x, p.x) ? x < p.x : (!approximately_equal(y, p.y) ? y < p.y : z < p.z);
+        return sgn(x - p.x) ? x < p.x : (sgn(y - p.y) ? y < p.y : z < p.z);
     }
 
     bool operator>(const Point3D &p) const {
-        return !approximately_equal(x, p.x) ? x > p.x : (!approximately_equal(y, p.y) ? y > p.y : z > p.z);
+        return sgn(x - p.x) ? x > p.x : (sgn(y - p.y) ? y > p.y : z > p.z);
     }
 
     bool operator==(const Point3D &p) const {
-        if constexpr (is_floating_point_v<T>) return approximately_equal(x, p.x) && approximately_equal(y, p.y) && approximately_equal(z, p.z);
+        if constexpr (is_floating_point_v<T>) return !sgn(x - p.x) && !sgn(y - p.y) && !sgn(z - p.z);
         return x == p.x && y == p.y && z == p.z;
     }
 
     bool operator!=(const Point3D &p) const {
-        if constexpr (is_floating_point_v<T>) return !approximately_equal(x, p.x) || !approximately_equal(y, p.y) || !approximately_equal(z, p.z);
+        if constexpr (is_floating_point_v<T>) return sgn(x - p.x) || sgn(y - p.y) || sgn(z - p.z);
         return x != p.x || y != p.y || z != p.z;
     }
 

@@ -7,6 +7,11 @@ bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
 }
 
 template <typename T>
+int sgn(const T &v) {
+    return approximately_equal(v, (T) 0) ? 0 : (v > 0) - (v < 0);
+}
+
+template <typename T>
 struct Point {
     T x, y;
 
@@ -32,20 +37,20 @@ struct Point {
     }
 
     bool operator<(const Point &p) const {
-        return !approximately_equal(x, p.x) ? x < p.x : y < p.y;
+        return sgn(x - p.x) ? x < p.x : y < p.y;
     }
 
     bool operator>(const Point &p) const {
-        return !approximately_equal(x, p.x) ? x > p.x : y > p.y;
+        return sgn(x, p.x) ? x > p.x : y > p.y;
     }
 
     bool operator==(const Point &p) const {
-        if constexpr (is_floating_point_v<T>) return approximately_equal(x, p.x) && approximately_equal(y, p.y);
+        if constexpr (is_floating_point_v<T>) return !sgn(x - p.x) && !sgn(y - p.y);
         return x == p.x && y == p.y;
     }
 
     bool operator!=(const Point &p) const {
-        if constexpr (is_floating_point_v<T>) return !approximately_equal(x, p.x) || !approximately_equal(y, p.y);
+        if constexpr (is_floating_point_v<T>) return sgn(x - p.x) || sgn(y - p.y);
         return x != p.x || y != p.y;
     }
 
@@ -138,11 +143,6 @@ T doubled_signed_area_of_polygon(const vector<Point<T>> &polygon) {
     T area = 0;
     for (int i = 0; i < polygon.size(); i++) area += cross(polygon[i], polygon[(i + 1) % polygon.size()]);
     return area;
-}
-
-template <typename T>
-int sgn(const T &v) {
-    return approximately_equal(v, (T) 0) ? 0 : (v > 0) - (v < 0);
 }
 
 template <typename T>
