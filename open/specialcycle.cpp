@@ -48,7 +48,13 @@ struct ForwardStar {
 
     ForwardStar() {}
     ForwardStar(int n, int m) : head(n, -1), next(m) {}
+
+    void extend() {
+        head.emplace_back(-1);
+    }
+
     void add_edge(int u, int edge_id) {
+        if (next.size() < edge_id) next.resize(edge_id + 1);
         next[edge_id] = head[u];
         head[u] = edge_id;
     }
