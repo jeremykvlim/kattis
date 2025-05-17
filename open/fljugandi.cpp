@@ -597,12 +597,12 @@ int main() {
             for (int f : convex_hull.valid_faces) {
                 auto [ca, ab, bc] = convex_hull.faces[f];
 
-                for (int ji : {ca, ab, bc}) {
-                    int ij = ji ^ 1, i = convex_hull.edge_dest[ji], j = convex_hull.edge_dest[ij], g = convex_hull.edge_face[ij];
+                for (int qp : {ca, ab, bc}) {
+                    int pq = qp ^ 1, p = convex_hull.edge_dest[qp], q = convex_hull.edge_dest[pq], g = convex_hull.edge_face[pq];
 
-                    auto ri = radius[indices[points[i]]], rj = radius[indices[points[j]]];
-                    if (!(ri > h && rj > h) ||
-                        euclidean_dist(convert_to_2D(points[i]), convert_to_2D(points[j])) >= sqrt(ri * ri - h * h) + sqrt(rj * rj - h * h))
+                    auto rp = radius[indices[points[p]]], rq = radius[indices[points[q]]];
+                    if (!(rp > h && rq > h) ||
+                        euclidean_dist(convert_to_2D(points[p]), convert_to_2D(points[q])) >= sqrt(rp * rp - h * h) + sqrt(rq * rq - h * h))
                         dsu.unite(f, (!~g || upward[g]) ? s : g);
                 }
             }
