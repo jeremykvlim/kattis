@@ -11,11 +11,11 @@ int main() {
     cin >> n >> m;
 
     int s = 0;
-    vector<int> A(n + 1);
+    vector<int> a(n + 1);
     for (int i = 1; i <= n; i++) {
-        cin >> A[i];
+        cin >> a[i];
 
-        s = max(s, A[i]);
+        s = max(s, a[i]);
     }
 
     vector<array<int, 4>> queries(m);
@@ -29,14 +29,14 @@ int main() {
     }
 
     vector<tree<int, null_type, less<>, rb_tree_tag, tree_order_statistics_node_update>> pos(s + 1);
-    for (int i = 1; i <= n; i++) pos[A[i]].insert(i);
+    for (int i = 1; i <= n; i++) pos[a[i]].insert(i);
 
     for (auto [t, l, r, x] : queries)
         if (!t) {
-            if (A[l] != x) {
-                pos[A[l]].erase(l);
+            if (a[l] != x) {
+                pos[a[l]].erase(l);
                 pos[x].insert(l);
-                A[l] = x;
+                a[l] = x;
             }
         } else {
             int prev = 0;
