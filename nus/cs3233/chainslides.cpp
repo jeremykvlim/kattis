@@ -204,7 +204,7 @@ int main() {
     }
     sort(slides.begin(), slides.end());
 
-    int range = 1e9, n = 8;
+    int n = 8, range = 1e9;
     vector<vector<int>> count(n, vector<int>(n, 0));
     for (int l = 0, r = 0, used = 0; r < m; r++) {
         count[slides[r][1]][slides[r][2]]++;
