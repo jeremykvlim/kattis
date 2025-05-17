@@ -6,8 +6,7 @@ struct FenwickTree {
     vector<T> BIT;
 
     void update(int i, T v) {
-        for (; i && i < BIT.size(); i += i & -i)
-            BIT[i] += v;
+        for (; i && i < BIT.size(); i += i & -i) BIT[i] += v;
     }
 
     T pref_sum(int i) {
