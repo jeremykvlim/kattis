@@ -50,7 +50,7 @@ int main() {
                 for (int b : adj_list[a])
                     if (dist[a] + 1 > dist[b]) {
                         if (!visited[b]) {
-                            visited[b]  = true;
+                            visited[b] = true;
                             undo.emplace_back(b, dist[b]);
                         }
 
