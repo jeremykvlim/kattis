@@ -11,34 +11,35 @@ pair<T, vector<int>> dreyfus_wagner(int n, const vector<array<int, 3>> &edges, c
     }
 
     T inf = numeric_limits<T>::max() >> 2;
-    vector<vector<T>> dist(1 << t, vector<T>(n, inf));
-    for (int i = 0; i < t; i++) dist[1 << i][terminals[i]] = 0;
+    vector<vector<T>> dp(1 << t, vector<T>(n, inf));
+    for (int i = 0; i < t; i++) dp[1 << i][terminals[i]] = 0;
     vector<vector<pair<int, int>>> prev(1 << t, vector<pair<int, int>>(n, {-1, -1}));
 
+    priority_queue<pair<T, int>, vector<pair<T, int>>, greater<>> pq;
     for (int m1 = 1; m1 < 1 << t; m1++) {
         for (int v = 0; v < n; v++)
             for (int m2 = (m1 - 1) & m1; m2; --m2 &= m1) {
-                T d = dist[m2][v] + dist[m1 ^ m2][v] - cost[v];
-                if (dist[m1][v] > d) {
-                    dist[m1][v] = d;
+                T d = dp[m2][v] + dp[m1 ^ m2][v] - cost[v];
+                if (dp[m1][v] > d) {
+                    dp[m1][v] = d;
                     prev[m1][v] = {m2, -1};
                 }
             }
 
-        priority_queue<pair<T, int>, vector<pair<T, int>>, greater<>> pq;
-        for (int v = 0; v < n; v++) pq.emplace(dist[m1][v], v);
+        auto &dist = dp[m1];
+        for (int v = 0; v < n; v++) pq.emplace(dist[v], v);
 
         while (!pq.empty()) {
             auto [d, v] = pq.top();
             pq.pop();
 
-            if (d != dist[m1][v]) continue;
+            if (d != dist[v]) continue;
 
             for (auto [u, w, i] : adj_list[v])
-                if (dist[m1][u] > dist[m1][v] + w) {
-                    dist[m1][u] = dist[m1][v] + w;
+                if (dist[u] > dist[v] + w) {
+                    dist[u] = dist[v] + w;
+                    pq.emplace(dist[u], u);
                     prev[m1][u] = {v, i};
-                    pq.emplace(dist[m1][u], u);
                 }
         }
     }
@@ -46,7 +47,7 @@ pair<T, vector<int>> dreyfus_wagner(int n, const vector<array<int, 3>> &edges, c
     T total = inf;
     int v = -1;
     for (int u = 0; u < n; u++) {
-        T d = dist.back()[u] + cost[u];
+        T d = dp.back()[u] + cost[u];
         if (total > d) {
             total = d;
             v = u;
