@@ -39,7 +39,7 @@ int main() {
     }
 
     auto valid = [&](long long m) {
-        int msb = 63 - __builtin_clzll(m);
+        int msb = 63 - countl_zero((unsigned long long) m);
         if (s > 2 * (msb + 1)) return false;
 
         vector<pair<long long, long long>> rocks{{m, 1}};
