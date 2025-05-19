@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -357,17 +357,25 @@ constexpr unsigned long long MODULO = 998244353;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
 vector<int> sieve(int n) {
-    vector<int> mobius(n + 1, 1), lpf(n + 1, 0);
-    for (int i = 2; i <= n; i++)
-        if (!lpf[i]) {
-            for (int j = i; j <= n; j += i) {
-                lpf[j] = i;
-                mobius[j] *= -1;
-            }
-
-            for (auto j = (long long) i * i; j <= n; j += i * i) mobius[j] = 0;
+    vector<int> spf(n + 1, 0), primes, mobius(n + 1, 1);
+    for (int i = 2; i <= n; ++i) {
+        if (!spf[i]) {
+            spf[i] = i;
+            primes.emplace_back(i);
+            mobius[i] = -1;
         }
 
+        for (int p : primes) {
+            auto j = (long long) i * p;
+            if (j > n) break;
+
+            spf[j] = p;
+            if (!(i % p)) {
+                mobius[j] = 0;
+                break;
+            } else mobius[j] = -mobius[i];
+        }
+    }
     return mobius;
 }
 
@@ -382,6 +390,6 @@ int main() {
 
     auto mobius = sieve(k);
     modint bags = 1;
-    for (int i = 1; i <= k; i++) bags += mobius[i] * (pow(k / i * 2 + 1, m, (int) MODULO) - 1);
+    for (int i = 1; i <= k; i++) bags += mobius[i] * (modint::pow(k / i * 2 + 1, m) - 1);
     cout << bags;
 }
