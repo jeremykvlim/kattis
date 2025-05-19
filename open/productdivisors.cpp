@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -357,18 +357,23 @@ constexpr unsigned long long MODULO = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
 vector<bool> sieve(int n) {
-    vector<int> factors(n + 1);
-    vector<bool> primes(n + 1, false);
-    primes[2] = true;
-    iota(factors.begin(), factors.end(), 0);
-    for (int p = 3; p <= n; p += 2)
-        if (factors[p] == p) {
-            primes[p] = true;
-            for (auto i = (long long) p * p; i <= n; i += 2 * p)
-                if (factors[i] == i) factors[i] = p;
+    vector<int> spf(n + 1, 0), primes;
+    vector<bool> prime(n + 1, false);
+    for (int i = 2; i <= n; i++) {
+        if (!spf[i]) {
+            spf[i] = i;
+            primes.emplace_back(i);
+            prime[i] = true;
         }
 
-    return primes;
+        for (int p : primes) {
+            auto j = (long long) i * p;
+            if (j > n) break;
+            spf[j] = p;
+            if (p == spf[i]) break;
+        }
+    }
+    return prime;
 }
 
 int main() {
@@ -380,28 +385,27 @@ int main() {
     int n;
     cin >> n;
 
-    vector<int> seq(n);
-    for (int &a : seq) cin >> a;
+    vector<int> a(n);
+    for (int &ai : a) cin >> ai;
 
-    auto primes = sieve(*max_element(seq.begin(), seq.end()));
+    auto prime = sieve(*max_element(a.begin(), a.end()) + 1);
     unordered_map<int, int> pfs;
-    for (int a : seq) {
-        if (a == 1) continue;
+    for (int ai : a) {
+        if (ai == 1) continue;
 
-        if (primes[a]) pfs[a]++;
+        if (prime[ai]) pfs[ai]++;
         else {
-            for (int p = 2; p <= sqrt(a); p == 2 ? p++ : p += 2)
-                while (!(a % p)) {
+            for (int p = 2; p <= sqrt(ai); p == 2 ? p++ : p += 2)
+                while (!(ai % p)) {
                     pfs[p]++;
-                    a /= p;
+                    ai /= p;
                 }
 
-            if (a > 1) pfs[a]++;
+            if (ai > 1) pfs[ai]++;
         }
     }
 
     modint d = 1;
     for (auto [pf, pow] : pfs) d *= pow + 1;
-
     cout << d;
 }
