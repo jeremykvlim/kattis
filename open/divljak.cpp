@@ -94,7 +94,7 @@ int main() {
     int q;
     cin >> q;
 
-    vector<int> count(trie.size() + 1, 0), visited(trie.size() + 1, -1);
+    vector<int> count(trie.size(), 0), visited(trie.size(), -1);
     while (q--) {
         int t;
         cin >> t;
