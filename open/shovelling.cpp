@@ -3,13 +3,13 @@ using namespace std;
 
 template <typename T>
 pair<T, vector<int>> dreyfus_wagner(int n, const vector<array<int, 3>> &edges, const vector<int> &terminals, const vector<T> &cost) {
-    int t = terminals.size();
     vector<vector<array<int, 3>>> adj_list(n);
     for (int i = 0; i < edges.size(); i++) {
         auto [u, v, w] = edges[i];
         adj_list[u].push_back({v, w, i});
     }
 
+    int t = terminals.size();
     T inf = numeric_limits<T>::max() >> 2;
     vector<vector<T>> dp(1 << t, vector<T>(n, inf));
     for (int i = 0; i < t; i++) dp[1 << i][terminals[i]] = 0;
