@@ -44,8 +44,8 @@ struct Trie {
 
     void add(string &s) {
         int node = 0;
-        for (char ch : s) {
-            int pos = ch - a;
+        for (char c : s) {
+            int pos = c - a;
 
             if (T[node].next[pos] == -1) {
                 T[node].next[pos] = T.size();
