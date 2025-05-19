@@ -358,20 +358,15 @@ int main() {
 
     modint::init();
 
-    vector<int> sizes(t);
-    int s = 0;
-    for (int &n : sizes) {
-        cin >> n;
-
-        s = max(s, n);
+    vector<modint> fact(1e6 + 1, 1), dp(1e6 + 1, 1);
+    for (int i = 1; i <= 1e6; i++) {
+        fact[i] = fact[i - 1] * i;
+        if (i >= 2) dp[i] = dp[i - 1] + dp[i - 2] * (i - 1);
     }
 
-    vector<modint> fact(s + 1, 1);
-    for (int i = 1; i <= s; i++) fact[i] = fact[i - 1] * i;
-
-    vector<modint> dp(s + 1, 0);
-    dp[0] = 1;
-    if (s >= 1) dp[1] = 1;
-    for (int n = 2; n <= s; n++) dp[n] = dp[n - 1] + dp[n - 2] * (n - 1);
-    for (int n : sizes) cout << fact[n] - dp[n] << "\n";
+    while (t--) {
+        int n;
+        cin >> n;
+        cout << fact[n] - dp[n] << "\n";
+    }
 }
