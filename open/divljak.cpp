@@ -94,7 +94,7 @@ int main() {
     int q;
     cin >> q;
 
-    vector<int> count(trie.size() + 1, 0), seen(trie.size() + 1, 0);
+    vector<int> count(trie.size() + 1, 0), visited(trie.size() + 1, -1);
     while (q--) {
         int t;
         cin >> t;
@@ -111,9 +111,9 @@ int main() {
                 node = trie[node].next[pos];
 
                 int v = trie.end_link[node];
-                while (~v && seen[v] != q) {
+                while (~v && visited[v] != q) {
                     count[v]++;
-                    seen[v] = q;
+                    visited[v] = q;
                     v = trie.end_link[trie[v].link];
                 }
             }
