@@ -8,18 +8,18 @@ int main() {
     vector<long long> p10(11, 1);
     for (int i = 1; i <= 10; i++) p10[i] = p10[i - 1] * 10;
 
-    vector<long long> count, sums;
-    auto dfs = [&](auto &&self, int len, int pos = 0, long long rev_sum = 0, long long c = 1) {
-        if (rev_sum > 1e10) return;
+    vector<long long> sums, count;
+    auto dfs = [&](auto &&self, int len, int pos = 0, long long s = 0, long long c = 1) {
+        if (s > 1e10) return;
         if (pos == (len + 1) / 2) {
+            sums.emplace_back(s);
             count.emplace_back(c);
-            sums.emplace_back(rev_sum);
             return;
         }
         if (len == 2 * pos + 1)
-            for (int i = !pos ? 2 : 0; i <= 18; i += 2) self(self, len, pos + 1, rev_sum + p10[pos] * i, c);
+            for (int i = !pos ? 2 : 0; i <= 18; i += 2) self(self, len, pos + 1, s + p10[pos] * i, c);
         else
-            for (int i = !pos; i <= 18; i++) self(self, len, pos + 1, rev_sum + (p10[pos] + p10[len - pos - 1]) * i, c * (i > 9 ? 19 - i : i + !!pos));
+            for (int i = !pos; i <= 18; i++) self(self, len, pos + 1, s + (p10[pos] + p10[len - pos - 1]) * i, c * (i > 9 ? 19 - i : i + !!pos));
     };
     for (int i = 1; i <= 10; i++) dfs(dfs, i);
 
