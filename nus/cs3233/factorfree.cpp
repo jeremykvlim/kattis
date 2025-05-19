@@ -2,12 +2,21 @@
 using namespace std;
 
 vector<int> sieve(int n) {
-    vector<int> lpf(n + 1, 0);
-    for (int i = 2; i <= n; i++)
-        if (!lpf[i])
-            for (int j = i; j <= n; j += i) lpf[j] = i;
+    vector<int> spf(n + 1, 0), primes;
+    for (int i = 2; i <= n; i++) {
+        if (!spf[i]) {
+            spf[i] = i;
+            primes.emplace_back(i);
+        }
 
-    return lpf;
+        for (int p : primes) {
+            auto j = (long long) i * p;
+            if (j > n) break;
+            spf[j] = p;
+            if (p == spf[i]) break;
+        }
+    }
+    return spf;
 }
 
 int main() {
@@ -17,7 +26,6 @@ int main() {
     int n;
     cin >> n;
 
-
     vector<int> a(n);
     int biggest = 0;
     for (int &ai : a) {
@@ -26,14 +34,14 @@ int main() {
         biggest = max(biggest, ai);
     }
 
-    vector<int> lpf = sieve(biggest), prev(biggest + 1, -1), left(n, -1), right(n, n), parent(n, 0);
+    vector<int> spf = sieve(biggest), prev(biggest + 1, -1), left(n, -1), right(n, n), parent(n, 0);
     for (int i = 0; i < n; i++)
-        for (int ai = a[i]; ai > 1; ai /= lpf[ai]) {
-            if (prev[lpf[ai]] < i) {
-                left[i] = max(left[i], prev[lpf[ai]]);
-                if (prev[lpf[ai]] != -1) right[prev[lpf[ai]]] = min(right[prev[lpf[ai]]], i);
+        for (int ai = a[i]; ai > 1; ai /= spf[ai]) {
+            if (prev[spf[ai]] < i) {
+                left[i] = max(left[i], prev[spf[ai]]);
+                if (prev[spf[ai]] != -1) right[prev[spf[ai]]] = min(right[prev[spf[ai]]], i);
             }
-            prev[lpf[ai]] = i;
+            prev[spf[ai]] = i;
         }
 
     auto dfs = [&](auto &&self, int l, int r, int p = -1) {
