@@ -1,18 +1,5 @@
-#include <bits/stdc++.h>
+#include<bits/stdc++.h>
 using namespace std;
-
-vector<int> sieve(int n) {
-    vector<int> factors(n + 1), primes{2};
-    iota(factors.begin(), factors.end(), 0);
-    for (int p = 3; p <= n; p += 2)
-        if (factors[p] == p) {
-            primes.emplace_back(p);
-            for (auto i = (long long) p * p; i <= n; i += 2 * p)
-                if (factors[i] == i) factors[i] = p;
-        }
-
-    return primes;
-}
 
 template <typename T, typename U, typename V>
 T mul(U x, V y, T mod) {
@@ -47,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -111,6 +98,24 @@ bool isprime(unsigned long long n) {
         return !U;
     };
     return lucas_pseudoprime();
+}
+
+vector<int> sieve(int n) {
+    vector<int> spf(n + 1, 0), primes;
+    for (int i = 2; i <= n; i++) {
+        if (!spf[i]) {
+            spf[i] = i;
+            primes.emplace_back(i);
+        }
+
+        for (int p : primes) {
+            auto j = (long long) i * p;
+            if (j > n) break;
+            spf[j] = p;
+            if (p == spf[i]) break;
+        }
+    }
+    return primes;
 }
 
 int main() {

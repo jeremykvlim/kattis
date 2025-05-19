@@ -356,19 +356,6 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned long long MODULO = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
-vector<int> sieve(int n) {
-    vector<int> factors(n + 1), primes{2};
-    iota(factors.begin(), factors.end(), 0);
-    for (int p = 3; p <= n; p += 2)
-        if (factors[p] == p) {
-            primes.emplace_back(p);
-            for (auto i = (long long) p * p; i <= n; i += 2 * p)
-                if (factors[i] == i) factors[i] = p;
-        }
-
-    return primes;
-}
-
 vector<pair<double, modint>> divisors(vector<pair<int, int>> &pfs) {
     vector<pair<double, modint>> divs{{0, 1}};
 
@@ -389,18 +376,37 @@ vector<pair<double, modint>> divisors(vector<pair<int, int>> &pfs) {
     return divs;
 }
 
+vector<int> sieve(int n) {
+    vector<int> spf(n + 1, 0), primes;
+    for (int i = 2; i <= n; i++) {
+        if (!spf[i]) {
+            spf[i] = i;
+            primes.emplace_back(i);
+        }
+
+        for (int p : primes) {
+            auto j = (long long) i * p;
+            if (j > n) break;
+            spf[j] = p;
+            if (p == spf[i]) break;
+        }
+    }
+    return primes;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     modint::init();
-    auto primes = sieve(99);
-    vector<int> indices(primes.back() + 1), factors(primes.back() + 1, 0);
-    for (int i = 0; i < primes.size(); i++) indices[primes[i]] = i;
 
     string s;
     cin >> s;
 
+    auto primes = sieve(99);
+    vector<int> indices(primes.back() + 1), factors(primes.back() + 1, 0);
+    for (int i = 0; i < primes.size(); i++) indices[primes[i]] = i;
+    
     pair<double, modint> K{0, 1};
     auto &[logk, kmod] = K;
     for (int i = 0; i < s.size() / 2; i++) {

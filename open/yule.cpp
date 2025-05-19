@@ -2,15 +2,20 @@
 using namespace std;
 
 vector<int> sieve(int n) {
-    vector<int> factors(n + 1), primes{2};
-    iota(factors.begin(), factors.end(), 0);
-    for (int p = 3; p <= n; p += 2)
-        if (factors[p] == p) {
-            primes.emplace_back(p);
-            for (auto i = (long long) p * p; i <= n; i += 2 * p)
-                if (factors[i] == i) factors[i] = p;
+    vector<int> spf(n + 1, 0), primes;
+    for (int i = 2; i <= n; i++) {
+        if (!spf[i]) {
+            spf[i] = i;
+            primes.emplace_back(i);
         }
 
+        for (int p : primes) {
+            auto j = (long long) i * p;
+            if (j > n) break;
+            spf[j] = p;
+            if (p == spf[i]) break;
+        }
+    }
     return primes;
 }
 
