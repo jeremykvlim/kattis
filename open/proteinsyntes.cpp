@@ -1,6 +1,23 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+struct ForwardStar {
+    vector<int> head, next;
+
+    ForwardStar() {}
+    ForwardStar(int n, int m) : head(n, -1), next(m) {}
+
+    void extend() {
+        head.emplace_back(-1);
+    }
+
+    void add_edge(int u, int edge_id) {
+        if (next.size() < edge_id + 1) next.resize(edge_id + 1);
+        next[edge_id] = head[u];
+        head[u] = edge_id;
+    }
+};
+
 struct Trie {
     enum ascii {
         LOWER = 97,
@@ -20,9 +37,10 @@ struct Trie {
     vector<TrieNode> T;
     ascii a;
     int r, count;
-    vector<int> jump_link, head, jump_index, len;
+    vector<int> next_link, len;
+    ForwardStar list;
 
-    Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range), count(0), jump_link{-1}, head{-1} {}
+    Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range), count(0), next_link{-1}, list(1, 0) {}
 
     void add(string &s) {
         int node = 0;
@@ -32,16 +50,15 @@ struct Trie {
             if (T[node].next[pos] == -1) {
                 T[node].next[pos] = T.size();
                 T.emplace_back(TrieNode(r));
-                jump_link.emplace_back(-1);
-                head.emplace_back(-1);
+                next_link.emplace_back(-1);
+                list.extend();
             }
             node = T[node].next[pos];
         }
 
-        if (head[node] == -1) {
+        if (list.head[node] == -1) {
             len.emplace_back(s.size());
-            jump_index.emplace_back(-1);
-            head[node] = count++;
+            list.add_edge(node, count++);
         }
     }
 
@@ -58,7 +75,7 @@ struct Trie {
 
                 if (u != -1) {
                     T[u].link = (l == -1) ? 0 : T[l].next[c];
-                    jump_link[u] = (head[T[u].link] != -1) ? T[u].link : jump_link[T[u].link];
+                    next_link[u] = (list.head[T[u].link] != -1) ? T[u].link : next_link[T[u].link];
                     q.emplace(u);
                 } else T[v].next[c] = (l == -1) ? 0 : T[l].next[c];
             }
@@ -94,8 +111,8 @@ int main() {
     for (int i = 1; i <= n; i++) {
         int c = t[i - 1] - 'a';
         node = trie[node].next[c];
-        for (int v = node; v != -1; v = trie.jump_link[v])
-            for (int j = trie.head[v]; j != -1; j = trie.jump_index[j]) dp[i] = min(dp[i], dp[i - trie.len[j]] + 1);
+        for (int v = node; v != -1; v = trie.next_link[v])
+            for (int j = trie.list.head[v]; j != -1; j = trie.list.next[j]) dp[i] = min(dp[i], dp[i - trie.len[j]] + 1);
     }
     cout << dp[n];
 }
