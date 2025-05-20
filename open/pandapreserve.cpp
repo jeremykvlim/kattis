@@ -290,15 +290,15 @@ struct DelaunayTriangulation {
                 compress[i] = i;
             } else compress[i] = indices[r - 1];
 
-        vector<int> freed;
+        vector<int> recycled;
         auto edge_id = [&]() -> int {
-            if (freed.empty()) {
+            if (recycled.empty()) {
                 edges.emplace_back();
                 return edges.size() - 1;
             }
 
-            int i = freed.back();
-            freed.pop_back();
+            int i = recycled.back();
+            recycled.pop_back();
             return i;
         };
 
@@ -337,8 +337,8 @@ struct DelaunayTriangulation {
             int j = edges[i].symm;
             splice(i);
             splice(j);
-            freed.emplace_back(i);
-            freed.emplace_back(j);
+            recycled.emplace_back(i);
+            recycled.emplace_back(j);
         };
 
         auto connect = [&](int src, int dest, int c, int d) -> pair<int, int> {
