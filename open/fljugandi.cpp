@@ -353,15 +353,8 @@ struct ForwardStar {
 
 template <typename T>
 struct ConvexHull3D {
-    struct Face {
-        int ca, ab, bc;
-
-        Face() : ca(-1), ab(-1), bc(-1) {}
-        Face(int ca, int ab, int bc) : ca(ca), ab(ab), bc(bc) {}
-    };
-
     static inline mt19937 rng{random_device{}()};
-    vector<Face> faces;
+    vector<array<int, 3>> faces;
     vector<int> valid_faces, edge_dest, edge_face;
 
     ConvexHull3D(vector<Point3D<T>> &points) {
@@ -403,7 +396,7 @@ struct ConvexHull3D {
         vector<bool> invalid;
         auto add_face = [&](int ca, int ab, int bc) {
             int i = faces.size();
-            faces.emplace_back(ca, ab, bc);
+            faces.push_back({ca, ab, bc});
             valid_faces.emplace_back(i);
             edge_face[ca] = edge_face[ab] = edge_face[bc] = i;
             s.emplace(i);
@@ -573,12 +566,11 @@ int main() {
             points.emplace_back(coords[i].x, coords[i].y, squared_dist(coords[i]) - (radius[i] * radius[i] - h * h));
             indices[points.back()] = i;
 
-            if (radius[i] > h) {
-                if (squared_dist(coords[i], start) < (radius[i] - h) * (radius[i] - h) || squared_dist(coords[i], end) < (radius[i] - h) * (radius[i] - h)) {
+            if (radius[i] > h)
+                if (euclidean_dist(coords[i], start) < radius[i] - h || euclidean_dist(coords[i], end) < radius[i] - h) {
                     blocked = true;
                     break;
                 }
-            }
         }
 
         if (blocked) r = mid;
@@ -594,10 +586,8 @@ int main() {
                 upward[f] = cross(points[a], points[b], points[c]).z >= 0;
             }
 
-            for (int f : convex_hull.valid_faces) {
-                auto [ca, ab, bc] = convex_hull.faces[f];
-
-                for (int qp : {ca, ab, bc}) {
+            for (int f : convex_hull.valid_faces)
+                for (int qp : convex_hull.faces[f]) {
                     int pq = qp ^ 1, p = convex_hull.edge_dest[qp], q = convex_hull.edge_dest[pq], g = convex_hull.edge_face[pq];
 
                     auto rp = radius[indices[points[p]]], rq = radius[indices[points[q]]];
@@ -605,7 +595,6 @@ int main() {
                         euclidean_dist(convert_to_2D(points[p]), convert_to_2D(points[q])) >= sqrt(rp * rp - h * h) + sqrt(rq * rq - h * h))
                         dsu.unite(f, (!~g || upward[g]) ? s : g);
                 }
-            }
 
             int start_face = s, end_face = s;
             for (int f : convex_hull.valid_faces)
