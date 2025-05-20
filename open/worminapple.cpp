@@ -180,15 +180,8 @@ struct ForwardStar {
 
 template <typename T>
 struct ConvexHull3D {
-    struct Face {
-        int ca, ab, bc;
-
-        Face() : ca(-1), ab(-1), bc(-1) {}
-        Face(int ca, int ab, int bc) : ca(ca), ab(ab), bc(bc) {}
-    };
-
     static inline mt19937 rng{random_device{}()};
-    vector<Face> faces;
+    vector<array<int, 3>> faces;
     vector<int> valid_faces, edge_dest, edge_face;
 
     ConvexHull3D(vector<Point3D<T>> &points) {
@@ -230,7 +223,7 @@ struct ConvexHull3D {
         vector<bool> invalid;
         auto add_face = [&](int ca, int ab, int bc) {
             int i = faces.size();
-            faces.emplace_back(ca, ab, bc);
+            faces.push_back({ca, ab, bc});
             valid_faces.emplace_back(i);
             edge_face[ca] = edge_face[ab] = edge_face[bc] = i;
             s.emplace(i);
