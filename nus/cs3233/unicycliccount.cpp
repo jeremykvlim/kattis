@@ -386,7 +386,7 @@ struct Matrix {
     int r, c;
     vector<vector<T>> mat;
 
-    Matrix(int n) : Matrix(n, n) {}
+    Matrix(int n = 0) : Matrix(n, n) {}
     Matrix(int row, int col, int v = 0) : r(row), c(col), mat(row, vector<T>(col, v)) {}
 
     auto & operator[](int i) {
