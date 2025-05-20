@@ -1,86 +1,138 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct Treap {
-    static inline mt19937_64 rng{random_device{}()};
-
-    struct TreapNode {
+struct SizeBalancedTree {
+    struct SBTNode {
         int l, r, size;
-        unsigned long long prio;
         pair<long long, int> key;
 
         long long subtree_sum;
         vector<long long> sums;
 
-        TreapNode(int K) : l(0), r(0), size(1), prio(-1), key{-1, -1}, subtree_sum(0), sums(K, 0) {}
+        SBTNode(int K) : l(0), r(0), size(1), key{0, 0}, subtree_sum(0), sums(K, 0) {}
 
         auto & operator=(const pair<long long, int> &k) {
-            prio = rng();
+            l = r = 0;
+            size = 1;
             key = k;
-            subtree_sum = sums[0] = k.first;
+            fill(sums.begin(), sums.end(), 0);
+            subtree_sum = sums[0] = -k.first;
             return *this;
         }
     };
 
-    int K, root, nodes;
-    vector<TreapNode> T;
+    int root, nodes, K;
+    vector<SBTNode> SBT;
+    vector<int> recycled;
 
-    Treap(int n, int k) : root(0), nodes(1), K(1 << k), T(n + 1, TreapNode(1 << k)) {}
+    SizeBalancedTree(int n, int k) : root(0), nodes(1), K(1 << k), SBT(n + 1, 1 << k) {}
 
-    int size(int i) {
-        return !i ? 0 : T[i].size;
+    int size(int i) const {
+        return !i ? 0 : SBT[i].size;
     }
 
-    long long subtree_sum(int i) {
-        return !i ? 0 : T[i].subtree_sum;
+    long long subtree_sum(int i) const {
+        return !i ? 0 : SBT[i].subtree_sum;
     }
 
-    int pull(int i) {
-        if (!i) return 0;
+    int node(const pair<int, int> &key) {
+        int i;
+        if (!recycled.empty()) {
+            i = recycled.back();
+            recycled.pop_back();
+        } else i = nodes++;
 
-        T[i].size = size(T[i].l) + size(T[i].r) + 1;
-        T[i].subtree_sum = subtree_sum(T[i].l) + subtree_sum(T[i].r) + T[i].key.first;
-
-        for (int k = 0, a = size(T[i].l) % K, b = (size(T[i].l) + 1) % K; k < K; k++) {
-            auto s = T[T[i].l].sums[k];
-            if (k == a) s += T[i].key.first;
-            T[i].sums[k] = s += T[T[i].r].sums[(k - b + K) % K];
-        }
+        SBT[i] = key;
         return i;
     }
 
-    pair<int, int> split(int i, const pair<long long, int> &key) {
-        if (!i) return {0, 0};
+    void pull(int i) {
+        int l = SBT[i].l, r = SBT[i].r;
 
-        if (T[i].key > key) {
-            auto [l, r] = split(T[i].r, key);
-            T[i].r = l;
-            return {pull(i), r};
-        } else {
-            auto [l, r] = split(T[i].l, key);
-            T[i].l = r;
-            return {l, pull(i)};
+        SBT[i].size = size(l) + size(r) + 1;
+        SBT[i].subtree_sum = subtree_sum(l) + subtree_sum(r) - SBT[i].key.first;
+
+        for (int k = 0, a = size(l) % K, b = (size(l) + 1) % K; k < K; k++) {
+            auto s = SBT[l].sums[k];
+            if (k == a) s -= SBT[i].key.first;
+            SBT[i].sums[k] = s += SBT[r].sums[(k - b + K) % K];
         }
     }
 
-    int meld(int i, int j) {
-        if (!i || !j) return i ^ j;
+    int rotate_left(int i) {
+        int j = SBT[i].r;
+        SBT[i].r = SBT[j].l;
+        SBT[j].l = i;
+        pull(i);
+        pull(j);
+        return j;
+    }
 
-        if (T[i].prio > T[j].prio) {
-            T[i].r = meld(T[i].r, j);
-            return pull(i);
-        } else {
-            T[j].l = meld(i, T[j].l);
-            return pull(j);
-        }
+    int rotate_right(int i) {
+        int j = SBT[i].l;
+        SBT[i].l = SBT[j].r;
+        SBT[j].r = i;
+        pull(i);
+        pull(j);
+        return j;
+    }
+
+    int balance_left(int i) {
+        if (!i) return 0;
+
+        int &l = SBT[i].l, &r = SBT[i].r;
+        if (!l) return i;
+
+        int ll = SBT[l].l, lr = SBT[l].r;
+        if (ll && size(ll) > size(r)) i = rotate_right(i);
+        else if (lr && size(lr) > size(r)) {
+            l = rotate_left(l);
+            i = rotate_right(i);
+        } else return i;
+
+        l = balance_left(l);
+        r = balance_right(r);
+        i = balance_left(i);
+        i = balance_right(i);
+        return i;
+    }
+
+    int balance_right(int i) {
+        if (!i) return 0;
+
+        int &l = SBT[i].l, &r = SBT[i].r;
+        if (!r) return i;
+
+        int rr = SBT[r].r, rl = SBT[r].l;
+        if (rr && size(rr) > size(l)) i = rotate_left(i);
+        else if (rl && size(rl) > size(l)) {
+            r = rotate_right(r);
+            i = rotate_left(i);
+        } else return i;
+
+        l = balance_left(l);
+        r = balance_right(r);
+        i = balance_left(i);
+        i = balance_right(i);
+        return i;
     }
 
     int insert(const pair<long long, int> &key) {
-        int i = nodes++;
-        T[i] = key;
+        return root = insert(root, key);
+    }
 
-        auto [l, r] = split(root, key);
-        return root = meld(meld(l, i), r);
+    int insert(int i, const pair<long long, int> &key) {
+        if (!i) return node(key);
+
+        if (key < SBT[i].key) {
+            SBT[i].l = insert(SBT[i].l, key);
+            pull(i);
+            return balance_left(i);
+        } else {
+            SBT[i].r = insert(SBT[i].r, key);
+            pull(i);
+            return balance_right(i);
+        }
     }
 
     int erase(const pair<long long, int> &key) {
@@ -89,16 +141,26 @@ struct Treap {
 
     int erase(int i, const pair<long long, int> &key) {
         if (!i) return 0;
-        if (T[i].key == key) return meld(T[i].l, T[i].r);
 
-        if (T[i].key < key) T[i].l = erase(T[i].l, key);
-        else T[i].r = erase(T[i].r, key);
+        if (SBT[i].key == key) {
+            if (!SBT[i].l || !SBT[i].r) {
+                recycled.emplace_back(i);
+                return SBT[i].l ^ SBT[i].r;
+            } else {
+                int c = SBT[i].r;
+                while (SBT[c].l) c = SBT[c].l;
+                SBT[i].key = SBT[c].key;
+                SBT[i].r = erase(SBT[i].r, SBT[c].key);
+            }
+        } else if (key < SBT[i].key) SBT[i].l = erase(SBT[i].l, key);
+        else SBT[i].r = erase(SBT[i].r, key);
 
-        return pull(i);
+        pull(i);
+        return key < SBT[i].key ? balance_left(i) : balance_right(i);
     }
 
     auto & operator[](int i) {
-        return T[i];
+        return SBT[i];
     }
 };
 
@@ -110,24 +172,20 @@ int main() {
     cin >> Q >> k;
 
     int root = 0;
-    Treap treap(Q, k);
+    SizeBalancedTree sbt(Q, k);
     vector<long long> skill(1e6 + 1);
     while (Q--) {
-        int q;
-        cin >> q;
+        int q, i;
+        cin >> q >> i;
 
         if (q == 1) {
-            int i, s;
-            cin >> i >> s;
+            int s;
+            cin >> s;
 
-            root = treap.insert({skill[i] = s, i});
-        } else {
-            int i;
-            cin >> i;
+            skill[i] = s;
+            root = sbt.insert({-s, i});
+        } else root = sbt.erase({-skill[i], i});
 
-            root = treap.erase({skill[i], i});
-            skill[i] = 0;
-        }
-        cout << treap[root].subtree_sum - treap[root].sums[0] << "\n" << flush;
+        cout << sbt[root].subtree_sum - sbt[root].sums[0] << "\n" << flush;
     }
 }
