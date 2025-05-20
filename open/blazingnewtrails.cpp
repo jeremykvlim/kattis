@@ -79,10 +79,10 @@ struct WeightedDisjointSets {
                 link(u, v, w);
                 return -1;
             } else if (weight[t] > w) {
-                int x = weight[t];
+                int temp = weight[t];
                 cut(t, weight[t]);
                 link(u, v, w);
-                return x;
+                return temp;
             }
         }
         return w;
