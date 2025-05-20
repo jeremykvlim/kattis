@@ -6,7 +6,7 @@ struct SqrtDecomposition {
     int size;
     vector<T> arr, blocks;
 
-    SqrtDecomposition(int n, vector<T> arr) : size(ceil(sqrt(n))), blocks(ceil(sqrt(n)), 0), arr(arr) {
+    SqrtDecomposition(int n, const vector<T> &arr) : size(ceil(sqrt(n))), blocks(ceil(sqrt(n)), 0), arr(arr) {
         for (int i = 0; i < arr.size(); i++) blocks[i / size] += arr[i];
     }
 
