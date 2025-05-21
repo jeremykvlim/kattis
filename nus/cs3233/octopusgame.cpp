@@ -23,7 +23,7 @@ struct SizeBalancedTree {
 
     int root, nodes, K;
     vector<SBTNode> SBT;
-    vector<int> recycled;
+    stack<int> recycled;
 
     SizeBalancedTree(int n, int k) : root(0), nodes(1), K(1 << k), SBT(n + 1, 1 << k) {}
 
@@ -38,8 +38,8 @@ struct SizeBalancedTree {
     int node(const pair<int, int> &key) {
         int i;
         if (!recycled.empty()) {
-            i = recycled.back();
-            recycled.pop_back();
+            i = recycled.top();
+            recycled.pop();
         } else i = nodes++;
 
         SBT[i] = key;
@@ -79,7 +79,6 @@ struct SizeBalancedTree {
 
     int balance_left(int i) {
         if (!i) return 0;
-
         int &l = SBT[i].l, &r = SBT[i].r;
         if (!l) return i;
 
@@ -99,7 +98,6 @@ struct SizeBalancedTree {
 
     int balance_right(int i) {
         if (!i) return 0;
-
         int &l = SBT[i].l, &r = SBT[i].r;
         if (!r) return i;
 
@@ -123,7 +121,6 @@ struct SizeBalancedTree {
 
     int insert(int i, const pair<long long, int> &key) {
         if (!i) return node(key);
-
         if (key < SBT[i].key) {
             SBT[i].l = insert(SBT[i].l, key);
             pull(i);
@@ -141,10 +138,9 @@ struct SizeBalancedTree {
 
     int erase(int i, const pair<long long, int> &key) {
         if (!i) return 0;
-
         if (SBT[i].key == key) {
             if (!SBT[i].l || !SBT[i].r) {
-                recycled.emplace_back(i);
+                recycled.emplace(i);
                 return SBT[i].l ^ SBT[i].r;
             } else {
                 int c = SBT[i].r;
