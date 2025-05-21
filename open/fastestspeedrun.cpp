@@ -22,7 +22,7 @@ struct DisjointSets {
     }
 };
 
-pair<vector<int>, vector<long long>> edmonds(vector<vector<pair<int, int>>> adj_list_transpose) {
+pair<vector<int>, vector<long long>> edmonds(const vector<vector<pair<int, int>>> &adj_list_transpose) {
     int n = adj_list_transpose.size();
 
     vector<vector<long long>> dist(n, vector<long long>(n, 1e18));
@@ -34,10 +34,10 @@ pair<vector<int>, vector<long long>> edmonds(vector<vector<pair<int, int>>> adj_
     vector<int> state(n, 0), prev(n);
     state[0] = 2;
     vector<long long> weights(n, 0);
-    for (int V = 0; V < n; V++) {
-        if (state[dsu.find(V)] == 2) continue;
+    for (int i = 0; i < n; i++) {
+        if (state[dsu.find(i)] == 2) continue;
 
-        int v = dsu.find(V);
+        int v = dsu.find(i);
         while (state[v] != 2)
             if (!state[v]) {
                 for (int u = 0; u < n; u++)
@@ -90,15 +90,16 @@ int main() {
         int x, s;
         cin >> x >> s;
 
-        adj_list_transpose[i].emplace_back(x, s);
         for (int j = 0; j <= n; j++) {
             int a;
             cin >> a;
 
-            adj_list_transpose[i].emplace_back(j, a);
+            if (i == j) continue;
+            int w = j == x ? s : a;
+            adj_list_transpose[i].emplace_back(j, w);
         }
     }
 
     auto [prev, weights] = edmonds(adj_list_transpose);
-    cout << accumulate(weights.begin(), weights.end(), 0LL, [&](auto d, auto w) { return d + w; });
+    cout << accumulate(weights.begin(), weights.end(), 0LL);
 }
