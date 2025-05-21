@@ -21,12 +21,11 @@ int main() {
             for (auto it = children[v].rbegin(); it != children[v].rend(); it++)
                 for (auto d : last[it->second]) {
                     last[v].emplace_back(d);
-                    if (last[v].size() == 5) goto done;
+                    if (last[v].size() == 5) return;
                 }
             last[v].emplace_back(name[v]);
-            done:;
         };
-
+        
         int q;
         cin >> q;
 
