@@ -14,31 +14,31 @@ int main() {
 
         vector<pair<int, int>> boats(n);
         vector<bool> visited(n, false), r(n, true);
-        vector<int> position(n);
+        vector<int> x(n);
         for (int i = 0; i < n; i++) {
             cin >> boats[i].first >> boats[i].second;
-            
-            position[i] = boats[i].first;
-            visited[i] = !position[i];
+
+            x[i] = boats[i].first;
+            visited[i] = !x[i];
         }
 
-        for (int time = 1; time <= w * w + 1; time++) {
+        for (int time = 1; time <= w * w; time++) {
             unordered_map<int, int> mario;
-            vector<int> prev(position);
+            vector<int> prev(x);
             for (int i = 0; i < n; i++) {
-                position[i] += r[i] ? 1 : -1;
-                r[i] = position[i] != boats[i].second && ((position[i] == boats[i].first) || r[i]);
+                x[i] += r[i] ? 1 : -1;
+                r[i] = x[i] != boats[i].second && ((x[i] == boats[i].first) || r[i]);
 
-                if (position[i] == w && visited[i]) {
+                if (x[i] == w && visited[i]) {
                     cout << time << "\n";
                     goto next;
                 }
-                
-                if (visited[i]) mario[position[i]] = prev[i];
+
+                if (visited[i]) mario[x[i]] = prev[i];
             }
 
             for (int i = 0; i < n; i++)
-                visited[i] = visited[i] || mario.count(position[i]) || (mario.count(prev[i]) && mario[prev[i]] == position[i]);
+                if (mario.count(x[i]) || (mario.count(prev[i]) && mario[prev[i]] == x[i])) visited[i] = true;
         }
         cout << "IMPOSSIBLE\n";
         next:;
