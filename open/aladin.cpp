@@ -48,7 +48,7 @@ struct WeightBalancedTree {
 
     int root, nodes;
     vector<WBTNode> WBT;
-    vector<int> recycled;
+    stack<int> recycled;
 
     WeightBalancedTree(int n, int m) : root(0), nodes(1), WBT(n + 1) {
         root = node(m, 0, 1);
@@ -77,8 +77,8 @@ struct WeightBalancedTree {
     int node(int l, int r) {
         int i;
         if (!recycled.empty()) {
-            i = recycled.back();
-            recycled.pop_back();
+            i = recycled.top();
+            recycled.pop();
         } else i = nodes++;
 
         WBT[i] = WBTNode(l, r);
@@ -88,16 +88,22 @@ struct WeightBalancedTree {
     int node(int virtual_size, int a, int b, int rem = 0) {
         int i;
         if (!recycled.empty()) {
-            i = recycled.back();
-            recycled.pop_back();
+            i = recycled.top();
+            recycled.pop();
         } else i = nodes++;
 
         WBT[i] = {virtual_size, a, b, rem};
         return i;
     }
 
+    int splice(int l, int r) {
+        int i = node(l, r);
+        pull(i);
+        return i;
+    }
+
     pair<int, int> excise(int i) {
-        recycled.emplace_back(i);
+        recycled.emplace(i);
         return pair(WBT[i].l, WBT[i].r);
     }
 
@@ -126,9 +132,7 @@ struct WeightBalancedTree {
             return meld(meld(i, l), r);
         }
 
-        int k = node(i, j);
-        pull(k);
-        return k;
+        return splice(i, j);
     }
 
     pair<int, int> virtual_split(int i, int k) {
@@ -157,7 +161,7 @@ struct WeightBalancedTree {
         if (!i) return;
         destroy(WBT[i].l);
         destroy(WBT[i].r);
-        recycled.emplace_back(i);
+        recycled.emplace(i);
     }
 
     void modify(int l, int r, int a, int b) {
