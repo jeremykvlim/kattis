@@ -252,19 +252,19 @@ struct DelaunayTriangulation {
                 compress[i] = i;
             } else compress[i] = indices[r - 1];
 
-        vector<int> recycled;
+        stack<int> recycled;
         auto edge_id = [&]() -> int {
-            if (recycled.empty()) {
-                edges.emplace_back();
-                return edges.size() - 1;
+            if (!recycled.empty()) {
+                int i = recycled.top();
+                recycled.pop();
+                return i;
             }
-
-            int i = recycled.back();
-            recycled.pop_back();
-            return i;
+            
+            edges.emplace_back();
+            return edges.size() - 1;
         };
 
-        auto splice = [&](int i) {
+        auto unlink = [&](int i) {
             int j = edges[i].onext, k = edges[i].oprev;
             edges[j].oprev = k;
             edges[k].onext = j;
@@ -297,10 +297,10 @@ struct DelaunayTriangulation {
 
         auto delete_edge = [&](int i) {
             int j = edges[i].symm;
-            splice(i);
-            splice(j);
-            recycled.emplace_back(i);
-            recycled.emplace_back(j);
+            unlink(i);
+            unlink(j);
+            recycled.emplace(i);
+            recycled.emplace(j);
         };
 
         auto connect = [&](int src, int dest, int c, int d) -> pair<int, int> {
