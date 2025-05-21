@@ -454,10 +454,11 @@ struct DelaunayTriangulation {
         start = 0;
         if (r >= 2) start = dnc(dnc, 0, r).second;
         points = temp;
+        
+        edges.erase(remove_if(edges.begin(), edges.end(), [&](auto e) { return !e.valid; }), edges.end());
         for (auto &e : edges) e.dest = indices[e.dest];
         for (int i = 0; i < edges.size(); i++)
-            if (edges[i].valid)
-                if (i >= edges[i].symm) delaunay_edges.emplace_back(edges[i].dest, edges[edges[i].symm].dest);
+            if (i >= edges[i].symm) delaunay_edges.emplace_back(edges[i].dest, edges[edges[i].symm].dest);
 
         for (int v = 0; v < n; v++)
             if (v != compress[v]) delaunay_edges.emplace_back(v, compress[v]);
