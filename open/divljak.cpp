@@ -12,18 +12,16 @@ struct Trie {
 
     struct TrieNode {
         vector<int> next;
-        int link;
-        bool end;
+        int link, end_link;
 
-        TrieNode(int range = 26) : next(range, -1), link(-1), end(false) {}
+        TrieNode(int range = 26) : next(range, -1), link(-1), end_link(-1) {}
     };
 
     vector<TrieNode> T;
     ascii a;
     int r;
-    vector<int> end_link;
 
-    Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range), end_link{-1} {}
+    Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
 
     int add(string &s) {
         int node = 0;
@@ -33,11 +31,10 @@ struct Trie {
             if (T[node].next[pos] == -1) {
                 T[node].next[pos] = T.size();
                 T.emplace_back(TrieNode(r));
-                end_link.emplace_back(-1);
             }
             node = T[node].next[pos];
         }
-        T[node].end = true;
+        T[node].end_link = node;
 
         return node;
     }
@@ -50,6 +47,7 @@ struct Trie {
             q.pop();
 
             int l = T[v].link;
+            if (l != -1 && T[v].end_link == -1) T[v].end_link = T[l].end_link;
             for (int c = 0; c < r; c++) {
                 int u = T[v].next[c];
 
@@ -58,9 +56,6 @@ struct Trie {
                     q.emplace(u);
                 } else T[v].next[c] = (l == -1) ? 0 : T[l].next[c];
             }
-
-            if (T[v].end) end_link[v] = v;
-            else if (v) end_link[v] = end_link[T[v].link];
         }
         T[0].link = 0;
     }
@@ -107,15 +102,12 @@ int main() {
             for (char c : s) {
                 int pos = c - 'a';
 
-                for (; !~trie[node].next[pos]; node = trie[node].link);
                 node = trie[node].next[pos];
-
-                int v = trie.end_link[node];
-                while (~v && visited[v] != q) {
-                    count[v]++;
-                    visited[v] = q;
-                    v = trie.end_link[trie[v].link];
-                }
+                for (int v = trie[node].end_link; ~v; v = trie[trie[v].link].end_link)
+                    if (visited[v] != q) {
+                        visited[v] = q;
+                        count[v]++;
+                    } else break;
             }
         } else {
             int s;
