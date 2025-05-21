@@ -131,7 +131,7 @@ struct WeightBalancedTree {
         return k;
     }
 
-    pair<int, int> split(int i, int k) {
+    pair<int, int> virtual_split(int i, int k) {
         if (!i) return {0, 0};
         if (!k) return {0, i};
         if (k == virtual_size(i)) return {i, 0};
@@ -145,10 +145,10 @@ struct WeightBalancedTree {
 
         auto [a, b] = excise(i);
         if (k <= virtual_size(a)) {
-            auto [ll, rr] = split(a, k);
+            auto [ll, rr] = virtual_split(a, k);
             return {ll, meld(rr, b)};
         } else {
-            auto [ll, rr] = split(b, k - virtual_size(a));
+            auto [ll, rr] = virtual_split(b, k - virtual_size(a));
             return {meld(a, ll), rr};
         }
     }
@@ -161,15 +161,15 @@ struct WeightBalancedTree {
     }
 
     void modify(int l, int r, int a, int b) {
-        auto [rl, rr] = split(root, r);
-        auto [ll, lr] = split(rl, l - 1);
+        auto [rl, rr] = virtual_split(root, r);
+        auto [ll, lr] = virtual_split(rl, l - 1);
         destroy(lr);
         root = meld(meld(ll, node(r - l + 1, a, b)), rr);
     }
 
     long long range_query(int l, int r) {
-        auto [rl, rr] = split(root, r);
-        auto [ll, lr] = split(rl, l - 1);
+        auto [rl, rr] = virtual_split(root, r);
+        auto [ll, lr] = virtual_split(rl, l - 1);
         auto s = sum(lr);
         root = meld(meld(ll, lr), rr);
         return s;
