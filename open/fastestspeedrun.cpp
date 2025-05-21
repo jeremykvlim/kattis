@@ -94,9 +94,7 @@ int main() {
             int a;
             cin >> a;
 
-            if (i == j) continue;
-            int w = j == x ? s : a;
-            adj_list_transpose[i].emplace_back(j, w);
+            if (i != j) adj_list_transpose[i].emplace_back(j, j == x ? s : a);
         }
     }
 
