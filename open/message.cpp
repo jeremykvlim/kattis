@@ -391,7 +391,7 @@ Matrix<T> matpow(Matrix<T> A, U exponent) {
     return B;
 }
 
-vector<int> prefix_function(const string &s) {
+vector<vector<int>> kmp_automaton(string s) {
     vector<int> pi(s.size());
     for (int i = 1; i < s.size(); i++) {
         int j = pi[i - 1];
@@ -400,10 +400,6 @@ vector<int> prefix_function(const string &s) {
         pi[i] = j;
     }
 
-    return pi;
-}
-
-vector<vector<int>> automaton(string s, const vector<int> &pi) {
     s += '{';
     vector<vector<int>> fsm(s.size(), vector<int>(26, 0));
     for (int i = 0; i < s.size(); i++)
@@ -428,8 +424,7 @@ int main() {
         modint::init();
 
         int s = p.size();
-        auto pi = prefix_function(p);
-        auto fsm = automaton(p, pi);
+        auto fsm = kmp_automaton(p);
 
         Matrix<modint> count(s);
         for (int i = 0; i < s; i++)
