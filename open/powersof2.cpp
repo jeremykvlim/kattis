@@ -28,24 +28,31 @@ int main() {
 
     auto p2 = to_string(1LL << e);
     auto fsm = kmp_automaton(p2);
-    vector<vector<vector<vector<vector<long long>>>>> memo(n.size(), vector<vector<vector<vector<long long>>>>(n.size(), vector<vector<vector<long long>>>(2, vector<vector<long long>>(2, vector<long long>(2, -1)))));
-    auto dp = [&](auto &&self, int i = 0, int state = 0, bool match = false, bool bound = true, bool zero = true) -> long long {
-        if (i == n.size()) return zero ? 0 : match;
-        if (~memo[i][state][match][bound][zero]) return memo[i][state][match][bound][zero];
+
+    int s = n.size();
+    vector<long long> memo(s * s * 2 * 2 * 2, -1LL);
+    auto index = [&](int p, int state, bool match, bool bound, bool zero) {
+        return ((((p * s + state) << 1 | match) << 1 | bound) << 1 | zero);
+    };
+    auto dp = [&](auto &&self, int p = 0, int state = 0, bool match = false, bool bound = true, bool zero = true) -> long long {
+        if (p == n.size()) return zero ? 0 : match;
+
+        int i = index(p, state, match, bound, zero);
+        if (~memo[i]) return memo[i];
 
         auto count = 0LL;
-        int d_max = bound ? n[i] - '0' : 9;
+        int d_max = bound ? n[p] - '0' : 9;
         for (int d = 0; d <= d_max; d++) {
             int s = state;
-            bool m = match, b = bound && d == (n[i] - '0'), z = zero && !d;
+            bool m = match, b = bound && d == (n[p] - '0'), z = zero && !d;
             if (!z)
                 if (!match) {
                     s = fsm[state][d];
                     if (s == p2.size()) m = true;
                 }
-            count += self(self, i + 1, s, m, b, z);
+            count += self(self, p + 1, s, m, b, z);
         }
-        return memo[i][state][match][bound][zero] = count;
+        return memo[i] = count;
     };
     cout << dp(dp);
 }
