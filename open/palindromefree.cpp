@@ -11,11 +11,10 @@ int main() {
     int size = 18 * 11 * 11 * 2;
     vector<long long> memo1(size, -1), memo2(size, -1);
     auto index = [&](int p, int x, int y, int less) {
-        return ((p * 18 + x) * 11 + y) * 11 + less;
+        return ((p * 11 + x) * 11 + y) * 2 + less;
     };
     auto dp = [&](auto &&self, auto &memo, const string &s, int p = 0, int x = 10, int y = 10, bool less = true) -> long long {
         if (p == s.size()) return 1;
-        
         int i = index(p, x, y, less);
         if (memo[i] != -1) return memo[i];
 
