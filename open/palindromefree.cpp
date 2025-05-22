@@ -15,6 +15,7 @@ int main() {
     };
     auto dp = [&](auto &&self, auto &memo, const string &s, int p = 0, int x = 10, int y = 10, bool less = true) -> long long {
         if (p == s.size()) return 1;
+        
         int i = index(p, x, y, less);
         if (memo[i] != -1) return memo[i];
 
