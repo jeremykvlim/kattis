@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-vector<int> prefix_function(const string &s) {
+vector<vector<int>> kmp_automaton(string s) {
     vector<int> pi(s.size());
     for (int i = 1; i < s.size(); i++) {
         int j = pi[i - 1];
@@ -10,16 +10,11 @@ vector<int> prefix_function(const string &s) {
         pi[i] = j;
     }
 
-    return pi;
-}
-
-vector<vector<int>> automaton(string s, const vector<int> &pi) {
     s += '{';
     vector<vector<int>> fsm(s.size(), vector<int>(10, 0));
     for (int i = 0; i < s.size(); i++)
         for (int d = 0; d < 10; d++)
             fsm[i][d] = (i && '0' + d != s[i]) ? fsm[pi[i - 1]][d] : i + ('0' + d == s[i]);
-
     return fsm;
 }
 
@@ -32,8 +27,7 @@ int main() {
     cin >> n >> e;
 
     auto p2 = to_string(1LL << e);
-    auto pi = prefix_function(p2);
-    auto fsm = automaton(p2, pi);
+    auto fsm = kmp_automaton(p2);
     vector<vector<vector<vector<vector<long long>>>>> memo(n.size(), vector<vector<vector<vector<long long>>>>(n.size(), vector<vector<vector<long long>>>(2, vector<vector<long long>>(2, vector<long long>(2, -1)))));
     auto dp = [&](auto &&self, int i = 0, int state = 0, bool match = false, bool bound = true, bool zero = true) -> long long {
         if (i == n.size()) return zero ? 0 : match;
