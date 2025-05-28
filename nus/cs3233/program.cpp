@@ -8,22 +8,25 @@ int main() {
     int n, k;
     cin >> n >> k;
 
-    vector<int> jump(k), freq(n, 0);
-    vector<long long> pref(n + 1, 0);
+    vector<int> count(n + 1, 0);
+    while (k--) {
+        int x;
+        cin >> x;
 
-    for (int &j : jump) cin >> j;
-    sort(jump.begin(), jump.end());
-
-    for (int i = 0; i < k;) {
-        int curr = jump[i], count = 0;
-        for (; i < k && curr == jump[i]; i++) count++;
-        for (int j = 0; j < n; j += curr) freq[j] += count;
+        count[x]++;
     }
+
+    vector<int> freq(n + 1, 0);
+    for (int x = 1; x < n; x++)
+        if (count[x])
+            for (int i = 0; i < n; i += x) freq[i] += count[x];
+
+    vector<long long> pref(n + 1, 0);
     for (int i = 0; i < n; i++) pref[i + 1] = pref[i] + freq[i];
 
     int q;
     cin >> q;
-    
+
     while (q--) {
         int l, r;
         cin >> l >> r;
