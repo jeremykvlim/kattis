@@ -231,7 +231,7 @@ int main() {
         dp[0] = 0;
         for (int l = 1; l <= m; l++)
             for (int d : temp)
-                if (l >= d && dp[l - d] != -1) {
+                if (l >= d && ~dp[l - d]) {
                     dp[l] = d;
                     break;
                 }
