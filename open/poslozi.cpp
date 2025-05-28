@@ -1,28 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct Hash {
-    template <typename T>
-    static inline void combine(size_t &h, const T &v) {
-        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
-    }
-
-    template <typename T>
-    size_t operator()(const T &v) const {
-        if constexpr (requires { tuple_size<T>::value; })
-            return apply([](const auto &...e) {
-                size_t h = 0;
-                (combine(h, e), ...);
-                return h;
-            }, v);
-        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
-            size_t h = 0;
-            for (const auto &e : v) combine(h, e);
-            return h;
-        } else return hash<T>{}(v);
-    }
-};
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -30,61 +8,85 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<int> perm(n + 1);
-    for (int i = 1; i <= n; i++) cin >> perm[i];
+    vector<int> perm(n), shifts(n);
+    vector<long long> masks(n);
+    vector<vector<int>> dist(n, vector<int>(n, 1e3));
+    for (int i = 0; i < n; i++) {
+        cin >> perm[i];
+        perm[i]--;
 
-    vector<vector<int>> s(n + 1, vector<int>(n + 1, 0));
-    vector<int> a(m + 1), b(m + 1);
-    for (int i = 1; i <= m; i++) {
-        cin >> a[i] >> b[i];
-
-        s[a[i]][b[i]] = s[b[i]][a[i]] = i;
+        shifts[i] = i << 2;
+        masks[i] = 15LL << shifts[i];
+        dist[i][i] = 0;
     }
 
-    unordered_map<vector<int>, int, Hash> indices{{perm, 0}};
-    priority_queue pq(
-            [&](const auto &p1, const auto &p2) -> bool {
-                auto count = [&](const vector<int> &v) -> int {
-                    int c = 0;
-                    for (int i = 1; i <= n; i++)
-                        if (v[i] != i) c += !s[i][v[i]] + 1;
-                    return c;
-                };
-                return count(p1.first) + p1.second > count(p2.first) + p2.second;
-            }, vector<pair<vector<int>, int>>());
-    pq.emplace(perm, 0);
-    while (!pq.empty()) {
-        auto [v, d] = pq.top();
-        pq.pop();
+    vector<int> a(m), b(m);
+    for (int i = 0; i < m; i++) {
+        cin >> a[i] >> b[i];
+        a[i]--;
+        b[i]--;
 
-        if (is_sorted(v.begin(), v.end())) break;
+        if (a[i] == b[i]) continue;
+        dist[a[i]][b[i]] = dist[b[i]][a[i]] = 1;
+    }
 
-        for (int i = 1; i <= n; i++)
-            for (int j = 1; j <= n; j++) {
-                auto u = v;
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            for (int k = 0; k < n; k++) dist[j][k] = min(dist[j][k], dist[j][i] + dist[i][k]);
 
-                if (s[i][j]) {
-                    swap(u[i], u[j]);
+    int base = 0;
+    auto start = 0LL, finish = 0LL;
+    for (int i = 0; i < n; i++) {
+        base += dist[i][perm[i]];
+        start |= (long long) perm[i] << shifts[i];
+        finish |= (long long) i << shifts[i];
+    }
 
-                    if (indices.count(u)) continue;
+    if (start == finish) {
+        cout << 0;
+        exit(0);
+    }
 
-                    indices[u] = s[i][j];
-                    pq.emplace(u, d + 1);
+    unordered_map<long long, int> prev;
+    vector<deque<array<long long, 3>>> buckets(2e3 + 1);
+    buckets[(base + 1) / 2].push_back({start, base, -1});
+    for (int f = 0; f <= 2e3; f++) {
+        while (!buckets[f].empty()) {
+            auto [v, d, j] = buckets[f].front();
+            buckets[f].pop_front();
+
+            if (prev.count(v)) continue;
+            prev[v] = j;
+
+            if (v == finish) {
+                vector<int> p(n);
+                iota(p.begin(), p.end(), 0);
+
+                int swaps = 0;
+                while (finish != start) {
+                    int i = prev[finish];
+                    swap(p[a[i]], p[b[i]]);
+                    finish = inner_product(p.begin(), p.end(), shifts.begin(), 0LL, bit_or<>(), [](int pi, int shift) { return (long long) pi << shift; });
+                    swaps++;
+                }
+                cout << swaps;
+                exit(0);
+            }
+
+            int g = f - (d + 1) / 2 + 1;
+            for (int i = 0; i < m; i++) {
+                int x = (v & masks[a[i]]) >> shifts[a[i]], y = (v & masks[b[i]]) >> shifts[b[i]],
+                    D = d - dist[a[i]][x] - dist[b[i]][y] + dist[a[i]][y] + dist[b[i]][x],
+                    F = g + (D + 1) / 2;
+
+                if (F < 2e3) {
+                    long long z = x ^ y;
+                    auto u = v ^ (z << shifts[a[i]]) ^ (z << shifts[b[i]]);
+
+                    if (buckets[F].empty() || u > buckets[F].front()[0]) buckets[F].push_front({u, D, i});
+                    else buckets[F].push_back({u, D, i});
                 }
             }
-    }
-
-    auto dfs = [&](auto &&self, vector<int> v, int swaps = 0) -> void {
-        if (!indices[v]) {
-            cout << swaps;
-            exit(0);
         }
-
-        swap(v[a[indices[v]]], v[b[indices[v]]]);
-        self(self, v, swaps + 1);
-    };
-
-    vector<int> ordered(n + 1);
-    iota(ordered.begin(), ordered.end(), 0);
-    dfs(dfs, ordered);
+    }
 }
