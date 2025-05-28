@@ -77,5 +77,5 @@ int main() {
 
     if (count) cout << "inf";
     else if (!zero) cout << dp[2];
-    else cout << setfill('0') << setw(9) << dp[2];
+    else cout << setw(9) << setfill('0') << dp[2];
 }
