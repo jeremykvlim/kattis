@@ -129,6 +129,13 @@ T cross(const Point<T> &a, const Point<T> &b) {
 }
 
 template <typename T>
+T doubled_signed_area_of_polygon(const vector<Point<T>> &polygon) {
+    T area = 0;
+    for (int i = 0; i < polygon.size(); i++) area += cross(polygon[i], polygon[(i + 1) % polygon.size()]);
+    return area;
+}
+
+template <typename T>
 struct Line {
     Point<T> a, b;
 
@@ -164,13 +171,6 @@ array<vector<Point<T>>, 2> sutherland_hodgman(const vector<Point<T>> &polygon, c
         }
     }
     return clipped;
-}
-
-template <typename T>
-T doubled_signed_area_of_polygon(const vector<Point<T>> &polygon) {
-    T area = 0;
-    for (int i = 0; i < polygon.size(); i++) area += cross(polygon[i], polygon[(i + 1) % polygon.size()]);
-    return area;
 }
 
 int main() {
