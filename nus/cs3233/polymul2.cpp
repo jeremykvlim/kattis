@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -450,6 +450,17 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
     return c;
 }
 
+template <typename T>
+vector<T> polyadd(const vector<T>& a, const vector<T>& b) {
+    int da = a.size(), db = b.size();
+    auto [m, n] = minmax(da, db);
+    vector<T> c(n);
+    for (int i = 0; i < m; i++) c[i] = a[i] + b[i];
+    for (int i = m; i < da; i++) c[i] = a[i];
+    for (int i = m; i < db; i++) c[i] = b[i];
+    return c;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -479,19 +490,8 @@ int main() {
             else if (i < deg1) poly3[i] = max(0, -poly1[i]);
             else poly3[i] = max(0, -poly2[i]);
 
-        vector<int> _1_3 = poly3, _2_3 = poly3, _1_2_3 = poly3;
-        for (int i = 0; i < deg3; i++) {
-            if (i < deg1) {
-                _1_3[i] += poly1[i];
-                _1_2_3[i] += poly1[i];
-            }
-            if (i < deg2) {
-                _2_3[i] += poly2[i];
-                _1_2_3[i] += poly2[i];
-            }
-        }
-
-        auto x = convolve(_1_3, _2_3), y = convolve(poly3, _1_2_3);
+        auto _1_3 = polyadd(poly1, poly3), _2_3 = polyadd(poly2, poly3), _1_2_3 = polyadd(polyadd(poly1, poly2), poly3),
+            x = convolve(_1_3, _2_3), y = convolve(poly3, _1_2_3);
         cout << deg1 + deg2 - 2 << "\n";
         for (int i = 0; i < deg1 + deg2 - 1; i++) cout << x[i] - y[i] << " ";
         cout << "\n";
