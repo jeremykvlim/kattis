@@ -14,7 +14,6 @@ int main() {
         pi /= 100;
     }
 
-    cout << fixed << setprecision(6);
     if (n <= 1e3) {
         vector<double> dp(n + 1, 0);
         dp[0] = 1;
