@@ -451,7 +451,7 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
 }
 
 template <typename T>
-vector<T> polyadd(const vector<T>& a, const vector<T>& b) {
+vector<T> polyadd(const vector<T> &a, const vector<T> &b) {
     int da = a.size(), db = b.size();
     auto [m, n] = minmax(da, db);
     vector<T> c(n);
