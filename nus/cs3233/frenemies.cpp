@@ -22,6 +22,7 @@ int main() {
     for (int i = 0; i < r; i++) {
         string row;
         getline(cin, row);
+        
         for (int j = 0; j < c; j++) {
             char ch = row[j];
             if (ch == '+' || ch == '-' || ch == '|') ch = 'o';
@@ -35,7 +36,7 @@ int main() {
         }
     }
 
-    array<char, 4> dirs{'v','>', '^','<'};
+    array<char, 4> dirs{'v', '>', '^', '<'};
     vector<int> dr{1, 0, -1, 0}, dc{0, 1, 0, -1};
     vector<vector<int>> next(4, vector<int>(n, 0));
     for (int k = 0; k < 4; k++)
