@@ -356,9 +356,10 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned long long MODULO = 1e9 + 9;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
-modint C(long long n, int k) {
+template <typename T>
+T C(long long n, int k) {
     if (!k) return 1;
-    return C(n - 1, k - 1) * n / k;
+    return C<T>(n - 1, k - 1) * n / k;
 }
 
 int main() {
@@ -377,7 +378,7 @@ int main() {
         if (memo[i][j] != -1) return memo[i][j];
 
         memo[i][j] = 0;
-        for (int k = j; k <= sides[i]; k++) memo[i][j] += (C(dice[i] + k - j - 1, k - j) * self(self, i + 1, k));
+        for (int k = j; k <= sides[i]; k++) memo[i][j] += C<modint>(dice[i] + k - j - 1, k - j) * self(self, i + 1, k);
         return memo[i][j];
     };
     cout << dp(dp);
