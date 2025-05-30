@@ -9,8 +9,8 @@ int main() {
     cin >> n;
 
     vector<double> h(n);
-    for (int i = 0; i < n; i++) cin >> h[i];
-
+    for (auto &hi : h) cin >> hi;
+    
     vector<vector<vector<double>>> dp(1 << n, vector<vector<double>>(n, vector<double>(n, 0)));
     vector<vector<int>> target(1 << n, vector<int>(n, -1));
     for (int m1 = 1; m1 < 1 << n; m1++) {
