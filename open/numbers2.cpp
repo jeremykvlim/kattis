@@ -404,6 +404,6 @@ int main() {
         Matrix<modint> A(2);
         A[0] = {3, 5};
         A[1] = {1, 3};
-        cout << "Case #" << x << ": " << setfill('0') << setw(3) << 2 * matpow(A, n)[0][0] - 1 << "\n";
+        cout << "Case #" << x << ": " << setw(3) << setfill('0') << 2 * matpow(A, n)[0][0] - 1 << "\n";
     }
 }
