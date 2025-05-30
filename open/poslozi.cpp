@@ -26,8 +26,7 @@ int main() {
         a[i]--;
         b[i]--;
 
-        if (a[i] == b[i]) continue;
-        dist[a[i]][b[i]] = dist[b[i]][a[i]] = 1;
+        if (a[i] != b[i]) dist[a[i]][b[i]] = dist[b[i]][a[i]] = 1;
     }
 
     for (int i = 0; i < n; i++)
@@ -50,7 +49,7 @@ int main() {
     unordered_map<long long, int> prev;
     vector<deque<array<long long, 3>>> buckets(2e3 + 1);
     buckets[(base + 1) / 2].push_back({start, base, -1});
-    for (int f = 0; f <= 2e3; f++) {
+    for (int f = 0; f <= 2e3; f++)
         while (!buckets[f].empty()) {
             auto [v, d, j] = buckets[f].front();
             buckets[f].pop_front();
@@ -78,15 +77,12 @@ int main() {
                 int x = (v & masks[a[i]]) >> shifts[a[i]], y = (v & masks[b[i]]) >> shifts[b[i]],
                     D = d - dist[a[i]][x] - dist[b[i]][y] + dist[a[i]][y] + dist[b[i]][x],
                     F = g + (D + 1) / 2;
+                
+                long long z = x ^ y;
+                auto u = v ^ (z << shifts[a[i]]) ^ (z << shifts[b[i]]);
 
-                if (F < 2e3) {
-                    long long z = x ^ y;
-                    auto u = v ^ (z << shifts[a[i]]) ^ (z << shifts[b[i]]);
-
-                    if (buckets[F].empty() || u > buckets[F].front()[0]) buckets[F].push_front({u, D, i});
-                    else buckets[F].push_back({u, D, i});
-                }
+                if (buckets[F].empty() || u > buckets[F].front()[0]) buckets[F].push_front({u, D, i});
+                else buckets[F].push_back({u, D, i});
             }
-        }
     }
 }
