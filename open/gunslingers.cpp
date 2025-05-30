@@ -10,7 +10,7 @@ int main() {
 
     vector<double> h(n);
     for (auto &hi : h) cin >> hi;
-    
+
     vector<vector<vector<double>>> dp(1 << n, vector<vector<double>>(n, vector<double>(n, 0)));
     vector<vector<int>> target(1 << n, vector<int>(n, -1));
     for (int m1 = 1; m1 < 1 << n; m1++) {
@@ -69,5 +69,5 @@ int main() {
         }
     }
 
-    for (int i = 0; i < n; i++) cout << fixed << setprecision(10) << dp.back()[0][i] << "\n";
+    for (auto p : dp.back()[0]) cout << fixed << setprecision(6) << p << "\n";
 }
