@@ -8,8 +8,8 @@ int main() {
     int n, K;
     cin >> n >> K;
 
-    vector<int> required(n);
     int max_s = 0;
+    vector<int> required(n);
     for (int &s : required) {
         int vi;
         cin >> vi;
