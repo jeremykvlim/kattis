@@ -5,8 +5,8 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n, K;
-    cin >> n >> K;
+    int n, k;
+    cin >> n >> k;
 
     int max_s = 0;
     vector<int> required(n);
@@ -19,7 +19,7 @@ int main() {
     }
 
     unordered_map<int, int> w;
-    while (K--) {
+    while (k--) {
         int wi;
         cin >> wi;
 
