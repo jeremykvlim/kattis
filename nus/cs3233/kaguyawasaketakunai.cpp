@@ -78,6 +78,28 @@ struct FlowNetwork {
 
         return -excess[s];
     }
+
+    vector<int> min_cut(int s, const vector<array<int, 3>> &edges) {
+        vector<bool> visited(n, false);
+        visited[s] = true;
+        queue<int> q;
+        q.emplace(s);
+        while (!q.empty()) {
+            int v = q.front();
+            q.pop();
+
+            for (auto [u, _, cap] : network[v])
+                if (cap > 0 && !visited[u]) {
+                    visited[u] = true;
+                    q.emplace(u);
+                }
+        }
+
+        vector<int> cut_edges;
+        for (auto [u, v, i] : edges)
+            if (visited[u] && !visited[v]) cut_edges.emplace_back(i);
+        return cut_edges;
+    }
 };
 
 int main() {
@@ -128,25 +150,7 @@ int main() {
     }
     fn.max_flow(s, d);
 
-    vector<bool> visited(n + 1, false);
-    visited[s] = true;
-    queue<int> q;
-    q.emplace(s);
-    while (!q.empty()) {
-        int v = q.front();
-        q.pop();
-
-        for (auto [u, _, cap] : fn.network[v])
-            if (cap > 0 && !visited[u]) {
-                visited[u] = true;
-                q.emplace(u);
-            }
-    }
-
-    vector<int> cut_edges;
-    for (auto [u, v, i] : sp_edges)
-        if (visited[u] && !visited[v]) cut_edges.emplace_back(i);
-
+    auto cut_edges = fn.min_cut(s, sp_edges);
     cout << cut_edges.size() << "\n";
     for (int i : cut_edges) cout << roads[i][0] << " " << roads[i][1] << " " << 1 << "\n";
 }
