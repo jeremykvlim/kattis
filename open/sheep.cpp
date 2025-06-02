@@ -57,8 +57,7 @@ int main() {
         if (!covered) {
             auto len = segments.back(), s = (len + 2 * l) / 2;
             area -= 2 * heron(s, r, r, len);
-            }
-
+        }
         return area;
     };
     auto a = area();
