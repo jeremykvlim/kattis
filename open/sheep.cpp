@@ -1,6 +1,11 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+T heron(T s, T a, T b, T c) {
+    return sqrt(s * (s - a) * (s - b) * (s - c));
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -8,9 +13,9 @@ int main() {
     int n;
     cin >> n;
 
-    int total = 0;
-    vector<int> segments(n);
-    for (int &len : segments) {
+    double total = 0;
+    vector<double> segments(n);
+    for (auto &len : segments) {
         cin >> len;
 
         total += len;
@@ -29,14 +34,14 @@ int main() {
     }
 
     auto area = [&]() {
-        auto angle = [&](double m, int j, int k) -> double {
+        auto angle = [&](double m, int l, int r) {
             double a = 0;
-            for (int i = j; i < k; i++) a += acos(1 - (segments[i] * segments[i] / (2 * m * m)));
+            for (int i = l; i < r; i++) a += acos(1 - (segments[i] * segments[i] / (2 * m * m)));
             return a;
         };
 
-        bool covered = angle((double) segments.back() / 2, 0, n) >= 2 * M_PI;
-        double area = 0, l = (double) segments.back() / 2, r = covered ? (double) total / 4 : 1e6, m;
+        bool covered = angle(segments.back() / 2, 0, n) >= 2 * M_PI;
+        double area = 0, l = segments.back() / 2, r = covered ? total / 4 : 1e6, m;
         while (l + 1e-10 < r && l + l * 1e-10 < r) {
             m = l + (r - l) / 2;
 
@@ -44,19 +49,19 @@ int main() {
             else r = m;
         }
 
-        for (int len : segments) {
-            double s = (len + 2 * l) / 2;
-            area += sqrt(s * abs(s - r) * abs(s - r) * abs(s - len));
+        for (auto len : segments) {
+            auto s = (len + 2 * l) / 2;
+            area += heron(s, r, r, len);
         }
 
         if (!covered) {
-            double s = (segments.back() + 2 * l) / 2;
-            area -= 2 * sqrt(s * abs(s - r) * abs(s - r) * abs(s - segments.back()));
-        }
+            auto len = segments.back(), s = (len + 2 * l) / 2;
+            area -= 2 * heron(s, r, r, len);
+            }
 
         return area;
     };
-    double a = area();
+    auto a = area();
 
     if (n <= 4) {
         cout << fixed << setprecision(3) << a << "\n";
