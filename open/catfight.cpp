@@ -181,7 +181,7 @@ struct Circle {
 };
 
 template <typename T>
-T circle_intersection_area(const Circle<T> &c1, const Circle<T> &c2) {
+T area_of_circle_intersection(const Circle<T> &c1, const Circle<T> &c2) {
     T d = euclidean_dist(c1.origin, c2.origin);
 
     if (d >= c1.radius + c2.radius) return 0;
@@ -268,13 +268,13 @@ int main() {
         auto [pair, d] = closest_pair(male);
         auto [a, b] = pair;
         Circle c1(male[a], rm), c2(male[b], rm);
-        overlap = max(overlap, circle_intersection_area(c1, c2));
+        overlap = max(overlap, area_of_circle_intersection(c1, c2));
     }
     if (female.size() >= 2) {
         auto [pair, d] = closest_pair(female);
         auto [a, b] = pair;
         Circle c1(female[a], rf), c2(female[b], rf);
-        overlap = max(overlap, circle_intersection_area(c1, c2));
+        overlap = max(overlap, area_of_circle_intersection(c1, c2));
     }
     if (!female.empty() && !male.empty()) {
         auto g1 = male, g2 = female;
@@ -284,7 +284,7 @@ int main() {
         auto d = 1e30;
         for (auto p : g2) d = min(d, kdt.nearest_neighbour_dist(p));
         Circle c1({0, 0}, rf), c2({sqrt(d), 0}, rm);
-        overlap = max(overlap, circle_intersection_area(c1, c2));
+        overlap = max(overlap, area_of_circle_intersection(c1, c2));
     }
     cout << fixed << setprecision(5) << overlap;
 }
