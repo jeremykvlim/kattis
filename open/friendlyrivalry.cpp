@@ -1,27 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct DisjointSets {
-    vector<int> sets;
-
-    int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            return true;
-        }
-        return false;
-    }
-
-    DisjointSets(int n) : sets(n) {
-        iota(sets.begin(), sets.end(), 0);
-    }
-};
-
 template <typename T>
 bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
     return fabs(v1 - v2) <= epsilon;
@@ -151,6 +130,27 @@ double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
+struct DisjointSets {
+    vector<int> sets;
+
+    int find(int v) {
+        return sets[v] == v ? v : (sets[v] = find(sets[v]));
+    }
+
+    bool unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set != v_set) {
+            sets[v_set] = u_set;
+            return true;
+        }
+        return false;
+    }
+
+    DisjointSets(int n) : sets(n) {
+        iota(sets.begin(), sets.end(), 0);
+    }
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -166,7 +166,7 @@ int main() {
     for (int i = 0; i < c; i++)
         for (int j = i + 1; j < c; j++) dist.emplace_back(euclidean_dist(coords[i], coords[j]));
     sort(dist.begin(), dist.end());
-    dist.erase(unique(dist.begin(), dist.end(), [&](double d1, double d2) { return abs(d1 - d2) < 1e-9; }), dist.end());
+    dist.erase(unique(dist.begin(), dist.end(), [&](double d1, double d2) { return approximately_equal(d1, d2); }), dist.end());
 
     double distance = 0;
     vector<int> blue;
@@ -177,7 +177,7 @@ int main() {
         DisjointSets dsu(c);
         for (int i = 0; i < c; i++)
             for (int j = i + 1; j < c; j++)
-                if (euclidean_dist(coords[i], coords[j]) + 1e-9 < dist[mid]) dsu.unite(i, j);
+                if (euclidean_dist(coords[i], coords[j]) < dist[mid]) dsu.unite(i, j);
 
         vector<vector<int>> components(c);
         for (int i = 0; i < c; i++) components[dsu.find(i)].emplace_back(i);
