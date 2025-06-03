@@ -13,30 +13,31 @@ int main() {
     }
 
     auto count = 0LL;
-    for (int i = 0; i <= max_x; i++) {
-        vector<pair<double, double>> Y;
-        for (int j = 0; j < coords.size(); j++) {
-            auto [x1, y1] = coords[j];
-            auto [x2, y2] = coords[(j + 1) % coords.size()];
+    int n = coords.size();
+    for (int x = 0; x <= max_x; x++) {
+        vector<pair<double, double>> ys;
+        for (int i = 0; i < n; i++) {
+            auto [x1, y1] = coords[i];
+            auto [x2, y2] = coords[(i + 1) % n];
             if (x1 > x2) {
                 swap(x1, x2);
                 swap(y1, y2);
             }
 
-            auto y_coord_at_X3 = [&](double X1, double Y1, double X2, double Y2, double X3) -> double {
-                return Y1 - (X1 - X3) * (Y2 - Y1) / (X2 - X1);
+            auto y_coord_at_x3 = [&](double x3) -> double {
+                return y1 - (x1 - x3) * (y2 - y1) / (x2 - x1);
             };
 
-            if (x1 <= i && x2 >= i + 1) Y.emplace_back(y_coord_at_X3(x1, y1, x2, y2, i), y_coord_at_X3(x1, y1, x2, y2, i + 1));
+            if (x1 <= x && x2 >= x + 1) ys.emplace_back(y_coord_at_x3(x), y_coord_at_x3(x + 1));
         }
-        sort(Y.begin(), Y.end());
+        sort(ys.begin(), ys.end());
 
-        for (int j = 0; j < Y.size(); j += 2) {
-            auto [l1, r1] = Y[j];
-            auto [l2, r2] = Y[j + 1];
+        for (int i = 0; i < ys.size(); i += 2) {
+            auto [l1, r1] = ys[i];
+            auto [l2, r2] = ys[i + 1];
 
-            int L = ceil(max(l1, r1) - 1e-9), R = floor(min(l2, r2) + 1e-9);
-            if (L < R) count += R - L;
+            int l = ceil(max(l1, r1) - 1e-9), r = floor(min(l2, r2) + 1e-9);
+            if (l < r) count += r - l;
         }
     }
     cout << count;
