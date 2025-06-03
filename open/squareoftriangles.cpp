@@ -276,8 +276,8 @@ int main() {
                                 if (points.size() < 2) continue;
 
                                 array<Point<long double>, 3> triangle{a, a + v * p[0] / d, points[j]};
-                                if (min({triangle[0].x, triangle[1].x, triangle[2].x, triangle[0].y, triangle[1].y, triangle[2].y}) < -1e-9 ||
-                                    max({triangle[0].x, triangle[1].x, triangle[2].x, triangle[0].y, triangle[1].y, triangle[2].y}) > len + 1e-9) goto next;
+                                if (sgn(min({triangle[0].x, triangle[1].x, triangle[2].x, triangle[0].y, triangle[1].y, triangle[2].y})) == -1 ||
+                                    sgn(max({triangle[0].x, triangle[1].x, triangle[2].x, triangle[0].y, triangle[1].y, triangle[2].y}) - len) == 1) goto next;
 
                                 for (auto tri : prev)
                                     if (intersects(tri, triangle)) goto next;
