@@ -189,10 +189,10 @@ T area_of_circle_intersection(const Circle<T> &c1, const Circle<T> &c2) {
     auto [rmin, rmax] = minmax(c1.radius, c2.radius);
     if (d <= rmax - rmin) return M_PI * rmin * rmin;
 
-    auto r1sq = c1.radius * c1.radius, r2sq = c2.radius * c2.radius,
-         alpha = acos((d * d + r1sq - r2sq) / (2 * d * c1.radius)) * 2,
-         beta = acos((d * d + r2sq - r1sq) / (2 * d * c2.radius)) * 2;
-    return 0.5 * (r1sq * (alpha - sin(alpha)) + r2sq * (beta - sin(beta)));
+    T r1_sq = c1.radius * c1.radius, r2_sq = c2.radius * c2.radius,
+      alpha = acos((d * d + r1_sq - r2_sq) / (2 * d * c1.radius)) * 2,
+      beta = acos((d * d + r2_sq - r1_sq) / (2 * d * c2.radius)) * 2;
+    return 0.5 * (r1_sq * (alpha - sin(alpha)) + r2_sq * (beta - sin(beta)));
 }
 
 template <typename T>
