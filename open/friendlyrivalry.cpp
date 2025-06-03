@@ -58,20 +58,22 @@ struct Point {
     }
 
     bool operator<(const Point &p) const {
-        return sgn(x - p.x) ? x < p.x : y < p.y;
+        if constexpr (is_floating_point_v<T>) return !approximately_equal(x, p.x) ? sgn(x - p.x) == -1 : sgn(y - p.y) == -1;
+        return x != p.x ? x < p.x : y < p.y;
     }
 
     bool operator>(const Point &p) const {
-        return sgn(x, p.x) ? x > p.x : y > p.y;
+        if constexpr (is_floating_point_v<T>) return !approximately_equal(x, p.x) ? sgn(x - p.x) == 1 : sgn(y - p.y) == 1;
+        return x != p.x ? x > p.x : y > p.y;
     }
 
     bool operator==(const Point &p) const {
-        if constexpr (is_floating_point_v<T>) return !sgn(x - p.x) && !sgn(y - p.y);
+        if constexpr (is_floating_point_v<T>) return approximately_equal(x, p.x) && approximately_equal(y, p.y);
         return x == p.x && y == p.y;
     }
 
     bool operator!=(const Point &p) const {
-        if constexpr (is_floating_point_v<T>) return sgn(x - p.x) || sgn(y - p.y);
+        if constexpr (is_floating_point_v<T>) return !approximately_equal(x, p.x) || !approximately_equal(y, p.y);
         return x != p.x || y != p.y;
     }
 
