@@ -8,7 +8,7 @@ int main() {
     int n, s;
     cin >> n >> s;
 
-    vector<unsigned long long> masks((s + 63) / 64, 0);
+    vector<unsigned long long> masks((s + 63) >> 6, 0);
     while (n--) {
         int num;
         cin >> num;
@@ -55,8 +55,8 @@ int main() {
         for (int v : {num, turned}) {
             if (!~v) break;
             if (1 <= s - v && s - v <= s) {
-                int i = (s - v) / 64, j = (s - v) % 64;
-                if (i < masks.size() && ((masks[i] >> j) & 1)) {
+                int i = (s - v) >> 6, j = (s - v) & 63;
+                if (i < masks.size() && (masks[i] >> j) & 1) {
                     cout << "YES";
                     exit(0);
                 }
@@ -66,8 +66,8 @@ int main() {
         for (int v : {num, turned}) {
             if (!~v) break;
             if (1 <= v && v <= s) {
-                int i = v / 64, j = v % 64;
-                if (i < masks.size()) masks[i] |= (1ULL << j);
+                int i = v >> 6, j = v & 63;
+                if (i < masks.size()) masks[i] |= 1ULL << j;
             }
         }
     }
