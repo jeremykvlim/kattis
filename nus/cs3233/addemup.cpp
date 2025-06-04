@@ -10,12 +10,12 @@ int main() {
 
     vector<unsigned long long> masks((s + 63) >> 6, 0);
     while (n--) {
-        int num;
-        cin >> num;
+        int card;
+        cin >> card;
 
         int turned;
         auto turn = [&]() {
-            auto s = to_string(num);
+            auto s = to_string(card);
             reverse(s.begin(), s.end());
 
             string t;
@@ -52,9 +52,9 @@ int main() {
         };
         turn();
 
-        for (int v : {num, turned}) {
+        for (int v : {card, turned}) {
             if (!~v) break;
-            if (1 <= s - v && s - v <= s) {
+            if (s > v) {
                 int i = (s - v) >> 6, j = (s - v) & 63;
                 if (i < masks.size() && (masks[i] >> j) & 1) {
                     cout << "YES";
@@ -63,7 +63,7 @@ int main() {
             }
         }
 
-        for (int v : {num, turned}) {
+        for (int v : {card, turned}) {
             if (!~v) break;
             if (1 <= v && v <= s) {
                 int i = v >> 6, j = v & 63;
