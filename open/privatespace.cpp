@@ -23,24 +23,6 @@ struct Hash {
     }
 };
 
-int calc(vector<int> groups, unordered_map<vector<int>, int, Hash> &dp, vector<int> pref) {
-    if (dp.count(groups)) return dp[groups];
-
-    int least = pref[13];
-    for (int i = 0; i < groups.size(); i++)
-        if (groups[i]) {
-            groups[i]--;
-            int req = calc(groups, dp, pref);
-            if (req == pref[13]) continue;
-
-            groups[i]++;
-            auto x = upper_bound(pref.begin() + i + 1, pref.end(), req);
-            least = min(least, (*x - req > i + 1 ? max(req, *(x - 1)) : *x) + i + 2);
-        }
-
-    return dp[groups] = least;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -49,7 +31,7 @@ int main() {
     cin >> n;
 
     vector<int> groups(n);
-    unordered_map<vector<int>, int, Hash> dp{{groups, 0}};
+    unordered_map<vector<int>, int, Hash> memo{{groups, 0}};
     int people = 0;
     for (int i = 0; i < n; i++) {
         cin >> groups[i];
@@ -59,11 +41,29 @@ int main() {
 
     vector<int> pref(14);
     iota(pref.begin(), pref.end(), 0);
-    partial_sum(pref.begin(), pref.end(), pref.begin(), [](int x, int y) { return x + y + 1; });
-
-    if (people > pref[13]) cout << "impossible";
-    else {
-        int x = upper_bound(pref.begin(), pref.end(), calc(groups, dp, pref) - 1) - pref.begin();
-        cout << (x > 12 ? "impossible" : to_string(x));
+    for (int i = 1; i < 14; i++) pref[i] = pref[i - 1] + i + 1;
+    if (people > pref[13]) {
+        cout << "impossible";
+        exit(0);
     }
+
+    auto dp = [&](auto &&self) {
+        if (memo.count(groups)) return memo[groups];
+
+        memo[groups] = pref[13];
+        for (int i = 0; i < groups.size(); i++)
+            if (groups[i]) {
+                groups[i]--;
+                int s = self(self);
+                if (s == pref[13]) continue;
+                groups[i]++;
+
+                auto it = upper_bound(pref.begin() + i + 1, pref.end(), s);
+                memo[groups] = min(memo[groups], (*it - s > i + 1 ? max(s, *prev(it)) : *it) + i + 2);
+            }
+        return memo[groups];
+    };
+
+    int size = upper_bound(pref.begin(), pref.end(), dp(dp) - 1) - pref.begin();
+    cout << (size > 12 ? "impossible" : to_string(size));
 }
