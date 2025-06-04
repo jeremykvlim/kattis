@@ -65,7 +65,7 @@ int main() {
 
         for (int v : {card, turned}) {
             if (!~v) break;
-            if (1 <= v && v <= s) {
+            if (0 < v && v <= s) {
                 int i = v >> 6, j = v & 63;
                 if (i < masks.size()) masks[i] |= 1ULL << j;
             }
