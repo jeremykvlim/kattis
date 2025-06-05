@@ -41,8 +41,8 @@ struct WeightedDisjointSets {
     void link(int u, int v, int w, int x) {
         detach(u);
         detach(v);
-        int y;
         while (u != v) {
+            int y;
             tie(u, y) = attach(u, w);
             x ^= y;
             tie(v, y) = attach(v, w);
@@ -138,7 +138,7 @@ int main() {
 
     for (int i = 0; i <= m - t; i++) {
         if (dsu.find(0) == dsu.find(k - 1)) {
-            cout << i + 1 << (!dsu.path_xor(0, k - 1) ? " crewmate\n" : " imposter\n");
+            cout << i + 1 << (!dsu.path_xor(0, k - 1) ? " crewmate" : " imposter");
             exit(0);
         }
 
