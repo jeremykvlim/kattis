@@ -67,7 +67,7 @@ int main() {
             while (j && store[i] != s[j]) j = pi[j - 1];
             if (store[i] == s[j]) j++;
             if (j == m) {
-                int l = i - m + 1, r = n - 1 - i;
+                int l = i - m + 1, r = n - i - 1;
                 if (pref[l] && suff[r]) return true;
                 j = pi[j - 1];
             }
