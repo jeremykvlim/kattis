@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-vector<int> manacher(string s) {
+vector<int> manacher(const string &s) {
     int n = s.size();
     if (n <= 1) return {};
 

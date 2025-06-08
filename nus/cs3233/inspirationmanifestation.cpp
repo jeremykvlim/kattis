@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int manacher(string s) {
+int manacher(const string &s) {
     int n = s.size();
     if (n <= 1) return n;
 
