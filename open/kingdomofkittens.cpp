@@ -137,7 +137,7 @@ T cross(const Point<T> &a, const Point<T> &b) {
 
 template <typename T>
 bool collinear(const Point<T> &a, const Point<T> &b) {
-    return approximately_equal(cross(a, b), (T) 0);
+    return !sgn(cross(a, b));
 }
 
 template <typename T>
