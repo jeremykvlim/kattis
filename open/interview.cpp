@@ -45,7 +45,7 @@ int main() {
     FenwickTree<int> fw(compress.size() + 1);
     auto count = [&](int b) {
         int i = upper_bound(compress.begin(), compress.end(), b) - compress.begin();
-        return i < 1 ? 0 : fw.pref_sum(i);
+        return !i ? 0 : fw.pref_sum(i);
     };
 
     int offers = 0, i = 0;
