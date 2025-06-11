@@ -9,7 +9,7 @@ int main() {
     cin >> s;
 
     unordered_map<char, int> indices;
-    for(int i = 0; i < s.size(); i++)
+    for (int i = 0; i < s.size(); i++)
         if (!indices.count(s[i])) indices[s[i]] = indices.size();
     int n = indices.size();
 

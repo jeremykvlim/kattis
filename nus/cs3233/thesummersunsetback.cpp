@@ -116,7 +116,7 @@ int main() {
     int U = unassigned.size();
 
     vector<vector<int>> adj_list(s);
-    for(int i = 0; i < U; i++) {
+    for (int i = 0; i < U; i++) {
         adj_list[unassigned[i][0]].emplace_back(unassigned[i][1]);
         adj_list[unassigned[i][1]].emplace_back(unassigned[i][0]);
     }

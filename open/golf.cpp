@@ -10,8 +10,8 @@ int main() {
     int n, q;
     cin >> n >> q;
 
-    unordered_map<string,int> indices;
-    for(int i = 0; i < n; i++) {
+    unordered_map<string, int> indices;
+    for (int i = 0; i < n; i++) {
         string s;
         cin >> s;
 
@@ -39,8 +39,7 @@ int main() {
                 scores[i] += delta;
                 ost.insert({scores[i], i});
             }
-        }
-        if (c == '?') {
+        } else {
             string s;
             cin >> s;
 
