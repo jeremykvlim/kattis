@@ -78,11 +78,11 @@ struct SegmentTree {
         pull(i);
     }
 
-    void modify(int l, int r, long long v) {
+    void modify(int l, int r, const long long &v) {
         modify(1, l, r, v, 0, n);
     }
 
-    void modify(int i, int ql, int qr, long long v, int l, int r) {
+    void modify(int i, int ql, int qr, const long long &v, int l, int r) {
         if (qr <= l || r <= ql) return;
         if (ql <= l && r <= qr) {
             apply(i, v);
