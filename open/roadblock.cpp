@@ -62,7 +62,7 @@ struct DominatorTree {
         return compress ? u : label[v];
     }
 
-    auto & operator[](int i) {
+    int & operator[](int i) {
         return DT[i];
     }
 };

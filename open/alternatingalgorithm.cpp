@@ -34,7 +34,7 @@ struct SegmentTree {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
-    auto range_query(int l, int r) {
+    Segment range_query(int l, int r) {
         Segment sl, sr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
             if (l & 1) sl = sl + ST[l++];

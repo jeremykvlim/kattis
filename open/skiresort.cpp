@@ -103,7 +103,7 @@ struct DominatorTree {
         return v;
     }
 
-    auto & operator[](int i) {
+    int & operator[](int i) {
         return DT[i];
     }
 };

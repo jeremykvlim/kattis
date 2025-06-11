@@ -82,7 +82,7 @@ struct SegmentTree {
         }
     }
 
-    auto range_query(int l, int r) {
+    Segment range_query(int l, int r) {
         push(l + n);
         push(r + n - 1);
         Segment seg;
