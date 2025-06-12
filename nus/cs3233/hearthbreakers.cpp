@@ -21,8 +21,8 @@ int main() {
     for (int i = 0, j; i < n; i = j) {
         j = i + 1;
         while (j < n && S[j] == S[i]) j++;
-        distinct.push_back(S[i]);
-        freq.push_back(j - i);
+        distinct.emplace_back(S[i]);
+        freq.emplace_back(j - i);
     }
     int s = distinct.size();
 
