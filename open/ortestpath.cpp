@@ -115,47 +115,49 @@ struct FlowNetwork {
 struct BlockCutTree {
     int n;
     vector<vector<int>> bccs;
-    vector<vector<pair<int, int>>> bcc_edges;
+    vector<int> edge_component;
     vector<bool> cutpoint;
 
-    BlockCutTree(int n, vector<vector<int>> &adj_list) : n(n), cutpoint(n, false) {
+    BlockCutTree(int n, int m, vector<vector<pair<int, int>>> &adj_list) : n(n), cutpoint(n, false), edge_component(m) {
         tarjan(adj_list);
-        bcc_edges.resize(bccs.size());
-        vector<bool> member(n, false);
-        for (int c = 0; c < bccs.size(); c++) {
-            for (int v : bccs[c]) member[v] = true;
-
-            for (int v : bccs[c])
-                for (int u : adj_list[v])
-                    if (member[u] && v < u) bcc_edges[c].emplace_back(v, u);
-            for (int v : bccs[c]) member[v] = false;
-        }
     };
 
-    void tarjan(vector<vector<int>> &adj_list) {
+    void tarjan(vector<vector<pair<int, int>>> &adj_list) {
         vector<int> order(n, 0), low(n, 0);
-        stack<int> st;
+        stack<int> st_v, st_e;
         int count = 0;
 
         auto dfs = [&](auto &&self, int v, int prev = -1) -> void {
             order[v] = low[v] = ++count;
-            st.emplace(v);
-            for (int u : adj_list[v])
+            st_v.emplace(v);
+            for (auto [u, i] : adj_list[v])
                 if (u != prev) {
                     if (!order[u]) {
+                        st_e.emplace(i);
                         self(self, u, v);
                         low[v] = min(low[v], low[u]);
 
                         if (low[u] >= order[v]) {
+                            int j;
+                            do {
+                                j = st_e.top();
+                                st_e.pop();
+
+                                edge_component[j] = bccs.size();
+                            } while (j != i);
+
                             cutpoint[v] = (order[v] > 1 || order[u] > 2);
                             bccs.emplace_back(vector<int>{v});
 
                             while (bccs.back().back() != u) {
-                                bccs.back().emplace_back(st.top());
-                                st.pop();
+                                bccs.back().emplace_back(st_v.top());
+                                st_v.pop();
                             }
                         }
-                    } else low[v] = min(low[v], order[u]);
+                    } else {
+                        if (order[u] < order[v]) st_e.emplace(i);
+                        low[v] = min(low[v], order[u]);
+                    }
                 }
         };
         for (int v = 0; v < n; v++)
@@ -171,27 +173,26 @@ int main() {
     cin >> n >> m >> s >> t;
 
     vector<pair<int, int>> edges(m);
-    vector<vector<int>> adj_list(n);
+    vector<vector<pair<int, int>>> adj_list(n);
     unordered_set<pair<int, int>, Hash> trues;
     for (int i = 0; i < m; i++) {
         int u, v;
         bool b;
         cin >> u >> v >> b;
 
-        edges[i] = {u, v};
-        adj_list[u].emplace_back(v);
-        adj_list[v].emplace_back(u);
-        if (b) trues.emplace(minmax(u, v));
+        edges[i] = minmax(u, v);
+        adj_list[u].emplace_back(v, i);
+        adj_list[v].emplace_back(u, i);
+        if (b) trues.emplace(edges[i]);
     }
 
-    BlockCutTree bct(n, adj_list);
+    BlockCutTree bct(n, m, adj_list);
     vector<pair<int, int>> bcc_true(bct.bccs.size(), {-1, -1});
-    unordered_map<pair<int, int>, int, Hash> indices;
-    for (int i = 0; i < bct.bccs.size(); i++)
-        for (auto [u, v] : bct.bcc_edges[i]) {
-            indices[{u, v}] = i;
-            if (bcc_true[i] == make_pair(-1, -1) && trues.count({u, v})) bcc_true[i] = {u, v};
-        }
+    unordered_map<pair<int, int>, int, Hash> components;
+    for (int i = 0; i < m; i++) {
+        components[edges[i]] = bct.edge_component[i];
+        if (bcc_true[bct.edge_component[i]] == make_pair(-1, -1) && trues.count(edges[i])) bcc_true[bct.edge_component[i]] = edges[i];
+    }
 
     vector<int> prev(n, -1);
     vector<bool> visited(n, false);
@@ -202,7 +203,7 @@ int main() {
         int v = q.front();
         q.pop();
 
-        for (int u : adj_list[v])
+        for (auto [u, i] : adj_list[v])
             if (!visited[u]) {
                 visited[u] = true;
                 prev[u] = v;
@@ -221,8 +222,8 @@ int main() {
     int c = -1;
     for (int i = 0; i < path.size() - 1; i++) {
         auto [u, v] = minmax(path[i], path[i + 1]);
-        if (indices.count({u, v})) {
-            int comp = indices[{u, v}];
+        if (components.count({u, v})) {
+            int comp = components[{u, v}];
             if (bcc_true[comp] != make_pair(-1, -1)) {
                 c = comp;
                 break;
