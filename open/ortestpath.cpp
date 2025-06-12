@@ -120,16 +120,15 @@ struct BlockCutTree {
 
     BlockCutTree(int n, vector<vector<int>> &adj_list) : n(n), cutpoint(n, false) {
         tarjan(adj_list);
+        bcc_edges.resize(bccs.size());
         vector<bool> member(n, false);
-        for (auto comp : bccs) {
-            for (int v : comp) member[v] = true;
+        for (int c = 0; c < bccs.size(); c++) {
+            for (int v : bccs[c]) member[v] = true;
 
-            vector<pair<int, int>> edges;
-            for (int v : comp)
+            for (int v : bccs[c])
                 for (int u : adj_list[v])
-                    if (member[u] && v < u) edges.emplace_back(v, u);
-            bcc_edges.emplace_back(edges);
-            for (int v : comp) member[v] = false;
+                    if (member[u] && v < u) bcc_edges[c].emplace_back(v, u);
+            for (int v : bccs[c]) member[v] = false;
         }
     };
 
