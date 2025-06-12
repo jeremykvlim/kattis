@@ -55,13 +55,12 @@ int main() {
             exit(0);
         }
 
-    vector<bool> visited(26, false);
     vector<int> order;
+    vector<bool> visited(26, false);
     auto dfs2 = [&](auto &&self, int v) -> void {
         visited[v] = true;
         for (int u : adj_list[v])
             if (!visited[u]) self(self, u);
-
         order.emplace_back(v);
     };
     for (int i = 0; i < 26; i++)
