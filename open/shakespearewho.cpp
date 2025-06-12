@@ -36,7 +36,6 @@ int main() {
         visited[v] = true;
         for (int u = 0; u < n; u++)
             if (u != v && !visited[u] && adj_matrix[v][u]) self(self, u);
-
         order.emplace_back(v);
     };
     for (int i = 0; i < n; i++)
