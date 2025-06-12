@@ -30,18 +30,19 @@ int main() {
             adj_matrix[j][i] = prefix_function(words[j] + words[i]).back();
         }
 
+    vector<int> order;
     vector<bool> visited(n);
-    deque<int> order;
     auto dfs = [&](auto &&self, int v) -> void {
         visited[v] = true;
-        for (int u = 0; u < adj_matrix.size(); u++)
+        for (int u = 0; u < n; u++)
             if (u != v && !visited[u] && adj_matrix[v][u]) self(self, u);
 
-        order.emplace_front(v);
+        order.emplace_back(v);
     };
     for (int i = 0; i < n; i++)
         if (!visited[i]) dfs(dfs, i);
 
+    reverse(order.begin(), order.end());
     vector<int> indices(n);
     for (int i = 0; i < n; i++) indices[order[i]] = i;
 
