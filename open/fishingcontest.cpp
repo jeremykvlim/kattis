@@ -264,11 +264,11 @@ int main() {
         col[y] = fw.order(y);
     }
 
-    vector<vector<pair<Point<int>, int>>> events(l + 1);
+    vector<vector<pair<Point<int>, int>>> sweep(l + 1);
     for (int x1 : row[x0])
         for (int y1 : col[y0]) {
             int t = manhattan_dist(Point(x0, y0), Point(x1, y1)) + 1;
-            if (t <= l) events[t].emplace_back(Point(x1, y1), 0);
+            if (t <= l) sweep[t].emplace_back(Point(x1, y1), 0);
         }
 
     vector<vector<int>> dp(r, vector<int>(c, -1));
@@ -288,7 +288,7 @@ int main() {
 
     int most = 0;
     for (int t1 = 0; t1 <= l; t1++) {
-        for (auto [p, count] : events[t1]) {
+        for (auto [p, count] : sweep[t1]) {
             auto [x1, y1] = p;
             if (dp[x1][y1] < count) {
                 dp[x1][y1] = count;
@@ -336,7 +336,7 @@ int main() {
                     for (int x2 : row[x1])
                         for (int y2 : col[y1]) {
                             int t2 = t1 + manhattan_dist(Point(x1, y1), Point(x2, y2));
-                            if (t1 < t2 && t2 <= l) events[t2].emplace_back(Point(x2, y2), count);
+                            if (t1 < t2 && t2 <= l) sweep[t2].emplace_back(Point(x2, y2), count);
                         }
 
                     if (dp[x1][y1] < count) {
