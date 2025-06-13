@@ -387,20 +387,20 @@ int main() {
         exit(0);
     }
 
-    vector<pair<long long, int>> events(2 * n);
+    vector<pair<long long, int>> sweep(2 * n);
     for (int i = 0; i < n; i++) {
         long long a, b;
         cin >> a >> b;
 
-        events[2 * i] = {a, 1};
-        events[2 * i + 1] = {b + 1, -1};
+        sweep[2 * i] = {a, 1};
+        sweep[2 * i + 1] = {b + 1, -1};
     }
-    sort(events.begin(), events.end());
+    sort(sweep.begin(), sweep.end());
 
     vector<pair<long long, long long>> intervals;
-    auto total = 0LL, prev = events[0].first;
+    auto total = 0LL, prev = sweep[0].first;
     if (prev) intervals.emplace_back(0, prev);
-    for (auto [p, delta] : events) {
+    for (auto [p, delta] : sweep) {
         if (prev < p) {
             auto d = p - prev;
             if (!intervals.empty() && intervals.back().first == total) intervals.back().second += d;
