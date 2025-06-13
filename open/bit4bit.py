@@ -47,7 +47,7 @@ class PersistentSegmentTree:
         return len(self.roots) - 1
 
 
-MOD = 10 ** 9 + 7
+MOD = 10**9 + 7
 
 P, q, m = map(int, sys.stdin.readline().split())
 ops: list[tuple[int, ...]] = [None] * (P + 1)
