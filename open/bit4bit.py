@@ -21,10 +21,8 @@ class PersistentSegmentTree:
 
         cl, cr = self.children[i]
         tm = tl + (tr - tl) // 2
-        if pos < tm:
-            cl = self.__modify(cl, v, pos, tl, tm)
-        else:
-            cr = self.__modify(cr, v, pos, tm, tr)
+        if pos < tm: cl = self.__modify(cl, v, pos, tl, tm)
+        else: cr = self.__modify(cr, v, pos, tm, tr)
 
         self.children.append((cl, cr))
         self.ST.append(self.ST[cl] + self.ST[cr])
