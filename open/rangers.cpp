@@ -63,35 +63,35 @@ int main() {
                     eqns[i][j][2] += y * y;
                 }
 
-        vector<pair<double, array<int, 4>>> events;
+        vector<pair<double, array<int, 4>>> sweep;
         for (int i = 0; i < n; i++)
             for (int j = 0; j < i; j++) {
                 for (int k = 0; k < i; k++)
                     for (int l = 0; l < k; l++) {
                         auto roots = quadratic_roots(eqns[i][j][0] - eqns[k][l][0], eqns[i][j][1] - eqns[k][l][1], eqns[i][j][2] - eqns[k][l][2]);
                         for (auto x : roots)
-                            if (x.imag() == 0 && x.real() >= 0) events.emplace_back(x.real(), array<int, 4>{i, j, k, l});
+                            if (x.imag() == 0 && x.real() >= 0) sweep.emplace_back(x.real(), array<int, 4>{i, j, k, l});
                     }
 
                 for (int l = 0; l < j; l++) {
                     auto roots = quadratic_roots(eqns[i][j][0] - eqns[i][l][0], eqns[i][j][1] - eqns[i][l][1], eqns[i][j][2] - eqns[i][l][2]);
                     for (auto x : roots)
-                        if (x.imag() == 0 && x.real() >= 0) events.emplace_back(x.real(), array<int, 4>{i, j, i, l});
+                        if (x.imag() == 0 && x.real() >= 0) sweep.emplace_back(x.real(), array<int, 4>{i, j, i, l});
                 }
             }
 
         auto quadratic_slope = [&](auto a, auto b, auto x) {
             return 2 * a * x + b;
         };
-        for (auto &[x, indices] : events) {
+        for (auto &[x, indices] : sweep) {
             auto &[i, j, k, l] = indices;
             if (quadratic_slope(eqns[i][j][0], eqns[i][j][1], x) < quadratic_slope(eqns[k][l][0], eqns[k][l][1], x)) {
                 swap(i, k);
                 swap(j, l);
             }
         }
-        sort(events.begin(), events.end());
-        
+        sort(sweep.begin(), sweep.end());
+
         auto eval = [&](auto a, auto b, auto c, auto x) -> int {
             return a * x * x + b * x + c;
         };
@@ -101,10 +101,10 @@ int main() {
         auto [mst, in_mst] = kruskal(n, edges);
 
         int count = 1;
-        for (int e = 0; e < events.size();) {
-            auto t = events[e].first;
-            while (e < events.size() && events[e].first < t + 1e-6) {
-                auto [x, indices] = events[e++];
+        for (int s = 0; s < sweep.size();) {
+            auto t = sweep[s].first;
+            while (s < sweep.size() && sweep[s].first < t + 1e-6) {
+                auto [x, indices] = sweep[s++];
                 auto [i, j, k, l] = indices;
                 if (!(in_mst[i][j] && in_mst[j][i]) || in_mst[k][l] && in_mst[l][k]) continue;
 
