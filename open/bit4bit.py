@@ -41,14 +41,11 @@ class PersistentSegmentTree:
         tm = tl + (tr - tl) // 2
         return self.__range_query(cl, l, r, tl, tm) + self.__range_query(cr, l, r, tm, tr)
 
-    def join(self, ver_a, ver_b):
-        root_a = self.roots[ver_a]
-        root_b = self.roots[ver_b]
-        new_root = len(self.ST)
-        self.children.append((root_a, root_b))
-        self.ST.append(self.ST[root_a] + self.ST[root_b])
-        self.roots.append(new_root)
-        self.size.append(self.size[ver_a] + self.size[ver_b])
+    def meld(self, i, j):
+        self.children.append((self.roots[i], self.roots[j]))
+        self.ST.append(self.ST[self.roots[i]] + self.ST[self.roots[j]])
+        self.roots.append(len(self.ST) - 1)
+        self.size.append(self.size[i] + self.size[j])
         return len(self.roots) - 1
 
 
@@ -76,7 +73,7 @@ version[0] = pst.modify(0, m, 1)
 for i in range(1, P + 1):
     if len(ops[i]) == 2:
         a, b = ops[i]
-        version[i] = pst.join(version[a], version[b])
+        version[i] = pst.meld(version[a], version[b])
     else:
         a, l, t = ops[i]
         version[i] = pst.modify(version[a], t, l + 1)
