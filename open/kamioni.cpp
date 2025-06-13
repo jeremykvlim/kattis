@@ -58,20 +58,20 @@ int main() {
     }
 
     vector<int> dir(n + 1), ord(n + 1);
-    vector<tuple<long long, int, int>> events;
+    vector<tuple<long long, int, int>> sweep;
     for (int a = 1; a <= n; a++) {
         auto t = 0LL;
         ord[a] = A[a][0];
         dir[a] = A[a][1] > A[a][0] ? 1 : -1;
         for (int j = 1; j < k[a]; j++) {
             t += abs(A[a][j] - A[a][j - 1]);
-            events.emplace_back(t, a, j);
+            sweep.emplace_back(t, a, j);
         }
     }
-    sort(events.begin(), events.end());
+    sort(sweep.begin(), sweep.end());
 
     vector<long long> time(n + 1, 0);
-    for (auto [t, a, j] : events) {
+    for (auto [t, a, j] : sweep) {
         for (auto [b, i] : queries[a])
             if (~state[i]) {
                 auto x = A[a][j], y = ord[b];
