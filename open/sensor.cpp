@@ -138,28 +138,31 @@ int main() {
     cin >> n >> d;
 
     vector<Point<int>> points(n);
-    vector<bitset<100>> valid(n, bitset<100>(0));
+    vector<__int128> valid(n, 0);
     for (int i = 0; i < n; i++) {
         cin >> points[i].x >> points[i].y;
 
         for (int j = i; ~j; j--)
-            if (euclidean_dist(points[i], points[j]) <= d) valid[i][j] = valid[j][i] = true;
+            if (euclidean_dist(points[i], points[j]) <= d) {
+                valid[i] |= ((__int128) 1) << j;
+                valid[j] |= ((__int128) 1) << i;
+            }
     }
 
     vector<int> indices(n);
     iota(indices.begin(), indices.end(), 0);
-    bitset<100> sensors(0);
-    while (n--) {
+    __int128 sensors = 0;
+    for (int _ = 0; _ < n; _++) {
         shuffle(indices.begin(), indices.end(), mt19937(random_device{}()));
 
-        auto temp = ~bitset<100>();
+        auto temp = (((__int128) 1) << n) - 1;
         for (int i : indices)
-            if (temp[i]) temp &= valid[i];
+            if ((temp >> i) & 1) temp &= valid[i];
 
-        if (sensors.count() < temp.count()) sensors = temp;
+        if (popcount((unsigned __int128) sensors) < popcount((unsigned __int128) temp)) sensors = temp;
     }
 
-    cout << sensors.count() << "\n";
-    for (int i = 0; i < 100; i++)
-        if (sensors[i]) cout << i + 1 << " ";
+    cout << popcount((unsigned __int128) sensors) << "\n";
+    for (int i = 0; i < n; i++)
+        if ((sensors >> i) & 1) cout << i + 1 << " ";
 }
