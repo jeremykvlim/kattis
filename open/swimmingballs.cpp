@@ -1,28 +1,18 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-double height(double radius, double weight) {
-    if (1 <= weight) return 2 * radius;
+double height(double R, double w) {
+    if (w >= 1) return 2 * R;
 
-    double l = 0, r = 2 * radius, m;
+    double l = 0, r = 2 * R, m;
     while (l + 1e-4 < r && l + l * 1e-4 < r) {
         m = l + (r - l) / 2;
 
-        if (M_PI * m * m * (radius - m / 3.0) >= weight * 4 * M_PI * pow(radius, 3) / 3.0) r = m;
+        if (M_PI * m * m * (R - m / 3.0) >= w * 4 * M_PI * pow(R, 3) / 3.0) r = m;
         else l = m;
     }
 
     return m;
-}
-
-double volume(double level, vector<pair<double, double>> &balls) {
-    double total = 0;
-    for (auto [r, w] : balls) {
-        auto h = height(r, w);
-        total += M_PI * pow(min(level, h), 2) * (r - min(level, h) / 3.0);
-    }
-
-    return total;
 }
 
 int main() {
@@ -38,12 +28,23 @@ int main() {
         cin >> n >> W >> L >> D >> V;
 
         vector<pair<double, double>> balls(n);
-        for (auto &[r, w] : balls) cin >> r >> w;
+        for (auto &[R, w] : balls) cin >> R >> w;
+
         double l = 0, r = D, m;
         while (l + 1e-4 < r && l + l * 1e-4 < r) {
             m = l + (r - l) / 2;
 
-            if (W * L * m - volume(m, balls) > V) r = m;
+            auto volume = [&]() {
+                double total = 0;
+                for (auto [R, w] : balls) {
+                    auto h = height(R, w);
+                    total += M_PI * pow(min(m, h), 2) * (R - min(m, h) / 3.0);
+                }
+
+                return total;
+            };
+
+            if (W * L * m - volume() > V) r = m;
             else l = m;
         }
 
