@@ -266,14 +266,14 @@ int main() {
 
     vector<bool> visited(sccs, false);
     vector<int> order;
-    auto dfs2 = [&](auto &&self, int v) -> void {
+    auto dfs = [&](auto &&self, int v) -> void {
         visited[v] = true;
         for (int u : dag[v])
             if (!visited[u]) self(self, u);
         order.emplace_back(v);
     };
     for (int c = 0; c < sccs; c++)
-        if (!visited[c]) dfs2(dfs2, c);
+        if (!visited[c]) dfs(dfs, c);
 
     auto deduped = T;
     sort(deduped.begin(), deduped.end());
