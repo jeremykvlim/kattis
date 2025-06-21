@@ -361,13 +361,14 @@ static unsigned long long primitive_root() {
     if (MODULO == 754974721) return 11ULL;
 }
 
-modint parsevals_theorem(int n, const vector<modint> &F1, const vector<modint> &F2) {
-    modint sum = 0;
+template <typename T>
+T parsevals_theorem(int n, const vector<T> &F1, const vector<T> &F2) {
+    T sum = 0;
     for (int i = 0; i < n; i++) {
         int j = (n - i) & (n - 1);
         sum += F1[i] * F1[j] * F2[i] * F2[j];
     }
-    return sum * modint::inv(n);
+    return sum / n;
 }
 
 int main() {
