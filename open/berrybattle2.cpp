@@ -31,8 +31,8 @@ int main() {
     };
 
     auto add = [&](int l, int r) {
-        queue<pair<int, int>> q;
         int len = 0;
+        queue<pair<int, int>> q;
         for (int i = l; i <= r; i++)
             if (i < r && b[i] == target) len++;
             else if (len) {
