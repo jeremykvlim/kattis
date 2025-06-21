@@ -1,28 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct Hash {
-    template <typename T>
-    static inline void combine(size_t &h, const T &v) {
-        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
-    }
-
-    template <typename T>
-    size_t operator()(const T &v) const {
-        if constexpr (requires { tuple_size<T>::value; })
-            return apply([](const auto &...e) {
-                size_t h = 0;
-                (combine(h, e), ...);
-                return h;
-            }, v);
-        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
-            size_t h = 0;
-            for (const auto &e : v) combine(h, e);
-            return h;
-        } else return hash<T>{}(v);
-    }
-};
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -30,105 +8,83 @@ int main() {
     int n;
     string s;
     cin >> n >> s;
+    n -= 3;
+    s += '.';
 
-    int berries = n / 2, pick = 4, nim_sum = 0;
-    vector<unordered_map<pair<int, int>, int, Hash>> memo(pick + 1);
-    vector<unordered_map<pair<int, int>, vector<int>, Hash>> moves(pick + 1);
-    auto grundy = [&](auto &&self, int l, int r) {
-        if (l > r) return 0;
-        if (memo[pick].count({l, r})) return memo[pick][{l, r}];
+    vector<int> b(n + 1);
+    auto count = [&](int l, int r) {
+        for (int j = l; j <= r; j++) {
+            b[j] = 0;
+            for (int k = 0; k < 4; k++) b[j] += s[j + k] == 'b';
+        }
+    };
+    count(0, n);
 
-        vector<pair<int, int>> possible;
+    int extras = 0, target = 4;
+    map<int, set<int>, greater<>> indices;
+    map<int, int> lengths;
+    auto remove = [&](int i, int len) {
+        indices[len].erase(i);
+        if (indices[len].empty()) indices.erase(len);
+        lengths.erase(i);
+        extras -= len > 4;
+    };
+
+    auto add = [&](int l, int r) {
+        queue<pair<int, int>> q;
+        int len = 0;
         for (int i = l; i <= r; i++)
-            if (count(s.begin() + i, s.begin() + min(r + 1, i + 4), 'b') == pick) possible.emplace_back(self(self, l, i - 1) ^ self(self, i + 4, r), i);
-        sort(possible.begin(), possible.end());
-        possible.erase(unique(possible.begin(), possible.end(), [&](auto p1, auto p2) { return p1.first == p2.first; }), possible.end());
+            if (i < r && b[i] == target) len++;
+            else if (len) {
+                int j = i - len;
+                indices[len].emplace(j);
+                lengths[j] = len;
+                extras += len > 4;
+                q.emplace(j, len);
+                len = 0;
+            }
+        if (q.empty()) return;
 
-        int mex = 0;
-        for (auto [m, i] : possible) {
-            if (mex != m) break;
-            mex++;
-        }
-        for (auto [m, i] : possible) {
-            if (mex < m) break;
-            moves[pick][{l, r}].emplace_back(i);
-        }
-        if (!mex && !possible.empty()) moves[pick][{l, r}].emplace_back(possible[0].second);
+        auto [i, len1] = q.front();
+        q.pop();
 
-        return memo[pick][{l, r}] = mex;
-    };
+        while (!q.empty()) {
+            auto [j, len2] = q.front();
+            q.pop();
 
-    int bound = __lg(n / pick) + 1;
-    vector<unordered_set<pair<int, int>, Hash>> ranges_by_bits(bound);
-    auto update_by_bits = [&](int l, int r, int g, bool add) {
-        for (int b = 0; b < bound && (1 << b) <= g; b++)
-            if ((g >> b) & 1) add ? (void) ranges_by_bits[b].emplace(l, r) : (void) ranges_by_bits[b].erase({l, r});
-    };
-
-    set<pair<int, int>> ranges_sorted;
-    unordered_set<pair<int, int>, Hash> ranges_active;
-    auto update = [&](int l, int r, bool add) {
-        if (l > r) return;
-
-        int g = grundy(grundy, l, r);
-        nim_sum ^= g;
-
-        update_by_bits(l, r, g, add);
-        if (add) {
-            ranges_sorted.emplace(l, r);
-            if (!moves[pick][{l, r}].empty()) ranges_active.emplace(l, r);
-        } else {
-            ranges_sorted.erase({l, r});
-            ranges_active.erase({l, r});
+            if (i + len1 >= j - 2) {
+                remove(i, len1);
+                remove(j, len2);
+                len1 = j - i + len2;
+                indices[len1].emplace(i);
+                lengths[i] = len1;
+                extras += len1 > 4;
+            } else tie(i, len1) = tie(j, len2);
         }
     };
 
-    bool berry = false;
-    for (int i = 0, j = -1; i <= n; i++) {
-        if (!berry) j = i;
-        if (i < n && s[i] == 'b') berry = true;
+    auto update = [&](int i) {
+        for (int j = i; j < i + 4; j++) s[j] = '.';
+        count(max(0, i - 3), min(n, i + 3));
 
-        if (berry && !count(s.begin() + i, s.begin() + i + 3, 'b')) {
-            update(j, i - 1, true);
-            berry = false;
+        auto [j, len] = *prev(lengths.upper_bound(i));
+        remove(j, len);
+        add(j, j + len);
+    };
+
+    for (; target; target--) {
+        add(0, n);
+
+        while (!lengths.empty()) {
+            int i;
+            cin >> i;
+
+            update(i - 1);
+            i = *indices.begin()->second.begin();
+            if (extras == 1 && lengths.size() & 1) i += 3;
+
+            cout << i + 1 << "\n" << flush;
+            update(i);
         }
-    }
-
-    auto temp = s;
-    while (berries) {
-        int i;
-        cin >> i;
-        i--;
-
-        int next = count(temp.begin() + i, temp.begin() + i + 4, 'b');
-        berries -= next;
-
-        if (pick != next) {
-            pick = next;
-            nim_sum = 0;
-            ranges_active.clear();
-            for (auto &us : ranges_by_bits) us.clear();
-            for (auto [l, r] : ranges_sorted) update(l, r, true);
-        }
-
-        auto move = [&]() {
-            auto [l, r] = *prev(ranges_sorted.upper_bound({i + 3, n + 1}));
-            update(l, r, false);
-            update(l, i - 1, true);
-            update(i + 4, r, true);
-            fill_n(temp.begin() + i, 4, '.');
-        };
-        move();
-
-        if (!nim_sum) i = moves[pick][*ranges_active.begin()].back();
-        else {
-            auto [l, r] = *ranges_by_bits[__lg(nim_sum)].begin();
-            i = moves[pick][{l, r}][grundy(grundy, l, r) ^ nim_sum];
-        }
-
-        cout << min(i + 1, n - 3) << "\n" << flush;
-        move();
-
-        berries -= pick;
     }
 }
