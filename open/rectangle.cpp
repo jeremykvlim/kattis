@@ -22,7 +22,7 @@ int main() {
         sum += (long long) a * b;
     }
 
-    vector<int> lens;
+    vector<int> lengths;
     for (auto c = 1LL; c <= longest; c++)
         if (!(sum % c) && sum / c >= c) {
             auto a = c, b = sum / c;
@@ -44,10 +44,10 @@ int main() {
                 if (!visit(a, b, indices_a, false) && !visit(b, a, indices_b, true) && !visit(b, a, indices_a, false)) break;
             }
 
-            if (!a || !b) lens.emplace_back(c);
+            if (!a || !b) lengths.emplace_back(c);
         }
-
-    sort(lens.begin(), lens.end());
-    cout << lens.size() << "\n";
-    for (int l : lens) cout << l << "\n";
+    
+    sort(lengths.begin(), lengths.end());
+    cout << lengths.size() << "\n";
+    for (int l : lengths) cout << l << "\n";
 }
