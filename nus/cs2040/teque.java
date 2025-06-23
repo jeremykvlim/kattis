@@ -40,17 +40,7 @@ public class teque {
 
         ArrayDeque(int n) {
             head = tail = 0;
-            if (n >= 8) {
-                n |= (n >>> 1);
-                n |= (n >>> 2);
-                n |= (n >>> 4);
-                n |= (n >>> 8);
-                n |= (n >>> 16);
-                n++;
-
-                if (n < 0) n >>>= 1;
-            }
-            dq = (T[]) new Object[n];
+            dq = (T[]) new Object[Math.max(8, Integer.highestOneBit(n - 1) << 1)];
         }
 
         private void enlarge() {
@@ -82,8 +72,7 @@ public class teque {
 
         T removeLast() {
             T v = dq[(tail - 1) & (dq.length - 1)];
-            dq[(tail - 1) & (dq.length - 1)] = null;
-            tail = (tail - 1) & (dq.length - 1);
+            dq[tail = (tail - 1) & (dq.length - 1)] = null;
             return v;
         }
 
@@ -113,12 +102,12 @@ public class teque {
 
         void clear() {
             if (head == tail) return;
-            int i = head, t = tail, mask = dq.length - 1;
+            int h = head, t = tail, mask = dq.length - 1;
             head = tail = 0;
             do {
-                dq[i] = null;
-                i = (i + 1) & mask;
-            } while (i != t);
+                dq[h] = null;
+                h = (h + 1) & mask;
+            } while (h != t);
         }
     }
 }
