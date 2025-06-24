@@ -13,9 +13,9 @@ struct PersistentDisjointSets {
         int u_set = find(u), v_set = find(v);
         if (u_set != v_set) {
             if (size[u_set] < size[v_set]) swap(u_set, v_set);
+            history.push_back({v_set, sets[v_set], u_set, size[v_set]});
             sets[v_set] = u_set;
             size[u_set] += size[v_set];
-            history.push_back({v_set, v_set, u_set, size[v_set]});
             return true;
         }
         return false;
