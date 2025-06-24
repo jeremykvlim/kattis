@@ -402,10 +402,10 @@ int main() {
 
     vector<int> subtree_size(n + 1, 1);
     int even = 0;
-    auto dfs1 = [&](auto &&self, int v = 1, int prev = -1, int depth = 0) -> void {
+    auto dfs1 = [&](auto &&self, int v = 1, int prev = -1) -> void {
         for (int u : adj_list[v])
             if (u != prev) {
-                self(self, u, v, depth + 1);
+                self(self, u, v);
                 subtree_size[v] += subtree_size[u];
             }
 
