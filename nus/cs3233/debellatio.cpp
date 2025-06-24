@@ -2,27 +2,21 @@
 using namespace std;
 
 struct PersistentDisjointSets {
-    vector<int> sets, size;
-    deque<array<int, 4>> history;
+    vector<int> sets;
+    deque<pair<int, int>> history;
 
     int find(int v) {
-        return sets[v] == v ? v : find(sets[v]);
+        return sets[v] == v ? v : (sets[v] = find(sets[v]));
     }
 
     bool unite(int u, int v) {
         int u_set = find(u), v_set = find(v);
         if (u_set != v_set) {
-            if (size[u_set] < size[v_set]) swap(u_set, v_set);
-            assign(u_set, v_set);
+            sets[v_set] = u_set;
+            history.emplace_back(v_set, v_set);
             return true;
         }
         return false;
-    }
-
-    void assign(int u_set, int v_set) {
-        history.push_back({v_set, sets[v_set], u_set, size[v_set]});
-        sets[v_set] = u_set;
-        size[u_set] += size[v_set];
     }
 
     int record() {
@@ -31,8 +25,7 @@ struct PersistentDisjointSets {
 
     void restore(int version = 0) {
         while (record() > version) {
-            sets[history.back()[0]] = history.back()[1];
-            size[history.back()[2]] -= history.back()[3];
+            sets[history.back().first] = history.back().second;
             history.pop_back();
         }
     }
@@ -41,7 +34,11 @@ struct PersistentDisjointSets {
         history.resize(version);
     }
 
-    PersistentDisjointSets(int n) : sets(n), size(n, 1) {
+    void reset() {
+        iota(sets.begin(), sets.end(), 0);
+    }
+
+    PersistentDisjointSets(int n) : sets(n) {
         iota(sets.begin(), sets.end(), 0);
     }
 };
@@ -125,8 +122,9 @@ pair<int, vector<int>> gabow(int n, vector<pair<int, int>> edges) {
                     int z = match[base];
                     make_outer(x, y, z, p_curr - potential[z]);
 
-                    pdsu.assign(lca, base);
-                    pdsu.assign(lca, z);
+                    pdsu.sets[base] = pdsu.sets[z] = lca;
+                    pdsu.history.emplace_back(base, lca);
+                    pdsu.history.emplace_back(z, lca);
                 }
         };
 
@@ -167,7 +165,7 @@ pair<int, vector<int>> gabow(int n, vector<pair<int, int>> edges) {
                 for (int i = list.head[p_curr]; ~i; i = list.next[i]) {
                     auto [x, y] = adj_list[i];
                     int l_x = label[x], p_x = potential[x], base_x = pdsu.find(x),
-                        l_y = label[y], p_y = potential[y], base_y = pdsu.find(y);
+                            l_y = label[y], p_y = potential[y], base_y = pdsu.find(y);
 
                     if (l_y > 0) {
                         if (p_curr != (p_x + p_y) / 2 || base_x == base_y) continue;
@@ -197,7 +195,9 @@ pair<int, vector<int>> gabow(int n, vector<pair<int, int>> edges) {
             if (label[u] > 0) potential[u] -= p_curr;
             else if (label[u] < 0) potential[u] = p_curr + 1 - potential[u];
         }
-        pdsu.restore(version);
+        pdsu.reset();
+        pdsu.delete_history(version);
+        pdsu.restore();
 
         for (int u = 1; u <= n; u++) {
             label[u] = 0;
@@ -280,7 +280,8 @@ pair<int, vector<int>> gabow(int n, vector<pair<int, int>> edges) {
                 }
             }
 
-        pdsu.restore();
+        pdsu.reset();
+        pdsu.delete_history();
         fill(potential.begin(), potential.end(), 1);
         fill(blossom.head.begin(), blossom.head.end(), -1);
         fill(list.head.begin(), list.head.end(), -1);
