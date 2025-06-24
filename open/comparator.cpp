@@ -131,10 +131,9 @@ int main() {
 
     int m = 1 << k;
     vector<dynamic_bitset<>> f(m, dynamic_bitset<>(m)), y_used(m, dynamic_bitset<>(m));
-    for (int x = 0; x < m; x++)
-        if (returned == 1) f[x].set();
-
     for (int x = 0; x < m; x++) {
+        if (returned == 1) f[x].set();
+        
         int remaining = m;
         for (auto [a, b, bx, by, r] : valid) {
             if (((x >> (k - 1 - a)) & 1) != bx) continue;
