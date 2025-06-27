@@ -78,7 +78,7 @@ int main() {
         for (int i = 0; i < n; i++)
             if (degree[i] >= 4) C.emplace_back(i);
 
-        if (C.size() >= 4) {
+        if (C.size() >= 5) {
             if (check(C)) cout << "yes " << C.size();
             else cout << "no";
             exit(0);
