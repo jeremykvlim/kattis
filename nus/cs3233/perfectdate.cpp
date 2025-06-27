@@ -27,11 +27,11 @@ auto rerooting_dp(int n, const vector<T> &edges) {
         return {0, 0, 0, 0};
     };
 
-    auto absorb = [&](State s) -> State {
+    auto absorb = [&](const State &s) -> State {
         return State{s[0] + 1, s[1], s[2], s[3]};
     };
 
-    auto add = [&](State s1, State s2) -> State {
+    auto add = [&](const State &s1, const State &s2) -> State {
         return State{s1[0] + s2[0], s1[1] + s2[1], s1[2] + s2[2], s1[3] + s2[3]};
     };
 
