@@ -27,11 +27,11 @@ auto rerooting_dp(int n, const vector<T> &edges, const vector<int> &auxiliary) {
         return {0, 0};
     };
 
-    auto absorb = [&](State s, int v) -> State {
+    auto absorb = [&](const State &s, int v) -> State {
         return State{s[0] + s[1] * auxiliary[v], s[1] + 1};
     };
 
-    auto add = [&](State s1, State s2) -> State {
+    auto add = [&](const State &s1, const State &s2) -> State {
         return State{s1[0] + s2[0], s1[1] + s2[1]};
     };
 
@@ -47,28 +47,23 @@ auto rerooting_dp(int n, const vector<T> &edges, const vector<int> &auxiliary) {
     }
 
     reverse(order.begin(), order.end());
-    vector<State> down(n, base());
+    vector<State> down(n, base()), dp(n, base());
     for (int v : order) {
         int m = adj_list[v].size();
-        vector<State> pref(m + 1), suff(m + 1, base());
+        vector<State> pref(m + 1, base()), suff(m + 1, base());
         if (~parent_edge[v].first) pref[0] = ascend(down[v], parent_edge[v].second);
         for (int i = 0; i < m; i++) {
             auto [u, w, _] = adj_list[v][i];
-            pref[i + 1] = suff[i] = ascend(up[u], w);
+            pref[i + 1] = add(pref[i], ascend(up[u], w));
+            suff[i] = ascend(up[u], w);
         }
-        for (int i = 1; i <= m; i++) pref[i] = add(pref[i - 1], pref[i]);
         for (int i = m - 1; ~i; i--) suff[i] = add(suff[i], suff[i + 1]);
+
+        dp[v] = absorb(pref[m], v);
         for (int i = 0; i < m; i++) {
             auto [u, w, _] = adj_list[v][i];
             down[u] = absorb(add(pref[i], suff[i + 1]), v);
         }
-    }
-
-    vector<State> dp(n, base());
-    for (int v = 0; v < n; v++) {
-        if (~parent_edge[v].first) dp[v] = ascend(down[v], parent_edge[v].second);
-        for (auto [u, w, i] : adj_list[v]) dp[v] = add(dp[v], ascend(up[u], w));
-        dp[v] = absorb(dp[v], v);
     }
     return dp;
 }
