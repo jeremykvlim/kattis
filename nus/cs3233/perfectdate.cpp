@@ -52,28 +52,23 @@ auto rerooting_dp(int n, const vector<T> &edges) {
     }
 
     reverse(order.begin(), order.end());
-    vector<State> down(n, base());
+    vector<State> down(n, base()), dp(n, base());
     for (int v : order) {
         int m = adj_list[v].size();
-        vector<State> pref(m + 1), suff(m + 1, base());
+        vector<State> pref(m + 1, base()), suff(m + 1, base());
         if (~parent_edge[v].first) pref[0] = ascend(down[v], parent_edge[v].second);
         for (int i = 0; i < m; i++) {
             auto [u, w, _] = adj_list[v][i];
-            pref[i + 1] = suff[i] = ascend(up[u], w);
+            pref[i + 1] = add(pref[i], ascend(up[u], w));
+            suff[i] = ascend(up[u], w);
         }
-        for (int i = 1; i <= m; i++) pref[i] = add(pref[i - 1], pref[i]);
         for (int i = m - 1; ~i; i--) suff[i] = add(suff[i], suff[i + 1]);
+
+        dp[v] = absorb(pref[m]);
         for (int i = 0; i < m; i++) {
             auto [u, w, _] = adj_list[v][i];
             down[u] = absorb(add(pref[i], suff[i + 1]));
         }
-    }
-
-    vector<State> dp(n, base());
-    for (int v = 0; v < n; v++) {
-        if (~parent_edge[v].first) dp[v] = ascend(down[v], parent_edge[v].second);
-        for (auto [u, w, i] : adj_list[v]) dp[v] = add(dp[v], ascend(up[u], w));
-        dp[v] = absorb(dp[v]);
     }
     return dp;
 }
