@@ -27,12 +27,15 @@ auto rerooting_dp(int n, const vector<T> &edges) {
         return {0, 0, 0, 0};
     };
 
-    auto absorb = [&](const State &s) -> State {
-        return State{s[0] + 1, s[1], s[2], s[3]};
+    auto add = [&](State s1, State s2) -> State {
+        return State{s1[0] + s2[0], s1[1] + s2[1], s1[2] + s2[2], s1[3] + s2[3]};
     };
 
-    auto add = [&](const State &s1, const State &s2) -> State {
-        return State{s1[0] + s2[0], s1[1] + s2[1], s1[2] + s2[2], s1[3] + s2[3]};
+    auto absorb = [&](vector<pair<State, int>> &states) -> State {
+        State accumulate = base();
+        for (auto [s, _] : states) accumulate = add(accumulate, s);
+        accumulate[0]++;
+        return accumulate;
     };
 
     auto ascend = [&](State s, int w) -> State {
@@ -47,27 +50,34 @@ auto rerooting_dp(int n, const vector<T> &edges) {
     reverse(order.begin(), order.end());
     vector<State> up(n, base());
     for (int v : order) {
-        for (auto [u, w, i] : adj_list[v]) up[v] = add(up[v], ascend(up[u], w));
-        up[v] = absorb(up[v]);
+        vector<pair<State, int>> states;
+        for (auto [u, w, i] : adj_list[v]) states.emplace_back(ascend(up[u], w), u);
+        up[v] = absorb(states);
     }
 
     reverse(order.begin(), order.end());
     vector<State> down(n, base()), dp(n, base());
     for (int v : order) {
-        int m = adj_list[v].size();
-        vector<State> pref(m + 1, base()), suff(m + 1, base());
-        if (~parent_edge[v].first) pref[0] = ascend(down[v], parent_edge[v].second);
-        for (int i = 0; i < m; i++) {
-            auto [u, w, _] = adj_list[v][i];
-            pref[i + 1] = add(pref[i], ascend(up[u], w));
-            suff[i] = ascend(up[u], w);
-        }
-        for (int i = m - 1; ~i; i--) suff[i] = add(suff[i], suff[i + 1]);
+        vector<pair<State, int>> states;
+        if (~parent_edge[v].first) states.emplace_back(ascend(down[v], parent_edge[v].second), -1);
+        for (auto [u, w, i] : adj_list[v]) states.emplace_back(ascend(up[u], w), u);
 
-        dp[v] = absorb(pref[m]);
-        for (int i = 0; i < m; i++) {
-            auto [u, w, _] = adj_list[v][i];
-            down[u] = absorb(add(pref[i], suff[i + 1]));
+        int m = states.size();
+        dp[v] = absorb(states);
+
+        vector<State> pref(m), suff(m);
+        for (int i = 0; i < m; i++) pref[i] = (!i ? states[i].first : add(pref[i - 1], states[i].first));
+        for (int i = m - 1; ~i; i--) suff[i] = (i == m - 1 ? states[i].first : add(suff[i + 1], states[i].first));
+
+        unordered_map<int, int> pos;
+        for (int i = 0; i < m; i++) pos[states[i].second] = i;
+
+        for (auto [u, w, i] : adj_list[v]) {
+            states.clear();
+            int k = pos[u];
+            if (k > 0) states.emplace_back(pref[k - 1], -1);
+            if (k + 1 < m) states.emplace_back(suff[k + 1], -1);
+            down[u] = absorb(states);
         }
     }
     return dp;
