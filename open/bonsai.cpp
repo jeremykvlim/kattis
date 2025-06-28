@@ -108,7 +108,6 @@ int main() {
                 edges.push_back({v, u, 0});
                 self(self, u);
             }
-
     };
     dfs(dfs);
 
