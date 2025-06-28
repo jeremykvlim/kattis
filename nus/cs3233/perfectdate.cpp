@@ -47,11 +47,14 @@ auto rerooting_dp(int n, const vector<T> &edges) {
         return s;
     };
 
+    auto adjust = [&](vector<pair<State, int>> &states) -> void {};
+
     reverse(order.begin(), order.end());
     vector<State> up(n, base());
     for (int v : order) {
         vector<pair<State, int>> states;
         for (auto [u, w, i] : adj_list[v]) states.emplace_back(ascend(up[u], w), u);
+        adjust(states);
         up[v] = absorb(states);
     }
 
@@ -61,10 +64,10 @@ auto rerooting_dp(int n, const vector<T> &edges) {
         vector<pair<State, int>> states;
         if (~parent_edge[v].first) states.emplace_back(ascend(down[v], parent_edge[v].second), -1);
         for (auto [u, w, i] : adj_list[v]) states.emplace_back(ascend(up[u], w), u);
-
-        int m = states.size();
+        adjust(states);
         dp[v] = absorb(states);
 
+        int m = states.size();
         vector<State> pref(m), suff(m);
         for (int i = 0; i < m; i++) pref[i] = (!i ? states[i].first : add(pref[i - 1], states[i].first));
         for (int i = m - 1; ~i; i--) suff[i] = (i == m - 1 ? states[i].first : add(suff[i + 1], states[i].first));
