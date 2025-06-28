@@ -14,8 +14,13 @@ long long pi(long long n) {
         large[i] = (n / approx[i] - 1) / 2;
     }
 
-    auto div = [](double n, long long d) -> int { return n / d; };
-    auto half = [](int n) { return (n - 1) / 2; };
+    auto div = [](double n, long long d) -> int {
+        return n / d;
+    };
+    
+    auto half = [](int n) {
+        return (n - 1) / 2;
+    };
 
     vector<bool> prime(sqrtn + 1, true);
     int count = 0;
