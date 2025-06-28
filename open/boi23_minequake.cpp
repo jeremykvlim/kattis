@@ -26,7 +26,7 @@ auto rerooting_dp(int n, const vector<T> &edges) {
     auto base = [&]() -> State {
         return {0, 0, 0};
     };
-    
+
     auto add = [&](const State &s1, const State &s2) -> State {
         return State{s1[0] + s2[0], s1[1] + s2[1], s1[2] + s2[2]};
     };
@@ -44,12 +44,15 @@ auto rerooting_dp(int n, const vector<T> &edges) {
         s[0] += s[1] * w;
         return s;
     };
+    
+    auto adjust = [&](vector<pair<State, int>> &states) -> void {};
 
     reverse(order.begin(), order.end());
     vector<State> up(n, base());
     for (int v : order) {
         vector<pair<State, int>> states;
         for (auto [u, w, i] : adj_list[v]) states.emplace_back(ascend(up[u], w), u);
+        adjust(states);
         up[v] = absorb(states);
     }
 
@@ -59,10 +62,10 @@ auto rerooting_dp(int n, const vector<T> &edges) {
         vector<pair<State, int>> states;
         if (~parent_edge[v].first) states.emplace_back(ascend(down[v], parent_edge[v].second), -1);
         for (auto [u, w, i] : adj_list[v]) states.emplace_back(ascend(up[u], w), u);
-
-        int m = states.size();
+        adjust(states);
         dp[v] = absorb(states);
 
+        int m = states.size();
         vector<State> pref(m), suff(m);
         for (int i = 0; i < m; i++) pref[i] = (!i ? states[i].first : add(pref[i - 1], states[i].first));
         for (int i = m - 1; ~i; i--) suff[i] = (i == m - 1 ? states[i].first : add(suff[i + 1], states[i].first));
@@ -87,7 +90,7 @@ int main() {
 
     int n;
     cin >> n;
-    
+
     if (n == 1) {
         cout << 0;
         exit(0);
