@@ -139,7 +139,7 @@ int main() {
             wdsu.unite(u, v, edges.size() - 1);
         }
 
-    cout << edges.size() << '\n';
+    cout << edges.size() << "\n";
     for (auto [c, d] : t2)
         if (!t1.count({c, d})) {
             int i = wdsu.unite(c, d, -1);
