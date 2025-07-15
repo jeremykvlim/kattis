@@ -24,7 +24,7 @@ int main() {
 
     double luck = 0;
     for (int i = 0, j = 1; i < n; i = j++) {
-        while (j < n && a[j].first == a[i].first) j++;
+        while (j < n && a[i].first == a[j].first) j++;
 
         vector<int> indices(j - i);
         for (int k = i; k < j; k++) indices[k - i] = a[k].second;
@@ -44,10 +44,7 @@ int main() {
                 auto valid = [&]() {
                     double m = 1e20;
                     for (int l = 0, r = 0; r < j - i; r++) {
-                        while (l < j - i && indices[r] - indices[l] + 1 >= K) {
-                            m = min(m, l - mid * indices[l]);
-                            l++;
-                        }
+                        for (; l < j - i && indices[r] - indices[l] + 1 >= K; l++) m = min(m, l - mid * indices[l]);
 
                         if (m < 1e20 && m + mid - 1 <= r - mid * indices[r]) return true;
                     }
