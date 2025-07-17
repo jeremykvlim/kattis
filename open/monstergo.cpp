@@ -1,15 +1,13 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+int C(int n, int k) {
+    return !k ? 1 : C(n - 1, k - 1) * n / k;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-
-    vector<vector<int>> C(14, vector<int>(13));
-    for (int n = 0; n <= 13; n++) {
-        C[n][0] = 1;
-        for (int k = 1; k <= min(n, 12); k++) C[n][k] = n == k ? 1 : C[n - 1][k - 1] + C[n - 1][k];
-    }
 
     int N;
     cin >> N;
@@ -23,7 +21,7 @@ int main() {
         for (int d : {1, 2, 3, 4, 6, 12}) {
             int k = 12 / d;
             for (int n = k; n * d <= m && n <= 13; n++) {
-                int ways = C[n][k];
+                int ways = C(n, k);
                 if (f >= ways && self(self, f - ways, m - n * d)) {
                     chunks[m][f] = {d, n, ways};
                     return true;
@@ -57,7 +55,7 @@ int main() {
         vector<int> indices(k);
         iota(indices.begin(), indices.end(), 0);
         for (;;) {
-            for (int i : indices) 
+            for (int i : indices)
                 for (int j = 0; j < d; ++j) cout << used[i * d + j] << " ";
             cout << "\n";
             if (!--N) exit(0);
