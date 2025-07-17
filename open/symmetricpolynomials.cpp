@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-double C(int n, int k) {
+int C(int n, int k) {
     return !k ? 1 : C(n - 1, k - 1) * n / k;
 }
 
@@ -41,10 +41,10 @@ int main() {
             exit(0);
         }
 
-        auto arg = 1.0;
+        double arg = 1;
         for (int j = i - 1; ~j; j--)  {
             arg *= -t;
-            curr[j] -= C(i, j) * arg * curr[i];
+            curr[j] -= arg * curr[i] * C(i, j);
         }
     }
 
