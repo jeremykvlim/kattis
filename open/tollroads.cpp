@@ -36,6 +36,7 @@ int main() {
         cin >> u >> v >> w;
         u--;
         v--;
+        
         t = max(t, w);
     }
 
