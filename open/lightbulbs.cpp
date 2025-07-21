@@ -7,69 +7,85 @@ int main() {
 
     int n;
     cin >> n;
-    
+
     auto print = [&](auto lamps) {
         vector<string> grid(n, string(n, '0'));
-        for (auto [r, c] : lamps) grid[r][c] = '1';
+        for (auto [r, c] : lamps) grid[r][c]++;
         for (auto row : grid) cout << row << "\n" << flush;
     };
 
     mt19937 rng(random_device{}());
-    vector<unsigned long long> states{0};
-    vector<pair<int, int>> unknowns, h_lamps, v_lamps;
-    vector<vector<bool>> lit_squares(n, vector<bool>(n));
-    vector<vector<int>> dir(n, vector<int>(n, -1)), indices(n, vector<int>(n, -1));
-    while (h_lamps.size() < n && v_lamps.size() < n) {
-        while (states.size() <= 64 && unknowns.size() < min(64, (int) ((n - h_lamps.size()) * (n - v_lamps.size())))) {
-            int r = -1, c = -1;
+    int lamps_h = 0, lamps_v = 0;
+    vector<bool> h(n, false), v(n, false);
+    vector<unsigned __int128> states{0};
+    vector<pair<int, int>> unknowns;
+    vector<vector<bool>> visited(n, vector<bool>(n, false));
+    vector<vector<int>> dir(n, vector<int>(n, -1));
+
+    auto OR = [&](unsigned __int128 &mask, int shift) {
+        mask |= ((unsigned __int128) 1) << shift;
+    };
+
+    while (lamps_h < n && lamps_v < n) {
+        while (states.size() <= 125) {
             vector<pair<int, int>> valid;
-            for (int i = 0; i < n; i++)
-                for (int j = 0; j < n; j++)
-                    if (!lit_squares[i][j] && !~indices[i][j]) valid.emplace_back(i, j);
+            for (int r = 0; r < n; r++)
+                for (int c = 0; c < n; c++)
+                    if (!h[r] && !v[c] && !visited[r][c]) valid.emplace_back(r, c);
 
             if (valid.empty()) break;
-            tie(r, c) = valid[rng() % valid.size()];
-
-            if (!~r && !~c) continue;
-            for (int i = states.size() - 1; ~i; i--) states.emplace_back(states[i] | (1ULL << unknowns.size()));
-            indices[r][c] = unknowns.size();
+            auto [r, c] = valid[rng() % valid.size()];
+            visited[r][c] = true;
             unknowns.emplace_back(r, c);
+            int s = states.size();
+            states.resize(2 * s);
+            for (int i = 0; i < s; i++) states[i + s] = states[i] | ((unsigned __int128) 1) << (unknowns.size() - 1);
         }
 
-        auto lit = [&](auto lamps, auto s) -> int {
-            vector<bool> row(n, false), col(n, false);
-            for (auto [r, c] : lamps) ((~dir[r][c] ? dir[r][c] : (s >> indices[r][c]) & 1) ? col[c] : row[r]) = true;
-            return n * n - count(row.begin(), row.end(), false) * count(col.begin(), col.end(), false);
+        auto lit = [&](int count_h, int count_v) -> int {
+            return (count_h + count_v) * n - count_h * count_v;
         };
 
-        vector<pair<int, int>> lamps;
-        double H = -1;
-        for (int _ = 0; _ < 150; _++) {
-            int p = rng() % 100 + 1;
-            vector<pair<int, int>> temp;
-            auto add = [&](auto l) {
-                for (auto [r, c] : l)
-                    if (rng() % 100 < p) temp.emplace_back(r, c);
-            };
-            add(h_lamps);
-            add(v_lamps);
-            add(unknowns);
+        int most = 1e3;
+        vector<vector<bool>> chosen, sample(n, vector<bool>(n));
+        for (int _ = 0; _ < 20; _++) {
+            unsigned __int128 base_h = 0, base_v = 0;
+            for (int r = 0; r < n; r++)
+                for (int c = 0; c < n; c++) {
+                    sample[r][c] = false;
+                    if (~dir[r][c] || visited[r][c]) {
+                        sample[r][c] = rng() & 1;
+                        if (~dir[r][c] && sample[r][c]) {
+                            if (!dir[r][c]) OR(base_h, r);
+                            else OR(base_v, c);
+                        }
+                    }
+                }
 
+            int f = 0;
             unordered_map<int, int> freq;
-            for (auto s : states) freq[lit(temp, s)]++;
-
-            double sum = 0;
-            for (auto [_, f] : freq) {
-                auto p_i = (double) f / states.size();
-                sum += p_i * p_i;
+            for (const auto &s : states) {
+                auto lit_h = base_h, lit_v = base_v;
+                for (int i = 0; i < unknowns.size(); i++) {
+                    auto [r, c] = unknowns[i];
+                    if (sample[r][c]) {
+                        if (!((s >> i) & 1)) OR(lit_h, r);
+                        else OR(lit_v, c);
+                    }
+                }
+                f = max(f, ++freq[lit(popcount(lit_h), popcount(lit_v))]);
             }
 
-            auto collision_entropy = -log2(sum);
-            if (H < collision_entropy) {
-                H = collision_entropy;
-                lamps = temp;
+            if (most > f) {
+                most = f;
+                chosen = sample;
             }
         }
+
+        vector<pair<int, int>> lamps;
+        for (int r = 0; r < n; r++)
+            for (int c = 0; c < n; c++)
+                if (chosen[r][c]) lamps.emplace_back(r, c);
 
         cout << "?\n";
         print(lamps);
@@ -77,55 +93,64 @@ int main() {
         int l;
         cin >> l;
 
-        vector<unsigned long long> valid;
-        for (auto s : states)
-            if (lit(lamps, s) == l) valid.emplace_back(s);
-        states = valid;
-
-        auto h = 0ULL, v = 0ULL;
-        for (auto s : states) {
-            h |= s ^ ((1ULL << unknowns.size()) - 1);
-            v |= s;
-        }
-
-        vector<pair<int, int>> temp;
-        for (int i = 0; i < unknowns.size(); i++) {
-            auto [r, c] = unknowns[i];
-            if (((h ^ v) >> i) & 1) {
-                if (!lit_squares[r][c]) {
-                    bool d = (v >> i) & 1;
-
-                    dir[r][c] = d;
-                    if (!d) {
-                        for (int j = 0; j < n; j++) lit_squares[r][j] = true;
-                        h_lamps.emplace_back(r, c);
-                    } else {
-                        for (int j = 0; j < n; j++) lit_squares[j][c] = true;
-                        v_lamps.emplace_back(r, c);
-                    }
+        unsigned __int128 base_h = 0, base_v = 0;
+        for (int r = 0; r < n; r++)
+            for (int c = 0; c < n; c++)
+                if (~dir[r][c] && chosen[r][c]) {
+                    if (!dir[r][c]) OR(base_h, r);
+                    else OR(base_v, c);
                 }
-                indices[r][c] = -1;
-            } else {
-                indices[r][c] = temp.size();
-                temp.emplace_back(r, c);
+
+        vector<unsigned __int128> temp;
+        for (const auto &s : states) {
+            auto lit_h = base_h, lit_v = base_v;
+            for (int i = 0; i < unknowns.size(); i++) {
+                auto [r, c] = unknowns[i];
+                if (chosen[r][c]) {
+                    if (!((s >> i) & 1)) OR(lit_h, r);
+                    else OR(lit_v, c);
+                }
             }
+            if (lit(popcount(lit_h), popcount(lit_v)) == l) temp.emplace_back(s);
         }
 
-        for (auto &curr : states) {
-            auto next = 0ULL;
-            for (int i = 0; i < unknowns.size(); i++)
-                if ((curr >> i) & 1) {
-                    auto [r, c] = unknowns[i];
-                    if (~indices[r][c]) next |= 1ULL << indices[r][c];
+        for (int i = unknowns.size() - 1; ~i; i--) {
+            bool d = (temp[0] >> i) & 1;
+            if (!all_of(next(temp.begin()), temp.end(), [&] (auto state) { return ((state >> i) & 1) == d; })) continue;
+
+            auto [r, c] = unknowns[i];
+            dir[r][c] = d;
+            visited[r][c] = false;
+            if (!d) {
+                lamps_h += !h[r];
+                h[r] = true;
+            } else {
+                lamps_v += !v[c];
+                v[c] = true;
+            }
+            for (auto &s : temp) s = (s & ((((unsigned __int128) 1) << i) - 1)) | ((s >> (i + 1)) << i);
+            unknowns.erase(unknowns.begin() + i);
+        }
+        states = temp;
+    }
+
+    vector<pair<int, int>> lamps;
+    if (lamps_h == n) {
+        for (int r = 0; r < n; r++)
+            for (int c = 0; c < n; c++)
+                if (!dir[r][c]) {
+                    lamps.emplace_back(r, c);
+                    break;
                 }
-            curr = next;
-        }
-
-        sort(states.begin(), states.end());
-        states.erase(unique(states.begin(), states.end()), states.end());
-        unknowns = temp;
+    } else {
+        for (int c = 0; c < n; c++)
+            for (int r = 0; r < n; r++)
+                if (dir[r][c] > 0) {
+                    lamps.emplace_back(r, c);
+                    break;
+                }
     }
 
     cout << "!\n";
-    print(h_lamps.size() == n ? h_lamps : v_lamps);
+    print(lamps);
 }
