@@ -230,19 +230,19 @@ struct KDTree {
         return j;
     }
 
-    double nearest_neighbour_dist(const Point<T> &p) {
-        return nearest_neighbour_dist(0, p);
+    double nearest_neighbor_dist(const Point<T> &p) {
+        return nearest_neighbor_dist(0, p);
     }
 
-    double nearest_neighbour_dist(int i, const Point<T> &p) {
+    double nearest_neighbor_dist(int i, const Point<T> &p) {
         if (i == -1) return 1e30;
 
         auto dist = squared_dist(p, KDT[i].p);
         auto diff = !KDT[i].dir ? (p - KDT[i].p).x : (p - KDT[i].p).y;
 
         auto [cl, cr] = children[i];
-        dist = min(dist, nearest_neighbour_dist(diff <= 0 ? cl : cr, p));
-        if (diff * diff < dist) dist = min(dist, nearest_neighbour_dist(diff <= 0 ? cr : cl, p));
+        dist = min(dist, nearest_neighbor_dist(diff <= 0 ? cl : cr, p));
+        if (diff * diff < dist) dist = min(dist, nearest_neighbor_dist(diff <= 0 ? cr : cl, p));
         return dist;
     }
 };
@@ -284,7 +284,7 @@ int main() {
 
         KDTree<double> kdt(g1.size(), g1);
         auto d = 1e30;
-        for (auto p : g2) d = min(d, kdt.nearest_neighbour_dist(p));
+        for (auto p : g2) d = min(d, kdt.nearest_neighbor_dist(p));
         Circle c1({0, 0}, rf), c2({sqrt(d), 0}, rm);
         overlap = max(overlap, area_of_circle_intersection(c1, c2));
     }

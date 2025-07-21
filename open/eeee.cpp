@@ -75,9 +75,9 @@ int main() {
             if (component[v] != component[u]) dag[component[v]].emplace_back(component[u]);
     }
 
-    for (auto &neighbours : dag) {
-        sort(neighbours.begin(), neighbours.end());
-        neighbours.erase(unique(neighbours.begin(), neighbours.end()), neighbours.end());
+    for (auto &neighbors : dag) {
+        sort(neighbors.begin(), neighbors.end());
+        neighbors.erase(unique(neighbors.begin(), neighbors.end()), neighbors.end());
     }
 
     vector<int> order;

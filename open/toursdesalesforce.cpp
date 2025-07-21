@@ -138,7 +138,7 @@ pair<vector<int>, double> travelling_salesman(const vector<Point<T>> &points, co
     for (int i = 0; i < n; i++)
         for (int j = 0; j < n; j++) dist[i][j] = euclidean_dist(points[i], points[j]);
 
-    auto nearest_neighbour = [&](int s) {
+    auto nearest_neighbor = [&](int s) {
         vector<int> tour(n, -1);
         tour[0] = s;
         vector<bool> visited(n, false);
@@ -191,7 +191,7 @@ pair<vector<int>, double> travelling_salesman(const vector<Point<T>> &points, co
     };
 
     for (int s : starts) {
-        tour = nearest_neighbour(s);
+        tour = nearest_neighbor(s);
         two_opt(tour);
 
         len = length(tour);
