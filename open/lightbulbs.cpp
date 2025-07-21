@@ -11,7 +11,8 @@ int main() {
     auto print = [&](auto lamps) {
         vector<string> grid(n, string(n, '0'));
         for (auto [r, c] : lamps) grid[r][c]++;
-        for (auto row : grid) cout << row << "\n" << flush;
+        for (auto row : grid) cout << row << "\n";
+        cout << flush;
     };
 
     mt19937 rng(random_device{}());
