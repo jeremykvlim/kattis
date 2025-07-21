@@ -1,63 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct SegmentTree {
-    struct Segment {
-        int sum, height;
-
-        Segment() : sum(1), height(1) {}
-
-        auto & operator=(const Segment &s) {
-            sum = s.sum;
-            height = s.height;
-            return *this;
-        }
-
-        friend auto operator+(const Segment &sl, const Segment &sr) {
-            Segment seg;
-            seg.sum = sl.sum + sr.sum;
-            seg.height = sl.height + 1;
-            return seg;
-        }
-    };
-
-    int n;
-    vector<Segment> ST;
-
-    void pull(int i) {
-        ST[i] = ST[i << 1] + ST[i << 1 | 1];
-    }
-
-    void build() {
-        for (int i = n - 1; i; i--) pull(i);
-    }
-
-    int midpoint(int l, int r) {
-        int i = 1 << __lg(r - l);
-        return min(l + i, r - (i >> 1));
-    }
-
-    int query(int pos) {
-        return query(1, pos, 0, n);
-    }
-
-    int query(int i, int pos, int l, int r) {
-        if (!--ST[i].sum) return ST[i].height;
-
-        int m = midpoint(l, r);
-        if (pos < m) return query(i << 1, pos, l, m);
-        else return query(i << 1 | 1, pos, m, r);
-    }
-
-    auto & operator[](int i) {
-        return ST[i];
-    }
-
-    SegmentTree(int n) : n(n), ST(2 * n) {
-        build();
-    }
-};
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -65,85 +8,89 @@ int main() {
     int p, n;
     cin >> p >> n;
 
-    int m = 1 << 16;
+    int k = bit_width((unsigned) bit_width((unsigned) n - 1) - 2) + 1, p2 = 1 << k, mod = bit_ceil((unsigned) n) >> 1;
     if (p == 1) {
-        cout << "7\n" << flush;
+        cout << k + 2 << "\n" << flush;
+        for (int _ = 0; _ < n - p2; _++) cout << k + 2 << "\n";
+        cout << flush;
 
-        int sum = 0;
+        auto sum = (long long) n * (n - 1) / 2;
         vector<bool> seen(n);
-        for (int _ = 0; _ < n - 32; _++) {
+        for (int _ = 0; _ < n - p2; _++) {
             int i;
             cin >> i;
 
             seen[i] = true;
-            sum = (sum + i) % m;
-            cout << "7\n" << flush;
+            sum -= i;
         }
 
-        vector<int> id(n, -1);
-        for (int i = 0, count = 0; i < n; i++)
-            if (!seen[i]) id[i] = count++;
+        vector<int> unseen, id(n);
+        for (int i = 0; i < n; i++)
+            if (!seen[i]) {
+                unseen.emplace_back(i);
+                id[i] = unseen.size() - 1;
+            }
 
-        SegmentTree st(32);
-        for (int _ = 0; _ < 31; _++) {
+        for (int _ = 0; _ < p2 - 1; _++) {
             int i;
             cin >> i;
 
-            int ai = st.query(id[i]);
-            if (ai == 1 && ~id[i])
-                if ((sum >> (id[i] / 2)) & 1) ai = 6;
-            cout << ai << "\n" << flush;
+            seen[i] = true;
+            i = id[i];
+            int ai = 0;
+            for (int m = 2;; ai++, m <<= 1) {
+                int l = i & -m;
+                if (any_of(unseen.begin() + l, unseen.begin() + l + m, [&](int j) { return !seen[j]; })) break;
+            }
+            if (!ai && ((sum & (mod - 1)) >> (i >> 1)) & 1) ai = k;
+            cout << ai + 1 << "\n" << flush;
         }
     } else {
-        int count = 0, sum = 0;
+        int count = 0;
         vector<int> a(n);
-        for (int i = 0; i < n; i++) {
-            cin >> a[i];
+        for (int &ai : a) {
+            cin >> ai;
+            ai--;
 
-            if (a[i] == 7) {
-                count++;
-                sum = (sum + i) % m;
-            }
+            count += ai != k + 1;
         }
 
-        if (count == n - 32) {
-            vector<int> s;
-            for (int i = 0; i < n; i++) {
-                if (a[i] == 6) a[i] = 1;
-                if (a[i] != 7) s.emplace_back(i);
-            }
-
-            int l = 0, r = 32;
-            for (int k = 5; k; k--) {
-                int i = -1, j = -1;
-                for (int h = l; h < r; h++)
-                    if (a[s[h]] == k) {
-                        if (!~i) i = h;
-                        else if (!~j) j = h;
-                        else goto next;
-                    }
-
-                if (~i && ~j) {
-                    cout << s[i] << " " << s[j];
-                    exit(0);
-                } else if (~i && l + 1 < r) {
-                    int mid = l + (r - l) / 2;
-
-                    if (i < mid) l = mid;
-                    else r = mid;
+        if (count == p2) {
+            vector<int> unseen, id(n), rem(k);
+            for (int i = 0; i < n; i++)
+                if (a[i] != k + 1) {
+                    unseen.emplace_back(i);
+                    id[i] = unseen.size() - 1;
+                    rem[a[i] %= k]++;
                 }
-                next:;
-            }
-            cout << s[l] << " " << s[l];
-        } else {
-            int s = 0;
-            for (int i = n - 1; ~i; i--) {
-                if (a[i] == 1 || a[i] == 6) s *= 2;
-                s += a[i] == 6;
+
+            int aj = 0;
+            while (rem[aj] == 1 << (k - 1 - aj)) aj++;
+
+            int m = 1 << (aj + 1);
+            for (int i = 0; i < p2; i++) {
+                if (a[unseen[i]] <= aj) continue;
+                int l = i & -m;
+                for_each(unseen.begin() + l, unseen.begin() + l + m, [&](int j) { if (a[j] == aj) a[j] = -1; });
             }
 
-            int s1 = (sum - s + m) % m, s2 = min(n - 1, s1 + m);
-            cout << s1 << " " << s2;
+            vector<int> s;
+            for (int i = 0; i < p2; i++)
+                if (a[unseen[i]] == aj) s.emplace_back(unseen[i]);
+            int s1 = s[0], s2 = s.size() == 1 ? s1 : s[1];
+            cout << s1 << " " << s2 << "\n" << flush;
+        } else {
+            int s1 = 0;
+            for (int j = 0; int ai : a)
+                if (!ai) j++;
+                else if (ai == k) s1 |= 1 << j++;
+
+            for (int i = 0; i < n; i++)
+                if (a[i] != k + 1) s1 = (s1 - i) & (mod - 1);
+
+            int s2 = s1 + mod;
+            if (s2 >= n) s2 = s1;
+            cout << s1 << " " << s2 << "\n" << flush;
         }
     }
 }
