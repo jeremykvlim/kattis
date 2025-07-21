@@ -27,7 +27,7 @@ int main() {
     };
 
     while (lamps_h < n && lamps_v < n) {
-        while (states.size() <= 125) {
+        while (states.size() < 128) {
             vector<pair<int, int>> valid;
             for (int r = 0; r < n; r++)
                 for (int c = 0; c < n; c++)
