@@ -8,7 +8,7 @@ int main() {
     int p, n;
     cin >> p >> n;
 
-    int k = bit_width((unsigned) bit_width((unsigned) n - 1) - 2) + 1, p2 = 1 << k, mod = bit_ceil((unsigned) n) >> 1;
+    int k = countr_zero(bit_ceil((unsigned) __lg(n) + 1)), p2 = 1 << k, mod = bit_floor((unsigned) n);
     if (p == 1) {
         cout << k + 2 << "\n" << flush;
         for (int _ = 0; _ < n - p2; _++) cout << k + 2 << "\n";
