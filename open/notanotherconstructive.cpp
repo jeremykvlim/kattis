@@ -18,7 +18,7 @@ int main() {
         for (int N = 0; N <= i; N++) {
             dp[i][N].resize(NA_max[i] + 1);
             if (i == n)
-                for (int NA = 0; NA <= NA_max[n]; NA++) dp[n][N][NA][0] = true;
+                for (auto &bs : dp[n][N]) bs[0] = true;
         }
     }
 
