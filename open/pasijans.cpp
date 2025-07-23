@@ -18,7 +18,7 @@ vector<int> duval(const vector<int> &s) {
 
 int main() {
     ios::sync_with_stdio(false);
-    cin.tie(0);
+    cin.tie(nullptr);
 
     int n;
     cin >> n;
