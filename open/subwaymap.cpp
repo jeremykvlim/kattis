@@ -125,11 +125,11 @@ int main() {
         }
 
     for (int i = 0; i < m; i++)
-        if (unknown[i] && !c[i]) {
-            int t = wdsu.path_max(a[i], b[i]);
-            if (~t) len[i] = wdsu.weight[t].first;
+        if (unknown[i]) {
+            if (!c[i]) {
+                int t = wdsu.path_max(a[i], b[i]);
+                if (~t) len[i] = wdsu.weight[t].first;
+            }
+            cout << len[i] << "\n";
         }
-
-    for (int i = 0; i < m; i++)
-        if (unknown[i]) cout << len[i] << "\n";
 }
