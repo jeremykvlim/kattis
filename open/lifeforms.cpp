@@ -34,7 +34,7 @@ struct SuffixArray {
         int n = ascii1.size();
         if (!n) return {};
         if (n == 1) return {0};
-        if (n == 2) ascii1[0] < ascii1[1] ? vector<int>{0, 1} : vector<int>{1, 0};
+        if (n == 2) return ascii1[0] < ascii1[1] ? vector<int>{0, 1} : vector<int>{1, 0};
 
         vector<int> sa(n, 0), sum_s(range + 1, 0), sum_l(range + 1, 0);
         vector<bool> sl(n, false);
