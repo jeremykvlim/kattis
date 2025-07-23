@@ -102,9 +102,10 @@ bool isprime(unsigned long long n) {
 
 int main() {
     ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
-    string s;
     vector<int> numbers;
+    string s;
     while (cin >> s) {
         if (any_of(s.begin(), s.end(), [&](char c) { return !isdigit(c); }) || s[0] == '0' || s.size() > 10) {
             cout << 0;
