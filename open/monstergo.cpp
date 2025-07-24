@@ -56,7 +56,7 @@ int main() {
         iota(indices.begin(), indices.end(), 0);
         for (;;) {
             for (int i : indices)
-                for (int j = 0; j < d; ++j) cout << used[i * d + j] << " ";
+                for (int j = 0; j < d; j++) cout << used[i * d + j] << " ";
             cout << "\n";
             if (!--N) exit(0);
 

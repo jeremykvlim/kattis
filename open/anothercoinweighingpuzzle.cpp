@@ -358,7 +358,7 @@ using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type,
 
 vector<int> sieve(int n) {
     vector<int> spf(n + 1, 0), primes, mobius(n + 1, 1);
-    for (int i = 2; i <= n; ++i) {
+    for (int i = 2; i <= n; i++) {
         if (!spf[i]) {
             spf[i] = i;
             primes.emplace_back(i);
