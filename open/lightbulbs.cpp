@@ -24,7 +24,7 @@ int main() {
     vector<vector<int>> dir(n, vector<int>(n, -1));
 
     auto OR = [&](unsigned __int128 &mask, int shift) {
-        mask |= ((unsigned __int128) 1) << shift;
+        mask |= (unsigned __int128) 1 << shift;
     };
 
     while (lamps_h < n && lamps_v < n) {
@@ -40,7 +40,7 @@ int main() {
             unknowns.emplace_back(r, c);
             int s = states.size();
             states.resize(2 * s);
-            for (int i = 0; i < s; i++) states[i + s] = states[i] | ((unsigned __int128) 1) << (unknowns.size() - 1);
+            for (int i = 0; i < s; i++) states[i + s] = states[i] | (unsigned __int128) 1 << (unknowns.size() - 1);
         }
 
         auto lit = [&](int count_h, int count_v) -> int {
@@ -129,7 +129,10 @@ int main() {
                 lamps_v += !v[c];
                 v[c] = true;
             }
-            for (auto &s : temp) s = (s & ((((unsigned __int128) 1) << i) - 1)) | ((s >> (i + 1)) << i);
+            for (auto &s : temp) {
+                auto mask = ((unsigned __int128) 1 << i) - 1;
+                s = (s & mask) | ((s >> 1) & ~mask);
+            }
             unknowns.erase(unknowns.begin() + i);
         }
         states = temp;
