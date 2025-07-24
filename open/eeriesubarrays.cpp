@@ -31,11 +31,11 @@ int main() {
             offset[j] += 2;
         }
 
-        for (int block = b + 1; block <= (n - 1) / size; block++) lazy[block] += 2;
-
         int pref = offset[i] + lazy[b];
-        for (int block = b + 1; block <= (n - 1) / size; block++)
+        for (int block = b + 1; block <= (n - 1) / size; block++) {
+            lazy[block] += 2;
             if (pref >= lazy[block]) scary += blocks[block][pref - lazy[block]];
+        }
 
         for (int j = i; j < min(n, (b + 1) * size); j++)
             if (offset[j] + lazy[b] == pref) scary++;
