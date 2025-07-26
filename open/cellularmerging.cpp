@@ -203,12 +203,15 @@ int main() {
                 }
             } else if (type == "diamond") {
                 s /= sqrt(2);
-                for (int i = -floor(x / s) - 1; i <= ceil((z - x) / s) + 1; i++)
-                    for (int j = -floor(y / s) - 1; j <= ceil((z - y) / s) + 1; j++) {
-                        if ((i + j) & 1) continue;
-                        auto x1 = x + i * s, y1 = y + j * s;
-                        if (0 <= x1 && x1 <= z && 0 <= y1 && y1 <= z) polygon.emplace_back(x1, y1);
-                    }
+                for (int i = -floor(x / s) - 1; i <= ceil((z - x) / s) + 1; i++) {
+                    auto x1 = x + i * s;
+                    if (0 <= x1 && x1 <= z)
+                        for (int j = -floor(y / s) - 1; j <= ceil((z - y) / s) + 1; j++) {
+                            if ((i + j) & 1) continue;
+                            auto y1 = y + j * s;
+                            if (0 <= y1 && y1 <= z) polygon.emplace_back(x1, y1);
+                        }
+                }
             } else if (type == "triangle") {
                 auto s1 = s * sqrt(3);
                 for (int i = -floor(x / s) - 1; i <= ceil((z - x) / s) + 1; i++) {
