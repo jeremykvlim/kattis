@@ -34,7 +34,7 @@ int main() {
 
     DisjointSets dsu(n);
     queue<array<int, 3>> q;
-    q.emplace(A, B, 0);
+    q.push({A, B, 0});
     while (!q.empty()) {
         auto [a, b, d] = q.front();
         q.pop();
@@ -45,8 +45,8 @@ int main() {
         }
 
         if (dsu.unite(a, b)) {
-            q.emplace(l[a], l[b], d + 1);
-            q.emplace(r[a], r[b], d + 1);
+            q.push({l[a], l[b], d + 1});
+            q.push({r[a], r[b], d + 1});
         }
     }
 
