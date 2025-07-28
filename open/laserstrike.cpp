@@ -69,7 +69,6 @@ int main() {
             if (l1 > prev[l1]) swap(l1, l2);
         }
 
-        bool first = true;
         vector<int> order;
         stack<int> st1, st2;
 
@@ -91,6 +90,8 @@ int main() {
             for (int c : children[prev[l]])
                 if (c != l && order.size() < n - 2) order.emplace_back(c);
         };
+        
+        bool first = true;
         while (order.size() < n - 2) {
             order.emplace_back(l1);
 
