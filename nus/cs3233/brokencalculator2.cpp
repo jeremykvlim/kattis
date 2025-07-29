@@ -2,17 +2,17 @@
 using namespace std;
 
 template <typename T, typename U>
-U hungarian(const vector<vector<T>> &adj_matrix, const U delta) {
-    int n = adj_matrix.size();
+U hungarian(const vector<vector<T>> &C, const U delta) {
+    int n = C.size();
 
     vector<int> r_match(n, -1), c_match(n, -1);
     vector<T> potential(n, 0);
     for (int c = 0; c < n; c++) {
         int r = 0;
         for (int row = 1; row < n; row++)
-            if (adj_matrix[r][c] > adj_matrix[row][c]) r = row;
+            if (C[r][c] > C[row][c]) r = row;
 
-        potential[c] = adj_matrix[r][c];
+        potential[c] = C[r][c];
         if (r_match[r] == -1) {
             r_match[r] = c;
             c_match[c] = r;
@@ -20,7 +20,7 @@ U hungarian(const vector<vector<T>> &adj_matrix, const U delta) {
     }
 
     auto diff = [&](int r, int c) {
-        return adj_matrix[r][c] - potential[c];
+        return C[r][c] - potential[c];
     };
 
     vector<int> cols(n);
@@ -87,7 +87,7 @@ U hungarian(const vector<vector<T>> &adj_matrix, const U delta) {
     }
 
     U cost = 0;
-    for (int r = 0; r < n; r++) cost += adj_matrix[r][r_match[r]];
+    for (int r = 0; r < n; r++) cost += C[r][r_match[r]];
     return cost - delta;
 }
 
@@ -101,7 +101,7 @@ int main() {
 
     vector<long long> x(n + 1, 0);
     for (int i = 1; i <= n; i++) cin >> x[i];
-    
+
     auto time = [&](auto &&self, long long x, long long y) -> long long {
         if (x == y) return 0;
 
@@ -114,10 +114,10 @@ int main() {
         return t;
     };
 
-    vector<vector<long long>> adj_matrix(n + 1, vector<long long>(n + 1));
+    vector<vector<long long>> C(n + 1, vector<long long>(n + 1, LLONG_MAX));
     for (int i = 0; i <= n; i++)
         for (int j = 0; j <= n; j++)
-            adj_matrix[i][j] = i == j ? LLONG_MAX : time(time, x[i], x[j]);
+            if (i != j) C[i][j] = time(time, x[i], x[j]);
 
-    cout << hungarian(adj_matrix, c);
+    cout << hungarian(C, c);
 }
