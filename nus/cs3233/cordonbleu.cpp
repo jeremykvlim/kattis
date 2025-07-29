@@ -2,17 +2,17 @@
 using namespace std;
 
 template <typename T, typename U>
-U hungarian(const vector<vector<T>> &adj_matrix, const U delta) {
-    int n = adj_matrix.size();
+U hungarian(const vector<vector<T>> &C, const U delta) {
+    int n = C.size();
 
     vector<int> r_match(n, -1), c_match(n, -1);
     vector<T> potential(n, 0);
     for (int c = 0; c < n; c++) {
         int r = 0;
         for (int row = 1; row < n; row++)
-            if (adj_matrix[r][c] > adj_matrix[row][c]) r = row;
+            if (C[r][c] > C[row][c]) r = row;
 
-        potential[c] = adj_matrix[r][c];
+        potential[c] = C[r][c];
         if (r_match[r] == -1) {
             r_match[r] = c;
             c_match[c] = r;
@@ -20,7 +20,7 @@ U hungarian(const vector<vector<T>> &adj_matrix, const U delta) {
     }
 
     auto diff = [&](int r, int c) {
-        return adj_matrix[r][c] - potential[c];
+        return C[r][c] - potential[c];
     };
 
     vector<int> cols(n);
@@ -87,7 +87,7 @@ U hungarian(const vector<vector<T>> &adj_matrix, const U delta) {
     }
 
     U cost = 0;
-    for (int r = 0; r < n; r++) cost += adj_matrix[r][r_match[r]];
+    for (int r = 0; r < n; r++) cost += C[r][r_match[r]];
     return cost - delta;
 }
 
@@ -108,13 +108,13 @@ int main() {
         return abs(x.first - y.first) + abs(x.second - y.second);
     };
 
-    vector<vector<int>> adj_matrix(n + m - 1, vector<int>(n + m - 1, 1e6));
+    vector<vector<int>> C(n + m - 1, vector<int>(n + m - 1, 1e6));
     for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) adj_matrix[i][j] = min(adj_matrix[i][j], diff(b[i], c[j]));
-        for (int j = m; j < n + m - 1; j++) adj_matrix[i][j] = min(adj_matrix[i][j], diff(b[i], r));
+        for (int j = 0; j < m; j++) C[i][j] = min(C[i][j], diff(b[i], c[j]));
+        for (int j = m; j < n + m - 1; j++) C[i][j] = min(C[i][j], diff(b[i], r));
     }
 
-    auto cost = hungarian(adj_matrix, (int) 1e6 * (m - 1));
+    auto cost = hungarian(C, (int) 1e6 * (m - 1));
     for (auto bi : b) cost += diff(bi, r);
     cout << cost;
 }
