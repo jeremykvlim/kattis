@@ -135,17 +135,17 @@ double euclidean_dist(const Point3D<T> &a, const Point3D<T> &b = {0, 0, 0}) {
 }
 
 template <typename T, typename U>
-U hungarian(const vector<vector<T>> &adj_matrix, const U delta) {
-    int n = adj_matrix.size();
+U hungarian(const vector<vector<T>> &C, const U delta) {
+    int n = C.size();
 
     vector<int> r_match(n, -1), c_match(n, -1);
     vector<T> potential(n, 0);
     for (int c = 0; c < n; c++) {
         int r = 0;
         for (int row = 1; row < n; row++)
-            if (adj_matrix[r][c] > adj_matrix[row][c]) r = row;
+            if (C[r][c] > C[row][c]) r = row;
 
-        potential[c] = adj_matrix[r][c];
+        potential[c] = C[r][c];
         if (r_match[r] == -1) {
             r_match[r] = c;
             c_match[c] = r;
@@ -153,7 +153,7 @@ U hungarian(const vector<vector<T>> &adj_matrix, const U delta) {
     }
 
     auto diff = [&](int r, int c) {
-        return adj_matrix[r][c] - potential[c];
+        return C[r][c] - potential[c];
     };
 
     vector<int> cols(n);
@@ -220,7 +220,7 @@ U hungarian(const vector<vector<T>> &adj_matrix, const U delta) {
     }
 
     U cost = 0;
-    for (int r = 0; r < n; r++) cost += adj_matrix[r][r_match[r]];
+    for (int r = 0; r < n; r++) cost += C[r][r_match[r]];
     return cost - delta;
 }
 
@@ -247,11 +247,11 @@ int main() {
     for (int &ij : spring) cin >> ij;
     for (int &ij : town) cin >> ij;
 
-    vector<vector<double>> adj_matrix(s, vector<double>(s, 0));
+    vector<vector<double>> C(s, vector<double>(s, 0));
     for (int i = 0; i < t; i++)
-        for (int j = 0; j < s; j++) adj_matrix[i][j] = dist[town[i] - 1][spring[j] - 1];
+        for (int j = 0; j < s; j++) C[i][j] = dist[town[i] - 1][spring[j] - 1];
 
-    auto cost = hungarian(adj_matrix, 0.);
+    auto cost = hungarian(C, 0.);
     if (cost < 1e9) cout << fixed << setprecision(6) << cost;
     else cout << "IMPOSSIBLE";
 }
