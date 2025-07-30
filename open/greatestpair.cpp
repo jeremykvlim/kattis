@@ -69,7 +69,7 @@ int main() {
             adj_list[v].emplace_back(u, w);
         }
 
-        auto dfs = [&](auto &&self, int v = 1, int prev = -1) -> void {
+        auto dfs1 = [&](auto &&self, int v = 1, int prev = -1) -> void {
             subtree_size[v] = 1;
             for (auto [u, w] : adj_list[v])
                 if (u != prev) {
@@ -79,7 +79,7 @@ int main() {
                     if (subtree_size[u] > subtree_size[heavy[v]]) heavy[v] = u;
                 }
         };
-        dfs(dfs);
+        dfs1(dfs1);
 
         auto g = 0LL;
         auto dfs2 = [&](auto &&self, int v = 1, int prev = -1) -> void {
