@@ -7,7 +7,7 @@ struct SegmentTree {
 
         Segment() : value(-1e18) {}
 
-        auto & operator=(const int &v) {
+        auto & operator=(const long long &v) {
             value = v;
             return *this;
         }
