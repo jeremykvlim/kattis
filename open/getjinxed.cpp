@@ -199,7 +199,6 @@ int main() {
                 }
             };
 
-            unordered_set<pair<int, int>, Hash> seen;
             int k = zap(indices[monkey[i]], dtoi[d]);
             cout << k << "\n";
             s = (s + k + MODULO) % MODULO;
