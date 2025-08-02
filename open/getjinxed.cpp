@@ -62,7 +62,7 @@ int main() {
     auto add_row = [&](int x, int y, int i) {
         rows[y].emplace(x);
         int xl = x_lb(x, y), xr = x_ub(x, y),
-            l = xl == INT_MIN ? 0 : id(xl, y), r = xr == INT_MAX ? 0 : id(xr, y);
+                l = xl == INT_MIN ? 0 : id(xl, y), r = xr == INT_MAX ? 0 : id(xr, y);
 
         next[i][2] = l;
         next[i][0] = r;
@@ -72,7 +72,7 @@ int main() {
 
     auto remove_row = [&](int x, int y) {
         int xl = x_lb(x, y), xr = x_ub(x, y),
-            l = xl == INT_MIN ? 0 : id(xl, y), r = xr == INT_MAX ? 0 : id(xr, y);
+                l = xl == INT_MIN ? 0 : id(xl, y), r = xr == INT_MAX ? 0 : id(xr, y);
 
         if (l) next[l][0] = r;
         if (r) next[r][2] = l;
@@ -100,7 +100,7 @@ int main() {
     auto add_col = [&](int x, int y, int i) {
         cols[x].emplace(y);
         int yd = y_lb(x, y), yu = y_ub(x, y),
-            d = yd == INT_MIN ? 0 : id(x, yd), u = yu == INT_MAX ? 0 : id(x, yu);
+                d = yd == INT_MIN ? 0 : id(x, yd), u = yu == INT_MAX ? 0 : id(x, yu);
 
         next[i][3] = d;
         next[i][1] = u;
@@ -110,7 +110,7 @@ int main() {
 
     auto remove_col = [&](int x, int y) {
         int yd = y_lb(x, y), yu = y_ub(x, y),
-            d = yd == INT_MIN ? 0 : id(x, yd), u = yu == INT_MAX ? 0 : id(x, yu);
+                d = yd == INT_MIN ? 0 : id(x, yd), u = yu == INT_MAX ? 0 : id(x, yu);
 
         if (d) next[d][1] = u;
         if (u) next[u][3] = d;
@@ -187,15 +187,14 @@ int main() {
             char d;
             cin >> i >> d;
 
-            auto zap = [&](int v, int dir1) {
-                int u = v, dir2 = dir1;
+            auto zap = [&](int i, int dir) {
                 for (;;) {
-                    int k = next[u][dir2];
+                    int k = next[i][dir];
                     if (!k) return -1;
                     if (mirror[k] == '#') return k;
 
-                    u = k;
-                    dir2 = mirror[k] == '\\' ? back[dir2] : front[dir2];
+                    i = k;
+                    dir = mirror[k] == '\\' ? back[dir] : front[dir];
                 }
             };
 
