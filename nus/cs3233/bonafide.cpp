@@ -176,39 +176,36 @@ int main() {
     auto both = t + '_' + rev;
     SuffixArray sa(both);
 
-    vector<int> bound(n);
-    for (int i = 0; i < n; i++) bound[i] = min(i, n - 1 - i);
-
-    auto matches = [&](int i, int offset) -> int {
-        int l = 0, r = bound[i] - offset + 2, m;
-        if (r <= 0) return 0;
-        while (l + 1 < r) {
-            m = l + (r - l) / 2;
-
-            if (sa.substring_lcp(2 * n - (i - offset), i + offset) >= m) l = m;
-            else r = m;
-        }
-        return l;
-    };
-
     vector<int> radius0(n), radius1(n), radius2(n), s0(n), s1(n), s2(n);
     for (int i = 0; i < n; i++) {
-        int m0 = matches(i, 1);
+        int bound = min(i, n - 1 - i);
+        auto matches = [&](int offset) -> int {
+            int l = 0, r = bound - offset + 2, m;
+            if (r <= 0) return 0;
+            while (l + 1 < r) {
+                m = l + (r - l) / 2;
+
+                if (sa.substring_lcp(2 * n - (i - offset), i + offset) >= m) l = m;
+                else r = m;
+            }
+            return l;
+        };
+        int m0 = matches(1);
 
         int m1 = m0;
         char mismatch1_l = '-', mismatch1_r = '-';
-        if (m0 < bound[i]) {
+        if (m0 < bound) {
             mismatch1_l = t[i - m0 - 1];
             mismatch1_r = t[i + m0 + 1];
-            m1 += matches(i, m0 + 2) + 1;
+            m1 += matches(m0 + 2) + 1;
         }
 
         int m2 = m1;
         char mismatch2_l = '-', mismatch2_r = '-';
-        if (m1 < bound[i]) {
+        if (m1 < bound) {
             mismatch2_l = t[i - m1 - 1];
             mismatch2_r = t[i + m1 + 1];
-            m2 += matches(i, m1 + 2) + 1;
+            m2 += matches(m1 + 2) + 1;
         }
 
         radius0[i] = m0 + 1;
@@ -216,10 +213,10 @@ int main() {
         radius2[i] = m2 + 1;
 
         bool b0 = true, b1 = false, b2 = false;
-        if (m0 < bound[i])
+        if (m0 < bound)
             if (t[i] == mismatch1_l || t[i] == mismatch1_r) b1 = true;
 
-        if (m1 < bound[i])
+        if (m1 < bound)
             if ((mismatch1_l == mismatch2_l && mismatch1_r == mismatch2_r) || (mismatch1_l == mismatch2_r && mismatch1_r == mismatch2_l)) b2 = true;
 
         s0[i] = b0 - b1;
