@@ -33,7 +33,7 @@ int main() {
     cin >> n >> m >> Q;
 
     vector<char> mirror(n + m + Q + 1, '#');
-    vector<array<int, 4>> next(n + m + Q + 1);
+    vector<array<int, 4>> next(n + m + Q + 1, 0);
     unordered_map<pair<int, int>, int, Hash> indices;
     auto id = [&](int x, int y) {
         if (!indices.count({x, y})) return 0;
