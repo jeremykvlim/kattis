@@ -16,6 +16,7 @@ int main() {
         vector<int> a(m + 1);
         for (int i = 1; i <= m; i++) {
             cin >> a[i];
+            
             total += a[i];
         }
 
