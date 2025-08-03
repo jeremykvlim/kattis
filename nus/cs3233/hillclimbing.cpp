@@ -94,7 +94,7 @@ int main() {
             for (int u : children[v]) self(self, u);
 
             int sum = 0;
-            multiset<pair<int, int>> active_v;
+            set<pair<int, int>> active_v;
             for (int u : children[v]) {
                 int i = parent_e[u];
                 if (i && active_e[i]) {
