@@ -370,15 +370,14 @@ int main() {
     int jumps = (sqrt(8 * n + 9) - 3) / 2;
     vector<vector<modint>> dp(n + 1, vector<modint>(jumps + 1, 0));
     dp[0][0] = 1;
-    for (int i = 0; i < n; i++) {
-        if (s[i] == '#') continue;
-        for (int j = 0; j <= jumps; j++) {
-            if (!dp[i][j]) continue;
-            (i + 1 >= n ? ways : dp[i + 1][j]) += dp[i][j];
+    for (int i = 0; i < n; i++)
+        if (s[i] != '#')
+            for (int j = 0; j <= jumps; j++)
+                if (dp[i][j]) {
+                    (i + 1 >= n ? ways : dp[i + 1][j]) += dp[i][j];
 
-            if (i + j + 2 >= n) ways += dp[i][j];
-            else if (j + 1 <= jumps) dp[i + j + 2][j + 1] += dp[i][j];
-        }
-    }
+                    if (i + j + 2 >= n) ways += dp[i][j];
+                    else if (j + 1 <= jumps) dp[i + j + 2][j + 1] += dp[i][j];
+                }
     cout << ways;
 }
