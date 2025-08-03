@@ -104,7 +104,7 @@ struct WeightBalancedTree {
 
     pair<int, int> excise(int i) {
         recycled.emplace(i);
-        return pair(WBT[i].l, WBT[i].r);
+        return {WBT[i].l, WBT[i].r};
     }
 
     bool heavy(int s1, int s2) {
