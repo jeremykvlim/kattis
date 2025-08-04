@@ -251,8 +251,8 @@ int main() {
         auto [px, py, vx, vy] = particles[i];
         if (!vx) continue;
 
-        int dx = w - px, avx = abs(vx), avy = abs(vy), l = (!vy ? avx : lcm(avx, avy)),
-            n = 2 * w * (l / avx), a = (dx * (l / vx) + n) % n;
+        int avx = abs(vx), avy = abs(vy), l = (!vy ? avx : lcm(avx, avy)), 
+            dx = w - px, n = 2 * w * (l / avx), a = (dx * (l / vx) + n) % n;
         if (!vy) {
             if (py == d) {
                 solutions[i][0][0] = {a, l};
