@@ -301,15 +301,13 @@ int main() {
         exit(0);
     }
 
-    bitset<201> pivot;
     vector<bitset<201>> basis(201);
     for (auto [f, bs] : sweep) {
         for (int i = 0; i <= 200; i++)
             if (bs[i]) {
-                if (pivot[i]) bs ^= basis[i];
+                if (basis[i].any()) bs ^= basis[i];
                 else {
                     basis[i] = bs;
-                    pivot[i] = true;
                     break;
                 }
             }
@@ -317,7 +315,7 @@ int main() {
         auto temp = cross;
         for (int i = 0; i <= 200; i++)
             if (temp[i]) {
-                if (pivot[i]) temp ^= basis[i];
+                if (basis[i].any()) temp ^= basis[i];
                 else goto next;
             }
         cout << fixed << setprecision(6) << (double) f.numer() / f.denom();
