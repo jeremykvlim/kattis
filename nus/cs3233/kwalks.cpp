@@ -115,8 +115,7 @@ int main() {
                 };
 
                 auto l = len(dist[i][j], gcd[i]);
-                if (l == -1) cout << "-1 ";
-                else if (l < 1e7) cout << (int) l << " ";
+                if (l < 1e7) cout << (int) l << " ";
                 else cout << setw(7) << setfill('0') << (int) (l % (int) 1e7) << " ";
             }
         cout << "\n";
