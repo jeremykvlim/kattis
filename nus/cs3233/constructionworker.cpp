@@ -58,12 +58,9 @@ int main() {
             }
 
     int lg = 40;
-    const auto id = [&](int k, int l, int r) {
-        return (k * 9 + l + 4) * t + r;
-    };
-    vector<pair<long long, int>> g(9 * t * lg, {1e18, 0});
+    vector<vector<vector<pair<long long, int>>>> g(lg, vector<vector<pair<long long, int>>>(9, vector<pair<long long, int>>(t, {1e18, 0})));
     for (int o = -4; o <= 4; o++)
-        for (int x = 0; x < t; x++) g[id(0, o, x)] = o + 1 <= 0 ? make_pair(0LL, x) : f[o + 1][x];
+        for (int x = 0; x < t; x++) g[0][o + 4][x] = o + 1 <= 0 ? make_pair(0LL, x) : f[o + 1][x];
 
     for (int i = 1; i < lg; i++)
         for (int x = 0; x < t; x++)
@@ -73,12 +70,12 @@ int main() {
                         int a = neg + pos, b = o - a;
                         if (a < -4 || a > 4 || b < -4 || b > 4) continue;
 
-                        auto [d1, x1] = g[id(i - 1, a, x)];
+                        auto [d1, x1] = g[i - 1][a + 4][x];
                         if (d1 >= 1e18) continue;
-                        auto [d2, x2] = g[id(i - 1, b, x1)];
+                        auto [d2, x2] = g[i - 1][b + 4][x1];
                         if (d2 >= 1e18) continue;
 
-                        g[id(i, o, x)] = min(g[id(i, o, x)], {d1 + d2, x2});
+                        g[i][o + 4][x] = min(g[i][o + 4][x], {d1 + d2, x2});
                     }
 
     int q;
@@ -114,7 +111,7 @@ int main() {
 
                     auto [d1, x1] = temp1[p];
                     if (d1 >= 1e18) continue;
-                    auto [d2, x2] = g[id(i, c, x1)];
+                    auto [d2, x2] = g[i][c + 4][x1];
                     if (d2 >= 1e18) continue;
 
                     temp2[o + 4] = min(temp2[o + 4], {d1 + d2, x2});
