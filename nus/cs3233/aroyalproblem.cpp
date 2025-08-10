@@ -90,8 +90,8 @@ struct BlockCutTree {
         if (ancestor(v, u)) return v;
 
         if (depth[u] < depth[v]) swap(u, v);
-        
-        for (int i = __lg(n); ~i; i--)
+
+        for (int i = __lg(BCT.size()); ~i; i--)
             if (!ancestor(lift[i][u], v)) u = lift[i][u];
 
         return lift[0][u];
