@@ -32,63 +32,95 @@ int main() {
     int n;
     cin >> n;
 
-    cc_hash_table<pair<vector<long long>, vector<long long>>, vector<pair<long long, long long>>, Hash> memo;
-    auto dfs1 = [&](auto &&self, const vector<long long> &seq, const vector<long long> &start) -> vector<pair<long long, long long>> {
-        if (memo.find({seq, start}) != memo.end()) return memo[{seq, start}];
-        if (!seq[0]) {
-            if (all_of(seq.begin(), seq.end(), [](auto e) { return !e; })) return memo[{seq, start}] = {{0, 1}};
-            else return memo[{seq, start}] = {};
+    vector<int> divisor_count(25, 0), dp(25, 0);
+    dp[0] = 1;
+    for (int i = 1; i < 25; i++) {
+        for (int j = i; j < 25; j += i) divisor_count[j]++;
+        for (int j = 1; j <= i; j++) dp[i] += divisor_count[j] * dp[i - j];
+    }
+
+    vector<long long> seq;
+    for (int i = 1; i < 25; i++)
+        if (n > dp[i]) n -= dp[i];
+        else {
+            seq.emplace_back(i);
+            break;
         }
 
+    auto search = [&](const auto &v, auto e) -> bool {
+        auto it = lower_bound(v.begin(), v.end(), e, [](const auto &p, auto x) { return p.first < x; });
+        return it != v.end() && it->first == e;
+    };
+
+    vector<pair<long long, long long>> empty, base{{0, 1}};
+    cc_hash_table<pair<vector<long long>, vector<long long>>, vector<pair<long long, long long>>, Hash> memo;
+    auto dfs1 = [&](auto &&self, const vector<long long> &seq, const vector<long long> &start) -> const vector<pair<long long, long long>> & {
+        if (!seq[0]) {
+            if (all_of(seq.begin(), seq.end(), [](auto e) { return !e; })) return base;
+            return empty;
+        }
+
+        if (any_of(seq.begin(), seq.end(), [](auto e) { return !e; })) return empty;
+
+        if (seq.size() > 1) {
+            auto temp_seq = seq, temp_start = start;
+            temp_seq.pop_back();
+            temp_start.pop_back();
+            auto it = memo.find({temp_seq, temp_start});
+            if (it == memo.end() || !search(it->second, seq.back())) return empty;
+        }
+        if (memo.find({seq, start}) != memo.end()) return memo[{seq, start}];
+
+        int c_max = seq[0];
         if (seq.size() > 1)
-            if (self(self, {seq.begin(), seq.end() - 1}, {start.begin(), start.end() - 1}).empty()) return memo[{seq, start}] = {};
+            for (int i = 1; i < seq.size(); i++)
+                if (start[i - 1]) c_max = min((long long) c_max, seq[i] / start[i - 1]);
+        if (!c_max) return empty;
 
+        vector<long long> st{0};
+        st.insert(st.end(), start.begin(), start.end());
         gp_hash_table<long long, long long> m;
-        for (int ci = 1; ci <= seq[0]; ci++)
-            for (int ai = 1; ci * ai <= seq[0]; ai++) {
-                vector<long long> s = seq, st{ai};
-                st.insert(st.end(), start.begin(), start.end() - 1);
-                for (int k = 0; k < seq.size(); k++) {
-                    if (s[k] < ci * st[k]) goto next;
-                    s[k] -= ci * st[k];
-                }
-
-                for (auto [e, freq] : self(self, s, st)) m[e + ci * start.back()] += freq;
-                next:;
+        for (int ci = 1; ci <= c_max; ci++) {
+            auto s = seq;
+            for (int k = 1; k < seq.size(); k++) {
+                if (s[k] < ci * st[k]) goto next;
+                s[k] -= ci * st[k];
             }
+
+            for (int ai = 1; ai * ci <= seq[0]; ai++) {
+                s[0] = seq[0] - ai * ci;
+                st[0] = ai;
+                st.pop_back();
+                for (auto [e, freq] : self(self, s, st)) m[e + ci * start.back()] += freq;
+                st.emplace_back(start.back());
+            }
+            next:;
+        }
 
         vector<pair<long long, long long>> v{m.begin(), m.end()};
         sort(v.begin(), v.end());
         return memo[{seq, start}] = v;
     };
 
-    vector<long long> seq;
-    for (int i = 1;; i++) {
-        auto total = 0LL;
-        for (auto [e, freq] : dfs1(dfs1, {i}, {i})) total += freq;
-
-        if (n <= total) {
-            seq.emplace_back(i);
-            break;
-        }
-        n -= total;
-    }
-
-    do {
+    bool change = true;
+    while (seq.size() < 8 && change) {
+        change = false;
         for (auto [e, freq] : dfs1(dfs1, seq, seq)) {
             if (n <= freq) {
                 seq.emplace_back(e);
+                change = true;
                 break;
             }
             n -= freq;
         }
-    } while (n > 1e5);
+    }
     dfs1(dfs1, seq, seq);
 
     vector<array<vector<long long>, 3>> rec;
     auto dfs2 = [&](auto &&self, const vector<long long> &seq, const vector<long long> &start, vector<long long> c = {}, vector<long long> a = {}) {
-        if (memo.find({seq, start}) == memo.end() || memo[{seq, start}].empty()) return;
-        if (!seq[0] && !memo[{seq, start}].empty()) {
+        if (!seq[0]) {
+            if (any_of(seq.begin(), seq.end(), [](auto e) { return e; })) return;
+
             reverse(c.begin(), c.end());
             reverse(a.begin(), a.end());
 
@@ -102,31 +134,53 @@ int main() {
                 }
                 s.emplace_back(si);
             }
-            rec.push_back({c, a, s});
+            rec.push_back({s, c, a});
             return;
         }
 
-        for (int ci = 1; ci <= seq[0]; ci++)
-            for (int ai = 1; ci * ai <= seq[0]; ai++) {
-                vector<long long> s = seq, st{ai};
-                st.insert(st.end(), start.begin(), start.end() - 1);
-                for (int k = 0; k < seq.size(); k++) {
-                    if (s[k] < ci * st[k]) goto next;
-                    s[k] -= ci * st[k];
-                }
+        if (any_of(seq.begin(), seq.end(), [](auto e) { return !e; })) return;
 
+        if (seq.size() > 1) {
+            auto temp_seq = seq, temp_start = start;
+            temp_seq.pop_back();
+            temp_start.pop_back();
+            auto it = memo.find({temp_seq, temp_start});
+            if (it == memo.end() || !search(it->second, seq.back())) return;
+        }
+
+        int c_max = seq[0];
+        if (seq.size() > 1)
+            for (int i = 1; i < seq.size(); i++)
+                if (start[i - 1]) c_max = min((long long) c_max, seq[i] / start[i - 1]);
+        if (!c_max) return;
+
+        vector<long long> st{0};
+        st.insert(st.end(), start.begin(), start.end());
+        for (int ci = 1; ci <= c_max; ci++) {
+            auto s = seq;
+            for (int k = 1; k < seq.size(); k++) {
+                if (s[k] < ci * st[k]) goto next;
+                s[k] -= ci * st[k];
+            }
+
+            for (int ai = 1; ai * ci <= seq[0]; ai++) {
+                s[0] = seq[0] - ai * ci;
+                st[0] = ai;
+                st.pop_back();
                 c.emplace_back(ci);
                 a.emplace_back(ai);
                 self(self, s, st, c, a);
-                c.pop_back();
                 a.pop_back();
-                next:;
+                c.pop_back();
+                st.emplace_back(st.back());
             }
+            next:;
+        }
     };
     dfs2(dfs2, seq, seq);
 
-    nth_element(rec.begin(), rec.begin() + n - 1, rec.end(), [](auto a1, auto a2) { return a1[2] != a2[2] ? a1[2] < a2[2] : a1[0] < a2[0]; });
-    auto [c, a, s] = rec[n - 1];
+    nth_element(rec.begin(), rec.begin() + n - 1, rec.end());
+    auto [s, c, a] = rec[n - 1];
     s.resize(10);
     cout << c.size() << "\n";
     for (auto ci : c) cout << ci << " ";
