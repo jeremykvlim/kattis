@@ -32,20 +32,19 @@ int main() {
     int n;
     cin >> n;
 
+    vector<long long> seq;
     vector<int> divisor_count(25, 0), dp(25, 0);
     dp[0] = 1;
     for (int i = 1; i < 25; i++) {
         for (int j = i; j < 25; j += i) divisor_count[j]++;
         for (int j = 1; j <= i; j++) dp[i] += divisor_count[j] * dp[i - j];
-    }
 
-    vector<long long> seq;
-    for (int i = 1; i < 25; i++)
         if (n > dp[i]) n -= dp[i];
         else {
             seq.emplace_back(i);
             break;
         }
+    }
 
     auto search = [&](const auto &v, auto e) -> bool {
         auto it = lower_bound(v.begin(), v.end(), e, [](const auto &p, auto x) { return p.first < x; });
