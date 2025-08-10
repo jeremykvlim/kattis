@@ -39,7 +39,7 @@ int main() {
     vector<int> in(n + 1), out(n + 1);
     int count = 0;
     auto dfs = [&](auto &&self, int v = 1) -> void {
-        in[v] = ++count;
+        in[v] = count++;
         for (int u : adj_list[v]) self(self, u);
         out[v] = count;
     };
@@ -48,8 +48,8 @@ int main() {
     FenwickTree<int> fw(n + 1);
     int slack = 0, j = 1;
     for (int i = n; i; i--) {
-        if (a[i] < fw.pref_sum(out[i]) - fw.pref_sum(in[i])) slack++;
-        else fw.update(in[i], 1);
+        if (a[i] < fw.pref_sum(out[i]) - fw.pref_sum(in[i] + 1)) slack++;
+        else fw.update(in[i] + 1, 1);
 
         if (slack == n - k) {
             j = i;
