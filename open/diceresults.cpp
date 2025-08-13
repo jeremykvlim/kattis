@@ -473,7 +473,7 @@ vector<T> polyinv(const vector<T> &a, int n) {
 }
 
 template <typename T>
-vector<T> polyderiv(const vector<T> &a) {
+vector<T> polyder(const vector<T> &a) {
     int n = a.size();
     if (n <= 1) return {0};
 
@@ -493,7 +493,7 @@ vector<T> polyint(const vector<T> &a) {
 
 template <typename T>
 vector<T> polyln(const vector<T> &a, int n) {
-    auto derivln = convolve(polyderiv(a), polyinv(a, n));
+    auto derivln = convolve(polyder(a), polyinv(a, n));
     derivln.resize(n - 1);
     auto ln = polyint(derivln);
     ln.resize(n);
