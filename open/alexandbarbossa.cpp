@@ -5,7 +5,7 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    unsigned int k, m, n;
+    unsigned k, m, n;
     cin >> k >> m >> n;
     
     auto r = k % (m + n);
