@@ -410,7 +410,7 @@ int main() {
             fill(temp.begin(), temp.end(), 0);
             for (int j = 0; j <= n; j++)
                 for (int mask = 0; mask < size; mask++) temp[masks[i][j][mask]] += dp1[j][mask];
-            fast_superset_transform(size, temp, [](auto x, auto y) { return x += y; });
+            fast_superset_transform(size, temp, [](auto x, auto y) { return x + y; });
             dp2[i] = temp;
         }
         swap(dp1, dp2);
