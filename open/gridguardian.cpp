@@ -361,11 +361,11 @@ struct MODULO {
 auto &p = MODULO<unsigned long long>::value;
 using modint = MontgomeryModInt<MODULO<unsigned long long>>;
 
-template <typename T>
-void superset_fzt(int n, vector<T> &v) {
+template <typename T, typename F>
+void fast_superset_transform(int n, vector<T> &v, F &&f) {
     for (int k = 1; k < n; k <<= 1)
         for (int i = 0; i < n; i += k << 1)
-            for (int j = 0; j < k; j++) v[i + j] += v[i + j + k];
+            for (int j = 0; j < k; j++) v[i + j] = f(v[i + j], v[i + j + k]);
 }
 
 int main() {
@@ -410,7 +410,7 @@ int main() {
             fill(temp.begin(), temp.end(), 0);
             for (int j = 0; j <= n; j++)
                 for (int mask = 0; mask < size; mask++) temp[masks[i][j][mask]] += dp1[j][mask];
-            superset_fzt(size, temp);
+            fast_superset_transform(size, temp, [](auto x, auto y) { return x += y; });
             dp2[i] = temp;
         }
         swap(dp1, dp2);
