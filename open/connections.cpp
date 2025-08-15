@@ -547,13 +547,12 @@ pair<T, vector<pair<int, int>>> kruskal(int n, vector<tuple<T, int, int>> edges)
 
     T len = 0;
     vector<pair<int, int>> mst;
-    for (auto [w, u, v] : edges) {
+    for (auto [w, u, v] : edges)
         if (dsu.unite(u, v)) {
             len += w;
             mst.emplace_back(u, v);
             if (mst.size() == n - 1) break;
         }
-    }
 
     return {len, mst};
 }
