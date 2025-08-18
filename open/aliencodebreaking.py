@@ -1,31 +1,30 @@
 import sys
 
-index = 0
-def convert(n, radix, digits, power=-1):
-    global index
-    if digits[-1] != -1: return
+def convert(x: int, radix: int, digits: list[int]) -> None:
+    radix_pows = [radix]
+    value, exponent = radix, 1
+    while value * radix <= x:
+        value = value * value
+        radix_pows.append(value)
+        exponent <<= 1
+    m = len(digits)
 
-    if power == 0:
-        if digits[0] == -1 and not n: return
-        digits[index] = n
-        index += 1
-        return
+    def dnc(x: int, exponent: int, index):
+        if index >= m: return index
 
-    if power == -1:
-        power = 1
-        while radix**(power + 1) <= n: power <<= 1
+        if not exponent:
+            if not index and not x: return index
+            digits[index] = x
+            return index + 1
 
-    l, r = divmod(n, radix**power)
-    power >>= 1
+        l, r = divmod(x, radix_pows[exponent.bit_length() - 1])
+        exponent >>= 1
+        
+        index = dnc(l, exponent, index)
+        if index < m: index = dnc(r, exponent, index)
+        return index
 
-    convert(l, radix, digits, power)
-    convert(r, radix, digits, power)
-
-def itoc(i):
-    return ' ' if i == 26 else chr(i + 65)
-
-def ctoi(c):
-    return 26 if c == ' ' else ord(c) - 65
+    dnc(x, exponent, 0)
 
 
 MODULO = 1 << 20
@@ -49,6 +48,11 @@ for i in range(x):
     sum = (33 * sum + x) % MODULO
 digits10 = ''.join(digits10)
 
-digits27 = [-1] * (len(cipher))
-convert(int(digits10), 27, digits27)
-print(*[itoc((ctoi(cipher[i]) + d + 27) % 27) for i, d in enumerate(digits27)], sep='')
+digits = [0] * len(cipher)
+convert(int(digits10), 27, digits)
+
+text = []
+for d, c in enumerate(cipher):
+    i = ((26 if c == ' ' else ord(c) - 65) + digits[d] + 27) % 27
+    text.append(' ' if i == 26 else chr(i + 65))
+sys.stdout.write(''.join(text))
