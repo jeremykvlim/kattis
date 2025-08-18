@@ -66,6 +66,11 @@ inline bool read(T &v) {
     return false;
 }
 
+template <typename... T>
+inline bool read(T &... xs) requires (sizeof...(T) > 1) {
+    return (read(xs) && ...);
+}
+
 template <typename T>
 vector<T> conjugate_gradient(const vector<vector<T>> &A, const vector<T> &b) {
     int n = b.size();
