@@ -1,6 +1,6 @@
 import sys
 
-def convert(x: int, radix: int, digits: list[int]) -> None:
+def convert(x, radix, digits):
     radix_pows = [radix]
     value, exponent = radix, 1
     while value * radix <= x:
@@ -9,7 +9,7 @@ def convert(x: int, radix: int, digits: list[int]) -> None:
         exponent <<= 1
     m = len(digits)
 
-    def dnc(x: int, exponent: int, index):
+    def dnc(x, exponent, index):
         if index >= m: return index
 
         if not exponent:
@@ -19,7 +19,7 @@ def convert(x: int, radix: int, digits: list[int]) -> None:
 
         l, r = divmod(x, radix_pows[exponent.bit_length() - 1])
         exponent >>= 1
-        
+
         index = dnc(l, exponent, index)
         if index < m: index = dnc(r, exponent, index)
         return index
