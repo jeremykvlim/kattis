@@ -105,6 +105,8 @@ vector<T> conjugate_gradient(const vector<vector<T>> &A, const vector<T> &b) {
 }
 
 int main() {
+    ios::sync_with_stdio(false);
+    
     int n;
     read(n);
 
