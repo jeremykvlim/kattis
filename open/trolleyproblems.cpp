@@ -15,7 +15,7 @@ int main() {
         while (l + 1 < r) {
             m = l + (r - l) / 2;
 
-            vector<int> schedule;
+            vector<int> s;
             auto valid = [&]() {
                 int i = 0;
                 while (i < n && req[i] <= (m / 20) + 1) i++;
@@ -32,15 +32,14 @@ int main() {
                     if (latest == make_pair(-1, -1)) return false;
 
                     while (i < n && req[i] <= latest.first) i++;
-                    schedule.emplace_back(latest.second);
-                    a = latest.second;
+                    s.emplace_back(a = latest.second);
                 }
 
                 return true;
             };
 
             if (valid()) {
-                stops = schedule;
+                stops = s;
                 r = m;
             } else l = m;
         }
