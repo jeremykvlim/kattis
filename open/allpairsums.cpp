@@ -450,7 +450,6 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
     return c;
 }
 
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
