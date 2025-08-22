@@ -1,237 +1,191 @@
 #include <bits/stdc++.h>
-#include <ext/pb_ds/assoc_container.hpp>
 using namespace std;
-using namespace __gnu_pbds;
-
-struct Hash {
-    template <typename T>
-    static inline void combine(size_t &h, const T &v) {
-        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
-    }
-
-    template <typename T>
-    size_t operator()(const T &v) const {
-        if constexpr (requires { tuple_size<T>::value; })
-            return apply([](const auto &...e) {
-                size_t h = 0;
-                (combine(h, e), ...);
-                return h;
-            }, v);
-        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
-            size_t h = 0;
-            for (const auto &e : v) combine(h, e);
-            return h;
-        } else return hash<T>{}(v);
-    }
-};
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n, D, M;
-    cin >> n >> D >> M;
+    int n, D, m;
+    cin >> n >> D >> m;
 
-    vector<int> arr(n);
-    for (int &e : arr) cin >> e;
+    vector<int> a(n);
+    for (int &ai : a) cin >> ai;
 
-    D = min(D, n - 1);
-    int p5 = 1;
-    for (int i = 0; i <= D; i++) p5 *= 5;
-    vector<vector<tuple<int, int, int, int, bool>>> adj_list(p5);
-    gp_hash_table<vector<int>, int, Hash> cache;
-    auto jump = [&](int v) -> void {
-        enum State {
-            UNVISITED = 0,
-            VISITED = 1,
-            PATH = 2,
-            LOOP1 = 3,
-            LOOP2 = 4
-        };
-
-        vector<int> states;
-        for (int u = v; u; u /= 5) states.emplace_back(u % 5);
-        states.resize(max(D + 1, (int) states.size()), UNVISITED);
-
-        vector<int> path, unvisited;
-        gp_hash_table<int, pair<int, int>> loop;
-        for (int i = 0; i < states.size(); i++)
-            if (states[i] == UNVISITED) unvisited.emplace_back(i);
-            else if (states[i] == PATH) path.emplace_back(i);
-            else if (states[i] >= LOOP1) {
-                if (loop.find(states[i]) != loop.end()) loop[states[i]].second = i;
-                else loop[states[i]] = {i, -1};
-            }
-
-        auto encode = [&](vector<int> states) {
-            if (cache.find(states) != cache.end()) return cache[states];
-
-            gp_hash_table<int, int> indices;
-            vector<pair<int, int>> matches;
-            for (int i = 0; i < states.size(); i++)
-                if (states[i] >= LOOP1) {
-                    if (indices.find(states[i]) != indices.end()) matches.emplace_back(indices[states[i]], i);
-                    else indices[states[i]] = i;
-                }
-
-            if (!matches.empty()) {
-                sort(matches.begin(), matches.end());
-                int s = matches.size() + 2;
-                for (auto [i, j] : matches) states[i] = states[j] = s--;
-            }
-
-            int v = 0;
-            for (int i = states.size() - 1; ~i; i--) v = v * 5 + states[i];
-            return cache[states] = v;
-        };
-
-        vector<int> temp;
-        for (int i : path)
-            for (int j : unvisited) {
-                temp = states;
-                temp[i] = VISITED;
-                temp[j] = PATH;
-                adj_list[v].emplace_back(encode(temp), 1, min(i, j), max(i, j), false);
-            }
-
-        if (loop.size() < 2)
-            for (int i : unvisited)
-                for (int j : unvisited) {
-                    if (i == j) continue;
-
-                    for (int s : {LOOP1, LOOP2})
-                        if (loop.find(s) == loop.end()) {
-                            temp = states;
-                            temp[i] = temp[j] = s;
-                            adj_list[v].emplace_back(encode(temp), 2, i, j, false);
-                            break;
-                        }
-                }
-        else
-            for (auto [s1, p1] : loop)
-                for (auto [s2, p2] : loop) {
-                    if (s1 == s2) continue;
-
-                    for (auto [i1, j1] : {p1, {p1.second, p1.first}})
-                        for (auto [i2, j2] : {p2, {p2.second, p2.first}}) {
-                            temp = states;
-                            temp[i1] = temp[i2] = VISITED;
-                            temp[j1] = temp[j2] = s1;
-                            adj_list[v].emplace_back(encode(temp), 0, min(i1, i2), max(i1, i2), false);
-                        }
-                }
-
-        for (int i : path)
-            for (auto [s, p] : loop)
-                for (auto [j, k] : {p, {p.second, p.first}}) {
-                    temp = states;
-                    temp[i] = temp[j] = VISITED;
-                    temp[k] = PATH;
-                    adj_list[v].emplace_back(encode(temp), 0, min(i, j), max(i, j), false);
-                }
-
-        if (path.size() < 2)
-            for (int i : unvisited) {
-                temp = states;
-                temp[i] = PATH;
-                adj_list[v].emplace_back(encode(temp), 1, -1, -1, false);
-            }
-        else if (path.size() == 2) {
-            temp = states;
-            temp[path[0]] = temp[path[1]] = VISITED;
-
-            int u = encode(temp);
-            while (u) {
-                if (u % 5 > 1) goto next;
-                u /= 5;
-            }
-
-            adj_list[v].emplace_back(u, 0, path[0], path[1], true);
+    auto update = [&](pair<int, array<int, 7>> &s, int b, int degree) {
+        if (!degree) {
+            s.first &= ~(1 << b);
+            s.second[b] = 0;
+        } else if (degree == 1) {
+            s.first &= ~(1 << b);
+            if (!s.second[b]) s.second[b] = 1;
+        } else {
+            s.first |= 1 << b;
+            s.second[b] = 0;
         }
-
-        next:;
-        for (int i : unvisited)
-            for (auto [s, p] : loop)
-                for (int j : {p.first, p.second}) {
-                    temp = states;
-                    temp[i] = s;
-                    temp[j] = VISITED;
-                    adj_list[v].emplace_back(encode(temp), 1, min(i, j), max(i, j), false);
-                }
-
-        sort(adj_list[v].begin(), adj_list[v].end());
-        adj_list[v].erase(unique(adj_list[v].begin(), adj_list[v].end()), adj_list[v].end());
     };
 
-    vector<bool> visited(p5, false);
-    vector<int> visits;
-    queue<int> q;
-    q.emplace(0);
-    while (!q.empty()) {
-        int v = q.front();
-        q.pop();
+    auto encode = [&](const pair<int, array<int, 7>> &s) -> int {
+        int e = 0;
+        for (int b = 0; b < D; b++) e |= (s.second[b] & 7) << (3 * b);
+        return e | (s.first << (3 * D));
+    };
 
-        visits.emplace_back(v);
-        jump(v);
-        for (auto [u, jumps, l, r, end] : adj_list[v])
-            if (!visited[u]) {
-                visited[u] = true;
-                q.emplace(u);
-            }
-    }
-
-    while (!visits.empty()) {
-        int v = visits.back();
-        visits.pop_back();
-
-        visited[v] = false;
-    }
-
-    vector<vector<int>> dp(2, vector<int>(p5, 0));
-    int len = -1;
-    for (int i = 0; i + D < n; i++) {
-        q.emplace(0);
-        for (int v : visits) {
-            if (v % 5 > 1) continue;
-
-            int u = v / 5;
-            dp[i & 1][u] = max(dp[i & 1][u], dp[(i & 1) ^ 1][v]);
-
-            if (!visited[u]) {
-                visited[u] = true;
-                q.emplace(u);
-            }
+    int label = 1;
+    pair<int, array<int, 7>> s;
+    vector<int> encoded, ends(8, 0);
+    vector<pair<int, array<int, 7>>> states;
+    auto dfs = [&](auto &&self, int b = 0) -> void {
+        if (b == D) {
+            states.emplace_back(s);
+            encoded.emplace_back(encode(s));
+            return;
         }
 
-        while (!visits.empty()) {
-            int v = visits.back();
-            visits.pop_back();
-
-            dp[(i & 1) ^ 1][v] = 0;
+        update(s, b, 0);
+        self(self, b + 1);
+        update(s, b, 2);
+        self(self, b + 1);
+        update(s, b, 1);
+        for (int k = 1; k < label; k++)
+            if (ends[k] == 1) {
+                s.second[b] = k;
+                ends[k] = 2;
+                self(self, b + 1);
+                ends[k] = 1;
+            }
+        
+        if (label <= 7) {
+            s.second[b] = label;
+            ends[label] = 1;
+            label++;
+            self(self, b + 1);
+            label--;
+            ends[label] = 0;
         }
+        s.second[b] = 0;
+    };
+    dfs(dfs);
 
-        while (!q.empty()) {
-            int v = q.front();
-            q.pop();
+    int size = states.size();
+    vector<int> order(size);
+    iota(order.begin(), order.end(), 0);
+    sort(order.begin(), order.end(), [&](int i, int j) { return encoded[i] < encoded[j]; });
+    sort(encoded.begin(), encoded.end());
 
-            visits.emplace_back(v);
-            for (auto [u, jumps, l, r, end] : adj_list[v])
-                if (abs(arr[i + l] - arr[i + r]) <= M) {
-                    if (end) {
-                        len = max(len, dp[i & 1][v]);
-                        continue;
-                    }
+    auto degree = [&](const pair<int, array<int, 7>> &s, int b) -> int {
+        return (s.first >> b) & 1 ? 2 : !!s.second[b];
+    };
 
-                    dp[i & 1][u] = max(dp[i & 1][u], dp[i & 1][v] + jumps);
-                    if (!visited[u]) {
-                        visited[u] = true;
-                        q.emplace(u);
-                    }
+    vector<vector<array<int, 4>>> next(size);
+    for (int i = 0; i < size; i++) {
+        auto add = [&](int mask = 0) {
+            int gain = 0;
+            array<int, 2> lengths;
+            for (int b = 0; b < D; b++)
+                if ((mask >> b) & 1) lengths[gain++] = b;
+
+            auto s1 = states[i];
+            if (gain == 2) {
+                auto [b1, b2] = lengths;
+                if (degree(s1, b1) == 1 && degree(s1, b2) == 1 && s1.second[b1] == s1.second[b2]) return;
+            }
+
+            vector<int> degrees(D);
+            for (int b = 0; b < D; b++) degrees[b] = degree(s1, b);
+
+            auto s2 = s1;
+            if (gain == 1) {
+                int b1 = lengths[0];
+                if (!degrees[b1]) {
+                    update(s2, b1, 1);
+                    vector<bool> used(8, false);
+                    for (int b = 0; b < D; b++)
+                        if (!((s2.first >> b) & 1) && s2.second[b]) used[s2.second[b]] = true;
+                    s2.second[b1] = find_if(used.begin() + 1, used.end(), [&](bool u) { return !u; }) - begin(used);
+                } else update(s2, b1, 2);
+            } else if (gain == 2) {
+                auto [b1, b2] = lengths;
+                if (!degrees[b1] && !degrees[b2]) {
+                    update(s2, b1, 1);
+                    update(s2, b2, 1);
+                    vector<bool> used(8, false);
+                    for (int b = 0; b < D; b++)
+                        if (!((s2.first >> b) & 1) && s2.second[b]) used[s2.second[b]] = true;
+                    s2.second[b1] = s2.second[b2] = find_if(used.begin() + 1, used.end(), [&](bool u) { return !u; }) - begin(used);
+                } else if (degrees[b1] == 1 && !degrees[b2]) {
+                    update(s2, b1, 2);
+                    update(s2, b2, 1);
+                    s2.second[b2] = s1.second[b1];
+                } else if (!degrees[b1] && degrees[b2] == 1) {
+                    update(s2, b2, 2);
+                    update(s2, b1, 1);
+                    s2.second[b1] = s1.second[b2];
+                } else {
+                    update(s2, b1, 2);
+                    update(s2, b2, 2);
+                    if (s1.second[b1] != s1.second[b2] && s1.second[b2])
+                        for (int b = 0; b < D; b++)
+                            if (!((s2.first >> b) & 1) && s2.second[b] == s1.second[b2]) s2.second[b] = s1.second[b1];
                 }
-        }
+            }
 
-        for (int v : visits) visited[v] = false;
+            pair<int, array<int, 7>> s3;
+            for (int b = D - 1; b; b--) {
+                int d = degree(s2, b - 1);
+                update(s3, b, d);
+                if (d == 1) s3.second[b] = s2.second[b - 1];
+            }
+
+            update(s3, 0, gain);
+            if (gain == 1) s3.second[0] = !degrees[lengths[0]] ? s2.second[lengths[0]] : s1.second[lengths[0]];
+
+            vector<int> seen(8, 0);
+            for (int b = 0, count = 1; b < D; b++)
+                if (!((s3.first >> b) & 1) && s3.second[b]) {
+                    int l = s3.second[b];
+                    if (!seen[l]) seen[l] = count++;
+                    s3.second[b] = seen[l];
+                } else s3.second[b] = 0;
+
+            next[i].push_back({mask, degree(s2, D - 1) == 1, order[lower_bound(encoded.begin(), encoded.end(), encode(s3)) - encoded.begin()], gain});
+        };
+
+        int mask = 0;
+        for (int b = 0; b < D; b++)
+            if (degree(states[i], b) < 2) mask |= 1 << b;
+
+        add();
+
+        for (int b1 = 0; b1 < D; b1++)
+            if ((mask >> b1) & 1) {
+                add(1 << b1);
+                for (int b2 = b1 + 1; b2 < D; b2++)
+                    if ((mask >> b2) & 1) add((1 << b1) | (1 << b2));
+            }
     }
 
-    cout << len;
+    array<int, 3> unreachable{-1, -1, -1};
+    int start = order[lower_bound(encoded.begin(), encoded.end(), encode({})) - encoded.begin()];
+    vector<array<int, 3>> memo(size, array<int, 3>{-1, -1, -1}), temp(size);
+    memo[start][0] = 0;
+    auto dp = [&](int m1 = 0) {
+        for (int i = 0; i < size; i++) temp[i] = unreachable;
+
+        for (int i = 0; i < size; i++)
+            if (memo[i] != unreachable)
+                for (auto [m2, end, k, gain] : next[i])
+                    if (!(m2 & ~m1))
+                        for (int j = 0; j + end < 3; j++)
+                            if (~memo[i][j]) temp[k][j + end] = max(temp[k][j + end], memo[i][j] + gain);
+        memo = temp;
+    };
+
+    for (int i = 0; i < n; i++) {
+        int mask = 0;
+        for (int b = 1; b <= min(D, i); b++)
+            if (abs(a[i] - a[i - b]) <= m) mask |= 1 << (b - 1);
+        dp(mask);
+    }
+    while (D--) dp();
+    cout << memo[start][2] + 1;
 }
