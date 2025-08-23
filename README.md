@@ -26,4 +26,4 @@ Problems have to be solved using base programming language libraries or self-cod
 
 ---
 
-Many of these solutions were implemented after reading the editorials, and I suggest you to do the same if you find yourself stuck. If you have any questions about a particular solution, please contact me at j_lim@u.nus.edu.
+Many of these solutions were implemented after reading the editorials, and I suggest you to do the same if you find yourself stuck. If you have any questions about a particular solution, please contact me at jeremykvlim@gmail.com.
