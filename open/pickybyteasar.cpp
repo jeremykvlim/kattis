@@ -1,76 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-inline char readchar() {
-    static const int size = 1 << 20;
-    static char buf[size];
-    static int pos = 0, len = 0;
-
-    if (pos >= len) {
-        pos = 0;
-        len = fread(buf, 1, size, stdin);
-        if (!len) return EOF;
-    }
-    return buf[pos++];
-}
-
-template <typename T>
-inline bool read(T &v) {
-    char c;
-    do {
-        c = readchar();
-        if (c == EOF) return false;
-    } while (c == ' ' || c == '\n' || c == '\r' || c == '\t');
-
-    if constexpr (is_integral_v<T> && !is_same_v<T, char>) {
-        bool neg = false;
-        if (c == '+' || c == '-') {
-            neg = (c == '-');
-            c = readchar();
-        }
-
-        v = 0;
-        for (; '0' <= c && c <= '9'; c = readchar()) v = v * 10 + (c - '0');
-        if (neg) v = -v;
-        return true;
-    } else if constexpr (is_floating_point_v<T>) {
-        bool neg = false;
-        if (c == '+' || c == '-') {
-            neg = (c == '-');
-            c = readchar();
-        }
-
-        v = 0;
-        for (; '0' <= c && c <= '9'; c = readchar()) v = v * 10 + (c - '0');
-        if (c == '.') {
-            T place = 1;
-            for (c = readchar(); '0' <= c && c <= '9'; c = readchar()) {
-                place *= 0.1;
-                v += (c - '0') * place;
-            }
-        }
-        if (neg) v = -v;
-        return true;
-    } else if constexpr (is_same_v<T, char>) {
-        v = c;
-        return true;
-    } else if constexpr (is_same_v<T, string>) {
-        v.clear();
-        do {
-            v += c;
-            c = readchar();
-        } while (c != EOF && c != ' ' && c != '\n' && c != '\r' && c != '\t');
-        return true;
-    }
-
-    return false;
-}
-
-template <typename... T>
-inline bool read(T &... xs) requires (sizeof...(T) > 1) {
-    return (read(xs) && ...);
-}
-
 struct SegmentTree {
     static inline array<int, 5> identity;
 
@@ -199,16 +129,17 @@ struct SegmentTree {
 
 int main() {
     ios::sync_with_stdio(false);
+    cin.tie(nullptr);
 
     int n, m;
     string s;
-    read(n, m, s);
+    cin >> n >> m >> s;
 
     SegmentTree st(n, s);
     while (m--) {
         int p;
         char ai, bi;
-        read(p, ai, bi);
+        cin >> p >> ai >> bi;
 
         int a = ai - 'a', b = bi - 'a';
         st.modify(0, st.kth(a, p) + 1, a, b);
