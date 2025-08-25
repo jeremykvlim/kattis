@@ -146,7 +146,7 @@ struct FlowNetwork {
         network[v].emplace_back(u, network[u].size() - 1, cap_vu, -cost);
     }
 
-    pair<T, vector<U>> max_flow_min_cost(int s, int t) {
+    pair<T, vector<U>> min_cost_max_flow(int s, int t) {
         T flow = 0;
         vector<U> costs{0};
         for (vector<U> dist(n, inf), phi(n, 0);; fill(dist.begin(), dist.end(), inf)) {
@@ -277,7 +277,7 @@ int main() {
         for (int j = i + 1; j <= t; j++)
             if (task_to_task[i][j] < 1e9) fn.add_arc(i, t + j, 1, task_to_task[i][j] - task_to_hq[i] - hq_to_task[j]);
 
-    auto [f, costs] = fn.max_flow_min_cost(0, 2 * t + 1);
+    auto [f, costs] = fn.min_cost_max_flow(0, 2 * t + 1);
 
     if (f < max(t - c, 0)) {
         cout << "impossible";
