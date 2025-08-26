@@ -1,6 +1,31 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+long long hilbert_index(int x, int y) {
+    int lg = __lg(max(x, y));
+
+    array<int, 2> coords{x, y};
+    for (int mask = 1 << lg; mask > 1; mask >>= 1)
+        for (int i = 1; ~i; i--)
+            if (coords[i] & mask) coords[0] ^= mask - 1;
+            else {
+                int t = (coords[0] ^ coords[i]) & (mask - 1);
+                coords[0] ^= t;
+                coords[i] ^= t;
+            }
+
+    for (int i = 1; i < 2; i++) coords[i] ^= coords[i - 1];
+    int m = 0;
+    for (int mask = 1 << lg; mask > 1; mask >>= 1)
+        if (coords[1] & mask) m ^= mask - 1;
+    for (int i = 0; i < 2; i++) coords[i] ^= m;
+
+    auto h = 0LL;
+    for (int b = lg; ~b; b--)
+        for (int i = 0; i < 2; i++) h = (h << 1) | ((coords[i] >> b) & 1);
+    return h;
+}
+
 struct QueryDecomposition {
     int size;
     vector<array<int, 3>> queries;
@@ -8,8 +33,16 @@ struct QueryDecomposition {
     QueryDecomposition(int n, const vector<array<int, 3>> &queries) : size(ceil(sqrt(n))), queries(queries) {}
 
     vector<int> mo(const vector<int> &a, const vector<int> &b, int k) {
-        vector<int> answers(queries.size());
-        sort(queries.begin(), queries.end(), [&](auto q1, auto q2) { return make_pair(q1[0] / size, q1[1]) < make_pair(q2[0] / size, q2[1]); });
+        int Q = queries.size();
+        vector<int> answers(Q);
+        vector<long long> indices(Q);
+        for (int q = 0; q < Q; q++) {
+            auto [l, r, i] = queries[q];
+            indices[q] = hilbert_index(l / size, r / size);
+        }
+        vector<int> order(Q);
+        iota(order.begin(), order.end(), 0);
+        sort(order.begin(), order.end(), [&](int i, int j) { return indices[i] < indices[j]; });
 
         int L = 0, R = -1, ans = 0;
 
@@ -32,7 +65,8 @@ struct QueryDecomposition {
             ans += min(c[b[i]], d[b[i]]);
         };
 
-        for (auto [l, r, i] : queries) {
+        for (int q : order) {
+            auto [l, r, i] = queries[q];
             while (L > l) add(--L);
             while (R < r) add(++R);
             while (L < l) remove(L++);
@@ -62,7 +96,7 @@ int main() {
 
         i = j;
     }
-    
+
     QueryDecomposition qd(n, queries);
     for (int couples : qd.mo(a, b, k)) cout << couples << "\n";
 }
