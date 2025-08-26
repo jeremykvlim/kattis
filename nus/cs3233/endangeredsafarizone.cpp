@@ -1,6 +1,31 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+long long hilbert_index(int x, int y, int z) {
+    int lg = __lg(max({x, y, z}));
+
+    array<int, 3> coords{x, y, z};
+    for (int mask = 1 << lg; mask > 1; mask >>= 1)
+        for (int i = 2; ~i; i--)
+            if (coords[i] & mask) coords[0] ^= mask - 1;
+            else {
+                int t = (coords[0] ^ coords[i]) & (mask - 1);
+                coords[0] ^= t;
+                coords[i] ^= t;
+            }
+
+    for (int i = 1; i < 3; i++) coords[i] ^= coords[i - 1];
+    int m = 0;
+    for (int mask = 1 << lg; mask > 1; mask >>= 1)
+        if (coords[2] & mask) m ^= mask - 1;
+    for (int i = 0; i < 3; i++) coords[i] ^= m;
+
+    auto h = 0LL;
+    for (int b = lg; ~b; b--)
+        for (int i = 0; i < 3; i++) h = (h << 1) | ((coords[i] >> b) & 1);
+    return h;
+}
+
 struct QueryDecomposition {
     int size;
     vector<array<int, 4>> queries;
@@ -8,8 +33,16 @@ struct QueryDecomposition {
     QueryDecomposition(int n, const vector<array<int, 4>> &queries) : size(cbrt(n) * cbrt(n)), queries(queries) {}
 
     vector<int> mo(vector<int> a, const vector<array<int, 3>> &updates, int k) {
-        vector<int> answers(queries.size()), freq(a.size() + 1, 0);
-        sort(queries.begin(), queries.end(), [&](auto q1, auto q2) { return make_tuple(q1[0] / size, q1[1] / size, q1[2]) < make_tuple(q2[0] / size, q2[1] / size, q2[2]); });
+        int Q = queries.size();
+        vector<int> answers(Q), freq(a.size() + 1, 0);
+        vector<long long> indices(Q);
+        for (int q = 0; q < Q; q++) {
+            auto [l, r, t, i] = queries[q];
+            indices[q] = hilbert_index(l / size, r / size, t / size);
+        }
+        vector<int> order(Q);
+        iota(order.begin(), order.end(), 0);
+        sort(order.begin(), order.end(), [&](int i, int j) { return indices[i] < indices[j]; });
 
         int L = 0, R = -1, T = 0, ans = 0;
 
@@ -57,7 +90,8 @@ struct QueryDecomposition {
             if (!freq[p]) ans--;
         };
 
-        for (auto [l, r, t, i] : queries) {
+        for (int q : order) {
+            auto [l, r, t, i] = queries[q];
             while (T < t) update(T++);
             while (T > t) revert(--T);
             while (L > l) add(--L);
