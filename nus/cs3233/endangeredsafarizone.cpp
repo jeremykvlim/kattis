@@ -1,12 +1,14 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-long long hilbert_index(int x, int y, int z) {
-    int lg = __lg(max({x, y, z}));
+template <typename... I>
+long long hilbert_index(I... c) {
+    constexpr int D = sizeof...(I);
+    array<int, D> coords{c...};
+    int lg = __lg(max({c...}));
 
-    array<int, 3> coords{x, y, z};
     for (int mask = 1 << lg; mask > 1; mask >>= 1)
-        for (int i = 2; ~i; i--)
+        for (int i = D - 1; ~i; i--)
             if (coords[i] & mask) coords[0] ^= mask - 1;
             else {
                 int t = (coords[0] ^ coords[i]) & (mask - 1);
@@ -14,15 +16,15 @@ long long hilbert_index(int x, int y, int z) {
                 coords[i] ^= t;
             }
 
-    for (int i = 1; i < 3; i++) coords[i] ^= coords[i - 1];
+    for (int i = 1; i < D; i++) coords[i] ^= coords[i - 1];
     int m = 0;
     for (int mask = 1 << lg; mask > 1; mask >>= 1)
-        if (coords[2] & mask) m ^= mask - 1;
-    for (int i = 0; i < 3; i++) coords[i] ^= m;
+        if (coords[D - 1] & mask) m ^= mask - 1;
+    for (int i = 0; i < D; i++) coords[i] ^= m;
 
     auto h = 0LL;
     for (int b = lg; ~b; b--)
-        for (int i = 0; i < 3; i++) h = (h << 1) | ((coords[i] >> b) & 1);
+        for (int i = 0; i < D; i++) h = (h << 1) | ((coords[i] >> b) & 1);
     return h;
 }
 
