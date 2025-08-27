@@ -4,13 +4,11 @@ using namespace std;
 struct SplayTree {
     struct SplayNode {
         array<int, 3> family;
-        bool flip, dir;
-
         int size, count;
         bool alive, kill;
         long long s, sl, sr, lazy_x, lazy_y;
 
-        SplayNode(int w = 0) : family{0, 0, 0}, flip(false), dir(false), size(1), count(1),
+        SplayNode(int w = 0) : family{0, 0, 0}, size(1), count(1),
                                alive(true), kill(false), s(w), sl(w), sr(w), lazy_x(0), lazy_y(0) {}
     };
 
@@ -55,14 +53,6 @@ struct SplayTree {
         ST[i].sr = max({sr(l), sr(r), ST[i].alive ? ST[i].s : LLONG_MIN});
     }
 
-    void flip(int i) {
-        if (!i) return;
-        auto &[l, r, p] = ST[i].family;
-        swap(l, r);
-        ST[i].flip = !ST[i].flip;
-        ST[i].dir = !ST[i].dir;
-    }
-
     void kill(int i) {
         if (!i) return;
         ST[i].alive = false;
@@ -82,13 +72,6 @@ struct SplayTree {
 
     void push(int i) {
         if (!i) return;
-
-        if (ST[i].flip) {
-            auto [l, r, p] = ST[i].family;
-            if (l) flip(l);
-            if (r) flip(r);
-            ST[i].flip = false;
-        }
 
         if (ST[i].kill) {
             auto [l, r, p] = ST[i].family;
