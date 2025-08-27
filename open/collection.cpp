@@ -4,10 +4,9 @@ using namespace std;
 struct SplayTree {
     struct SplayNode {
         array<int, 3> family;
-        bool flip, dir;
-        int key, size, path_min, path_max;
+        int size, key, path_min, path_max;
 
-        SplayNode(int key = 0) : family{0, 0, 0}, flip(false), dir(false), key(key), size(1), path_min(key), path_max(key) {}
+        SplayNode(int key = 0) : family{0, 0, 0}, size(1), key(key), path_min(key), path_max(key) {}
     };
 
     vector<SplayNode> ST;
@@ -44,22 +43,8 @@ struct SplayTree {
         ST[i].path_max = max({path_max(l), path_max(r), key(i)});
     }
 
-    void flip(int i) {
-        if (!i) return;
-        auto &[l, r, p] = ST[i].family;
-        swap(l, r);
-        ST[i].flip = !ST[i].flip;
-        ST[i].dir = !ST[i].dir;
-    }
-
     void push(int i) {
         if (!i) return;
-        if (ST[i].flip) {
-            auto [l, r, p] = ST[i].family;
-            if (l) flip(l);
-            if (r) flip(r);
-            ST[i].flip = false;
-        }
     }
 
     void splay(int i) {
