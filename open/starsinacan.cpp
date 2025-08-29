@@ -485,7 +485,7 @@ struct Circle {
 };
 
 template <typename T>
-T radius_of_smallest_enclosing_circle(vector<Point<T>> &P) {
+Circle<T> smallest_enclosing_circle(vector<Point<T>> &P) {
     shuffle(P.begin(), P.end(), mt19937_64(random_device{}()));
     vector<Point<T>> R;
     auto welzl = [&](auto &&self, int n) -> Circle<T> {
@@ -512,7 +512,7 @@ T radius_of_smallest_enclosing_circle(vector<Point<T>> &P) {
         R.pop_back();
         return C2;
     };
-    return welzl(welzl, P.size()).radius;
+    return welzl(welzl, P.size());
 }
 
 int main() {
@@ -549,7 +549,7 @@ int main() {
             h = max(h, fabs(dot(points[a] - points[i], normal)));
         }
 
-        auto r = radius_of_smallest_enclosing_circle(projections);
+        auto r = smallest_enclosing_circle(projections).radius;
         volume = min(volume, M_PI * r * r * h);
     }
     cout << fixed << setprecision(6) << volume;
