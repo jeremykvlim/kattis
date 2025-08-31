@@ -6,7 +6,6 @@ struct Trie {
         LOWER = 97,
         UPPER = 65,
         NUM = 48,
-        SYM = 32,
         NA = 0
     };
 
@@ -51,10 +50,10 @@ struct Trie {
             if (T[node].end)
                 if (!--k) return word;
 
-            for (int c = 0; c < r; c++)
+            for (int c = 0; c < 26; c++)
                 if (T[node].next[c] != -1) {
                     if (T[T[node].next[c]].count >= k) {
-                        word += c + a;
+                        word += 'a' + c;
                         node = T[node].next[c];
                         break;
                     } else k -= T[T[node].next[c]].count;
@@ -91,7 +90,7 @@ int main() {
 
         string text;
         int node = 0;
-        for (int i = 0; i < s.size()
+        for (int i = 0; i < s.size();)
             if (s[i] == '#') {
                 int tab = 0;
                 for (; i < s.size() && s[i] == '#'; i++, tab++);
