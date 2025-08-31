@@ -400,6 +400,6 @@ int main() {
 
     auto c = berlekamp_massey(s);
     modint value = 0;
-    for (int k = 0; k < C.size(); k++) value += s[2 * n - 1 - k] * c[k];
+    for (int k = 0; k < c.size(); k++) value += s[2 * n - 1 - k] * c[k];
     cout << value;
 }
