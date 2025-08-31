@@ -8,15 +8,18 @@ int main() {
     string s, s1, s2;
     cin >> s >> s1 >> s2;
 
-    vector<vector<bool>> dp(s1.size() + 1, vector<bool>(s2.size() + 1, true));
-    auto possible = [&](auto &&self, int i = 0, int j = 0, int k = 0) -> bool {
-        if (k == s.size()) return i == s1.size() && j == s2.size();
-        if (!dp[i][j]) return false;
+    int n1 = s1.size(), n2 = s2.size();
+    if (s.size() != n1 + n2) {
+        cout << "no";
+        exit(0);
+    }
 
-        dp[i][j] = false;
-        if (i < s1.size() && s[k] == s1[i]) return dp[i][j] = self(self, i + 1, j, k + 1);
-        if (j < s2.size() && s[k] == s2[j]) return dp[i][j] = dp[i][j] || self(self, i, j + 1, k + 1);
-        return dp[i][j];
-    };
-    cout << (possible(possible) ? "yes" : "no");
+    vector<bool> dp(n2 + 1, false);
+    dp[0] = true;
+    for (int j = 1; j <= n2; j++) dp[j] = dp[j - 1] && (s[j - 1] == s2[j - 1]);
+    for (int i = 1; i <= n1; i++) {
+        dp[0] = dp[0] && (s[i - 1] == s1[i - 1]);
+        for (int j = 1; j <= n2; j++) dp[j] = (dp[j] && s[i + j - 1] == s1[i - 1]) || (dp[j - 1] && s[i + j - 1] == s2[j - 1]);
+    }
+    cout << (dp[n2] ? "yes" : "no");
 }
