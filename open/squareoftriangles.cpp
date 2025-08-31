@@ -2,6 +2,16 @@
 using namespace std;
 
 template <typename T>
+bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
+    return fabs(v1 - v2) <= epsilon;
+}
+
+template <typename T>
+int sgn(const T &v) {
+    return approximately_equal(v, (T) 0) ? 0 : (v > 0) - (v < 0);
+}
+
+template <typename T>
 struct Point {
     T x, y;
 
@@ -151,7 +161,7 @@ vector<Point<T>> circle_circle_intersections(const Circle<T> &c1, const Circle<T
     if (d > c1.radius + c2.radius || d < abs(c1.radius - c2.radius)) return {};
 
     T r1_sq = c1.radius * c1.radius, r2_sq = c2.radius * c2.radius,
-            l = (d * d + r1_sq - r2_sq) / (2 * d);
+      l = (d * d + r1_sq - r2_sq) / (2 * d);
 
     Point<T> v = c2.origin - c1.origin, p = c1.origin + v * l / d;
     if (d == c1.radius + c2.radius) return {p};
@@ -173,7 +183,7 @@ bool intersects(const array<Point<T>, 3> &t1, const array<Point<T>, 3> &t2) {
 
     for (auto axis : axes) {
         T l1 = numeric_limits<T>::infinity(), r1 = -numeric_limits<T>::infinity(),
-                l2 = numeric_limits<T>::infinity(), r2 = -numeric_limits<T>::infinity();
+          l2 = numeric_limits<T>::infinity(), r2 = -numeric_limits<T>::infinity();
 
         for (int i = 0; i < 3; i++) {
             T projection1 = dot(t1[i], axis), projection2 = dot(t2[i], axis);

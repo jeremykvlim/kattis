@@ -114,6 +114,16 @@ U hungarian(const vector<vector<T>> &C, const U delta) {
 }
 
 template <typename T>
+bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
+    return fabs(v1 - v2) <= epsilon;
+}
+
+template <typename T>
+int sgn(const T &v) {
+    return approximately_equal(v, (T) 0) ? 0 : (v > 0) - (v < 0);
+}
+
+template <typename T>
 struct Point3D {
     T x, y, z;
 

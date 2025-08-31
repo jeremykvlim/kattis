@@ -2,6 +2,16 @@
 using namespace std;
 
 template <typename T>
+bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
+    return fabs(v1 - v2) <= epsilon;
+}
+
+template <typename T>
+int sgn(const T &v) {
+    return approximately_equal(v, (T) 0) ? 0 : (v > 0) - (v < 0);
+}
+
+template <typename T>
 struct Point {
     T x, y;
 
@@ -218,7 +228,7 @@ int main() {
         }
 
         auto q = (A.first.x != B.first.x) ? (double) (target.first.x - A.first.x) / (B.first.x - A.first.x) :
-                                            (double) (target.first.y - A.first.y) / (B.first.y - A.first.y);
+                 (double) (target.first.y - A.first.y) / (B.first.y - A.first.y);
         p[A.second] = 1. - q;
         p[B.second] = q;
         cout << "Yes\n";

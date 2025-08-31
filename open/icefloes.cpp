@@ -2,6 +2,16 @@
 using namespace std;
 
 template <typename T>
+bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
+    return fabs(v1 - v2) <= epsilon;
+}
+
+template <typename T>
+int sgn(const T &v) {
+    return approximately_equal(v, (T) 0) ? 0 : (v > 0) - (v < 0);
+}
+
+template <typename T>
 struct Point {
     T x, y;
 
@@ -245,12 +255,12 @@ int main() {
         vector<double> possible;
         for (int i = 0; i < f; i++)
             if (areas[i] <= min(areas[s1], areas[s2])) possible.emplace_back(areas[i]);
-        
+
         if (possible.empty()) {
             cout << "Scientists cannot meet\n";
             continue;
         }
-        
+
         sort(possible.begin(), possible.end());
         possible.erase(unique(possible.begin(), possible.end()), possible.end());
 
@@ -279,7 +289,7 @@ int main() {
                 }
                 return false;
             };
-            
+
             if (bfs()) l = m;
             else r = m;
         }

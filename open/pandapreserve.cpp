@@ -24,6 +24,16 @@ struct Hash {
 };
 
 template <typename T>
+bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
+    return fabs(v1 - v2) <= epsilon;
+}
+
+template <typename T>
+int sgn(const T &v) {
+    return approximately_equal(v, (T) 0) ? 0 : (v > 0) - (v < 0);
+}
+
+template <typename T>
 struct Point {
     T x, y;
 
@@ -285,7 +295,7 @@ struct DelaunayTriangulation {
                 recycled.pop();
                 return i;
             }
-            
+
             edges.emplace_back();
             return edges.size() - 1;
         };
@@ -480,7 +490,7 @@ struct DelaunayTriangulation {
         start = 0;
         if (r >= 2) start = dnc(dnc, 0, r).second;
         points = temp;
-        
+
         edges.erase(remove_if(edges.begin(), edges.end(), [&](auto e) { return !e.valid; }), edges.end());
         for (auto &e : edges) e.dest = indices[e.dest];
         for (int i = 0; i < edges.size(); i++)
