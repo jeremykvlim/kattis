@@ -23,8 +23,7 @@ int main() {
     }
 
     vector<int> order, prev(n, -1);
-
-    auto dfs = [&](auto &&self, int v = 0) {
+    auto dfs = [&](auto &&self, int v = 0) -> void {
         for (int u : adj_list[v])
             if (u != prev[v]) {
                 prev[u] = v;
