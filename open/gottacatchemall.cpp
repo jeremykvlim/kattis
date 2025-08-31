@@ -29,7 +29,7 @@ int main() {
         else connected[v].emplace_back(u);
     }
 
-    vector<int> visited(n + 1)
+    vector<int> visited(n + 1);
     auto total = 0LL, optimal = 0LL;
     for (int i = 1; i <= n; i++) {
         if (count[i]) total += (long long) count[i] * (count[i] - 1);
