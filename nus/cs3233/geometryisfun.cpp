@@ -357,16 +357,6 @@ constexpr unsigned long long MODULO = 1e10 + 3233;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
 
 template <typename T>
-bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
-    return fabs(v1 - v2) <= epsilon;
-}
-
-template <typename T>
-int sgn(const T &v) {
-    return approximately_equal(v, (T) 0) ? 0 : (v > 0) - (v < 0);
-}
-
-template <typename T>
 struct Point {
     T x, y;
 
@@ -392,22 +382,18 @@ struct Point {
     }
 
     bool operator<(const Point &p) const {
-        if constexpr (is_floating_point_v<T>) return !approximately_equal(x, p.x) ? sgn(x - p.x) == -1 : sgn(y - p.y) == -1;
         return x != p.x ? x < p.x : y < p.y;
     }
 
     bool operator>(const Point &p) const {
-        if constexpr (is_floating_point_v<T>) return !approximately_equal(x, p.x) ? sgn(x - p.x) == 1 : sgn(y - p.y) == 1;
         return x != p.x ? x > p.x : y > p.y;
     }
 
     bool operator==(const Point &p) const {
-        if constexpr (is_floating_point_v<T>) return approximately_equal(x, p.x) && approximately_equal(y, p.y);
         return x == p.x && y == p.y;
     }
 
     bool operator!=(const Point &p) const {
-        if constexpr (is_floating_point_v<T>) return !approximately_equal(x, p.x) || !approximately_equal(y, p.y);
         return x != p.x || y != p.y;
     }
 
