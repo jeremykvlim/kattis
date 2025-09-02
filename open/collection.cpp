@@ -226,9 +226,9 @@ int main() {
         cin >> t >> i >> j;
 
         if (t == 1) {
-            int idx = st.kth(root[i], j);
-            cout << st[idx].key << "\n";
-            root[i] = idx;
+            int k = st.kth(root[i], j);
+            cout << st[k].key << "\n";
+            root[i] = k;
         } else if (t == 2) {
             root[i] = st.meld_by_key(root[i], root[j]);
             s.emplace(j);
