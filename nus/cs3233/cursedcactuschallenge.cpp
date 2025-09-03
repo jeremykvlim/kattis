@@ -353,8 +353,8 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned long long MODULO = 998244353;
-using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
+constexpr unsigned long long MOD = 998244353;
+using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 pair<vector<bool>, vector<vector<int>>> tarjan(int n, int m, vector<vector<pair<int, int>>> &adj_list, vector<pair<int, int>> &edges) {
     vector<int> order(n + 1, 0), low(n + 1, 0);

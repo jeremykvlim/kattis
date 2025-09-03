@@ -353,8 +353,8 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned long long MODULO = 998244353;
-using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
+constexpr unsigned long long MOD = 998244353;
+using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 vector<int> sieve(int n) {
     vector<int> spf(n + 1, 0), primes, mobius(n + 1, 1);

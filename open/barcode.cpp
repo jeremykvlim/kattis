@@ -342,12 +342,12 @@ U & operator>>(U &stream, BarrettModInt<T> &v) {
 }
 
 template <typename T>
-struct MODULO {
+struct MOD {
     static inline T value;
 };
 
-auto &m = MODULO<unsigned int>::value;
-using modint = BarrettModInt<MODULO<unsigned int>>;
+auto &m = MOD<unsigned int>::value;
+using modint = BarrettModInt<MOD<unsigned int>>;
 
 template <typename T>
 T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {

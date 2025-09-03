@@ -1,7 +1,7 @@
 import java.io.*;
 
 public class abinitio {
-    static final int MODULO = (int) (1e9 + 7);
+    static final int MOD = (int) (1e9 + 7);
 
     public static void main(String[] args) throws Exception {
         var io = new IO(System.in, System.out);
@@ -47,7 +47,7 @@ public class abinitio {
             for (int j = v - 1; j >= 0; j--)
                 if (i != j && adjMatrix[status[0] == 1 ? j : i][status[0] == 1 ? i : j] == (status[1] == 1 ? 0 : 1)) {
                     d++;
-                    h = (7 * h + j) % MODULO;
+                    h = (7 * h + j) % MOD;
                 }
             io.println(d + " " + h);
         }

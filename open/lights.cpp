@@ -353,8 +353,8 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned int MODULO = 10567201;
-using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
+constexpr unsigned int MOD = 10567201;
+using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 template <typename T>
 pair<T, T> bezout(T a, T b) {
@@ -378,7 +378,7 @@ int main() {
         for (int k = 1; k <= m; k++) C[k] = (C[k - 1] * (p2 - k + 1)) / k;
         if (v) ways[0] = 0;
         for (int k = 2; k <= m; k++) {
-            auto [x, y] = bezout(k, (int) MODULO);
+            auto [x, y] = bezout(k, (int) MOD);
             ways[k] = (C[k - 1] - ways[k - 2] * (p2 - k + 2)) * x;
         }
 

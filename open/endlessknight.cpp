@@ -353,8 +353,8 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned int MODULO = 1e4 + 7;
-using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
+constexpr unsigned int MOD = 1e4 + 7;
+using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 template <typename T>
 T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
@@ -372,12 +372,12 @@ int main() {
     int n;
     cin >> n;
 
-    vector<modint> fact(MODULO, 1), fact_inv(MODULO, 1);
+    vector<modint> fact(MOD, 1), fact_inv(MOD, 1);
     auto prepare = [&]() {
         auto inv = fact;
 
-        for (int i = 1; i < MODULO; i++) {
-            if (i > 1) inv[i] = (MODULO - MODULO / i) * inv[MODULO % i];
+        for (int i = 1; i < MOD; i++) {
+            if (i > 1) inv[i] = (MOD - MOD / i) * inv[MOD % i];
             fact[i] = i * fact[i - 1];
             fact_inv[i] = inv[i] * fact_inv[i - 1];
         }
@@ -410,10 +410,10 @@ int main() {
             sort(rocks.begin(), rocks.end());
             for (int i = 0; i < rocks.size(); i++) {
                 auto [x1, y1] = rocks[i];
-                dp[i] = C(x1 + y1, x1, MODULO, fact, fact_inv);
+                dp[i] = C(x1 + y1, x1, MOD, fact, fact_inv);
                 for (int j = 0; j < i; j++) {
                     auto [x2, y2] = rocks[j];
-                    if (x2 <= x1 && y2 <= y1) dp[i] -= dp[j] * C(x1 - x2 + y1 - y2, x1 - x2, MODULO, fact, fact_inv);
+                    if (x2 <= x1 && y2 <= y1) dp[i] -= dp[j] * C(x1 - x2 + y1 - y2, x1 - x2, MOD, fact, fact_inv);
                 }
             }
         }

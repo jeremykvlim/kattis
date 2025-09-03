@@ -354,12 +354,12 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 }
 
 template <typename T>
-struct MODULO {
+struct MOD {
     static inline T value;
 };
 
-auto &m = MODULO<unsigned int>::value;
-using modint = MontgomeryModInt<MODULO<unsigned int>>;
+auto &m = MOD<unsigned int>::value;
+using modint = MontgomeryModInt<MOD<unsigned int>>;
 
 int main() {
     ios::sync_with_stdio(false);

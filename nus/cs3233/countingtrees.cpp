@@ -353,11 +353,11 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned int MODULO1 = 3, MODULO2 = 11, MODULO3 = 101, MODULO4 = 3000301;
-using modint1 = MontgomeryModInt<integral_constant<decay<decltype(MODULO1)>::type, MODULO1>>;
-using modint2 = MontgomeryModInt<integral_constant<decay<decltype(MODULO2)>::type, MODULO2>>;
-using modint3 = MontgomeryModInt<integral_constant<decay<decltype(MODULO3)>::type, MODULO3>>;
-using modint4 = MontgomeryModInt<integral_constant<decay<decltype(MODULO4)>::type, MODULO4>>;
+constexpr unsigned int MOD1 = 3, MOD2 = 11, MOD3 = 101, MOD4 = 3000301;
+using modint1 = MontgomeryModInt<integral_constant<decay<decltype(MOD1)>::type, MOD1>>;
+using modint2 = MontgomeryModInt<integral_constant<decay<decltype(MOD2)>::type, MOD2>>;
+using modint3 = MontgomeryModInt<integral_constant<decay<decltype(MOD3)>::type, MOD3>>;
+using modint4 = MontgomeryModInt<integral_constant<decay<decltype(MOD4)>::type, MOD4>>;
 
 template <typename T>
 T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
@@ -407,10 +407,10 @@ int main() {
     int t;
     cin >> t;
 
-    vector<modint1> fact1(MODULO1 + 1, 1), fact_inv1(MODULO1 + 1, 1);
-    vector<modint2> fact2(MODULO2 + 1, 1), fact_inv2(MODULO2 + 1, 1);
-    vector<modint3> fact3(MODULO3 + 1, 1), fact_inv3(MODULO3 + 1, 1);
-    vector<modint4> fact4(MODULO4 + 1, 1), fact_inv4(MODULO4 + 1, 1);
+    vector<modint1> fact1(MOD1 + 1, 1), fact_inv1(MOD1 + 1, 1);
+    vector<modint2> fact2(MOD2 + 1, 1), fact_inv2(MOD2 + 1, 1);
+    vector<modint3> fact3(MOD3 + 1, 1), fact_inv3(MOD3 + 1, 1);
+    vector<modint4> fact4(MOD4 + 1, 1), fact_inv4(MOD4 + 1, 1);
 
     auto prepare = [&](auto &fact, auto &fact_inv, int mod) {
         auto inv = fact;
@@ -421,10 +421,10 @@ int main() {
             fact_inv[i] = inv[i] * fact_inv[i - 1];
         }
     };
-    prepare(fact1, fact_inv1, MODULO1);
-    prepare(fact2, fact_inv2, MODULO2);
-    prepare(fact3, fact_inv3, MODULO3);
-    prepare(fact4, fact_inv4, MODULO4);
+    prepare(fact1, fact_inv1, MOD1);
+    prepare(fact2, fact_inv2, MOD2);
+    prepare(fact3, fact_inv3, MOD3);
+    prepare(fact4, fact_inv4, MOD4);
 
     while (t--) {
         long long n, k, c;
@@ -436,10 +436,10 @@ int main() {
             c_good = chinese_remainder_theorem(c_good, mod_product, (long long) choices(), (long long) mod).first;
             mod_product *= mod;
         };
-        count(n, c, fact1, fact_inv1, MODULO1);
-        count(n, c, fact2, fact_inv2, MODULO2);
-        count(n, c, fact3, fact_inv3, MODULO3);
-        count(n, c, fact4, fact_inv4, MODULO4);
+        count(n, c, fact1, fact_inv1, MOD1);
+        count(n, c, fact2, fact_inv2, MOD2);
+        count(n, c, fact3, fact_inv3, MOD3);
+        count(n, c, fact4, fact_inv4, MOD4);
 
         cout << c_good << "\n";
     }

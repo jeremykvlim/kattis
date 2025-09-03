@@ -353,8 +353,8 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned int MODULO = 9901;
-using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
+constexpr unsigned int MOD = 9901;
+using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 struct DisjointSets {
     vector<int> sets;
@@ -396,7 +396,7 @@ int main() {
         vector<pair<int, int>> edges(k);
         for (auto &[u, v] : edges) cin >> u >> v;
 
-        auto y = fact[n - 1] * (MODULO / 2 + 1);
+        auto y = fact[n - 1] * (MOD / 2 + 1);
         for (int mask = 1; mask < 1 << k; mask++) {
             DisjointSets dsu(n + 1);
             vector<int> degree(n + 1, 0), degree_count(4, 0);

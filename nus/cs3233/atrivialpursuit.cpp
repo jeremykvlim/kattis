@@ -353,8 +353,8 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned long long MODULO = 1e9 + 7;
-using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
+constexpr unsigned long long MOD = 1e9 + 7;
+using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 template <typename T>
 T brent(T n) {
@@ -434,7 +434,7 @@ int main() {
         if (c < 0) {
             cout << 0;
             exit(0);
-        } else if (c) x *= pow(c + 1, p, (long long) MODULO) + 2 * (MODULO - pow(c, p, (long long) MODULO)) + pow(c - 1, p, (long long) MODULO);
+        } else if (c) x *= pow(c + 1, p, (long long) MOD) + 2 * (MOD - pow(c, p, (long long) MOD)) + pow(c - 1, p, (long long) MOD);
 
     cout << x;
 }

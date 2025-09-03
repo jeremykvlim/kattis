@@ -353,12 +353,12 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned long long MODULO = 998244353;
-using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
+constexpr unsigned long long MOD = 998244353;
+using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 static unsigned long long primitive_root() {
-    if (MODULO == 9223372036737335297 || MODULO == 2524775926340780033 || MODULO == 998244353 || MODULO == 167772161) return 3ULL;
-    if (MODULO == 754974721) return 11ULL;
+    if (MOD == 9223372036737335297 || MOD == 2524775926340780033 || MOD == 998244353 || MOD == 167772161) return 3ULL;
+    if (MOD == 754974721) return 11ULL;
 }
 
 template <typename T>
@@ -386,7 +386,7 @@ int main() {
     }
 
     int pw = (n + 1) / 2, m = 9 * pw + 1, size = bit_ceil((unsigned) m + m - 1);
-    auto root = modint::pow(primitive_root(), (MODULO - 1) / size);
+    auto root = modint::pow(primitive_root(), (MOD - 1) / size);
     vector<modint> roots(size, 1);
     for (int k = 1; k < size; k++) roots[k] = roots[k - 1] * root;
 

@@ -23,7 +23,7 @@ struct Hash {
     }
 };
 
-constexpr int MODULO = 1e6 + 3;
+constexpr int MOD = 1e6 + 3;
 
 int main() {
     ios::sync_with_stdio(false);
@@ -159,8 +159,8 @@ int main() {
         if (q == 1) {
             int i, x, y;
             cin >> i >> x >> y;
-            x = (x + s) % MODULO;
-            y = (y + s) % MODULO;
+            x = (x + s) % MOD;
+            y = (y + s) % MOD;
 
             auto [xt, yt] = monkey[i];
             remove(xt, yt);
@@ -171,8 +171,8 @@ int main() {
             int x, y;
             char c;
             cin >> x >> y >> c;
-            x = (x + s) % MODULO;
-            y = (y + s) % MODULO;
+            x = (x + s) % MOD;
+            y = (y + s) % MOD;
 
             if (c == '.') remove(x, y);
             else if (indices.count({x, y})) mirror[indices[{x, y}]] = c;
@@ -199,7 +199,7 @@ int main() {
 
             int k = zap(indices[monkey[i]], dtoi[d]);
             cout << k << "\n";
-            s = (s + k + MODULO) % MODULO;
+            s = (s + k + MOD) % MOD;
         }
     }
 }

@@ -353,8 +353,8 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned long long MODULO = 1e9 + 7;
-using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
+constexpr unsigned long long MOD = 1e9 + 7;
+using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 vector<int> sieve(int n) {
     vector<int> spf(n + 1, 0), primes;
@@ -413,7 +413,7 @@ int main() {
             if (!count[i]) continue;
 
             vector<modint> temp(size);
-            for (int j = 0; j < size; j++) temp[j] = (dp[j] + dp[i ^ j]) * pow(2, count[i] - 1, (int) MODULO);
+            for (int j = 0; j < size; j++) temp[j] = (dp[j] + dp[i ^ j]) * pow(2, count[i] - 1, (int) MOD);
 
             dp = temp;
         }

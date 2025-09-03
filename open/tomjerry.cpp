@@ -463,8 +463,8 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned long long MODULO = 1e9 + 7;
-using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
+constexpr unsigned long long MOD = 1e9 + 7;
+using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 template <typename T>
 T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
@@ -496,7 +496,7 @@ int main() {
         vector<modint> inv(w + h + 1, 1);
 
         for (int i = 1; i <= w + h; i++) {
-            if (i > 1) inv[i] = (MODULO - MODULO / i) * inv[MODULO % i];
+            if (i > 1) inv[i] = (MOD - MOD / i) * inv[MOD % i];
             fact_inv[i] = inv[i] * fact_inv[i - 1];
         }
 
@@ -506,7 +506,7 @@ int main() {
 
     auto ways = [&](Point<int> a, Point<int> b) -> modint {
         auto c = b - a;
-        return C(c.x + c.y, c.x, MODULO, fact, fact_inv);
+        return C(c.x + c.y, c.x, MOD, fact, fact_inv);
     };
 
     modint paths = 0;

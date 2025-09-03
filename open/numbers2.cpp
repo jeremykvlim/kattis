@@ -341,8 +341,8 @@ U & operator>>(U &stream, BarrettModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned int MODULO = 1e3;
-using modint = BarrettModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
+constexpr unsigned int MOD = 1e3;
+using modint = BarrettModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 template <typename T>
 struct Matrix {

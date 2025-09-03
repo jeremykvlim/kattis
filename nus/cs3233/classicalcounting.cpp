@@ -353,9 +353,9 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned int MODULO1 = 29, MODULO2 = 34483;
-using modint1 = MontgomeryModInt<integral_constant<decay<decltype(MODULO1)>::type, MODULO1>>;
-using modint2 = MontgomeryModInt<integral_constant<decay<decltype(MODULO2)>::type, MODULO2>>;
+constexpr unsigned int MOD1 = 29, MOD2 = 34483;
+using modint1 = MontgomeryModInt<integral_constant<decay<decltype(MOD1)>::type, MOD1>>;
+using modint2 = MontgomeryModInt<integral_constant<decay<decltype(MOD2)>::type, MOD2>>;
 
 template <typename T>
 T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
@@ -374,8 +374,8 @@ int main() {
     int n, m, k;
     cin >> n >> m >> k;
 
-    vector<modint1> fact1(MODULO1 + 1, 1), fact_inv1(MODULO1 + 1, 1);
-    vector<modint2> fact2(MODULO2 + 1, 1), fact_inv2(MODULO2 + 1, 1);
+    vector<modint1> fact1(MOD1 + 1, 1), fact_inv1(MOD1 + 1, 1);
+    vector<modint2> fact2(MOD2 + 1, 1), fact_inv2(MOD2 + 1, 1);
     auto prepare = [&](auto &fact, auto &fact_inv, int mod) {
         auto inv = fact;
 
@@ -385,8 +385,8 @@ int main() {
             fact_inv[i] = inv[i] * fact_inv[i - 1];
         }
     };
-    prepare(fact1, fact_inv1, MODULO1);
-    prepare(fact2, fact_inv2, MODULO2);
+    prepare(fact1, fact_inv1, MOD1);
+    prepare(fact2, fact_inv2, MOD2);
 
     auto ways = [&](auto &fact, auto &fact_inv, int mod) -> long long {
         auto w = 0LL;
@@ -400,7 +400,7 @@ int main() {
         return w;
     };
 
-    auto w1 = ways(fact1, fact_inv1, MODULO1), w2 = ways(fact2, fact_inv2, MODULO2);
-    while (w2 % MODULO1 != w1) w2 += MODULO2;
+    auto w1 = ways(fact1, fact_inv1, MOD1), w2 = ways(fact2, fact_inv2, MOD2);
+    while (w2 % MOD1 != w1) w2 += MOD2;
     cout << w2;
 }

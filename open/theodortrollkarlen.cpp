@@ -353,8 +353,8 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned long long MODULO = 1e9 + 7;
-using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
+constexpr unsigned long long MOD = 1e9 + 7;
+using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 template <typename T>
 T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
@@ -379,7 +379,7 @@ int main() {
         auto inv = fact;
 
         for (int i = 1; i <= r; i++) {
-            if (i > 1) inv[i] = (MODULO - MODULO / i) * inv[MODULO % i];
+            if (i > 1) inv[i] = (MOD - MOD / i) * inv[MOD % i];
             fact[i] = i * fact[i - 1];
             fact_inv[i] = inv[i] * fact_inv[i - 1];
         }
@@ -395,11 +395,11 @@ int main() {
     }
 
     modint ZK = 0;
-    for (int u = 0; u <= l; u++) ZK += C(n, u, MODULO, fact, fact_inv) * C(k, u, MODULO, fact, fact_inv) * ps[u] * pak[n - u];
+    for (int u = 0; u <= l; u++) ZK += C(n, u, MOD, fact, fact_inv) * C(k, u, MOD, fact, fact_inv) * ps[u] * pak[n - u];
 
     modint ZK1 = 0;
     if (k)
-        for (int u = 0; u <= min(n, k - 1); u++) ZK1 += C(n, u, MODULO, fact, fact_inv) * C(k - 1, u, MODULO, fact, fact_inv) * ps[u] * pak1[n - u];
+        for (int u = 0; u <= min(n, k - 1); u++) ZK1 += C(n, u, MOD, fact, fact_inv) * C(k - 1, u, MOD, fact, fact_inv) * ps[u] * pak1[n - u];
 
     cout << ZK - ZK1;
 }

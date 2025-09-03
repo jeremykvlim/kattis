@@ -353,12 +353,12 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned long long MODULO = 998244353;
-using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
+constexpr unsigned long long MOD = 998244353;
+using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 static unsigned long long primitive_root() {
-    if (MODULO == 9223372036737335297 || MODULO == 2524775926340780033 || MODULO == 998244353 || MODULO == 167772161) return 3ULL;
-    if (MODULO == 754974721) return 11ULL;
+    if (MOD == 9223372036737335297 || MOD == 2524775926340780033 || MOD == 998244353 || MOD == 167772161) return 3ULL;
+    if (MOD == 754974721) return 11ULL;
 }
 
 template <typename T, typename R>
@@ -395,13 +395,13 @@ void cooley_tukey(int n, vector<T> &v, R root) {
 
 vector<modint> ntt(int n, const vector<modint> &f) {
     auto F = f;
-    cooley_tukey(n, F, [](int k) { return modint::pow(primitive_root(), (MODULO - 1) / (k << 1)); });
+    cooley_tukey(n, F, [](int k) { return modint::pow(primitive_root(), (MOD - 1) / (k << 1)); });
     return F;
 }
 
 vector<modint> intt(int n, const vector<modint> &F) {
     auto f = F;
-    cooley_tukey(n, f, [](int k) { return modint::pow(primitive_root(), (MODULO - 1) / (k << 1)); });
+    cooley_tukey(n, f, [](int k) { return modint::pow(primitive_root(), (MOD - 1) / (k << 1)); });
     auto n_inv = (modint) 1 / n;
     for (auto &v : f) v *= n_inv;
     reverse(f.begin() + 1, f.end());
@@ -532,7 +532,7 @@ int main() {
         auto inv = fact;
 
         for (int i = 1; i <= n; i++) {
-            if (i > 1) inv[i] = (MODULO - MODULO / i) * inv[MODULO % i];
+            if (i > 1) inv[i] = (MOD - MOD / i) * inv[MOD % i];
             fact[i] = i * fact[i - 1];
             fact_inv[i] = inv[i] * fact_inv[i - 1];
         }
@@ -541,6 +541,6 @@ int main() {
 
     modint t = n;
     for (int k = 1; k <= n; k++)
-        if (count[k]) t -= count[k] / C(n, k, MODULO, fact, fact_inv);
+        if (count[k]) t -= count[k] / C(n, k, MOD, fact, fact_inv);
     cout << t;
 }

@@ -341,8 +341,8 @@ U & operator>>(U &stream, BarrettModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned int MODULO = 1e4;
-using modint = BarrettModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
+constexpr unsigned int MOD = 1e4;
+using modint = BarrettModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 int main() {
     ios::sync_with_stdio(false);
@@ -354,7 +354,7 @@ int main() {
     long long b;
     char op;
     while (cin >> a >> op >> b) {
-        if (op == '^') cout << pow((long long) a.value, b, (long long) MODULO) << "\n";
+        if (op == '^') cout << pow((long long) a.value, b, (long long) MOD) << "\n";
         else cout << (op == '+' ? a + b : a * b) << "\n";
     }
 }

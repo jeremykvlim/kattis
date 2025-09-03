@@ -340,12 +340,12 @@ U & operator>>(U &stream, ModInt<T> &v) {
 }
 
 template <typename T>
-struct MODULO {
+struct MOD {
     static inline T value;
 };
 
-auto &m = MODULO<unsigned long long>::value;
-using modint = ModInt<MODULO<unsigned long long>>;
+auto &m = MOD<unsigned long long>::value;
+using modint = ModInt<MOD<unsigned long long>>;
 
 template <typename T>
 struct Matrix {

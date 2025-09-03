@@ -353,8 +353,8 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned long long MODULO = 1e9 + 7;
-using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
+constexpr unsigned long long MOD = 1e9 + 7;
+using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 int main() {
     ios::sync_with_stdio(false);
@@ -370,7 +370,7 @@ int main() {
         auto inv = fact;
 
         for (int i = 1; i < n + 2; i++) {
-            if (i > 1) inv[i] = (MODULO - MODULO / i) * inv[MODULO % i];
+            if (i > 1) inv[i] = (MOD - MOD / i) * inv[MOD % i];
             fact[i] = i * fact[i - 1];
             fact_inv[i] = inv[i] * fact_inv[i - 1];
         }

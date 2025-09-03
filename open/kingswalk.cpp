@@ -341,8 +341,8 @@ U & operator>>(U &stream, BarrettModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned int MODULO = 5318008;
-using modint = BarrettModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
+constexpr unsigned int MOD = 5318008;
+using modint = BarrettModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 int main() {
     ios::sync_with_stdio(false);

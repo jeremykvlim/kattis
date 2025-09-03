@@ -353,8 +353,8 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned long long MODULO = 1e9 + 7;
-using modint = MontgomeryModInt<integral_constant<decay<decltype(MODULO)>::type, MODULO>>;
+constexpr unsigned long long MOD = 1e9 + 7;
+using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 template <typename T>
 T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
@@ -388,7 +388,7 @@ int main() {
         auto inv = fact;
 
         for (int i = 1; i <= a + c + m; i++) {
-            if (i > 1) inv[i] = (MODULO - MODULO / i) * inv[MODULO % i];
+            if (i > 1) inv[i] = (MOD - MOD / i) * inv[MOD % i];
             fact[i] = i * fact[i - 1];
             fact_inv[i] = inv[i] * fact_inv[i - 1];
             p2[i] = p2[i - 1] * 2;
@@ -400,7 +400,7 @@ int main() {
         modint w = 0;
         for (int i = 0; 2 * i <= a - c + m; i++) {
             int j = i + c - m, k = a - i - j;
-            if (~(m - i - k)) w += C(i + j + k, i, j, k, MODULO, fact, fact_inv) * C(m - i - k + a - 1, a - 1, MODULO, fact, fact_inv) * p2[k];
+            if (~(m - i - k)) w += C(i + j + k, i, j, k, MOD, fact, fact_inv) * C(m - i - k + a - 1, a - 1, MOD, fact, fact_inv) * p2[k];
         }
 
         return w;

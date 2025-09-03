@@ -1,25 +1,25 @@
 let
-  MODULO = 1 << 20
+  MOD = 1 << 20
 
   (n, x) = parse.(Int, split(readline()))
   m = readline()
 
-  f = Vector{Int}(undef, MODULO)
+  f = Vector{Int}(undef, MOD)
   f[1] = 1
-  for i = 2:MODULO
-    f[i] = (33 * f[i - 1] + 1) % MODULO
+  for i = 2:MOD
+    f[i] = (33 * f[i - 1] + 1) % MOD
   end
 
   s = j = 0
   for _ = 1:x
-    s = (s + f[j + 1]) % MODULO
-    j = (j + x) % MODULO
+    s = (s + f[j + 1]) % MOD
+    j = (j + x) % MOD
   end
 
   buf = IOBuffer()
   for _ = 1:x
     print(buf, s)
-    s = (33 * s + x) % MODULO
+    s = (33 * s + x) % MOD
   end
   digits27 = string(parse(BigInt, String(take!(buf))), base = 27)
 
