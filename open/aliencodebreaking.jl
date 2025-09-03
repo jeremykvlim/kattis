@@ -25,8 +25,7 @@ let
 
   text = Vector{Char}(undef, n)
   for i = 1:n
-    d = digits27[i]
-    r = ((m[i] == ' ' ? 26 : m[i] - 'A') + (d in '0':'9' ? d - '0' : d - 'a' + 10)) % 27
+    r = ((m[i] == ' ' ? 26 : m[i] - 'A') + (digits27[i] in '0':'9' ? digits27[i] - '0' : digits27[i] - 'a' + 10)) % 27
     text[i] = r == 26 ? ' ' : 'A' + r
   end
   print(join(text))
