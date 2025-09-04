@@ -53,10 +53,10 @@ tuple<vector<int>, vector<int>, int> hopcroft_karp(int n, int m, const vector<pa
 pair<vector<int>, vector<int>> konig(int n, int m, const vector<vector<int>> &adj_list, const vector<int> &l, const vector<int> &r) {
     vector<bool> visited_l(n, false), visited_r(m, false);
     queue<pair<int, bool>> q;
-    for (int u = 0; u < n; u++)
-        if (l[u] == -1) {
-            visited_l[u] = true;
-            q.emplace(u, true);
+    for (int v = 0; v < n; v++)
+        if (!~l[v]) {
+            visited_l[v] = true;
+            q.emplace(v, true);
         }
 
     while (!q.empty()) {
