@@ -3,12 +3,11 @@ using namespace std;
 
 inline char readchar() {
     static const int size = 1 << 20;
-    static char buf[size];
+    static array<char, size> buf;
     static int pos = 0, len = 0;
-
     if (pos >= len) {
         pos = 0;
-        len = fread(buf, 1, size, stdin);
+        len = fread(buf.data(), 1, size, stdin);
         if (!len) return EOF;
     }
     return buf[pos++];
@@ -106,7 +105,7 @@ vector<T> conjugate_gradient(const vector<vector<T>> &A, const vector<T> &b) {
 
 int main() {
     ios::sync_with_stdio(false);
-    
+
     int n;
     read(n);
 
