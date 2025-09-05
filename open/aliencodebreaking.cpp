@@ -32,14 +32,10 @@ int main() {
     ofs << digits10;
     ofs.close();
     
-    string digits27, cmd = "ruby -e 's=STDIN.read; puts s.to_i(10).to_s(27).upcase' < \"temp.txt\"";
-    auto p = popen(cmd.c_str(), "r");
+    string digits27;
+    auto p = popen("ruby -e 's=STDIN.read; puts s.to_i(10).to_s(27).upcase' < \"temp.txt\"", "r");
     array<char, MOD> buf;
-    for (;;) {
-        int k = fread(buf.data(), 1, buf.size(), p);
-        if (!k) break;
-        digits27.append(buf.data(), k);
-    }
+    while (fgets(buf.data(), MOD, p)) digits27 += buf.data();
     pclose(p);
     remove("temp.txt");
 
