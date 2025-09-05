@@ -28,10 +28,11 @@ int main() {
         sum = (33 * sum + x) % MOD;
     }
 
-    string digits27, cmd = "ruby -e 's=STDIN.read; puts s.to_i(10).to_s(27).upcase' < \"temp.txt\"";
     ofstream ofs("temp.txt");
     ofs << digits10;
     ofs.close();
+    
+    string digits27, cmd = "ruby -e 's=STDIN.read; puts s.to_i(10).to_s(27).upcase' < \"temp.txt\"";
     auto p = popen(cmd.c_str(), "r");
     array<char, MOD> buf;
     for (;;) {
