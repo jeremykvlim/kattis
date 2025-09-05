@@ -28,7 +28,7 @@ int main() {
         sum = (33 * sum + x) % MOD;
     }
 
-    string digits27, temp = "temp.txt", cmd = "ruby -e 's=STDIN.read; s=s.gsub(/\\s+/m,\"\"); puts s.to_i(10).to_s(27).upcase' < \"" + temp + "\"";
+    string digits27, temp = "temp.txt", cmd = "ruby -e 's=STDIN.read; puts s.to_i(10).to_s(27).upcase' < \"" + temp + "\"";
     ofstream ofs(temp);
     ofs << digits10;
     ofs.close();
