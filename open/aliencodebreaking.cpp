@@ -1,8 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-constexpr int MOD = 1 << 20;
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -13,6 +11,7 @@ int main() {
     cin.ignore();
     getline(cin, cipher);
 
+    const int MOD = 1 << 20;
     vector<int> f(MOD, 1);
     for (int i = 1; i < MOD; i++) f[i] = (33 * f[i - 1] + 1) % MOD;
 
@@ -28,8 +27,8 @@ int main() {
         sum = (33 * sum + x) % MOD;
     }
 
-    string digits27, temp = "temp.txt", cmd = "ruby -e 's=STDIN.read; puts s.to_i(10).to_s(27).upcase' < \"" + temp + "\"";
-    ofstream ofs(temp);
+    string digits27, cmd = "ruby -e 's=STDIN.read; puts s.to_i(10).to_s(27).upcase' < \"temp.txt\"";
+    ofstream ofs("temp.txt");
     ofs << digits10;
     ofs.close();
     auto p = popen(cmd.c_str(), "r");
@@ -40,13 +39,13 @@ int main() {
         digits27.append(buf.data(), k);
     }
     pclose(p);
-    remove(temp.c_str());
+    remove("temp.txt");
 
     string text(n, ' ');
     for (int i = 0; i < n; i++) {
-        char c = digits27[i];
-        int w = ((cipher[i] == ' ' ? 26 : cipher[i] - 'A') + ('0' <= c && c <= '9' ? c - '0' : c - 'A' + 10)) % 27;
-        if (w != 26) text[i] = (char) 'A' + w;
+        char d = digits27[i];
+        int r = ((cipher[i] == ' ' ? 26 : cipher[i] - 'A') + ('0' <= d && d <= '9' ? d - '0' : d - 'A' + 10)) % 27;
+        if (r != 26) text[i] = (char) 'A' + r;
     }
     cout << text;
 }
