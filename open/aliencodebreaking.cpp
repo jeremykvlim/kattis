@@ -1,6 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+constexpr int MOD = 1 << 20;
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -11,18 +13,17 @@ int main() {
     cin.ignore();
     getline(cin, cipher);
 
-    const int MOD = 1 << 20;
     vector<int> f(MOD, 1);
     for (int i = 1; i < MOD; i++) f[i] = (33 * f[i - 1] + 1) % MOD;
 
-    int sum = 0, j = 0;
-    for (int i = 0; i < x; i++) {
-        (sum += f[j]) %= MOD;
-        (j += x) %= MOD;
+    int sum = 0;
+    for (int _ = 0, i = 0; _ < x; _++) {
+        (sum += f[i]) %= MOD;
+        (i += x) %= MOD;
     }
 
     string digits10;
-    for (int i = 0; i < x; i++) {
+    for (int _ = 0; _ < x; _++) {
         digits10 += to_string(sum);
         sum = (33 * sum + x) % MOD;
     }
