@@ -167,7 +167,6 @@ struct SternBrocotTree {
             k = 1;
             while (check_left()) {
                 nl += k;
-                if (k > numeric_limits<T>::max() >> 1) break;
                 k <<= 1;
             }
 
@@ -190,7 +189,6 @@ struct SternBrocotTree {
             k = 1;
             while (check_right()) {
                 nr += k;
-                if (k > numeric_limits<T>::max() >> 1) break;
                 k <<= 1;
             }
 
