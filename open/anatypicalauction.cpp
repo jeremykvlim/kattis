@@ -1,94 +1,66 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T, typename U>
-pair<vector<int>, U> hungarian(const vector<vector<T>> &C, const U delta) {
-    int n = C.size();
+template <typename T>
+pair<vector<int>, T> jonker_volgenant(const vector<vector<T>> &C) {
+    int n = C.size(), m = C[0].size();
 
-    vector<int> r_match(n, -1), c_match(n, -1);
-    vector<T> potential(n, 0);
-    for (int c = 0; c < n; c++) {
-        int r = 0;
-        for (int row = 1; row < n; row++)
-            if (C[r][c] > C[row][c]) r = row;
-
-        potential[c] = C[r][c];
-        if (r_match[r] == -1) {
-            r_match[r] = c;
-            c_match[c] = r;
-        }
-    }
-
-    auto diff = [&](int r, int c) {
-        return C[r][c] - potential[c];
-    };
-
-    vector<int> cols(n);
+    vector<T> dist(m), potential(m);
+    vector<int> row_match(n, -1), col_match(m, -1), cols(m), prev(m);
     iota(cols.begin(), cols.end(), 0);
-    for (int r = 0; r < n; r++) {
-        if (r_match[r] != -1) continue;
+    T d = 0;
+    for (int i = 0, c1 = -1, temp = 0; i < n; i++) {
+        for (int c = 0; c < m; c++) {
+            dist[c] = C[i][c] - potential[c];
+            prev[c] = i;
+        }
 
-        vector<T> dist(n);
-        for (int c = 0; c < n; c++) dist[c] = diff(r, c);
-
-        vector<int> prev(n, r);
-        int scanned = 0, labeled = 0, last = 0, curr;
-        for (;;) {
-            if (scanned == labeled) {
-                auto d = dist[cols[scanned]];
-                for (int c = scanned; c < n; c++)
-                    if (dist[cols[c]] <= d) {
-                        if (dist[cols[c]] < d) {
-                            d = dist[cols[c]];
-                            labeled = scanned;
-                        }
-
-                        swap(cols[c], cols[labeled++]);
+        int s = 0, t = 0;
+        auto dijkstra = [&]() {
+            if (s == t) {
+                temp = s;
+                d = dist[cols[t++]];
+                for (int j = t; j < m; j++) {
+                    c1 = cols[j];
+                    if (d < dist[c1]) continue;
+                    if (d > dist[c1]) {
+                        d = dist[c1];
+                        t = s;
                     }
+                    cols[j] = exchange(cols[t++], c1);
+                }
 
-                for (int c = scanned; c < labeled; c++)
-                    if (c_match[cols[c]] == -1) {
-                        curr = cols[c];
-                        goto done;
-                    }
-
-                last = scanned;
+                for (int j = s; j < t; j++)
+                    if (!~col_match[c1 = cols[j]]) return true;
             }
 
-            int c1 = cols[scanned++], r1 = c_match[c1];
-            for (int c = labeled; c < n; c++) {
-                int c2 = cols[c];
-                auto d = diff(r1, c2) - diff(r1, c1);
+            int c2 = cols[s++], r = col_match[c2];
+            for (int j = t; j < m; j++) {
+                c1 = cols[j];
+                if (dist[c1] > C[r][c1] - C[r][c2] + potential[c2] - potential[c1] + d) {
+                    dist[c1] = C[r][c1] - C[r][c2] + potential[c2] - potential[c1] + d;
+                    prev[c1] = r;
 
-                if (dist[c2] > dist[c1] + d) {
-                    dist[c2] = dist[c1] + d;
-                    prev[c2] = r1;
-
-                    if (!d) {
-                        if (c_match[c2] == -1) {
-                            curr = c2;
-                            goto done;
-                        }
-
-                        swap(cols[c], cols[labeled++]);
+                    if (dist[c1] == d) {
+                        if (!~col_match[c1]) return true;
+                        cols[j] = exchange(cols[t++], c1);
                     }
                 }
             }
-        }
+            return false;
+        };
+        while (!dijkstra());
 
-        done:;
-        for (int c = 0; c < last; c++) potential[cols[c]] += dist[cols[c]] - dist[curr];
-        int temp = curr;
-        while (temp != -1) {
-            curr = temp;
-            c_match[curr] = prev[curr];
-            swap(r_match[prev[curr]], temp);
+        for (int j = 0; j < temp; j++) potential[cols[j]] += dist[cols[j]] - d;
+        for (int r = -1; r != i;) {
+            r = col_match[c1] = prev[c1];
+            swap(c1, row_match[r]);
         }
     }
 
-    U cost = 0;
-    for (int r = 0; r < n; r++) cost += C[r][r_match[r]];
-    return {r_match, cost - delta};
+    T cost = 0;
+    for (int i = 0; i < n; i++) cost += C[i][row_match[i]];
+    return {row_match, cost};
 }
 
 int main() {
@@ -111,7 +83,7 @@ int main() {
     for (int i = 0; i < n; i++)
         for (int j = 0; j < m; j++) cost[i][j] = c_max - c[i][j];
 
-    auto [assignment, _] = hungarian(cost, 0);
+    auto [assignment, _] = jonker_volgenant(cost);
 
     int income = 0;
     for (int i = 0; i < n; i++) income += c[i][assignment[i]];

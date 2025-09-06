@@ -1,8 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-const int fixed_point = 9375000;
-
 template <typename T, typename U, typename V>
 T mul(U x, V y, T mod) {
     return (unsigned __int128) x * y % mod;
@@ -210,14 +208,15 @@ int pisano_period(int p, unordered_map<int, int> &cache) {
     return cache[p] = pisano;
 }
 
+const int fixed_point = 9375000;
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     vector<int> memo(fixed_point, 0);
     memo[1] = 1;
-    for (int i = 2; i < fixed_point; i++)
-        memo[i] = (memo[i - 1] + memo[i - 2]) % fixed_point;
+    for (int i = 2; i < fixed_point; i++) memo[i] = (memo[i - 1] + memo[i - 2]) % fixed_point;
 
     int t;
     cin >> t;
