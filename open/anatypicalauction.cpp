@@ -16,7 +16,7 @@ pair<vector<int>, T> jonker_volgenant(const vector<vector<T>> &C) {
         }
 
         int s = 0, t = 0;
-        auto dijkstra = [&]() {
+        for (;;) {
             if (s == t) {
                 temp = s;
                 d = dist[cols[t++]];
@@ -31,7 +31,7 @@ pair<vector<int>, T> jonker_volgenant(const vector<vector<T>> &C) {
                 }
 
                 for (int j = s; j < t; j++)
-                    if (!~col_match[c1 = cols[j]]) return true;
+                    if (!~col_match[c1 = cols[j]]) goto done;
             }
 
             int c2 = cols[s++], r = col_match[c2];
@@ -42,14 +42,13 @@ pair<vector<int>, T> jonker_volgenant(const vector<vector<T>> &C) {
                     prev[c1] = r;
 
                     if (dist[c1] == d) {
-                        if (!~col_match[c1]) return true;
+                        if (!~col_match[c1]) goto done;
                         cols[j] = exchange(cols[t++], c1);
                     }
                 }
             }
-            return false;
-        };
-        while (!dijkstra());
+        }
+        done:;
 
         for (int j = 0; j < temp; j++) potential[cols[j]] += dist[cols[j]] - d;
         for (int r = -1; r != i;) {
