@@ -82,11 +82,11 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int s, R, d;
-    cin >> s >> R >> d;
+    int s, R, D;
+    cin >> s >> R >> D;
 
     vector<vector<vector<pair<int, double>>>> stations(s + 1);
-    while (d--) {
+    while (D--) {
         int i, n;
         cin >> i >> n;
 
@@ -105,14 +105,14 @@ int main() {
         }
 
         for (int i = s; i; i--) {
-            double highest = 0;
+            auto dot = 0.;
             for (const auto &output : stations[i]) {
                 vector<double> temp(R, 0);
                 for (auto [o, p] : output) transform(memo[o].begin(), memo[o].end(), temp.begin(), temp.begin(), [&](auto x, auto y) { return p * x + y; });
 
-                auto dot = inner_product(w.begin(), w.end(), temp.begin(), 0.);
-                if (highest < dot) {
-                    highest = dot;
+                auto d = inner_product(w.begin(), w.end(), temp.begin(), 0.);
+                if (dot < d) {
+                    dot = d;
                     memo[i] = temp;
                 }
             }
@@ -138,12 +138,11 @@ int main() {
         b[p + 1] = c[R] = -1;
         auto [_, solution] = linear_program_solution(A, b, c);
 
-        double sum = 0;
-        vector<double> w(R);
-        for (int i = 0; i < R; i++) sum += w[i] = max(0., solution[i]);
-        for (auto &wi : w) wi /= sum;
-        l = max(l, solution[R]);
-        r = min(r, dp(w));
+        solution.resize(R);
+        auto sum = accumulate(solution.begin(), solution.end(), 0.);
+        for (auto &w : solution) w /= sum;
+        l = solution[R];
+        r = dp(solution);
         planes.emplace_back(memo[1]);
     }
     cout << fixed << setprecision(6) << r * 1e2;
