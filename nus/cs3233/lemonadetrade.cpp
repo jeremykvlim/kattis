@@ -16,6 +16,5 @@ int main() {
 
         if (dp.count(w)) dp[o] = dp.count(o) ? max(dp[o], log(r) + dp[w]) : log(r) + dp[w];
     }
-
-    cout << fixed << setprecision(6) << (dp.count("blue") ? min(10.0, exp(dp["blue"])) : 0);
+    cout << fixed << setprecision(6) << (dp.count("blue") ? min(10., exp(dp["blue"])) : 0);
 }
