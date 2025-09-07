@@ -18,7 +18,7 @@ public class communicationssatellite {
             for (int j = i + 1; j < n; j++)
                 pq.add(new Triple<>(Math.hypot(satellites.get(i).first - satellites.get(j).first, satellites.get(i).second - satellites.get(j).second) - satellites.get(i).third - satellites.get(j).third, i, j));
 
-        var sum = 0.0;
+        var sum = 0.;
         var dsu = new DisjointSets(n);
         while (n > 1 && !pq.isEmpty()) {
             var e = pq.poll();
