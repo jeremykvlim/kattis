@@ -21,7 +21,7 @@ public class arcticnetwork {
                 for (int j = i + 1; j < p; j++)
                     pq.add(new Triple<>(Math.hypot(outposts.get(i).first - outposts.get(j).first, outposts.get(i).second - outposts.get(j).second), i, j));
 
-            var output = 0.0;
+            var output = 0.;
             var visited = new boolean[p];
             var dsu = new DisjointSets(p);
             while (p > s && !pq.isEmpty()) {
