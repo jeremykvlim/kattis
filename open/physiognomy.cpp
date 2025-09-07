@@ -244,7 +244,7 @@ int main() {
             next:;
         }
 
-    double len = 1e20;
+    auto len = 1e20;
     priority_queue<pair<double, pair<int, int>>, vector<pair<double, pair<int, int>>>, greater<>> pq;
     for (int i = 0; i < 4 * n; i++) {
         for (int j = 0; j < n; j++)
