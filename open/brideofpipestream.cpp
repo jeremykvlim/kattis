@@ -5,7 +5,7 @@ template <typename T>
 pair<T, vector<T>> linear_program_solution(const vector<vector<T>> &A, const vector<T> &b, const vector<T> &c) {
     int m = b.size(), n = c.size();
 
-    vector<vector<T>> tableau(m + 2, vector<double>(n + 2));
+    vector<vector<T>> tableau(m + 2, vector<T>(n + 2));
     vector<T> basic(m), non_basic(n + 1);
     for (int i = 0; i < m; i++) {
         for (int j = 0; j < n; j++) tableau[i][j] = A[i][j];
@@ -122,7 +122,7 @@ int main() {
 
     double l = 0, r = dp(vector<double>(R, 1. / R));
     vector<vector<double>> planes{memo[1]};
-    while (l + 1e-12 < r) {
+    while (l + 1e-8 < r && l + l * 1e-8 < r) {
         int p = planes.size(), m = p + 2, n = R + 1;
         vector<vector<double>> A(m, vector<double>(n, 0));
         vector<double> b(m, 0), c(n, 0);
@@ -146,5 +146,5 @@ int main() {
         r = min(r, dp(w));
         planes.emplace_back(memo[1]);
     }
-    cout << fixed << setprecision(6) << max(l, r) * 1e2;
+    cout << fixed << setprecision(6) << r * 1e2;
 }
