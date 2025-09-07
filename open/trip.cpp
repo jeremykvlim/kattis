@@ -23,6 +23,6 @@ int main() {
         
         int money = 0;
         for (int i = 0; i < n; i++) money += i < remaining ? abs(costs[i] - total - 1) : abs(costs[i] - total);
-        cout << "$" << fixed << setprecision(2) << money / 200.0 << "\n";
+        cout << "$" << fixed << setprecision(2) << money / 200. << "\n";
     }
 }
