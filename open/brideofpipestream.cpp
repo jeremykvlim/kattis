@@ -98,17 +98,17 @@ int main() {
     }
 
     vector<vector<double>> memo(R + s + 1, vector<double>(R, 0));
-    auto dp = [&](const vector<double> &w) {
-        for (int k = 0; k < R; k++) {
-            fill(memo[k + s + 1].begin(), memo[k + s + 1].end(), 0);
-            memo[k + s + 1][k] = 1;
+    auto dp = [&](const auto &w) {
+        for (int j = 0; j < R; j++) {
+            fill(memo[j + s + 1].begin(), memo[j + s + 1].end(), 0);
+            memo[j + s + 1][j] = 1;
         }
 
         for (int i = s; i; i--) {
             auto dot = 0.;
-            for (const auto &output : stations[i]) {
+            for (const auto &outputs : stations[i]) {
                 vector<double> temp(R, 0);
-                for (auto [o, p] : output) transform(memo[o].begin(), memo[o].end(), temp.begin(), temp.begin(), [&](auto x, auto y) { return p * x + y; });
+                for (auto [o, p] : outputs) transform(memo[o].begin(), memo[o].end(), temp.begin(), temp.begin(), [&](auto x, auto y) { return p * x + y; });
 
                 auto d = inner_product(w.begin(), w.end(), temp.begin(), 0.);
                 if (dot < d) {
@@ -126,13 +126,13 @@ int main() {
         int p = planes.size();
         vector<vector<double>> A(p + 2, vector<double>(R + 1, 0));
         vector<double> b(p + 2, 0), c(R + 1, 0);
-        for (int k = 0; k < p; k++) {
-            for (int i = 0; i < R; i++) A[k][i] = planes[k][i];
-            A[k][R] = -1;
+        for (int i = 0; i < p; i++) {
+            for (int j = 0; j < R; j++) A[i][j] = planes[i][j];
+            A[i][R] = -1;
         }
-        for (int i = 0; i < R; i++) {
-            A[p][i] = 1;
-            A[p + 1][i] = -1;
+        for (int j = 0; j < R; j++) {
+            A[p][j] = 1;
+            A[p + 1][j] = -1;
         }
         b[p] = 1;
         b[p + 1] = c[R] = -1;
