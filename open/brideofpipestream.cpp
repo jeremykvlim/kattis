@@ -97,11 +97,11 @@ int main() {
         }
     }
 
-    vector<vector<double>> memo(s + R + 1, vector<double>(R, 0));
+    vector<vector<double>> memo(R + s + 1, vector<double>(R, 0));
     auto dp = [&](const vector<double> &w) {
         for (int k = 0; k < R; k++) {
-            fill(memo[s + k + 1].begin(), memo[s + k + 1].end(), 0);
-            memo[s + k + 1][k] = 1;
+            fill(memo[k + s + 1].begin(), memo[k + s + 1].end(), 0);
+            memo[k + s + 1][k] = 1;
         }
 
         for (int i = s; i; i--) {
@@ -120,8 +120,8 @@ int main() {
         return inner_product(w.begin(), w.end(), memo[1].begin(), 0.);
     };
 
-    double l = 0, r = dp(vector<double>(R, 1. / R));
     vector<vector<double>> planes{memo[1]};
+    auto l = 0., r = dp(vector<double>(R, 1. / R));
     while (l + 1e-8 < r && l + l * 1e-8 < r) {
         int p = planes.size(), m = p + 2, n = R + 1;
         vector<vector<double>> A(m, vector<double>(n, 0));
