@@ -8,11 +8,10 @@ int main() {
     int n;
     while (cin >> n && n) {
         vector<int> times(n), pref(n);
-
         for (int i = 0; i < n; i++) {
             double p;
-            
             cin >> times[i] >> p;
+            
             pref[i] = i ? pref[i - 1] + round(p * 100) : round(p * 100);
         }
 
@@ -22,8 +21,8 @@ int main() {
                 int curr = pref[j] - (i ? pref[i - 1] : 0) - (times[j] - times[i] + 1) * 8;
                 if (curr > profit || (curr == profit && times[j] - times[i] < end - start)) tie(start, end, profit) = tie(times[i], times[j], curr);
             }
-
-        if (profit) cout << fixed << setprecision(2) << profit / 100.0 << " " << start << " " << end << "\n";
+        
+        if (profit) cout << fixed << setprecision(2) << profit / 100. << " " << start << " " << end << "\n";
         else cout << "no profit\n";
     }
 }
