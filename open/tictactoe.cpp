@@ -46,7 +46,6 @@ int main() {
                         }
                     }
 
-
     if (count[1 - prev]) {
         cout << "ERROR";
         exit(0);

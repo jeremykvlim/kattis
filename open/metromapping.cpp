@@ -58,7 +58,6 @@ int main() {
                 }
             }
 
-
         while (!pq.empty()) {
             auto [d, v] = pq.top();
             pq.pop();

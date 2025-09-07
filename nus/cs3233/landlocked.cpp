@@ -21,7 +21,6 @@ int main() {
                 dist[i][j] = -1;
             }
 
-
     while (!q.empty()) {
         auto [i, j] = q.front();
         q.pop_front();

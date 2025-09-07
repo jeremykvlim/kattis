@@ -24,7 +24,6 @@ void perform(vector<int> &jugglers, stack<int> &zeroes, int i) {
     }
 }
 
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);

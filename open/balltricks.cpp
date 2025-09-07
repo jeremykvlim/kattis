@@ -420,7 +420,6 @@ T kitamasa(const vector<T> &c, const vector<T> &a, long long k) {
     return kth;
 }
 
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);

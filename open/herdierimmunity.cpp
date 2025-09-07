@@ -15,7 +15,6 @@ int main() {
     priority_queue<int> pq;
     for (int i = 1; i < m; i++) pq.emplace(a[i] - a[i - 1] - 1);
 
-
     int l = a[0] - 1, r = n - a[m - 1];
     vector<vector<int>> dp(4, vector<int>(2, -1e9));
     dp[0][0] = 0;

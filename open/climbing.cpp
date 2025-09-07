@@ -34,7 +34,6 @@ int main() {
         return s;
     };
 
-
     vector<vector<bool>> pegs(t + 1, vector<bool>(n + 1, false));
     for (int j = 1; j <= t; j++) {
         int i;

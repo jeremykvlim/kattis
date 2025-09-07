@@ -31,7 +31,6 @@ int main() {
             dp[i][j] = best;
         }
 
-
     int q;
     cin >> q;
     
