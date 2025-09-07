@@ -12,7 +12,8 @@ int main() {
         char d;
         double x, y, s, w, l;
         cin >> d >> x >> y >> s >> w >> l;
-        w /= 2.0, l /= 2.0;
+        w *= 0.5;
+        l *= 0.5;
 
         unordered_map<char, array<int, 2>> directions{{'N', {0, 1}}, {'S', {0, -1}}, {'W', {-1, 0}}, {'E', {1, 0}}};
         auto dx = directions[d][0] * s, dy = directions[d][1] * s;
