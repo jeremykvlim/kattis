@@ -24,7 +24,7 @@ public class islandhopping {
             pq.add(new Pair<>(0., 0));
 
             var visited = new boolean[m];
-            var total = 0.0;
+            var total = 0.;
 
             while (!pq.isEmpty()) {
                 var p = pq.poll();
