@@ -13,7 +13,7 @@ int main() {
     for (int &k : population) cin >> k;
 
     vector<vector<int>> adj_list(n);
-    for (int i = 0; i < n - 1; i++) {
+    for (int _ = 0; _ < n - 1; _++) {
         int u, v;
         cin >> u >> v;
 
