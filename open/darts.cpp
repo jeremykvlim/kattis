@@ -9,20 +9,20 @@ int main() {
     vector<vector<double>> dpA(502, vector<double>(502, 0)), dpB(502, vector<double>(502, 0));
     for (int i = 1; i <= 20; i++)
         for (int j = 1; j <= 20; j++) {
-            dpA[i][j] = (1 - 19.0 / 20) / (1 - (19.0 / 20) * (2.0 / 3));
-            dpB[i][j] = (1 - 2.0 / 3) / (1 - (19.0 / 20) * (2.0 / 3));
+            dpA[i][j] = (1 - 19. / 20) / (1 - (19. / 20) * (2. / 3));
+            dpB[i][j] = (1 - 2. / 3) / (1 - (19. / 20) * (2. / 3));
         }
 
     auto A = [&](int i, int j) {
         for (int k = 0; k < 20; k++) dpA[i][j] += (1 - dpB[i >= values[k] ? i - values[k] : i][j]) / 20;
     };
-    
+
     auto B = [&](int i, int j) {
         for (int k = 0; k < 20; k++) {
             int l = (k + 1) % 20, m = (k + 2) % 20;
             dpB[i][j] = max(dpB[i][j], (1 - dpA[i][j >= values[k] ? j - values[k] : j]
-                                      + 1 - dpA[i][j >= values[l] ? j - values[l] : j]
-                                      + 1 - dpA[i][j >= values[m] ? j - values[m] : j]) / 3);
+                                        + 1 - dpA[i][j >= values[l] ? j - values[l] : j]
+                                        + 1 - dpA[i][j >= values[m] ? j - values[m] : j]) / 3);
         }
     };
 
