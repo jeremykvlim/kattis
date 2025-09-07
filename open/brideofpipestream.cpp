@@ -138,10 +138,10 @@ int main() {
         b[p + 1] = c[R] = -1;
         auto [_, solution] = linear_program_solution(A, b, c);
 
+        l = solution[R];
         solution.resize(R);
         auto sum = accumulate(solution.begin(), solution.end(), 0.);
         for (auto &w : solution) w /= sum;
-        l = solution[R];
         r = dp(solution);
         planes.emplace_back(memo[1]);
     }
