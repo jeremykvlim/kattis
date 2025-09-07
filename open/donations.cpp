@@ -14,8 +14,7 @@ int main() {
     for (int i = 0; i < n; i++) {
         dp[(i & 1) ^ 1] = vector<double>(n + 1, 0);
         for (int j = i; j <= n; j++)
-            for (int k = j; k <= n; k++) dp[(i & 1) ^ 1][k] = max(dp[(i & 1) ^ 1][k], (dp[i & 1][j] - (k - j) * y + max(0.0, (k - j) * y - z) * c / 100.0) * (1.0 + r / 100.0));
+            for (int k = j; k <= n; k++) dp[(i & 1) ^ 1][k] = max(dp[(i & 1) ^ 1][k], (dp[i & 1][j] - (k - j) * y + max(0., (k - j) * y - z) * c / 100.) * (1 + r / 100.));
     }
-
     cout << fixed << setprecision(6) << dp[n & 1][n];
 }
