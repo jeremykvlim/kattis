@@ -123,9 +123,9 @@ int main() {
     vector<vector<double>> planes{memo[1]};
     auto l = 0., r = dp(vector<double>(R, 1. / R));
     while (l + 1e-8 < r && l + l * 1e-8 < r) {
-        int p = planes.size(), m = p + 2, n = R + 1;
-        vector<vector<double>> A(m, vector<double>(n, 0));
-        vector<double> b(m, 0), c(n, 0);
+        int p = planes.size();
+        vector<vector<double>> A(p + 2, vector<double>(R + 1, 0));
+        vector<double> b(p + 2, 0), c(R + 1, 0);
         for (int k = 0; k < p; k++) {
             for (int i = 0; i < R; i++) A[k][i] = planes[k][i];
             A[k][R] = -1;
@@ -138,8 +138,8 @@ int main() {
         b[p + 1] = c[R] = -1;
         auto [_, solution] = linear_program_solution(A, b, c);
 
-        l = solution[R];
-        solution.resize(R);
+        l = solution.back();
+        solution.pop_back();
         auto sum = accumulate(solution.begin(), solution.end(), 0.);
         for (auto &w : solution) w /= sum;
         r = dp(solution);
