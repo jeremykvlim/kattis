@@ -16,7 +16,7 @@ int main() {
         double sum_p = 0;
         for (int i = 0; i < n; i++) {
             cin >> p[i];
-            
+
             sum_p += p[i];
         }
 
@@ -34,7 +34,7 @@ int main() {
         }
 
         cout << "Case #" << x + 1 << ":";
-        for (auto v : p) cout << " " << fixed << setprecision(5) << max((curr - v) / sum_p * 100, 0.0);
+        for (auto v : p) cout << " " << fixed << setprecision(5) << max((curr - v) / sum_p * 100, 0.);
         cout << "\n";
     }
 }
