@@ -14,19 +14,18 @@ int main() {
     vector<pair<int, int>> flights(m);
     for (auto &[src, dest] : flights) cin >> src >> dest;
 
+    double highest = 0;
     vector<double> dp(n);
     dp[0] = 1;
-    double highest = 0;
     for (int i = 1; i <= n; i++) {
         vector<double> temp(n);
         for (auto [src, dest] : flights) {
-            double p = max(min(1.0, ((dest == n - 1 ? i : i + 1) - s[dest]) / (double) (t[dest] - s[dest])), 0.0);
+            auto p = max(min(1., ((i + (dest == n - 1)) - s[dest]) / (double) (t[dest] - s[dest])), 0.);
             temp[dest] = max(dp[src] * (1 - p), temp[dest]);
         }
 
         dp = temp;
         highest = max(dp.back(), highest);
     }
-
     cout << fixed << setprecision(6) << highest;
 }
