@@ -32,7 +32,7 @@ int main() {
                 for (int u : adj_list[v])
                     if (u != prev) {
                         self(self, u, v);
-                        dp[v] += max(0.0, dp[u]);
+                        dp[v] += max(0., dp[u]);
                     }
             };
 
@@ -45,6 +45,5 @@ int main() {
         if (valid()) r = m;
         else l = m;
     }
-
     cout << fixed << setprecision(6) << r;
 }
