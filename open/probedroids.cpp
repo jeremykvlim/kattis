@@ -155,7 +155,7 @@ Fraction<T> mediant(const Fraction<T> &l, const Fraction<T> &r) {
 
 struct SternBrocotTree {
     template <typename T, typename P>
-    static pair<Fraction<T>, Fraction<T>> find_valid_interval(T bound, P &&predicate) {
+    static pair<Fraction<T>, Fraction<T>> find_interval(T bound, P &&predicate) {
         Fraction<T> l{0, 1}, r{1, 0};
         for (T k, nl = 0, nr = 0;; nl = 0, nr = 0) {
             auto check_left = [&]() {
@@ -333,7 +333,7 @@ int main() {
             return m - 1 + floor_division_sum(limit, f.numer(), 0, f.denom()) + (m - limit) * (n - 1);
         };
 
-        auto [l, r] = SternBrocotTree::find_valid_interval(bound, [&](const Fraction<long long> &f) -> bool { return count_leq(f) >= i; });
+        auto [l, r] = SternBrocotTree::find_interval(bound, [&](const Fraction<long long> &f) -> bool { return count_leq(f) >= i; });
         i += min((n - 1) / r.numer(), (m - 1) / r.denom()) - count_leq(r);
         cout << i * r.numer() + 1 << " " << i * r.denom() + 1 << "\n";
     }
