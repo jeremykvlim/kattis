@@ -49,10 +49,7 @@ int main() {
                 exit(0);
             }
             dv++;
-            buckets[0].swap(buckets[1]);
-            buckets[1].swap(buckets[2]);
-            buckets[2].swap(buckets[3]);
-            buckets[3].clear();
+            for (int i = 0; i + 1 < 4; i++) buckets[i].swap(buckets[i + 1]);
         }
 
         int v = buckets[0].front();
