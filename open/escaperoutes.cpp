@@ -103,7 +103,7 @@ struct FlowNetwork {
             }
         };
 
-        auto scaled_cost = [&](int v, const Arc &a) {
+        auto reduced_cost = [&](int v, const Arc &a) {
             int diff = count[v] - count[a.u];
             if (diff > 0) return inf;
             if (diff < 0) return -inf;
@@ -117,7 +117,7 @@ struct FlowNetwork {
             for (auto &&a : network[v]) {
                 if (a.cap <= 0) continue;
 
-                U c = scaled_cost(v, a);
+                U c = reduced_cost(v, a);
                 if (c < 0) return false;
                 delta = min(delta, c);
             }
@@ -132,7 +132,7 @@ struct FlowNetwork {
             for (auto a = network[v].begin(); a != network[v].end(); a++) {
                 if (a->cap <= 0) continue;
 
-                if (scaled_cost(v, *a) < 0) {
+                if (reduced_cost(v, *a) < 0) {
                     if (check(a->u)) {
                         a--;
                         continue;
@@ -140,7 +140,7 @@ struct FlowNetwork {
 
                     push(v, *a, excess[v], true);
                     if (!excess[v]) return;
-                } else delta = min(delta, scaled_cost(v, *a));
+                } else delta = min(delta, reduced_cost(v, *a));
             }
 
             relabel(v, delta);
@@ -153,7 +153,7 @@ struct FlowNetwork {
 
             for (int v = 0; v < n; v++)
                 for (auto &&a : network[v])
-                    if (scaled_cost(v, a) < 0 && a.cap > 0) push(v, a, a.cap, false);
+                    if (reduced_cost(v, a) < 0 && a.cap > 0) push(v, a, a.cap, false);
 
             for (int v = 0; v < n; v++)
                 if (excess[v] > 0) active_stack.emplace_front(v);
