@@ -49,7 +49,7 @@ int main() {
 
                     if (dist[u] > d + w) {
                         dist[u] = d + w;
-                        pq.emplace(dist[u], u);
+                        pq.emplace(d + w, u);
                     }
                 }
             }

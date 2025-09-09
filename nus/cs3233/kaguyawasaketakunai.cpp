@@ -111,15 +111,15 @@ int main() {
     priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<pair<long long, int>>> pq;
     pq.emplace(0, s);
     while (!pq.empty()) {
-        auto [di, v] = pq.top();
+        auto [dv, v] = pq.top();
         pq.pop();
 
-        if (di > dist[v]) continue;
+        if (dv != dist[v]) continue;
 
         for (auto [u, w] : adj_list[v])
-            if (dist[u] > di + w) {
-                dist[u] = di + w;
-                pq.emplace(dist[u], u);
+            if (dist[u] > dv + w) {
+                dist[u] = dv + w;
+                pq.emplace(dv + w, u);
             }
     }
 

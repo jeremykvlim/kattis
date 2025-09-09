@@ -35,7 +35,7 @@ int main() {
         for (auto [u, w] : adj_list[v]) 
             if (dist[u] > d + w) {
                 dist[u] = d + w;
-                pq.emplace(dist[u], u);
+                pq.emplace(d + w, u);
             }
     }
 

@@ -93,7 +93,7 @@ int main() {
             for (auto [u, w] : adj_list[v])
                 if (dist[u] > dv + w) {
                     dist[u] = dv + w;
-                    pq.emplace(dist[u], u);
+                    pq.emplace(dv + w, u);
                 }
         }
         for (int j = 0; j <= k; j++) d[i][j] = dist[quests[j]];

@@ -34,8 +34,7 @@ int main() {
 
         dist[v] = d;
         visited[v] = true;
-        for (auto [u, w] : adj_list[v]) pq.emplace(dist[v] + w, u);
+        for (auto [u, w] : adj_list[v]) pq.emplace(d + w, u);
     }
-
     cout << (dist[s] == LLONG_MAX ? "infinity" : to_string(dist[s]));
 }

@@ -31,7 +31,7 @@ int main() {
             int rem = (r + c) % k;
             if (dist[u][rem] > d + c) {
                 dist[u][rem] = d + c;
-                pq.emplace(dist[u][rem], u, rem);
+                pq.emplace(d + c, u, rem);
             }
         }
     }

@@ -370,8 +370,8 @@ void dijkstra(int s, vector<vector<pair<int, int>>> &adj_list, vector<int> &dist
         for (auto [u, l] : adj_list[v])
             if (dist[u] > d + l) {
                 dist[u] = d + l;
-                count[u] = count[v];
                 pq.emplace(d + l, u);
+                count[u] = count[v];
             } else if (dist[u] == d + l) count[u] += count[v];
     }
 }

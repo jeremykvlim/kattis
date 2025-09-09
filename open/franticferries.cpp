@@ -39,7 +39,7 @@ int main() {
         for (auto [u, w] : roads[v])
             if (dist[u] > d + w) {
                 dist[u] = d + w;
-                pq.emplace(dist[u], u);
+                pq.emplace(d + w, u);
             }
 
         for (auto [u, w, first, t] : ferries[v])
@@ -47,7 +47,7 @@ int main() {
                 auto k = (T - d - w - first) % t;
                 if (dist[u] > d + w + k) {
                     dist[u] = d + w + k;
-                    pq.emplace(dist[u], u);
+                    pq.emplace(d + w + k, u);
                 }
             }
     }

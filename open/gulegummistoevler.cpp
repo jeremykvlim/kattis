@@ -209,7 +209,7 @@ int main() {
         if (x_safe.count(y))
             for (auto [xl, xr] : x_safe[y]) {
                 auto it_l = lower_bound(x_neighbors.begin(), x_neighbors.end(), xl),
-                        it_r = upper_bound(x_neighbors.begin(), x_neighbors.end(), xr);
+                     it_r = upper_bound(x_neighbors.begin(), x_neighbors.end(), xr);
                 if (it_l == it_r) continue;
 
                 int x_prev = *it_l, i = id[{x_prev, y}];
@@ -225,7 +225,7 @@ int main() {
         if (y_safe.count(x))
             for (auto [yd, yu] : y_safe[x]) {
                 auto it_d = lower_bound(y_neighbors.begin(), y_neighbors.end(), yd),
-                        it_u = upper_bound(y_neighbors.begin(), y_neighbors.end(), yu);
+                     it_u = upper_bound(y_neighbors.begin(), y_neighbors.end(), yu);
                 if (it_d == it_u) continue;
 
                 int y_prev = *it_d, i = id[{x, y_prev}];
@@ -253,8 +253,8 @@ int main() {
         for (auto [u, w] : adj_list[v])
             if (dist[u] > d + w) {
                 dist[u] = d + w;
+                pq.emplace(d + w, u);
                 prev[u] = v;
-                pq.emplace(dist[u], u);
             }
     }
 
