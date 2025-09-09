@@ -42,23 +42,23 @@ int main() {
     dist[0] = 0;
     array<deque<int>, 4> buckets;
     buckets[0].emplace_back(0);
-    for (int dv = 0;;) {
+    for (int d = 0;;) {
         while (buckets[0].empty()) {
             if (all_of(buckets.begin(), buckets.end(), [&](const auto &b) { return b.empty(); })) {
                 cout << "Engin leid!";
                 exit(0);
             }
-            dv++;
+            d++;
             for (int i = 0; i + 1 < 4; i++) buckets[i].swap(buckets[i + 1]);
         }
 
         int v = buckets[0].front();
         buckets[0].pop_front();
 
-        if (dv != dist[v]) continue;
+        if (d != dist[v]) continue;
 
         if (v == x) {
-            cout << dv;
+            cout << d;
             exit(0);
         }
 
@@ -74,8 +74,8 @@ int main() {
 
             if (!(0 <= u && u < 1e8)) continue;
 
-            if (dist[u] > dv + c) {
-                dist[u] = dv + c;
+            if (dist[u] > d + c) {
+                dist[u] = d + c;
                 buckets[c].emplace_back(u);
             }
         }
