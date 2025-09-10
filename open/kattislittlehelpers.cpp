@@ -293,6 +293,5 @@ int main() {
         fn.add_arc(2 * i + 1, 2 * t + 1, 0, 1, task_to_hq[i]);
         for (int j = i + 1; j < t; j++) fn.add_arc(2 * i + 1, 2 * j, 0, 1, task_to_task[i][j]);
     }
-    auto [cost, valid] = fn.min_cost_b_flow();
-    cout << cost;
+    cout << fn.min_cost_b_flow().first;
 }
