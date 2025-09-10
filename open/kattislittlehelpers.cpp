@@ -257,8 +257,8 @@ int main() {
 
     vector<int> hq_to_task(t);
     for (int i = 0; i < t; i++) {
-        auto [x1, y1] = tasks[i];
-        hq_to_task[i] = dist_hq[x1][y1];
+        auto [x, y] = tasks[i];
+        hq_to_task[i] = dist_hq[x][y];
 
         if (hq_to_task[i] >= 1e9) {
             cout << "impossible";
@@ -278,8 +278,8 @@ int main() {
         }
 
         for (int j = i + 1; j < t; j++) {
-            auto [x1, y1] = tasks[j];
-            task_to_task[i][j] = dist_task[x1][y1];
+            auto [x, y] = tasks[j];
+            task_to_task[i][j] = dist_task[x][y];
         }
     }
 
