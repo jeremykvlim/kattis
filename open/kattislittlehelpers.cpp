@@ -1,179 +1,208 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T>
-struct Point {
-    T x, y;
-
-    Point() {}
-    Point(T x, T y) : x(x), y(y) {}
-
-    template <typename U>
-    Point(U x, U y) : x(x), y(y) {}
-
-    template <typename U>
-    Point(const Point<U> &p) : x((T) p.x), y((T) p.y) {}
-
-    const auto begin() const {
-        return &x;
-    }
-
-    const auto end() const {
-        return &y + 1;
-    }
-
-    Point operator-() const {
-        return {-x, -y};
-    }
-
-    bool operator<(const Point &p) const {
-        return x != p.x ? x < p.x : y < p.y;
-    }
-
-    bool operator>(const Point &p) const {
-        return x != p.x ? x > p.x : y > p.y;
-    }
-
-    bool operator==(const Point &p) const {
-        return x == p.x && y == p.y;
-    }
-
-    bool operator!=(const Point &p) const {
-        return x != p.x || y != p.y;
-    }
-
-    bool operator<=(const Point &p) const {
-        return *this < p || *this == p;
-    }
-
-    bool operator>=(const Point &p) const {
-        return *this > p || *this == p;
-    }
-
-    Point operator+(const Point &p) const {
-        return {x + p.x, y + p.y};
-    }
-
-    Point operator+(const T &v) const {
-        return {x + v, y + v};
-    }
-
-    Point & operator+=(const Point &p) {
-        x += p.x;
-        y += p.y;
-        return *this;
-    }
-
-    Point & operator+=(const T &v) {
-        x += v;
-        y += v;
-        return *this;
-    }
-
-    Point operator-(const Point &p) const {
-        return {x - p.x, y - p.y};
-    }
-
-    Point operator-(const T &v) const {
-        return {x - v, y - v};
-    }
-
-    Point & operator-=(const Point &p) {
-        x -= p.x;
-        y -= p.y;
-        return *this;
-    }
-
-    Point & operator-=(const T &v) {
-        x -= v;
-        y -= v;
-        return *this;
-    }
-
-    Point operator*(const T &v) const {
-        return {x * v, y * v};
-    }
-
-    Point & operator*=(const T &v) {
-        x *= v;
-        y *= v;
-        return *this;
-    }
-
-    Point operator/(const T &v) const {
-        return {x / v, y / v};
-    }
-
-    Point & operator/=(const T &v) {
-        x /= v;
-        y /= v;
-        return *this;
-    }
-};
-
 template <typename T, typename U>
-struct FlowNetwork {
+struct BoundedFlowNetwork {
     struct Arc {
-        int u, rev;
+        int u, v;
         T cap;
         U cost;
-        Arc(int u, int rev, T cap, U cost) : u(u), rev(rev), cap(cap), cost(cost) {}
+        Arc(int u, int v, T cap, U cost) : u(u), v(v), cap(cap), cost(cost) {}
     };
 
-    int n;
-    vector<vector<Arc>> network;
-    U inf;
-    FlowNetwork(int n) : n(n), network(n), inf(numeric_limits<U>::max()) {}
+    int n, m;
+    vector<Arc> arcs;
+    vector<T> balance;
+    vector<pair<int, int>> parent;
+    U lb_offset;
 
-    void add_arc(int u, int v, T cap_uv, U cost, T cap_vu = 0) {
-        if (u == v) return;
+    BoundedFlowNetwork(int n) : n(n), lb_offset(0), balance(n + 1, 0), parent(n + 1, {-1, -1}) {}
 
-        network[u].emplace_back(v, network[v].size(), cap_uv, cost);
-        network[v].emplace_back(u, network[u].size() - 1, cap_vu, -cost);
+    void add_supply(int v, T b) {
+        balance[v] += b;
     }
 
-    pair<T, vector<U>> min_cost_max_flow(int s, int t) {
-        T flow = 0;
-        vector<U> costs{0};
-        for (vector<U> dist(n, inf), phi(n, 0);; fill(dist.begin(), dist.end(), inf)) {
-            vector<pair<int, int>> prev(n, {-1, -1});
-            dist[s] = 0;
-            priority_queue<pair<U, int>, vector<pair<U, int>>, greater<>> pq;
-            pq.emplace(0, s);
-            while (!pq.empty()) {
-                auto [d, v] = pq.top();
-                pq.pop();
+    void add_demand(int v, T b) {
+        balance[v] -= b;
+    }
 
-                if (dist[v] != d) continue;
+    int add_arc(int u, int v, T lb, T ub, U cost = 0) {
+        arcs.emplace_back(u, v, ub - lb, cost);
+        arcs.emplace_back(v, u, 0, -cost);
+        lb_offset += lb * cost;
+        add_supply(v, lb);
+        add_demand(u, lb);
+        return arcs.size() - 2;
+    }
 
-                for (int i = 0; i < network[v].size(); i++) {
-                    auto [u, rev, cap, cost] = network[v][i];
-                    if (cap > 0 && dist[u] > dist[v] + cost + phi[v] - phi[u]) {
-                        dist[u] = dist[v] + cost + phi[v] - phi[u];
-                        prev[u] = {v, i};
-                        pq.emplace(dist[u], u);
+    int build_spanning_tree(int s = -1, int t = -1) {
+        m = arcs.size();
+        U penalty = 1;
+        for (int e = 0; e < m; e += 2) penalty += abs(arcs[e].cost);
+        for (int i = 0; i < n; i++) {
+            int u = n, v = i;
+            T cost = balance[i];
+            if (cost < 0) {
+                cost = -cost;
+                swap(u, v);
+            }
+            int e = add_arc(u, v, 0, cost, -penalty);
+            parent[i] = {n, e ^ (arcs[e].u != i)};
+        }
+        if (~s && ~t) return add_arc(t, s, 0, numeric_limits<T>::max() >> 2, -penalty) ^ 1;
+        return -1;
+    }
+
+    void network_simplex() {
+        vector<U> potential(n + 1, 0);
+        vector<int> visited_phi(n + 1, 0);
+        int t_phi = 1;
+        auto phi = [&](auto &&self, int v) {
+            if (v == n) return (U) 0;
+            if (visited_phi[v] == t_phi) return potential[v];
+            visited_phi[v] = t_phi;
+            auto [p, e] = parent[v];
+            return potential[v] = self(self, p) - arcs[e].cost;
+        };
+
+        auto reduced_cost = [&](int e) {
+            auto [u, v, cap, cost] = arcs[e];
+            return cost + phi(phi, u) - phi(phi, v);
+        };
+
+        vector<int> visited_lca(n + 1, 0);
+        int t_lca = 1;
+        auto pivot = [&](int in) {
+            auto [u, v, cap, cost] = arcs[in];
+            for (int a = u; a != -1; a = parent[a].first) visited_lca[a] = t_lca;
+            int lca = v;
+            while (visited_lca[lca] != t_lca) lca = parent[lca].first;
+
+            T flow = arcs[in].cap;
+            int out = in, dir = -1, b = -1;
+            auto walk = [&](int a, int d) {
+                vector<int> path;
+                for (; a != lca; a = parent[a].first) {
+                    int e = parent[a].second;
+                    T f = arcs[e ^ !d].cap;
+                    if (make_pair(flow, out) > make_pair(f, e)) {
+                        tie(flow, out) = tie(f, e);
+                        dir = d;
+                        b = a;
+                    }
+                    path.emplace_back(e);
+                }
+                return path;
+            };
+            auto path_u = walk(u, 0), path_v = walk(v, 1);
+
+            arcs[in].cap -= flow;
+            arcs[in ^ 1].cap += flow;
+            auto augment = [&](const auto &path, int d) {
+                for (int e : path) {
+                    arcs[e ^ !d].cap -= flow;
+                    arcs[e ^ d].cap += flow;
+                }
+            };
+            augment(path_u, 0);
+            augment(path_v, 1);
+
+            if (in != out && dir != -1 && b != -1) {
+                auto basis_exchange = [&](int a) {
+                    while (a != b) {
+                        auto [t, e] = exchange(parent[a], parent[b]);
+                        parent[b] = {a, e ^ 1};
+                        a = t;
+                    }
+                };
+
+                if (!dir) {
+                    parent[b] = {v, in};
+                    basis_exchange(u);
+                } else {
+                    parent[b] = {u, in ^ 1};
+                    basis_exchange(v);
+                }
+                t_phi++;
+            }
+            t_lca++;
+        };
+
+        auto basis_edge = [&](int e) {
+            auto [u, v, cap, cost] = arcs[e];
+            int a = parent[u].second;
+            if (~a && (a >> 1) == (e >> 1)) return true;
+            int b = parent[v].second;
+            if (~b && (b >> 1) == (e >> 1)) return true;
+            return false;
+        };
+
+        list<int> candidates;
+        for (int arc = 0, aug = arcs.size(), size = max(64, (int) sqrt(aug / 2)), len = size / 4, k = len / 10, count = 0;;) {
+            for (int _ = 0; _ < k && !candidates.empty(); _++) {
+                U cost = 0;
+                int in = -1;
+                for (auto it = candidates.begin(); it != candidates.end();) {
+                    int e = *it;
+                    U c = 0;
+                    if (arcs[e].cap <= 0 || basis_edge(e) || (c = reduced_cost(e)) >= 0) {
+                        it = candidates.erase(it);
+                        continue;
+                    }
+                    if (make_pair(cost, in) > make_pair(c, e)) tie(cost, in) = tie(c, e);
+                    it++;
+                }
+                if (!~in) break;
+                pivot(in);
+                count = 0;
+            }
+            candidates.clear();
+
+            U cost = 0;
+            int in = -1;
+            for (int block = count + size; count < block; count++, ++arc %= aug)
+                if (!basis_edge(arc) && arcs[arc].cap > 0) {
+                    U c = reduced_cost(arc);
+                    if (c < 0) {
+                        int s = candidates.size();
+                        if (s < len) candidates.emplace_back(arc);
+                        if (make_pair(cost, in) > make_pair(c, arc)) tie(cost, in) = tie(c, arc);
                     }
                 }
+
+            if (candidates.empty()) {
+                if (count >= aug) break;
+                continue;
             }
-            if (dist[t] == inf) break;
-
-            for (int v = 0; v < n; v++)
-                if (dist[v] < inf) phi[v] += dist[v];
-
-            T f = numeric_limits<T>::max();
-            for (int v = t; v != s; v = prev[v].first) f = min(f, network[prev[v].first][prev[v].second].cap);
-
-            flow += f;
-            costs.emplace_back(costs.back() + f * phi[t]);
-
-            for (int v = t; v != s; v = prev[v].first) {
-                auto &[u, rev, cap, cost] = network[prev[v].first][prev[v].second];
-                cap -= f;
-                network[v][rev].cap += f;
-            }
+            pivot(in);
+            count = 0;
         }
+    }
 
-        return {flow, costs};
+    bool feasible() {
+        for (int i = 0; i < n; i++)
+            if (arcs[(i << 1) + m].cap) return false;
+        return true;
+    }
+
+    U min_cost() {
+        U cost = lb_offset;
+        for (int e = 0; e < m; e += 2) cost += arcs[e].cost * arcs[e ^ 1].cap;
+        return cost;
+    }
+
+    tuple<T, U, bool> min_cost_max_flow(int s, int t) {
+        int e = build_spanning_tree(s, t);
+        network_simplex();
+        if (!feasible()) return {(U) 0, (T) 0, false};
+        return {arcs[e].cap, min_cost(), true};
+    }
+
+    pair<U, bool> min_cost_b_flow() {
+        build_spanning_tree();
+        network_simplex();
+        if (!feasible()) return {(U) 0, false};
+        return {min_cost(), true};
     }
 };
 
@@ -184,51 +213,52 @@ int main() {
     int w, h, c, t;
     cin >> w >> h >> c >> t;
 
+    pair<int, int> hq{-1, -1};
     vector<string> grid(h);
-    for (auto &row : grid) cin >> row;
+    for (int i = 0; i < h; i++) {
+        cin >> grid[i];
 
-    Point<int> hq;
-    for (int i = 0; i < h; i++)
-        for (int j = 0; j < w; j++)
-            if (grid[i][j] == 'K') {
-                hq = {i, j};
-                goto found;
-            }
-    found:;
+        if (hq == make_pair(-1, -1))
+            for (int j = 0; j < w; j++)
+                if (grid[i][j] == 'K') hq = {i, j};
+    }
 
-    vector<Point<int>> tasks(t + 1);
-    for (int i = 1; i <= t; i++) {
-        cin >> tasks[i].y >> tasks[i].x;
-        tasks[i] -= {1, 1};
+    vector<pair<int, int>> tasks(t);
+    for (int i = 0; i < t; i++) {
+        int x, y;
+        cin >> x >> y;
+
+        tasks[i] = {y - 1, x - 1};
     }
 
     vector<int> dx{1, 0, -1, 0}, dy{0, 1, 0, -1};
-    auto bfs = [&](Point<int> s) {
+    auto bfs = [&](pair<int, int> s) {
+        auto [sx, sy] = s;
         vector<vector<int>> dist(h, vector<int>(w, 1e9));
-        dist[s.x][s.y] = 0;
-        queue<Point<int>> q;
-        q.emplace(s);
+        dist[sx][sy] = 0;
+        queue<pair<int, int>> q;
+        q.emplace(sx, sy);
         while (!q.empty()) {
-            auto a = q.front();
+            auto [x1, y1] = q.front();
             q.pop();
 
             for (int k = 0; k < 4; k++) {
-                auto b = a + Point<int>{dx[k], dy[k]};
-                if (!(0 <= b.x && b.x < h && 0 <= b.y && b.y < w) || grid[b.x][b.y] == '#') continue;
-                if (dist[b.x][b.y] > dist[a.x][a.y] + 1) {
-                    dist[b.x][b.y] = dist[a.x][a.y] + 1;
-                    q.emplace(b);
+                int x2 = x1 + dx[k], y2 = y1 + dy[k];
+                if (!(0 <= x2 && x2 < h && 0 <= y2 && y2 < w) || grid[x2][y2] == '#') continue;
+                if (dist[x2][y2] > dist[x1][y1] + 1) {
+                    dist[x2][y2] = dist[x1][y1] + 1;
+                    q.emplace(x2, y2);
                 }
             }
         }
         return dist;
     };
-
     auto dist_hq = bfs(hq);
-    vector<int> hq_to_task(t + 1, 1e9);
-    for (int i = 1; i <= t; i++) {
-        auto a = tasks[i];
-        hq_to_task[i] = dist_hq[a.x][a.y];
+
+    vector<int> hq_to_task(t);
+    for (int i = 0; i < t; i++) {
+        auto [x1, y1] = tasks[i];
+        hq_to_task[i] = dist_hq[x1][y1];
 
         if (hq_to_task[i] >= 1e9) {
             cout << "impossible";
@@ -236,41 +266,33 @@ int main() {
         }
     }
 
-    vector<vector<int>> task_to_task(t + 1, vector<int>(t + 1, 1e9));
-    vector<int> task_to_hq(t + 1, 1e9);
-    for (int i = 1; i <= t; i++) {
+    vector<int> task_to_hq(t);
+    vector<vector<int>> task_to_task(t, vector<int>(t, 0));
+    for (int i = 0; i < t; i++) {
         auto dist_task = bfs(tasks[i]);
-        task_to_hq[i] = dist_task[hq.x][hq.y];
+        task_to_hq[i] = dist_task[hq.first][hq.second];
 
         if (task_to_hq[i] >= 1e9) {
             cout << "impossible";
             exit(0);
         }
 
-        for (int j = i + 1; j <= t; j++) {
-            auto a = tasks[j];
-            task_to_task[i][j] = dist_task[a.x][a.y];
+        for (int j = i + 1; j < t; j++) {
+            auto [x1, y1] = tasks[j];
+            task_to_task[i][j] = dist_task[x1][y1];
         }
     }
 
-    FlowNetwork<int, int> fn(2 * t + 2);
-    for (int i = 1; i <= t; i++) {
-        fn.add_arc(0, i, 1, 0);
-        fn.add_arc(i + t, 2 * t + 1, 1, 0);
+    BoundedFlowNetwork<int, int> fn(2 * t + 2);
+    fn.add_supply(2 * t, c);
+    fn.add_demand(2 * t + 1, c);
+    fn.add_arc(2 * t, 2 * t + 1, 0, c, 0);
+    for (int i = 0; i < t; i++) {
+        fn.add_arc(2 * i, 2 * i + 1, 1, 1, 0);
+        fn.add_arc(2 * t, 2 * i, 0, 1, hq_to_task[i]);
+        fn.add_arc(2 * i + 1, 2 * t + 1, 0, 1, task_to_hq[i]);
+        for (int j = i + 1; j < t; j++) fn.add_arc(2 * i + 1, 2 * j, 0, 1, task_to_task[i][j]);
     }
-
-    for (int i = 1; i <= t; i++)
-        for (int j = i + 1; j <= t; j++)
-            if (task_to_task[i][j] < 1e9) fn.add_arc(i, t + j, 1, task_to_task[i][j] - task_to_hq[i] - hq_to_task[j]);
-
-    auto [f, costs] = fn.min_cost_max_flow(0, 2 * t + 1);
-
-    if (f < max(t - c, 0)) {
-        cout << "impossible";
-        exit(0);
-    }
-
-    auto steps = 0LL;
-    for (int i = 1; i <= t; i++) steps += hq_to_task[i] + task_to_hq[i];
-    cout << steps + *min_element(costs.begin() + max(t - c, 0), costs.end());
+    auto [cost, valid] = fn.min_cost_b_flow();
+    cout << cost;
 }
