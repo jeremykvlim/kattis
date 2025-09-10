@@ -13,10 +13,13 @@ struct BoundedFlowNetwork {
     int n, m;
     vector<Arc> arcs;
     vector<T> balance;
+    vector<U> potential;
     vector<pair<int, int>> parent;
+    vector<int> depth, next, prev;
     U lb_offset;
 
-    BoundedFlowNetwork(int n) : n(n), lb_offset(0), balance(n + 1, 0), parent(n + 1, {-1, -1}) {}
+    BoundedFlowNetwork(int n) : n(n), lb_offset(0), balance(n + 1, 0), potential(n + 1, 0), parent(n + 1, {-1, -1}),
+                                depth(n + 1, 1), next(2 * (n + 1), 0), prev(2 * (n + 1), 0) {}
 
     void add_supply(int v, T b) {
         balance[v] += b;
@@ -35,97 +38,114 @@ struct BoundedFlowNetwork {
         return arcs.size() - 2;
     }
 
+    void connect(int u, int v) {
+        next[u] = v;
+        prev[v] = u;
+    }
+
     int build_spanning_tree(int s = -1, int t = -1) {
         m = arcs.size();
         U penalty = 1;
         for (int e = 0; e < m; e += 2) penalty += abs(arcs[e].cost);
+        connect(2 * n, 2 * n + 1);
+        connect(2 * n + 1, 2 * n);
         for (int i = 0; i < n; i++) {
             int u = n, v = i;
-            T cost = balance[i];
-            if (cost < 0) {
-                cost = -cost;
+            T b = balance[i];
+            if (b < 0) {
+                b = -b;
                 swap(u, v);
             }
-            int e = add_arc(u, v, 0, cost, -penalty);
-            parent[i] = {n, e ^ (arcs[e].u != i)};
+            int e = add_arc(u, v, 0, b, -penalty);
+            e ^= arcs[e].u != i;
+            parent[i] = {n, e};
+            potential[i] = potential[n] - arcs[e].cost;
+            connect(2 * i, 2 * i + 1);
+            connect(2 * i + 1, next[2 * n]);
+            connect(2 * n, 2 * i);
         }
+
         if (~s && ~t) return add_arc(t, s, 0, numeric_limits<T>::max() >> 2, -penalty) ^ 1;
         return -1;
     }
 
     void network_simplex() {
-        vector<U> potential(n + 1, 0);
-        vector<int> visited_phi(n + 1, 0);
-        int t_phi = 1;
-        auto phi = [&](auto &&self, int v) {
-            if (v == n) return (U) 0;
-            if (visited_phi[v] == t_phi) return potential[v];
-            visited_phi[v] = t_phi;
-            auto [p, e] = parent[v];
-            return potential[v] = self(self, p) - arcs[e].cost;
-        };
-
         auto reduced_cost = [&](int e) {
             auto [u, v, cap, cost] = arcs[e];
-            return cost + phi(phi, u) - phi(phi, v);
+            return cost + potential[u] - potential[v];
         };
 
-        vector<int> visited_lca(n + 1, 0);
-        int t_lca = 1;
+        depth[n] = 0;
         auto pivot = [&](int in) {
             auto [u, v, cap, cost] = arcs[in];
-            for (int a = u; a != -1; a = parent[a].first) visited_lca[a] = t_lca;
-            int lca = v;
-            while (visited_lca[lca] != t_lca) lca = parent[lca].first;
+            U phi = cost + potential[u] - potential[v];
 
             T flow = arcs[in].cap;
             int out = in, dir = -1, b = -1;
-            auto walk = [&](int a, int d) {
-                vector<int> path;
-                for (; a != lca; a = parent[a].first) {
-                    int e = parent[a].second;
-                    T f = arcs[e ^ !d].cap;
-                    if (make_pair(flow, out) > make_pair(f, e)) {
-                        tie(flow, out) = tie(f, e);
-                        dir = d;
-                        b = a;
+            auto walk = [&](int x, int y) {
+                auto step = [&](int &a, int d, int steps = 1) {
+                    for (; steps; steps--, a = parent[a].first) {
+                        int e = parent[a].second;
+                        T f = arcs[e ^ !d].cap;
+                        if (make_pair(flow, out) > make_pair(f, e)) {
+                            tie(flow, out) = tie(f, e);
+                            dir = d;
+                            b = a;
+                        }
                     }
-                    path.emplace_back(e);
-                }
-                return path;
-            };
-            auto path_u = walk(u, 0), path_v = walk(v, 1);
+                };
+                if (depth[x] >= depth[y]) step(x, 0, depth[x] - depth[y]);
+                else step(y, 1, depth[y] - depth[x]);
 
+                while (x != y) {
+                    step(x, 0);
+                    step(y, 1);
+                }
+                return x;
+            };
+            int lca = walk(u, v);
             arcs[in].cap -= flow;
             arcs[in ^ 1].cap += flow;
-            auto augment = [&](const auto &path, int d) {
-                for (int e : path) {
+            auto augment = [&](int a, int d) {
+                for (; a != lca; a = parent[a].first) {
+                    int e = parent[a].second;
                     arcs[e ^ !d].cap -= flow;
                     arcs[e ^ d].cap += flow;
                 }
             };
-            augment(path_u, 0);
-            augment(path_v, 1);
+            augment(u, 0);
+            augment(v, 1);
 
-            if (in != out && dir != -1 && b != -1) {
-                auto basis_exchange = [&](int a) {
-                    while (a != b) {
-                        auto [t, e] = exchange(parent[a], parent[b]);
-                        parent[b] = {a, e ^ 1};
-                        a = t;
-                    }
+            if (in == out || dir == -1 || b == -1) return;
+
+            auto basis_exchange = [&](int a, int p, int in) {
+                auto update = [&](int a, int p) {
+                    for (int t = a, d = depth[p >> 1]; t != a + 1; t = next[t])
+                        if (!(t & 1)) {
+                            potential[t >> 1] += phi;
+                            depth[t >> 1] = ++d;
+                        } else d--;
+
+                    connect(prev[a], next[a + 1]);
+                    connect(a + 1, next[p]);
+                    connect(p, a);
                 };
 
-                if (!dir) {
-                    parent[b] = {v, in};
-                    basis_exchange(u);
-                } else {
-                    parent[b] = {u, in ^ 1};
-                    basis_exchange(v);
-                }
-                t_phi++;
-            }
-            t_lca++;
+                do {
+                    update(a << 1, p << 1);
+                    if (a == b) break;
+                    auto [t, e] = parent[a];
+                    parent[a] = {p, in};
+                    p = exchange(a, t);
+                    in = e ^ 1;
+                } while (true);
+                parent[b] = {p, in};
+            };
+
+            if (!dir) {
+                phi = -phi;
+                basis_exchange(u, v, in);
+            } else basis_exchange(v, u, in ^ 1);
         };
 
         auto basis_edge = [&](int e) {
@@ -164,8 +184,7 @@ struct BoundedFlowNetwork {
                 if (!basis_edge(arc) && arcs[arc].cap > 0) {
                     U c = reduced_cost(arc);
                     if (c < 0) {
-                        int s = candidates.size();
-                        if (s < len) candidates.emplace_back(arc);
+                        if (candidates.size() < len) candidates.emplace_back(arc);
                         if (make_pair(cost, in) > make_pair(c, arc)) tie(cost, in) = tie(c, arc);
                     }
                 }
