@@ -63,28 +63,28 @@ struct FlowNetwork {
         return ~dist[t];
     }
 
-    T dfs(int v, int t, T f) {
-        if (v == t) return f;
+    T dfs(int v, int t, T flow) {
+        if (v == t) return flow;
 
         for (; it[v] != network[v].end(); it[v]++) {
             auto &[u, rev, cap, _] = *it[v];
             if (cap > 0 && dist[u] == dist[v] + 1) {
-                T aug = dfs(u, t, min(f, cap));
-                if (aug > 0) {
-                    cap -= aug;
-                    network[u][rev].cap += aug;
-                    return aug;
+                T f = dfs(u, t, min(flow, cap));
+                if (f > 0) {
+                    cap -= f;
+                    network[u][rev].cap += f;
+                    return f;
                 }
             }
         }
-        return 0;
+        return (T) 0;
     }
 
     T max_flow(int s, int t) {
-        T flow = 0, aug;
+        T flow = 0, f;
         while (bfs(s, t)) {
             for (int v = 0; v < n; v++) it[v] = network[v].begin();
-            while ((aug = dfs(s, t, numeric_limits<T>::max())) > 0) flow += aug;
+            while ((f = dfs(s, t, numeric_limits<T>::max())) > 0) flow += f;
         }
         return flow;
     }
