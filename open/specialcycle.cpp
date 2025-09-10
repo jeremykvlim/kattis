@@ -165,7 +165,7 @@ pair<int, vector<int>> gabow(int n, vector<pair<int, int>> edges) {
                 for (int i = list.head[p_curr]; ~i; i = list.next[i]) {
                     auto [x, y] = adj_list[i];
                     int l_x = label[x], p_x = potential[x], base_x = pdsu.find(x),
-                            l_y = label[y], p_y = potential[y], base_y = pdsu.find(y);
+                        l_y = label[y], p_y = potential[y], base_y = pdsu.find(y);
 
                     if (l_y > 0) {
                         if (p_curr != (p_x + p_y) / 2 || base_x == base_y) continue;
