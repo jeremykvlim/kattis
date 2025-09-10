@@ -47,8 +47,9 @@ struct BoundedFlowNetwork {
         m = arcs.size();
         U penalty = 1;
         for (int e = 0; e < m; e += 2) penalty += abs(arcs[e].cost);
-        connect(2 * n, 2 * n + 1);
-        connect(2 * n + 1, 2 * n);
+
+        connect(n << 1, n << 1 | 1);
+        connect(n << 1 | 1, n << 1);
         for (int i = 0; i < n; i++) {
             int u = n, v = i;
             T b = balance[i];
@@ -60,9 +61,9 @@ struct BoundedFlowNetwork {
             e ^= arcs[e].u != i;
             parent[i] = {n, e};
             potential[i] = potential[n] - arcs[e].cost;
-            connect(2 * i, 2 * i + 1);
-            connect(2 * i + 1, next[2 * n]);
-            connect(2 * n, 2 * i);
+            connect(i << 1, i << 1 | 1);
+            connect(i << 1 | 1, next[n << 1]);
+            connect(n << 1, i << 1);
         }
 
         if (~s && ~t) return add_arc(t, s, 0, numeric_limits<T>::max() >> 2, -penalty) ^ 1;
