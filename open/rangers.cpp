@@ -37,11 +37,12 @@ tuple<vector<pair<int, int>>, vector<vector<bool>>> kruskal(int n, vector<array<
     return {mst, in_mst};
 }
 
-vector<complex<double>> quadratic_roots(double a, double b, double c) {
+template <typename T>
+vector<complex<T>> quadratic_roots(T a, T b, T c) {
     if (fabs(a) < 1e-8 && fabs(b) < 1e-8) return {};
     if (fabs(a) < 1e-8) return {(-c / b)};
 
-    complex<double> discriminant(b * b - 4 * a * c, 0);
+    complex<T> discriminant(b * b - 4 * a * c, 0);
     return {(-b + sqrt(discriminant)) / (2 * a), (-b - sqrt(discriminant)) / (2 * a)};
 }
 
