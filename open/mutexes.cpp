@@ -62,7 +62,7 @@ int main() {
     int m = mutexes.size();
     vector<dynamic_bitset<>> visited(n, dynamic_bitset<>(m)), unlocked(n, dynamic_bitset<>(m)), locked(n, dynamic_bitset<>(m)), parity(n, dynamic_bitset<>(m));
     for (int i : order)
-        for (auto [command, v] : commands[i]) {
+        for (auto [command, v] : commands[i])
             if (command == "call") {
                 auto mask = visited[v] & ~visited[i];
                 visited[i] |= mask;
@@ -89,11 +89,10 @@ int main() {
                     if (locked[i][v] && parity[i][v]) locked[i][v] = false;
                 }
             }
-        }
 
     dynamic_bitset<> held(m);
     auto dfs = [&](auto &&self, int f) -> void {
-        for (auto [command, v] : commands[f]) {
+        for (auto [command, v] : commands[f])
             if (command == "acquire") {
                 if (held[v]) {
                     cout << "deadlock";
@@ -118,7 +117,6 @@ int main() {
                 }
                 held ^= parity[v] & visited[v];
             }
-        }
     };
     dfs(dfs, functions["main"]);
     cout << "a-ok";
