@@ -91,8 +91,8 @@ int main() {
             }
 
     dynamic_bitset<> held(m);
-    auto dfs = [&](auto &&self, int f) -> void {
-        for (auto [command, v] : commands[f])
+    auto dfs = [&](auto &&self, int i) -> void {
+        for (auto [command, v] : commands[i])
             if (command == "acquire") {
                 if (held[v]) {
                     cout << "deadlock";
