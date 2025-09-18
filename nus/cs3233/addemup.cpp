@@ -8,68 +8,48 @@ int main() {
     int n, s;
     cin >> n >> s;
 
-    vector<unsigned long long> masks((s + 63) >> 6, 0);
+    bitset<(int) 2e8 + 1> bs;
     while (n--) {
         int card;
         cin >> card;
 
         int turned;
         auto turn = [&]() {
-            auto s = to_string(card);
-            reverse(s.begin(), s.end());
+            auto str = to_string(card);
+            reverse(str.begin(), str.end());
 
             string t;
-            for (char c : s) {
+            for (char c : str) {
                 switch (c) {
-                    case '0':
-                        t += '0';
-                        break;
-                    case '1':
-                        t += '1';
-                        break;
-                    case '2':
-                        t += '2';
-                        break;
-                    case '5':
-                        t += '5';
-                        break;
-                    case '6':
-                        t += '9';
-                        break;
-                    case '8':
-                        t += '8';
-                        break;
-                    case '9':
-                        t += '6';
-                        break;
+                    case '0': t += '0'; break;
+                    case '1': t += '1'; break;
+                    case '2': t += '2'; break;
+                    case '5': t += '5'; break;
+                    case '6': t += '9'; break;
+                    case '8': t += '8'; break;
+                    case '9': t += '6'; break;
                     default:
                         turned = -1;
                         return;
                 }
             }
-
             turned = stoi(t);
         };
         turn();
 
         for (int v : {card, turned}) {
             if (!~v) break;
-            if (s > v) {
-                int i = (s - v) >> 6, j = (s - v) & 63;
-                if (i < masks.size() && (masks[i] >> j) & 1) {
-                    cout << "YES";
-                    exit(0);
-                }
+            if (s > v && bs[s - v]) {
+                cout << "YES";
+                exit(0);
             }
         }
 
         for (int v : {card, turned}) {
             if (!~v) break;
-            if (0 < v && v <= s) {
-                int i = v >> 6, j = v & 63;
-                if (i < masks.size()) masks[i] |= 1ULL << j;
-            }
+            if (0 < v && v <= s) bs[v] = true;
         }
     }
+
     cout << "NO";
 }
