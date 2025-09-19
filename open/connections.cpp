@@ -464,7 +464,7 @@ struct DelaunayTriangulation {
     }
 
     void build_voronoi_diagram() {
-        if (!start) return;
+        if (edges.empty()) return;
 
         int m = edges.size();
         unordered_set<pair<int, int>, Hash> seen;
