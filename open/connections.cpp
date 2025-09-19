@@ -212,6 +212,7 @@ struct DelaunayTriangulation {
     vector<pair<int, int>> delaunay_edges;
     vector<Point<T>> points, voronoi_vertices;
     vector<Line<T>> voronoi_edges;
+    vector<int> vertex_match, edge_match;
 
     DelaunayTriangulation(vector<Point<T>> p, bool add_super_triangle = false) {
         if (add_super_triangle) {
@@ -462,7 +463,7 @@ struct DelaunayTriangulation {
             if (v != compress[v]) delaunay_edges.emplace_back(v, compress[v]);
     }
 
-    void build_diagram() {
+    void build_voronoi_diagram() {
         if (!start) return;
 
         int m = edges.size();
@@ -476,9 +477,11 @@ struct DelaunayTriangulation {
                     indices[e] = -2;
                 } else {
                     auto [u, v] = minmax(indices[edges[e].symm], indices[e]);
+                    vertex_match[u] = vertex_match[v] = i;
                     if (!seen.count({u, v})) {
                         seen.emplace(u, v);
                         voronoi_edges.emplace_back(voronoi_vertices[u], voronoi_vertices[v]);
+                        edge_match.emplace_back(i);
                     }
                 }
                 e = edges[e].onext;
@@ -510,6 +513,7 @@ struct DelaunayTriangulation {
         vector<int> starts(points.size(), -1);
         for (int e = 0; e < m; e++) starts[edges[e].dest] = edges[e].symm;
 
+        vertex_match.resize(voronoi_vertices.size());
         for (int i = 0; i < points.size(); i++)
             if (starts[i] >= 0) left_from_edge(starts[i], i);
     }
@@ -556,10 +560,9 @@ pair<T, vector<pair<int, int>>> kruskal(int n, vector<tuple<T, int, int>> edges)
 template <typename T>
 pair<T, vector<pair<int, int>>> euclidean_mst(int n, const vector<Point<T>> &points) {
     DelaunayTriangulation<T> dt(points);
-    auto e = dt.delaunay_edges;
 
     vector<tuple<T, int, int>> edges;
-    for (auto [u, v] : e) edges.emplace_back(euclidean_dist(points[u], points[v]), u, v);
+    for (auto [u, v] : dt.delaunay_edges) edges.emplace_back(euclidean_dist(points[u], points[v]), u, v);
 
     return kruskal(n, edges);
 }
