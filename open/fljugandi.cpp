@@ -540,36 +540,49 @@ int main() {
     int m;
     cin >> m;
 
-    vector<int> j(m);
-    vector<long long> R(m);
+    int size = 0;
+    vector<int> j(m), id(m);
+    vector<long long> R(m), R_max(n, 0);
     for (int i = 0; i < m; i++) {
-        cin >> j[i] >> R[i];
-        j[i]--;
+        int ji;
+        long long ri;
+        cin >> ji >> ri;
+        ji--;
+
+        if (R_max[ji] < ri) {
+            R_max[ji] = ri;
+            j[size] = ji;
+            R[size] = ri;
+            id[size] = i + 1;
+            size++;
+        }
     }
+    m = size;
 
     vector<Point3D<__int128>> points;
-    vector<long long> radius(n + 1);
+    vector<long long> radius(n);
     int l = 0, r = m + 1, mid;
     while (l + 1 < r) {
         mid = l + (r - l) / 2;
 
         points.clear();
         fill(radius.begin(), radius.end(), 0);
-        for (int i = 0; i < mid; i++) radius[j[i]] = max(radius[j[i]], R[i]);
+        for (int k = 0; k < mid; k++) radius[j[k]] = R[k];
 
         bool blocked = false;
         unordered_map<Point3D<__int128>, int, Hash> indices;
-        for (int i = 0; i < n; i++) {
-            if (!radius[i]) continue;
-            points.emplace_back(coords[i].x, coords[i].y, squared_dist(coords[i]) - (radius[i] * radius[i] - h * h));
-            indices[points.back()] = i;
+        for (int i = 0; i < n; i++)
+            if (radius[i]) {
+                points.emplace_back(coords[i].x, coords[i].y, squared_dist(coords[i]) - (radius[i] * radius[i] - h * h));
+                indices[points.back()] = i;
 
-            if (radius[i] > h)
-                if (euclidean_dist(coords[i], start) < radius[i] - h || euclidean_dist(coords[i], end) < radius[i] - h) {
-                    blocked = true;
-                    break;
-                }
-        }
+                if (radius[i] > h)
+                    if (euclidean_dist(coords[i], start) < radius[i] - h ||
+                        euclidean_dist(coords[i], end) < radius[i] - h) {
+                        blocked = true;
+                        break;
+                    }
+            }
 
         if (blocked) r = mid;
         else if (points.size() < 4) l = mid;
@@ -611,5 +624,5 @@ int main() {
             else l = mid;
         }
     }
-    cout << (r == m + 1 ? -1 : r);
+    cout << (r == m + 1 ? -1 : id[r - 1]);
 }
