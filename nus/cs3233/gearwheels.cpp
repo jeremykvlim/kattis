@@ -26,9 +26,7 @@ int main() {
 
     vector<bool> visited(n, false);
     vector<int> indices;
-    indices.reserve(l);
     vector<vector<int>> chains;
-
     auto dfs = [&](auto &&self, int i) -> bool {
         if (visited[i]) return false;
 
@@ -48,7 +46,6 @@ int main() {
         indices.pop_back();
         return false;
     };
-
     for (int i = 0; i < n; i++)
         if (dp[i] == l) dfs(dfs, i);
 
