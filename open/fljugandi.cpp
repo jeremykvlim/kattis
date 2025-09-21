@@ -30,6 +30,7 @@ bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
 
 template <typename T>
 int sgn(const T &v) {
+    if (!is_floating_point_v<T>) return (v > 0) - (v < 0);
     return approximately_equal(v, (T) 0) ? 0 : (v > 0) - (v < 0);
 }
 
