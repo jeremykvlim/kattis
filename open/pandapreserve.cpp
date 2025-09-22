@@ -252,21 +252,20 @@ struct DelaunayTriangulation {
     vector<Line<T>> voronoi_edges;
     vector<int> vertex_match, edge_match;
 
-    DelaunayTriangulation(vector<Point<T>> p, bool add_super_triangle = false) {
-        if (add_super_triangle) {
-            T xl = p[0].x, xr = p[0].x, yl = p[0].y, yr = p[0].y;
-            for (auto [x, y] : p) {
-                xl = min(xl, x);
-                xr = max(xr, x);
-                yl = min(yl, y);
-                yr = max(yr, y);
-            }
-
-            T delta = 20 * max(xr - xl, yr - yl), xm = xl + (xr - xl) / 2, ym = yl + (yr - yl) / 2;
-            p.emplace_back(xm + delta, ym - delta);
-            p.emplace_back(xm, ym + delta);
-            p.emplace_back(xm - delta, ym);
+    DelaunayTriangulation(vector<Point<T>> p) {
+        T xl = p[0].x, xr = p[0].x, yl = p[0].y, yr = p[0].y;
+        for (auto [x, y] : p) {
+            xl = min(xl, x);
+            xr = max(xr, x);
+            yl = min(yl, y);
+            yr = max(yr, y);
         }
+
+        T delta = 20 * max(xr - xl, yr - yl), xm = xl + (xr - xl) / 2, ym = yl + (yr - yl) / 2;
+        p.emplace_back(xm + delta, ym - delta);
+        p.emplace_back(xm, ym + delta);
+        p.emplace_back(xm - delta, ym);
+        
         points = p;
         if (points.size() <= 1) return;
         guibas_stolfi();
@@ -567,7 +566,7 @@ int main() {
     vector<Point<double>> polygon(n);
     for (auto &[x, y] : polygon) cin >> x >> y;
 
-    DelaunayTriangulation<double> dt(polygon, true);
+    DelaunayTriangulation<double> dt(polygon);
     dt.build_voronoi_diagram();
     double range = 0;
     for (int i = 0; i < dt.voronoi_vertices.size(); i++) {

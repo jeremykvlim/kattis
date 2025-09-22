@@ -215,21 +215,20 @@ struct DelaunayTriangulation {
     vector<Line<T>> voronoi_edges;
     vector<int> vertex_match, edge_match;
 
-    DelaunayTriangulation(vector<Point<T>> p, bool add_super_triangle = false) {
-        if (add_super_triangle) {
-            T xl = p[0].x, xr = p[0].x, yl = p[0].y, yr = p[0].y;
-            for (auto [x, y] : p) {
-                xl = min(xl, x);
-                xr = max(xr, x);
-                yl = min(yl, y);
-                yr = max(yr, y);
-            }
-
-            T delta = 20 * max(xr - xl, yr - yl), xm = xl + (xr - xl) / 2, ym = yl + (yr - yl) / 2;
-            p.emplace_back(xm + delta, ym - delta);
-            p.emplace_back(xm, ym + delta);
-            p.emplace_back(xm - delta, ym);
+    DelaunayTriangulation(vector<Point<T>> p) {
+        T xl = p[0].x, xr = p[0].x, yl = p[0].y, yr = p[0].y;
+        for (auto [x, y] : p) {
+            xl = min(xl, x);
+            xr = max(xr, x);
+            yl = min(yl, y);
+            yr = max(yr, y);
         }
+
+        T delta = 20 * max(xr - xl, yr - yl), xm = xl + (xr - xl) / 2, ym = yl + (yr - yl) / 2;
+        p.emplace_back(xm + delta, ym - delta);
+        p.emplace_back(xm, ym + delta);
+        p.emplace_back(xm - delta, ym);
+
         points = p;
         if (points.size() <= 1) return;
         guibas_stolfi();
@@ -563,7 +562,8 @@ pair<T, vector<pair<int, int>>> euclidean_mst(int n, const vector<Point<T>> &poi
     DelaunayTriangulation<T> dt(points);
 
     vector<tuple<T, int, int>> edges;
-    for (auto [u, v] : dt.delaunay_edges) edges.emplace_back(euclidean_dist(points[u], points[v]), u, v);
+    for (auto [u, v] : dt.delaunay_edges)
+        if (u < n && v < n) edges.emplace_back(euclidean_dist(points[u], points[v]), u, v);
 
     return kruskal(n, edges);
 }
