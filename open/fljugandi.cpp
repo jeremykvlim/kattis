@@ -169,6 +169,23 @@ double squared_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
     return (double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y);
 }
 
+template <typename T, typename W>
+Point<T> circumcenter(const array<pair<Point<T>, int>, 3> &triangle, W &&weight) {
+    auto [a, b, c] = triangle;
+    Point<T> ab = a.first - b.first, bc = b.first - c.first, ca = c.first - a.first;
+
+    T A = squared_dist(a.first) - weight(a), B = squared_dist(b.first) - weight(b), C = squared_dist(c.first) - weight(c), d = 2 * cross(a.first, b.first, c.first);
+    return {(A * bc.y + B * ca.y + C * ab.y) / d, (A * (-bc.x) + B * (-ca.x) + C * (-ab.x)) / d};
+}
+
+template <typename T, typename W>
+pair<bool, bool> point_in_circumcircle(const array<pair<Point<T>, int>, 3> &triangle, const pair<Point<T>, int> &p, W &&weight) {
+    auto [a, b, c] = triangle;
+    T det = cross(a.first, b.first, p.first) * weight(c, p) + cross(b.first, c.first, p.first) * weight(a, p) + cross(c.first, a.first, p.first) * weight(b, p);
+    if (sgn(det) >= 0) return {sgn(det) > 0, !sgn(det)};
+    return {false, false};
+}
+
 template <typename T>
 pair<bool, bool> point_in_polygon(const vector<Point<T>> &polygon, const Point<T> &p) {
     bool in = false;
@@ -182,328 +199,18 @@ pair<bool, bool> point_in_polygon(const vector<Point<T>> &polygon, const Point<T
 }
 
 template <typename T>
-struct Point3D {
-    T x, y, z;
+struct Line {
+    Point<T> a, b;
 
-    Point3D() {}
-    Point3D(T x, T y, T z) : x(x), y(y), z(z) {}
-
-    template <typename U>
-    Point3D(U x, U y, U z) : x(x), y(y), z(z) {}
-
-    template <typename U>
-    Point3D(const Point3D<U> &p) : x((T) p.x), y((T) p.y), z((T) p.z) {}
-
-    const auto begin() const {
-        return &x;
-    }
-
-    const auto end() const {
-        return &z + 1;
-    }
-
-    Point3D operator-() const {
-        return {-x, -y, -z};
-    }
-
-    bool operator<(const Point3D &p) const {
-        return sgn(x - p.x) ? x < p.x : (sgn(y - p.y) ? y < p.y : z < p.z);
-    }
-
-    bool operator>(const Point3D &p) const {
-        return sgn(x - p.x) ? x > p.x : (sgn(y - p.y) ? y > p.y : z > p.z);
-    }
-
-    bool operator==(const Point3D &p) const {
-        if constexpr (is_floating_point_v<T>) return !sgn(x - p.x) && !sgn(y - p.y) && !sgn(z - p.z);
-        return x == p.x && y == p.y && z == p.z;
-    }
-
-    bool operator!=(const Point3D &p) const {
-        if constexpr (is_floating_point_v<T>) return sgn(x - p.x) || sgn(y - p.y) || sgn(z - p.z);
-        return x != p.x || y != p.y || z != p.z;
-    }
-
-    bool operator<=(const Point3D &p) const {
-        return *this < p || *this == p;
-    }
-
-    bool operator>=(const Point3D &p) const {
-        return *this > p || *this == p;
-    }
-
-    Point3D operator+(const Point3D &p) const {
-        return {x + p.x, y + p.y, z + p.z};
-    }
-
-    Point3D operator+(const T &v) const {
-        return {x + v, y + v, z + v};
-    }
-
-    Point3D & operator+=(const Point3D &p) {
-        x += p.x;
-        y += p.y;
-        z += p.z;
-        return *this;
-    }
-
-    Point3D & operator+=(const T &v) {
-        x += v;
-        y += v;
-        z += v;
-        return *this;
-    }
-
-    Point3D operator-(const Point3D &p) const {
-        return {x - p.x, y - p.y, z - p.z};
-    }
-
-    Point3D operator-(const T &v) const {
-        return {x - v, y - v, z - v};
-    }
-
-    Point3D & operator-=(const Point3D &p) {
-        x -= p.x;
-        y -= p.y;
-        z -= p.z;
-        return *this;
-    }
-
-    Point3D & operator-=(const T &v) {
-        x -= v;
-        y -= v;
-        z -= v;
-        return *this;
-    }
-
-    Point3D operator*(const T &v) const {
-        return {x * v, y * v, z * v};
-    }
-
-    Point3D & operator*=(const T &v) {
-        x *= v;
-        y *= v;
-        z *= v;
-        return *this;
-    }
-
-    Point3D operator/(const T &v) const {
-        return {x / v, y / v, z / v};
-    }
-
-    Point3D & operator/=(const T &v) {
-        x /= v;
-        y /= v;
-        z /= v;
-        return *this;
-    }
+    Line() {}
+    Line(Point<T> a, Point<T> b) : a(a), b(b) {}
 };
 
 template <typename T>
-T dot(const Point3D<T> &a, const Point3D<T> &b) {
-    return a.x * b.x + a.y * b.y + a.z * b.z;
+Line<T> power_bisector(const Point<T> &a, const Point<T> &b, T za, T zb) {
+    auto v = b - a, p = a + v * (((zb - za) / 2 - dot(a, v)) / dot(v, v));
+    return {p, {p.x - v.y, p.y + v.x}};
 }
-
-template <typename T>
-Point3D<T> cross(const Point3D<T> &a, const Point3D<T> &b) {
-    return {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x};
-}
-
-template <typename T>
-Point3D<T> cross(const Point3D<T> &a, const Point3D<T> &b, const Point3D<T> &c) {
-    return cross(b - a, c - a);
-}
-
-template <typename T>
-bool collinear(const Point3D<T> &a, const Point3D<T> &b, const Point3D<T> &c) {
-    if (a == b || b == c || a == c) return true;
-    auto p = cross(a, b, c);
-    return !sgn(p.x) && !sgn(p.y) && !sgn(p.z);
-}
-
-template <typename T>
-T signed_volume_of_parallelepiped(const Point3D<T> &a, const Point3D<T> &b, const Point3D<T> &c, const Point3D<T> &d) {
-    return dot(cross(b - a, c - a), d - a);
-}
-
-template <typename T>
-Point<T> convert_to_2D(const Point3D<T> &p, int removed_dimension = 2) {
-    if (!removed_dimension) return {p.y, p.z};
-    if (removed_dimension == 1) return {p.x, p.z};
-    return {p.x, p.y};
-}
-
-struct ForwardStar {
-    vector<int> head, next;
-
-    ForwardStar() {}
-    ForwardStar(int n, int m) : head(n, -1), next(m) {}
-
-    void extend() {
-        head.emplace_back(-1);
-    }
-
-    void add_edge(int u, int edge_id) {
-        if (next.size() < edge_id + 1) next.resize(edge_id + 1);
-        next[edge_id] = head[u];
-        head[u] = edge_id;
-    }
-};
-
-template <typename T>
-struct ConvexHull3D {
-    static inline mt19937 rng{random_device{}()};
-    vector<array<int, 3>> faces;
-    vector<int> valid_faces, edge_dest, edge_face;
-
-    ConvexHull3D(vector<Point3D<T>> &points) {
-        sort(points.begin(), points.end());
-        points.erase(unique(points.begin(), points.end()), points.end());
-
-        int n = points.size(), i = 2;
-        for (; i < n; i++)
-            if (!collinear(points[0], points[1], points[i])) {
-                swap(points[i], points[2]);
-                break;
-            }
-
-        for (++i; i < n; i++)
-            if (sgn(signed_volume_of_parallelepiped(points[0], points[1], points[2], points[i]))) {
-                swap(points[i], points[3]);
-                break;
-            }
-
-        if (sgn(signed_volume_of_parallelepiped(points[0], points[1], points[2], points[3])) < 0) swap(points[1], points[2]);
-        quickhull(n, points);
-    }
-
-    void quickhull(int n, const vector<Point3D<T>> &points) {
-        auto add_edge = [&](int dest) {
-            edge_dest.emplace_back(dest);
-            edge_face.emplace_back(-1);
-        };
-
-        for (int i = 0; i < 4; i++)
-            for (int j = i + 1; j < 4; j++) {
-                add_edge(j);
-                add_edge(i);
-            }
-
-        stack<int> s;
-        ForwardStar list;
-        vector<int> state;
-        vector<bool> invalid;
-        auto add_face = [&](int ca, int ab, int bc) {
-            int i = faces.size();
-            faces.push_back({ca, ab, bc});
-            valid_faces.emplace_back(i);
-            edge_face[ca] = edge_face[ab] = edge_face[bc] = i;
-            s.emplace(i);
-            list.extend();
-            state.emplace_back(0);
-            invalid.emplace_back(false);
-        };
-        add_face(7, 1, 2);
-        add_face(5, 0, 8);
-        add_face(9, 6, 10);
-        add_face(11, 3, 4);
-
-        auto face_visible_from_point = [&](int f, int d) -> bool {
-            auto [a, b, c] = face_vertices(f);
-            return sgn(signed_volume_of_parallelepiped(points[a], points[b], points[c], points[d])) > 0;
-        };
-
-        vector<int> conflict_points;
-        for (int i = 4; i < n; i++)
-            for (int f : valid_faces)
-                if (face_visible_from_point(f, i)) {
-                    conflict_points.emplace_back(i);
-                    list.add_edge(f, conflict_points.size() - 1);
-                    break;
-                }
-
-        vector<int> temp(n);
-        while (!s.empty()) {
-            int v = s.top();
-            s.pop();
-
-            if (state[v] == 1 || !~list.head[v]) continue;
-
-            auto pivot = [&]() {
-                auto [a, b, c] = face_vertices(v);
-                T prev = numeric_limits<T>::lowest();
-                int p = -1;
-                for (int i = list.head[v]; ~i; i = list.next[i]) {
-                    int d = conflict_points[i];
-                    auto vol = signed_volume_of_parallelepiped(points[a], points[b], points[c], points[d]);
-                    if (prev < vol) {
-                        prev = vol;
-                        p = d;
-                    }
-                }
-                return p;
-            };
-            int p = pivot();
-
-            state[v] = 1;
-            vector<int> visible{v}, non_visible, horizon;
-            for (int i = 0; i < visible.size(); i++) {
-                int f = visible[i];
-                auto [ca, ab, bc] = faces[f];
-                for (int e : {ca, ab, bc}) {
-                    int g = edge_face[e ^ 1];
-                    if (!state[g]) {
-                        if (face_visible_from_point(g, p)) {
-                            state[g] = 1;
-                            visible.emplace_back(g);
-                        } else {
-                            state[g] = 2;
-                            non_visible.emplace_back(g);
-                        }
-                    }
-
-                    if (state[g] == 2) {
-                        temp[edge_dest[e]] = edge_dest.size();
-                        add_edge(p);
-                        add_edge(edge_dest[e]);
-                        horizon.emplace_back(e);
-                    }
-                }
-            }
-            for (int e : horizon) add_face(temp[edge_dest[e]], temp[edge_dest[e ^ 1]] ^ 1, e);
-
-            int count = 0;
-            for (int f : visible)
-                for (int i = list.head[f]; ~i; i = list.next[i])
-                    if (conflict_points[i] != p) {
-                        if (++count == 100) {
-                            shuffle(horizon.begin(), horizon.end(), rng);
-                            count = 0;
-                        }
-
-                        for (int e : horizon)
-                            if (face_visible_from_point(edge_face[e], conflict_points[i])) {
-                                conflict_points.emplace_back(conflict_points[i]);
-                                list.add_edge(edge_face[e], conflict_points.size() - 1);
-                                break;
-                            }
-                    }
-
-            for (int f : visible) {
-                invalid[f] = true;
-                list.head[f] = -1;
-            }
-            for (int f : non_visible) state[f] = 0;
-        }
-
-        valid_faces.erase(remove_if(valid_faces.begin(), valid_faces.end(), [&](int i) { return invalid[i]; }), valid_faces.end());
-    }
-
-    array<int, 3> face_vertices(int f) {
-        auto [ca, ab, bc] = faces[f];
-        return {edge_dest[ca], edge_dest[ab], edge_dest[bc]};
-    }
-};
 
 struct DisjointSets {
     vector<int> sets;
@@ -526,6 +233,321 @@ struct DisjointSets {
     }
 };
 
+template <typename... I>
+auto hilbert_index(I... c) {
+    using T = common_type_t<I...>;
+    constexpr int D = sizeof...(I);
+    array<T, D> coords{(T) c...};
+    T c_max = max({c...});
+    int b = 0;
+    if (c_max)
+        while (c_max >>= 1) b++;
+
+    for (T mask = ((T) 1) << b; mask > 1; mask >>= 1)
+        for (int i = D - 1; ~i; i--)
+            if (coords[i] & mask) coords[0] ^= mask - 1;
+            else {
+                T m = (coords[0] ^ coords[i]) & (mask - 1);
+                coords[0] ^= m;
+                coords[i] ^= m;
+            }
+
+    for (int i = 1; i < D; i++) coords[i] ^= coords[i - 1];
+    T m = 0;
+    for (T mask = ((T) 1) << b; mask > 1; mask >>= 1)
+        if (coords[D - 1] & mask) m ^= mask - 1;
+    for (int i = 0; i < D; i++) coords[i] ^= m;
+
+    T h = 0;
+    for (; ~b; b--)
+        for (int i = 0; i < D; i++) h = (h << 1) | ((coords[i] >> b) & 1);
+    return h;
+}
+
+template <typename T>
+struct PowerTriangulation {
+    using U = typename conditional<(is_same<T, int>::value || is_same<T, long long>::value), double, typename conditional<is_same<T, __int128>::value, long double, void>::type>::type;
+
+    struct Triangle {
+        int a, b, c;
+        bool valid;
+
+        Triangle() : a(-1), b(-1), c(-1), valid(false) {}
+        Triangle(int a, int b, int c, bool valid) : a(a), b(b), c(c), valid(valid) {}
+    };
+
+    vector<Point<T>> points;
+    vector<T> weights;
+    vector<Triangle> triangles;
+    vector<array<int, 3>> adj_list;
+    vector<T> z;
+    vector<pair<int, int>> delaunay_edges;
+    vector<Point<U>> power_vertices;
+    vector<Line<U>> power_edges;
+    vector<int> vertex_match, edge_match;
+
+    PowerTriangulation(vector<Point<T>> p, vector<T> w) {
+        int n = p.size();
+
+        T xl = p[0].x, xr = p[0].x, yl = p[0].y, yr = p[0].y;
+        for (auto [x, y] : p) {
+            xl = min(xl, x);
+            xr = max(xr, x);
+            yl = min(yl, y);
+            yr = max(yr, y);
+        }
+
+        T delta = 1000 * max(xr - xl, yr - yl), xm = xl + (xr - xl) / 2, ym = yl + (yr - yl) / 2;
+        p.emplace_back(xm + delta, ym - delta);
+        p.emplace_back(xm, ym + delta);
+        p.emplace_back(xm - delta, ym);
+        w.emplace_back(0);
+        w.emplace_back(0);
+        w.emplace_back(0);
+
+        z.resize(n + 3);
+        for (int i = 0; i < n + 3; i++) {
+            auto [x, y] = p[i];
+            z[i] = x * x + y * y - w[i];
+        }
+
+        int a = n, b = n + 1, c = n + 2;
+        if (sgn(cross(p[a], p[b], p[c])) == -1) swap(b, c);
+        triangles.emplace_back(a, b, c, true);
+        adj_list.push_back({-1, -1, -1});
+
+        vector<int> order(n);
+        iota(order.begin(), order.end(), 0);
+
+        vector<T> hilbert_order(n);
+        for (int i = 0; i < n; i++) hilbert_order[i] = hilbert_index(p[i].x - xl, p[i].y - yl);
+        sort(order.begin(), order.end(), [&](int i, int j) { return hilbert_order[i] < hilbert_order[j]; });
+
+        points = p;
+        weights = w;
+        bowyer_watson(order);
+
+        int count = 0;
+        vector<int> indices(triangles.size(), -1);
+        for (int i = 0; i < triangles.size(); i++) {
+            if (!triangles[i].valid) continue;
+            for (int e = 0; e < 3; e++) {
+                int j = adj_list[i][e];
+                if (j != -1 && i >= j) continue;
+                auto [u, v] = triangle_edge(i,e);
+                if (u < n && v < n) delaunay_edges.emplace_back(u, v);
+            }
+            if (triangles[i].a < n && triangles[i].b < n && triangles[i].c < n) indices[i] = count++;
+        }
+
+        vector<Triangle> temp_t(count);
+        vector<array<int, 3>> temp_a(count, {-1, -1, -1});
+        for (int i = 0, k = 0; i < triangles.size() && k < count; i++)
+            if (indices[i] != -1) {
+                for (int e = 0; e < 3; e++) {
+                    int j = adj_list[i][e];
+                    if (0 <= j && j < triangles.size()) temp_a[k][e] = indices[j];
+                }
+                temp_t[k++] = triangles[i];
+            }
+        triangles = temp_t;
+        adj_list = temp_a;
+    }
+
+    void bowyer_watson(const vector<int> &order) {
+        int n = points.size(), k = 0;
+        vector<int> next(n, -1), visited_t(1, -1), visited_v1(n, -1), visited_v2(n, -1), indices(n, -1);
+        for (int p : order) {
+            if (visited_t.size() < triangles.size()) visited_t.resize(triangles.size(), -1);
+
+            if (!triangles.empty())
+                for (int _ = 0; _ <= triangles.size(); _++) {
+                    auto [a, b, c, valid] = triangles[k];
+                    if (!valid) {
+                        k = 0;
+                        continue;
+                    }
+
+                    int s1 = sgn(cross(points[a], points[b], points[p])), s2 = sgn(cross(points[b], points[c], points[p])), s3 = sgn(cross(points[c], points[a], points[p]));
+                    if ((s1 >= 0 && s2 >= 0 && s3 >= 0) || (s1 <= 0 && s2 <= 0 && s3 <= 0)) break;
+
+                    if (s1 == -1) {
+                        if (adj_list[k][2] == -1) break;
+                        k = adj_list[k][2];
+                    } else if (s2 == -1) {
+                        if (adj_list[k][0] == -1) break;
+                        k = adj_list[k][0];
+                    } else {
+                        if (adj_list[k][1] == -1) break;
+                        k = adj_list[k][1];
+                    }
+                }
+
+            vector<int> cavity;
+            queue<int> q;
+            q.emplace(k);
+            while (!q.empty()) {
+                int i = q.front();
+                q.pop();
+
+                auto in_circle = [&](int a, int b, int c, int d) {
+                    return point_in_circumcircle<U>({{{points[a], a}, {points[b], b}, {points[c], c}}}, {points[p], p},
+                                                    [&](auto p1, auto p2) { return z[p1.second] - z[p2.second]; }).first;
+                };
+
+                auto [a, b, c, valid] = triangles[i];
+                if (!(0 <= i && i < triangles.size()) || !valid || visited_t[i] == p || !in_circle(a, b, c, p)) continue;
+
+                visited_t[i] = p;
+                cavity.emplace_back(i);
+                for (int j : adj_list[i]) {
+                    if (j != -1 && triangles[j].valid && visited_t[j] != p) q.emplace(j);
+                    if (j != -1 && visited_t[j] == p) q.emplace(j);
+                }
+            }
+            if (cavity.empty()) continue;
+
+            vector<pair<int, int>> boundary_edges, boundary_triangles;
+            for (int i : cavity)
+                for (int e = 0; e < 3; e++) {
+                    int j = adj_list[i][e];
+                    if (j != -1 && visited_t[j] == p) continue;
+
+                    auto [u, v] = triangle_edge(i, e);
+                    boundary_edges.emplace_back(u, v);
+
+                    if (j != -1) {
+                        for (int f = 0; f < 3; f++)
+                            if (adj_list[j][f] == i) {
+                                boundary_triangles.emplace_back(j, f);
+                                break;
+                            }
+                    } else boundary_triangles.emplace_back(-1, -1);
+
+                    if (visited_v1[u] != p) {
+                        visited_v1[u] = p;
+                        next[u] = -1;
+                    }
+                    if (visited_v1[v] != p) {
+                        visited_v1[v] = p;
+                        next[v] = -1;
+                    }
+
+                    next[u] = v;
+                    indices[u] = boundary_edges.size() - 1;
+                    q.emplace(u);
+                }
+
+            while (!q.empty()) {
+                int s = q.front();
+                q.pop();
+
+                if (visited_v1[s] != p || visited_v2[s] == p) continue;
+
+                int t = s, j = -1, l = -1, prev_vp = -1, prev_pu = -1;
+                do {
+                    visited_v2[t] = p;
+                    auto [u, v] = boundary_edges[indices[t]];
+
+                    auto edge_id = [&](const auto &triangle, const auto &edge) {
+                        auto [a, b, c, _] = triangle;
+                        if (minmax(b, c) == edge) return 0;
+                        if (minmax(c, a) == edge) return 1;
+                        if (minmax(a, b) == edge) return 2;
+                        return -1;
+                    };
+
+                    int a = u, b = v, c = p;
+                    if (sgn(cross(points[a], points[b], points[c])) == -1) swap(b, c);
+                    triangles.emplace_back(a, b, c, true);
+                    adj_list.push_back({-1, -1, -1});
+
+                    int uv = edge_id(triangles.back(), minmax(u, v)), vp = edge_id(triangles.back(), minmax(v, p)), pu = edge_id(triangles.back(), minmax(p, u));
+                    k = triangles.size() - 1;
+                    auto [i, e] = boundary_triangles[indices[t]];
+
+                    if (i != -1 && visited_t[i] != p && triangles[i].valid && edge_id(triangles[i], minmax(u, v)) != -1) {
+                        adj_list[k][uv] = i;
+                        if (e != -1) adj_list[i][e] = k;
+                    } else adj_list[k][uv] = -1;
+
+                    if (j != -1) {
+                        adj_list[j][prev_vp] = k;
+                        adj_list[k][pu] = j;
+                    } else {
+                        l = k;
+                        prev_pu = pu;
+                    }
+
+                    j = k;
+                    prev_vp = vp;
+                    t = next[t];
+                } while (t != s && t != -1);
+
+                if (l != -1 && j != -1) {
+                    adj_list[j][prev_vp] = l;
+                    adj_list[l][prev_pu] = j;
+                }
+            }
+
+            for (int i : cavity) triangles[i].valid = false;
+        }
+    }
+
+    void build_power_diagram() {
+        int t = triangles.size();
+
+        vector<int> ids(t);
+        unordered_map<Point<U>, int, Hash> indices;
+        auto add_vertex = [&](auto p) -> int {
+            if (indices.count(p)) return indices[p];
+            power_vertices.emplace_back(p);
+            vertex_match.emplace_back();
+            return indices[p] = power_vertices.size() - 1;
+        };
+
+        for (int i = 0; i < t; i++) {
+            auto [a, b, c, _] = triangles[i];
+            ids[i] = add_vertex(circumcenter<U>({{{points[a], a}, {points[b], b}, {points[c], c}}}, [&](auto p) { return weights[p.second]; }));
+        }
+
+        unordered_set<pair<int, int>, Hash> seen;
+        auto add_edge = [&](int i, int j, int k) {
+            auto [p, q] = minmax(i, j);
+            vertex_match[p] = vertex_match[q] = k;
+            if (!seen.count({p, q})) {
+                seen.emplace(p, q);
+                power_edges.emplace_back(power_vertices[p], power_vertices[q]);
+                edge_match.emplace_back(k);
+            }
+        };
+
+        for (int i = 0; i < t; i++)
+            for (int e = 0; e < 3; e++) {
+                auto [u, v] = triangle_edge(i, e);
+                auto k = minmax(u, v);
+                int j = adj_list[i][e];
+                if (j != -1) add_edge(ids[i], ids[j], k.first);
+                else {
+                    auto [a, b] = power_bisector<U>(points[u], points[v], z[u], z[v]);
+                    auto dir = b - a;
+                    int p = !e ? triangles[i].a : (e == 1 ? triangles[i].b : triangles[i].c);
+                    add_edge(ids[i], sgn(dot((Point<U>) points[p] - a, dir)) == 1 ? add_vertex(a - (dir / 2)) : add_vertex(a + (dir / 2)), k.first);
+                }
+            }
+    }
+
+    pair<int, int> triangle_edge(int i, int e) {
+        if (!e) return {triangles[i].b, triangles[i].c};
+        if (e == 1) return {triangles[i].c, triangles[i].a};
+        return {triangles[i].a, triangles[i].b};
+    }
+
+    array<int, 3> triangle_vertices(int i) {
+        return {triangles[i].a, triangles[i].b, triangles[i].c};
+    }
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -542,7 +564,7 @@ int main() {
     cin >> m;
 
     int size = 0;
-    vector<int> j(m), id(m);
+    vector<int> J(m), id(m);
     vector<long long> R(m), R_max(n, 0);
     for (int i = 0; i < m; i++) {
         int ji;
@@ -552,7 +574,7 @@ int main() {
 
         if (R_max[ji] < ri) {
             R_max[ji] = ri;
-            j[size] = ji;
+            J[size] = ji;
             R[size] = ri;
             id[size] = i + 1;
             size++;
@@ -560,22 +582,19 @@ int main() {
     }
     m = size;
 
-    vector<Point3D<__int128>> points;
     vector<long long> radius(n);
     int l = 0, r = m + 1, mid;
     while (l + 1 < r) {
         mid = l + (r - l) / 2;
 
-        points.clear();
         fill(radius.begin(), radius.end(), 0);
-        for (int k = 0; k < mid; k++) radius[j[k]] = R[k];
+        for (int i = 0; i < mid; i++) radius[J[i]] = R[i];
 
         bool blocked = false;
-        unordered_map<Point3D<__int128>, int, Hash> indices;
+        vector<int> active;
         for (int i = 0; i < n; i++)
             if (radius[i]) {
-                points.emplace_back(coords[i].x, coords[i].y, squared_dist(coords[i]) - (radius[i] * radius[i] - h * h));
-                indices[points.back()] = i;
+                active.emplace_back(i);
 
                 if (radius[i] > h)
                     if (euclidean_dist(coords[i], start) < radius[i] - h ||
@@ -586,40 +605,40 @@ int main() {
             }
 
         if (blocked) r = mid;
-        else if (points.size() < 4) l = mid;
+        else if (active.size() < 3) l = mid;
         else {
-            points.emplace_back(0, 0, 1e18);
-            ConvexHull3D convex_hull(points);
-            int s = convex_hull.faces.size();
-            DisjointSets dsu(s + 1);
-            vector<bool> upward(s, false);
-            for (int f : convex_hull.valid_faces) {
-                auto [a, b, c] = convex_hull.face_vertices(f);
-                upward[f] = cross(points[a], points[b], points[c]).z >= 0;
+            vector<Point<__int128>> points;
+            vector<__int128> weights;
+            for (int i : active) {
+                points.emplace_back(coords[i]);
+                weights.emplace_back(radius[i] * radius[i] - h * h);
             }
 
-            for (int f : convex_hull.valid_faces)
-                for (int qp : convex_hull.faces[f]) {
-                    int pq = qp ^ 1, p = convex_hull.edge_dest[qp], q = convex_hull.edge_dest[pq], g = convex_hull.edge_face[pq];
-
-                    auto rp = radius[indices[points[p]]], rq = radius[indices[points[q]]];
+            PowerTriangulation pt(points, weights);
+            int s = pt.triangles.size();
+            DisjointSets dsu(s + 1);
+            for (int i = 0; i < s; i++) {
+                array<pair<int, int>, 3> edges{{pt.triangle_edge(i, 0), pt.triangle_edge(i, 1), pt.triangle_edge(i, 2)}};
+                for (int e = 0; e < 3; e++) {
+                    auto [u, v] = edges[e];
+                    int p = active[u], q = active[v], j = pt.adj_list[i][e];
+                    auto rp = radius[p], rq = radius[q];
                     if (!(rp > h && rq > h) ||
-                        euclidean_dist(convert_to_2D(points[p]), convert_to_2D(points[q])) >= sqrt(rp * rp - h * h) + sqrt(rq * rq - h * h))
-                        dsu.unite(f, (!~g || upward[g]) ? s : g);
+                        euclidean_dist(coords[p], coords[q]) >= sqrt(rp * rp - h * h) + sqrt(rq * rq - h * h))
+                        dsu.unite(i, j == -1 ? s : j);
                 }
+            }
 
             int start_face = s, end_face = s;
-            for (int f : convex_hull.valid_faces)
-                if (!upward[f]) {
-                    auto [a, b, c] = convex_hull.face_vertices(f);
-                    auto a_2D = convert_to_2D(points[a]), b_2D = convert_to_2D(points[b]), c_2D = convert_to_2D(points[c]);
-                    vector<Point<long long>> triangle{a_2D, b_2D, c_2D};
+            for (int i = 0; i < s; i++) {
+                auto [a, b, c] = pt.triangle_vertices(i);
+                vector<Point<long long>> triangle{coords[active[a]], coords[active[b]], coords[active[c]]};
 
-                    auto [is1, on1] = point_in_polygon(triangle, start);
-                    auto [in2, on2] = point_in_polygon(triangle, end);
-                    if (is1 || on1) start_face = f;
-                    if (in2 || on2) end_face = f;
-                }
+                auto [is1, on1] = point_in_polygon(triangle, start);
+                auto [in2, on2] = point_in_polygon(triangle, end);
+                if (is1 || on1) start_face = i;
+                if (in2 || on2) end_face = i;
+            }
 
             if (dsu.find(start_face) != dsu.find(end_face)) r = mid;
             else l = mid;
