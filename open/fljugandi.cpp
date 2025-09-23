@@ -623,9 +623,7 @@ int main() {
                     auto [u, v] = edges[e];
                     int p = active[u], q = active[v], j = pt.adj_list[i][e];
                     auto rp = radius[p], rq = radius[q];
-                    if (!(rp > h && rq > h) ||
-                        euclidean_dist(coords[p], coords[q]) >= sqrt(rp * rp - h * h) + sqrt(rq * rq - h * h))
-                        dsu.unite(i, j == -1 ? s : j);
+                    if (!(rp > h && rq > h) || euclidean_dist(coords[p], coords[q]) >= sqrt(rp * rp - h * h) + sqrt(rq * rq - h * h)) dsu.unite(i, j == -1 ? s : j);
                 }
             }
 
