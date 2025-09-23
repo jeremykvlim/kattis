@@ -230,7 +230,6 @@ struct DelaunayTriangulation {
         p.emplace_back(xm - delta, ym);
 
         points = p;
-        if (points.size() <= 1) return;
         guibas_stolfi();
     }
 
