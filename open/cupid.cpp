@@ -40,8 +40,7 @@ struct QueryDecomposition {
 
     vector<int> mo(const vector<int> &a, const vector<int> &b, int k) {
         int Q = queries.size();
-        vector<int> answers(Q);
-        vector<long long> hilbert_order(Q);
+        vector<int> answers(Q), hilbert_order(Q);
         for (int q = 0; q < Q; q++) {
             auto [l, r, i] = queries[q];
             hilbert_order[q] = hilbert_index(l / size, r / size);
