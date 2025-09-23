@@ -212,27 +212,6 @@ Line<T> power_bisector(const Point<T> &a, const Point<T> &b, T za, T zb) {
     return {p, {p.x - v.y, p.y + v.x}};
 }
 
-struct DisjointSets {
-    vector<int> sets;
-
-    int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            return true;
-        }
-        return false;
-    }
-
-    DisjointSets(int n) : sets(n) {
-        iota(sets.begin(), sets.end(), 0);
-    }
-};
-
 template <typename... I>
 auto hilbert_index(I... c) {
     using T = common_type_t<I...>;
@@ -545,6 +524,27 @@ struct PowerTriangulation {
 
     array<int, 3> triangle_vertices(int i) {
         return {triangles[i].a, triangles[i].b, triangles[i].c};
+    }
+};
+
+struct DisjointSets {
+    vector<int> sets;
+
+    int find(int v) {
+        return sets[v] == v ? v : (sets[v] = find(sets[v]));
+    }
+
+    bool unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set != v_set) {
+            sets[v_set] = u_set;
+            return true;
+        }
+        return false;
+    }
+
+    DisjointSets(int n) : sets(n) {
+        iota(sets.begin(), sets.end(), 0);
     }
 };
 
