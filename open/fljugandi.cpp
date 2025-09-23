@@ -370,7 +370,7 @@ struct PowerTriangulation {
                 q.pop();
 
                 auto in_circle = [&](int a, int b, int c, int d) {
-                    return point_in_circumcircle<U>({{{points[a], a}, {points[b], b}, {points[c], c}}}, {points[p], p},
+                    return point_in_circumcircle<U>({{{points[a], a}, {points[b], b}, {points[c], c}}}, {points[d], d},
                                                     [&](auto p1, auto p2) { return z[p1.second] - z[p2.second]; }).first;
                 };
 
