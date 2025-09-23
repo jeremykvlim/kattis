@@ -2,28 +2,32 @@
 using namespace std;
 
 template <typename... I>
-long long hilbert_index(I... c) {
+auto hilbert_index(I... c) {
+    using T = common_type_t<I...>;
     constexpr int D = sizeof...(I);
-    array<int, D> coords{c...};
-    int lg = __lg(max({c...}));
+    array<T, D> coords{(T) c...};
+    T c_max = max({c...});
+    int b = 0;
+    if (c_max)
+        while (c_max >>= 1) b++;
 
-    for (int mask = 1 << lg; mask > 1; mask >>= 1)
+    for (T mask = ((T) 1) << b; mask > 1; mask >>= 1)
         for (int i = D - 1; ~i; i--)
             if (coords[i] & mask) coords[0] ^= mask - 1;
             else {
-                int t = (coords[0] ^ coords[i]) & (mask - 1);
-                coords[0] ^= t;
-                coords[i] ^= t;
+                T m = (coords[0] ^ coords[i]) & (mask - 1);
+                coords[0] ^= m;
+                coords[i] ^= m;
             }
 
     for (int i = 1; i < D; i++) coords[i] ^= coords[i - 1];
-    int m = 0;
-    for (int mask = 1 << lg; mask > 1; mask >>= 1)
+    T m = 0;
+    for (T mask = ((T) 1) << b; mask > 1; mask >>= 1)
         if (coords[D - 1] & mask) m ^= mask - 1;
     for (int i = 0; i < D; i++) coords[i] ^= m;
 
-    auto h = 0LL;
-    for (int b = lg; ~b; b--)
+    T h = 0;
+    for (; ~b; b--)
         for (int i = 0; i < D; i++) h = (h << 1) | ((coords[i] >> b) & 1);
     return h;
 }
@@ -37,14 +41,14 @@ struct QueryDecomposition {
     vector<int> mo(vector<int> a, const vector<array<int, 3>> &updates, int k) {
         int Q = queries.size();
         vector<int> answers(Q), freq(a.size() + 1, 0);
-        vector<long long> indices(Q);
+        vector<long long> hilbert_order(Q);
         for (int q = 0; q < Q; q++) {
             auto [l, r, t, i] = queries[q];
-            indices[q] = hilbert_index(l / size, r / size, t / size);
+            hilbert_order[q] = hilbert_index(l / size, r / size, t / size);
         }
         vector<int> order(Q);
         iota(order.begin(), order.end(), 0);
-        sort(order.begin(), order.end(), [&](int i, int j) { return indices[i] < indices[j]; });
+        sort(order.begin(), order.end(), [&](int i, int j) { return hilbert_order[i] < hilbert_order[j]; });
 
         int L = 0, R = -1, T = 0, ans = 0;
 
