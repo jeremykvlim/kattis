@@ -115,6 +115,7 @@ pair<int, vector<int>> tarjan(int n, vector<vector<int>> &adj_list) {
             } else if (stacked[u]) low[v] = min(low[v], order[u]);
 
         if (order[v] == low[v]) {
+            sccs++;
             int u;
             do {
                 u = st.top();
@@ -122,7 +123,6 @@ pair<int, vector<int>> tarjan(int n, vector<vector<int>> &adj_list) {
                 stacked[u] = false;
                 component[u] = sccs;
             } while (u != v);
-            sccs++;
         }
     };
 
@@ -237,7 +237,7 @@ int main() {
     }
 
     auto [sccs, component] = tarjan(states, adj_list_rat);
-    vector<vector<int>> dag(sccs);
+    vector<vector<int>> dag(sccs + 1);
     for (int v = 0; v < states; v++)
         for (int u : adj_list_rat[v])
             if (component[v] != component[u]) dag[component[v]].emplace_back(component[u]);
@@ -264,7 +264,7 @@ int main() {
         if (i < 2 * m && base_states[i][0] == r && base_states[i][1] == c) Q_component[q] = component[extra_states[i]];
     }
 
-    vector<bool> visited(sccs, false);
+    vector<bool> visited(sccs + 1, false);
     vector<int> order;
     auto dfs = [&](auto &&self, int v) -> void {
         visited[v] = true;
@@ -272,7 +272,7 @@ int main() {
             if (!visited[u]) self(self, u);
         order.emplace_back(v);
     };
-    for (int c = 0; c < sccs; c++)
+    for (int c = 1; c <= sccs; c++)
         if (!visited[c]) dfs(dfs, c);
 
     auto deduped = T;
@@ -300,11 +300,11 @@ int main() {
     }
 
     vector<bool> trapped(Q, false);
-    vector<bitset<size>> dp(sccs);
+    vector<bitset<size>> dp(sccs + 1);
     for (int b = 0; b < k; b++) {
         int tl = b * size, tr = min(s, tl + size);
 
-        for (int c = 0; c < sccs; c++) dp[c].reset();
+        for (int c = 1; c <= sccs; c++) dp[c].reset();
         for (int t = tl; t < tr; t++)
             for (int c : T_components[t]) dp[c][t - tl] = true;
 
