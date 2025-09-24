@@ -122,8 +122,8 @@ T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
 }
 
 template <typename T>
-double squared_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
-    return (double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y);
+T squared_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
+    return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
 }
 
 template <typename T>
@@ -136,10 +136,10 @@ int main() {
     cin.tie(nullptr);
 
     int n, m;
-    Point<int> p1, p2;;
+    Point<long long> p1, p2;;
     cin >> n >> m >> p1.x >> p1.y >> p2.x >> p2.y;
 
-    auto obtuse = [&](const Point<int> &a, const Point<int> &b, const Point<int> &c) -> bool {
+    auto obtuse = [&](const Point<long long> &a, const Point<long long> &b, const Point<long long> &c) -> bool {
         auto d1 = squared_dist(a, b), d2 = squared_dist(a, c), d3 = squared_dist(b, c);
         return (d1 + d2 < d3) || (d1 + d3 < d2) || (d2 + d3 < d1);
     };

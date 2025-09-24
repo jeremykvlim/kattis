@@ -112,19 +112,19 @@ struct Point {
 };
 
 template <typename T>
-double squared_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
-    return (double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y);
+T squared_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
+    return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
 }
 
 template <typename T>
-pair<pair<int, int>, double> closest_pair(const vector<Point<T>> &points) {
+pair<pair<int, int>, T> closest_pair(const vector<Point<T>> &points) {
     int n = points.size();
 
     vector<pair<Point<T>, int>> sorted(n);
     for (int i = 0; i < n; i++) sorted[i] = {points[i], i};
     sort(sorted.begin(), sorted.end(), [](auto p1, auto p2) { return p1.first == p2.first ? p1.second < p2.second : p1.first < p2.first; });
 
-    auto d = DBL_MAX;
+    T d = numeric_limits<T>::max();
     int a = -1, b = -1;
     auto update = [&](auto p1, auto p2) {
         auto dist = squared_dist(p1.first, p2.first);
@@ -135,7 +135,7 @@ pair<pair<int, int>, double> closest_pair(const vector<Point<T>> &points) {
         }
     };
 
-    auto sq = [](double v) -> double { return v * v; };
+    auto sq = [](T v) -> T { return v * v; };
     auto cmp = [](auto p1, auto p2) { return p1.first.y < p2.first.y; };
     multiset<pair<Point<T>, int>, decltype(cmp)> ms(cmp);
     vector<typename decltype(ms)::const_iterator> its(n);
@@ -154,6 +154,17 @@ pair<pair<int, int>, double> closest_pair(const vector<Point<T>> &points) {
     return {{a, b}, d};
 }
 
+istream & operator>>(istream &stream, __int128 &v) {
+    string s;
+    stream >> s;
+
+    v = 0;
+    for (char c : s)
+        if (isdigit(c)) v = v * 10 + c - '0';
+    if (s[0] == '-') v *= -1;
+    return stream;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -161,7 +172,7 @@ int main() {
     int n;
     cin >> n;
 
-    vector<Point<long long>> points(n + 1);
+    vector<Point<__int128>> points(n + 1);
     for (int i = 0; i < n; i++) {
         cin >> points[i].x;
 

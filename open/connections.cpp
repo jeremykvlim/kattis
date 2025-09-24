@@ -150,8 +150,8 @@ double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
 }
 
 template <typename T>
-double squared_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
-    return (double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y);
+T squared_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
+    return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
 }
 
 template <typename T>
@@ -216,7 +216,7 @@ struct DelaunayTriangulation {
     vector<Line<T>> voronoi_edges;
     vector<int> vertex_match, edge_match;
 
-    DelaunayTriangulation(vector<Point<T>> p) {
+    DelaunayTriangulation(vector<Point<T>> p) : start(0) {
         T xl = p[0].x, xr = p[0].x, yl = p[0].y, yr = p[0].y;
         for (auto [x, y] : p) {
             xl = min(xl, x);
@@ -230,27 +230,34 @@ struct DelaunayTriangulation {
         p.emplace_back(xm, ym + delta);
         p.emplace_back(xm - delta, ym);
 
-        points = p;
-        guibas_stolfi();
-    }
-
-    void guibas_stolfi() {
-        int n = points.size();
-
+        int n = p.size();
         vector<int> indices(n);
         iota(indices.begin(), indices.end(), 0);
-        sort(indices.begin(), indices.end(), [&](int i, int j) { return points[i] < points[j]; });
+        sort(indices.begin(), indices.end(), [&](int i, int j) { return p[i] < p[j]; });
 
-        auto temp = points;
-        int r = 0;
+        points = p;
+        int count = 0;
         vector<int> compress(n, 0);
         for (int i : indices)
-            if (i == indices[0] || temp[i] != temp[indices[r - 1]]) {
-                indices[r] = i;
-                points[r++] = temp[i];
+            if (i == indices[0] || p[i] != p[indices[count - 1]]) {
+                indices[count] = i;
+                points[count++] = p[i];
                 compress[i] = i;
-            } else compress[i] = indices[r - 1];
+            } else compress[i] = indices[count - 1];
 
+        if (count >= 2) guibas_stolfi(count);
+
+        points = p;
+        edges.erase(remove_if(edges.begin(), edges.end(), [&](auto e) { return !e.valid; }), edges.end());
+        for (auto &e : edges) e.dest = indices[e.dest];
+        for (int i = 0; i < edges.size(); i++)
+            if (i >= edges[i].symm) delaunay_edges.emplace_back(edges[i].dest, edges[edges[i].symm].dest);
+
+        for (int v = 0; v < n; v++)
+            if (v != compress[v]) delaunay_edges.emplace_back(v, compress[v]);
+    }
+
+    void guibas_stolfi(int count) {
         stack<int> recycled;
         auto edge_id = [&]() -> int {
             if (!recycled.empty()) {
@@ -450,18 +457,7 @@ struct DelaunayTriangulation {
             }
             return {ldi_src, base_symm};
         };
-
-        start = 0;
-        if (r >= 2) start = dnc(dnc, 0, r).second;
-        points = temp;
-
-        edges.erase(remove_if(edges.begin(), edges.end(), [&](auto e) { return !e.valid; }), edges.end());
-        for (auto &e : edges) e.dest = indices[e.dest];
-        for (int i = 0; i < edges.size(); i++)
-            if (i >= edges[i].symm) delaunay_edges.emplace_back(edges[i].dest, edges[edges[i].symm].dest);
-
-        for (int v = 0; v < n; v++)
-            if (v != compress[v]) delaunay_edges.emplace_back(v, compress[v]);
+        start = dnc(dnc, 0, count).second;
     }
 
     void build_voronoi_diagram() {

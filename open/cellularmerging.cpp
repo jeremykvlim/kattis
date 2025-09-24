@@ -123,8 +123,8 @@ struct Point {
 };
 
 template <typename T>
-double squared_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
-    return (double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y);
+T squared_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
+    return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
 }
 
 template <typename T>
@@ -160,15 +160,14 @@ struct KDTree {
         return j;
     }
 
-    double nearest_neighbor_dist(const Point<T> &p) {
+    T nearest_neighbor_dist(const Point<T> &p) {
         return nearest_neighbor_dist(0, p);
     }
 
-    double nearest_neighbor_dist(int i, const Point<T> &p) {
-        if (i == -1) return 1e30;
+    T nearest_neighbor_dist(int i, const Point<T> &p) {
+        if (i == -1) return numeric_limits<T>::max();
 
-        auto dist = squared_dist(p, KDT[i].p);
-        auto diff = !KDT[i].dir ? (p - KDT[i].p).x : (p - KDT[i].p).y;
+        T dist = squared_dist(p, KDT[i].p), diff = !KDT[i].dir ? (p - KDT[i].p).x : (p - KDT[i].p).y;
 
         auto [cl, cr] = children[i];
         dist = min(dist, nearest_neighbor_dist(diff <= 0 ? cl : cr, p));

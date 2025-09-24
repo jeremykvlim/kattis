@@ -117,19 +117,19 @@ double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
 }
 
 template <typename T>
-double squared_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
-    return (double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y);
+T squared_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
+    return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
 }
 
 template <typename T>
-pair<pair<int, int>, double> closest_pair(const vector<Point<T>> &points) {
+pair<pair<int, int>, T> closest_pair(const vector<Point<T>> &points) {
     int n = points.size();
 
     vector<pair<Point<T>, int>> sorted(n);
     for (int i = 0; i < n; i++) sorted[i] = {points[i], i};
     sort(sorted.begin(), sorted.end(), [](auto p1, auto p2) { return p1.first == p2.first ? p1.second < p2.second : p1.first < p2.first; });
 
-    auto d = DBL_MAX;
+    T d = numeric_limits<T>::max();
     int a = -1, b = -1;
     auto update = [&](auto p1, auto p2) {
         auto dist = squared_dist(p1.first, p2.first);
@@ -140,7 +140,7 @@ pair<pair<int, int>, double> closest_pair(const vector<Point<T>> &points) {
         }
     };
 
-    auto sq = [](double v) -> double { return v * v; };
+    auto sq = [](T v) -> T { return v * v; };
     auto cmp = [](auto p1, auto p2) { return p1.first.y < p2.first.y; };
     multiset<pair<Point<T>, int>, decltype(cmp)> ms(cmp);
     vector<typename decltype(ms)::const_iterator> its(n);
@@ -177,9 +177,7 @@ T area_of_circle_intersection(const Circle<T> &c1, const Circle<T> &c2) {
     auto [rmin, rmax] = minmax(c1.radius, c2.radius);
     if (d <= rmax - rmin) return M_PI * rmin * rmin;
 
-    T r1_sq = c1.radius * c1.radius, r2_sq = c2.radius * c2.radius,
-      alpha = acos((d * d + r1_sq - r2_sq) / (2 * d * c1.radius)) * 2,
-      beta = acos((d * d + r2_sq - r1_sq) / (2 * d * c2.radius)) * 2;
+    T r1_sq = c1.radius * c1.radius, r2_sq = c2.radius * c2.radius, alpha = acos((d * d + r1_sq - r2_sq) / (2 * d * c1.radius)) * 2, beta = acos((d * d + r2_sq - r1_sq) / (2 * d * c2.radius)) * 2;
     return 0.5 * (r1_sq * (alpha - sin(alpha)) + r2_sq * (beta - sin(beta)));
 }
 
@@ -216,15 +214,14 @@ struct KDTree {
         return j;
     }
 
-    double nearest_neighbor_dist(const Point<T> &p) {
+    T nearest_neighbor_dist(const Point<T> &p) {
         return nearest_neighbor_dist(0, p);
     }
 
-    double nearest_neighbor_dist(int i, const Point<T> &p) {
-        if (i == -1) return 1e30;
+    T nearest_neighbor_dist(int i, const Point<T> &p) {
+        if (i == -1) return numeric_limits<T>::max();
 
-        auto dist = squared_dist(p, KDT[i].p);
-        auto diff = !KDT[i].dir ? (p - KDT[i].p).x : (p - KDT[i].p).y;
+        T dist = squared_dist(p, KDT[i].p), diff = !KDT[i].dir ? (p - KDT[i].p).x : (p - KDT[i].p).y;
 
         auto [cl, cr] = children[i];
         dist = min(dist, nearest_neighbor_dist(diff <= 0 ? cl : cr, p));
