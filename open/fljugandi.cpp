@@ -256,10 +256,9 @@ struct PowerTriangulation {
     };
 
     vector<Point<T>> points;
-    vector<T> weights;
+    vector<T> weights, z;
     vector<Triangle> triangles;
     vector<array<int, 3>> adj_list;
-    vector<T> z;
     vector<pair<int, int>> delaunay_edges;
     vector<Point<U>> power_vertices;
     vector<Line<U>> power_edges;
@@ -313,7 +312,7 @@ struct PowerTriangulation {
             for (int e = 0; e < 3; e++) {
                 int j = adj_list[i][e];
                 if (j != -1 && i >= j) continue;
-                auto [u, v] = triangle_edge(i,e);
+                auto [u, v] = triangle_edge(i, e);
                 if (u < n && v < n) delaunay_edges.emplace_back(u, v);
             }
             if (triangles[i].a < n && triangles[i].b < n && triangles[i].c < n) indices[i] = count++;
