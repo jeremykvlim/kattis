@@ -504,14 +504,13 @@ struct PowerTriangulation {
         for (int i = 0; i < t; i++)
             for (int e = 0; e < 3; e++) {
                 auto [u, v] = triangle_edge(i, e);
-                auto k = minmax(u, v);
                 int j = adj_list[i][e];
-                if (j != -1) add_edge(ids[i], ids[j], k.first);
+                if (j != -1) add_edge(ids[i], ids[j], min(u, v));
                 else {
                     auto [a, b] = power_bisector<U>(points[u], points[v], z[u], z[v]);
                     auto dir = b - a;
                     int p = !e ? triangles[i].a : (e == 1 ? triangles[i].b : triangles[i].c);
-                    add_edge(ids[i], sgn(dot((Point<U>) points[p] - a, dir)) == 1 ? add_vertex(a - (dir / 2)) : add_vertex(a + (dir / 2)), k.first);
+                    add_edge(ids[i], sgn(dot((Point<U>) points[p] - a, dir)) == 1 ? add_vertex(a - (dir / 2)) : add_vertex(a + (dir / 2)), min(u, v));
                 }
             }
     }
