@@ -142,12 +142,13 @@ Point<T> midpoint(const Point<T> &a, const Point<T> &b) {
     return {a.x + (b.x - a.x) / 2, a.y + (b.y - a.y) / 2};
 }
 
-template <typename T>
-Point<T> circumcenter(const array<Point<T>, 3> &triangle) {
-    Point<T> a = triangle[0], b = triangle[1], c = triangle[2], ab = a - b, bc = b - c, ca = c - a;
+template <typename T, typename W>
+Point<T> circumcenter(const array<pair<Point<T>, int>, 3> &triangle, W &&weight) {
+    auto [a, b, c] = triangle;
+    Point<T> ab = a.first - b.first, bc = b.first - c.first, ca = c.first - a.first;
 
-    T d = 2 * cross(a, b, c);
-    return {(squared_dist(a) * bc.y + squared_dist(b) * ca.y + squared_dist(c) * ab.y) / d, (squared_dist(a) * (-bc.x) + squared_dist(b) * (-ca.x) + squared_dist(c) * (-ab.x)) / d};
+    T A = squared_dist(a.first) - weight(a), B = squared_dist(b.first) - weight(b), C = squared_dist(c.first) - weight(c), d = 2 * cross(a.first, b.first, c.first);
+    return {(A * bc.y + B * ca.y + C * ab.y) / d, (A * (-bc.x) + B * (-ca.x) + C * (-ab.x)) / d};
 }
 
 template <typename T>
@@ -494,7 +495,7 @@ Circle<T> smallest_enclosing_circle(vector<Point<T>> &P) {
                 o = midpoint(R[0], R[1]);
                 r = euclidean_dist(o, R[0]);
             } else if (R.size() == 3) {
-                o = circumcenter(array<Point<T>, 3>{R[0], R[1], R[2]});
+                o = circumcenter<T>({{{R[0], -1}, {R[1], -1}, {R[2], -1}}}, [&](auto p) { return 0; });
                 r = euclidean_dist(o, R[0]);
             }
             return {o, r};

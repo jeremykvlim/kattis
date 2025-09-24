@@ -174,18 +174,19 @@ Point<T> midpoint(const Point<T> &a, const Point<T> &b) {
     return {a.x + (b.x - a.x) / 2, a.y + (b.y - a.y) / 2};
 }
 
-template <typename T>
-Point<T> circumcenter(const array<Point<T>, 3> &triangle) {
-    Point<T> a = triangle[0], b = triangle[1], c = triangle[2], ab = a - b, bc = b - c, ca = c - a;
+template <typename T, typename W>
+Point<T> circumcenter(const array<pair<Point<T>, int>, 3> &triangle, W &&weight) {
+    auto [a, b, c] = triangle;
+    Point<T> ab = a.first - b.first, bc = b.first - c.first, ca = c.first - a.first;
 
-    T d = 2 * cross(a, b, c);
-    return {(squared_dist(a) * bc.y + squared_dist(b) * ca.y + squared_dist(c) * ab.y) / d, (squared_dist(a) * (-bc.x) + squared_dist(b) * (-ca.x) + squared_dist(c) * (-ab.x)) / d};
+    T A = squared_dist(a.first) - weight(a), B = squared_dist(b.first) - weight(b), C = squared_dist(c.first) - weight(c), d = 2 * cross(a.first, b.first, c.first);
+    return {(A * bc.y + B * ca.y + C * ab.y) / d, (A * (-bc.x) + B * (-ca.x) + C * (-ab.x)) / d};
 }
 
-template <typename T>
-pair<bool, bool> point_in_circumcircle(const array<Point<T>, 3> &triangle, const Point<T> &p) {
-    Point<T> a = triangle[0], b = triangle[1], c = triangle[2];
-    T pa = dot(a - p, a - p), pb = dot(b - p, b - p), pc = dot(c - p, c - p), det = cross(a, b, p) * pc + cross(b, c, p) * pa + cross(c, a, p) * pb;
+template <typename T, typename W>
+pair<bool, bool> point_in_circumcircle(const array<pair<Point<T>, int>, 3> &triangle, const pair<Point<T>, int> &p, W &&weight) {
+    auto [a, b, c] = triangle;
+    T det = cross(a.first, b.first, p.first) * weight(c, p) + cross(b.first, c.first, p.first) * weight(a, p) + cross(c.first, a.first, p.first) * weight(b, p);
     if (sgn(det) >= 0) return {sgn(det) > 0, !sgn(det)};
     return {false, false};
 }
@@ -265,7 +266,7 @@ struct DelaunayTriangulation {
         p.emplace_back(xm + delta, ym - delta);
         p.emplace_back(xm, ym + delta);
         p.emplace_back(xm - delta, ym);
-        
+
         points = p;
         guibas_stolfi();
     }
@@ -397,7 +398,8 @@ struct DelaunayTriangulation {
         };
 
         auto in_circle = [&](int a, int b, int c, int d) {
-            return point_in_circumcircle({points[a], points[b], points[c]}, points[d]).first;
+            return point_in_circumcircle<T>({{{points[a], -1}, {points[b], -1}, {points[c], -1}}}, {points[d], -1},
+                                            [&](auto p1, auto p2) { return dot(p1.first - p2.first, p1.first - p2.first); }).first;
         };
 
         auto dnc = [&](auto &&self, int l, int r) -> pair<int, int> {
@@ -527,7 +529,7 @@ struct DelaunayTriangulation {
         for (int e = 0; e < m; e++)
             if (indices[e] == -1) {
                 int f = edges[edges[e].symm].oprev, g = edges[edges[f].symm].oprev;
-                voronoi_vertices.emplace_back(circumcenter(array<Point<T>, 3>{points[edges[e].dest], points[edges[f].dest], points[edges[g].dest]}));
+                voronoi_vertices.emplace_back(circumcenter<T>({{{points[edges[e].dest], -1}, {points[edges[f].dest], -1}, {points[edges[g].dest], -1}}}, [&](auto p) { return 0; }));
                 indices[e] = indices[f] = indices[g] = voronoi_vertices.size() - 1;
             }
         for (int e = 0; e < m; e++)
@@ -565,7 +567,7 @@ int main() {
     vector<Point<double>> polygon(n);
     for (auto &[x, y] : polygon) cin >> x >> y;
 
-    DelaunayTriangulation<double> dt(polygon);
+    DelaunayTriangulation dt(polygon);
     dt.build_voronoi_diagram();
     double range = 0;
     for (int i = 0; i < dt.voronoi_vertices.size(); i++) {
