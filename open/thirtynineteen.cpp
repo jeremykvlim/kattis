@@ -46,19 +46,19 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<vector<int>> adj_list_regular(n + 1);
+    vector<vector<int>> adj_list(n + 1);
     while (m--) {
         int a, b;
         cin >> a >> b;
 
-        adj_list_regular[a].emplace_back(b);
+        adj_list[a].emplace_back(b);
     }
 
-    auto [sccs, component, members] = tarjan(n, adj_list_regular);
+    auto [sccs, component, members] = tarjan(n, adj_list);
 
     vector<vector<int>> dag(sccs + 1);
     for (int v = 1; v <= n; v++)
-        for (int u : adj_list_regular[v])
+        for (int u : adj_list[v])
             if (component[v] != component[u]) dag[component[v]].emplace_back(component[u]);
 
     for (auto &neighbors : dag) {
@@ -89,7 +89,7 @@ int main() {
 
     int total = 0, comp = max_element(dp.begin() + 1, dp.end()) - dp.begin();
     vector<int> bases;
-    for (int c = comp; c != -1; c = next[c]) {
+    for (int c = comp; ~c; c = next[c]) {
         total += members[c].size();
         for (int v : members[c]) bases.emplace_back(v);
     }
