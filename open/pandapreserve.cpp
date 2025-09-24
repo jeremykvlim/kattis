@@ -272,13 +272,12 @@ struct DelaunayTriangulation {
         iota(indices.begin(), indices.end(), 0);
         sort(indices.begin(), indices.end(), [&](int i, int j) { return p[i] < p[j]; });
 
-        points = p;
         int count = 0;
         vector<int> compress(n, 0);
         for (int i : indices)
             if (i == indices[0] || p[i] != p[indices[count - 1]]) {
-                indices[count] = i;
-                points[count++] = p[i];
+                indices[count++] = i;
+                points.emplace_back(p[i]);
                 compress[i] = i;
             } else compress[i] = indices[count - 1];
 
