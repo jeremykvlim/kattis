@@ -3,7 +3,7 @@ using namespace std;
 
 template <typename T>
 tuple<vector<int>, T, vector<vector<T>>> held_karp(int n, const vector<vector<T>> &dist, int src = 0) {
-    T inf = numeric_limits<T>::max() >> 2;
+    T inf = numeric_limits<T>::max() / 4;
     vector<vector<T>> dp(1 << n, vector<T>(n, inf));
     vector<vector<int>> prev(1 << n, vector<int>(n, -1));
 
