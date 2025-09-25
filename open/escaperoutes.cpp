@@ -233,13 +233,13 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    BoundedFlowNetwork<int, long long> net(n);
+    BoundedFlowNetwork<int, long long> bfn(n);
     for (int _ = 0; _ < m; _++) {
         int a, b;
         cin >> a >> b;
 
-        net.add_arc(a, b, 1, m, 0);
+        bfn.add_arc(a, b, 1, m, 0);
     }
-    net.add_arc(n - 1, 0, 0, m, 1);
-    cout << net.min_cost_b_flow().first;
+    bfn.add_arc(n - 1, 0, 0, m, 1);
+    cout << bfn.min_cost_b_flow().first;
 }
