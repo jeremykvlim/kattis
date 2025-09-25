@@ -1,27 +1,26 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T, typename U>
+template <typename T>
 struct FlowNetwork {
     struct Arc {
         int u, rev;
-        T cap;
-        U cost;
-        Arc(int u, int rev, T cap, U cost) : u(u), rev(rev), cap(cap), cost(cost) {}
+        T cap, initial_cap;
+        Arc(int u, int rev, T cap) : u(u), rev(rev), cap(cap), initial_cap(cap) {}
     };
 
     int n;
     vector<vector<Arc>> network;
     vector<int> dist;
     vector<typename vector<Arc>::iterator> it;
-    U inf;
-    FlowNetwork(int n) : n(n), network(n), inf(numeric_limits<U>::max()), dist(n), it(n) {}
 
-    void add_arc(int u, int v, T cap_uv, U cost, T cap_vu = 0) {
+    FlowNetwork(int n) : n(n), network(n), dist(n), it(n) {}
+
+    void add_arc(int u, int v, T cap_uv, T cap_vu = 0) {
         if (u == v) return;
 
-        network[u].emplace_back(v, network[v].size(), cap_uv, cost);
-        network[v].emplace_back(u, network[u].size() - 1, cap_vu, -cost);
+        network[u].emplace_back(v, network[v].size(), cap_uv);
+        network[v].emplace_back(u, network[u].size() - 1, cap_vu);
     }
 
     bool bfs(int s, int t) {
@@ -68,111 +67,13 @@ struct FlowNetwork {
         return flow;
     }
 
-    pair<T, U> min_cost_max_flow(int s, int t) {
-        U cost = 0, epsilon = 0;
-        int scale = bit_ceil(2U * n);
+    vector<tuple<int, int, T>> flow_decomposition() {
+        vector<tuple<int, int, T>> path;
         for (int v = 0; v < n; v++)
-            for (auto &&a : network[v]) {
-                cost += a.cost * a.cap;
-                a.cost *= scale;
-                epsilon = max(epsilon, abs(a.cost));
-            }
+            for (auto [u, _, cap, initial_cap] : network[v])
+                if (cap > 0 && cap > initial_cap) path.emplace_back(u, v, cap - initial_cap);
 
-        T flow = max_flow(s, t);
-
-        vector<U> phi(n, 0), excess(n, 0);
-        vector<int> count(n, 0);
-        deque<int> active_stack;
-
-        auto push = [&](int v, Arc &a, U delta, bool active) {
-            if (delta > a.cap) delta = a.cap;
-            int u = a.u;
-            a.cap -= delta;
-            network[u][a.rev].cap += delta;
-            excess[v] -= delta;
-            excess[u] += delta;
-
-            if (active && 0 < excess[u] && excess[u] <= delta) active_stack.emplace_front(u);
-        };
-
-        auto relabel = [&](int v, U delta) {
-            if (delta < inf) phi[v] -= delta + epsilon;
-            else {
-                phi[v] -= epsilon;
-                count[v]--;
-            }
-        };
-
-        auto reduced_cost = [&](int v, const Arc &a) {
-            int diff = count[v] - count[a.u];
-            if (diff > 0) return inf;
-            if (diff < 0) return -inf;
-            return a.cost + phi[v] - phi[a.u];
-        };
-
-        auto check = [&](int v) {
-            if (excess[v]) return false;
-
-            U delta = inf;
-            for (auto &&a : network[v]) {
-                if (a.cap <= 0) continue;
-
-                U c = reduced_cost(v, a);
-                if (c < 0) return false;
-                delta = min(delta, c);
-            }
-
-            relabel(v, delta);
-            return true;
-        };
-
-        auto discharge = [&](int v) {
-            U delta = inf;
-
-            for (auto a = network[v].begin(); a != network[v].end(); a++) {
-                if (a->cap <= 0) continue;
-
-                if (reduced_cost(v, *a) < 0) {
-                    if (check(a->u)) {
-                        a--;
-                        continue;
-                    }
-
-                    push(v, *a, excess[v], true);
-                    if (!excess[v]) return;
-                } else delta = min(delta, reduced_cost(v, *a));
-            }
-
-            relabel(v, delta);
-            active_stack.emplace_front(v);
-        };
-
-        while (epsilon > 1) {
-            epsilon >>= 1;
-            active_stack.clear();
-
-            for (int v = 0; v < n; v++)
-                for (auto &&a : network[v])
-                    if (reduced_cost(v, a) < 0 && a.cap > 0) push(v, a, a.cap, false);
-
-            for (int v = 0; v < n; v++)
-                if (excess[v] > 0) active_stack.emplace_front(v);
-
-            while (!active_stack.empty()) {
-                int v = active_stack.front();
-                active_stack.pop_front();
-
-                discharge(v);
-            }
-        }
-
-        for (int v = 0; v < n; v++)
-            for (auto &&a : network[v]) {
-                a.cost /= scale;
-                cost -= a.cost * a.cap;
-            }
-
-        return {flow, cost / 2};
+        return path;
     }
 };
 
@@ -183,27 +84,47 @@ int main() {
     int n;
     cin >> n;
 
-    vector<pair<int, int>> products(n);
-    for (auto &[p, m] : products) cin >> p >> m;
+    vector<int> p(n), m(n);
+    for (int i = 0; i < n; i++) cin >> p[i] >> m[i];
 
     int s;
     cin >> s;
 
-    FlowNetwork<long long, long long> fn(n + s + 3);
-    for (int i = 0; i < n; i++) fn.add_arc(n + s + 1, i, products[i].second, -products[i].first);
-
+    auto total = 0LL;
+    vector<int> l(s);
+    vector<vector<int>> stores(s);
     for (int i = 0; i < s; i++) {
-        int l, a;
-        cin >> l >> a;
+        int a;
+        cin >> l[i] >> a;
 
-        while (a--) {
-            int k;
-            cin >> k;
-
-            fn.add_arc(k - 1, i + n, 2e9, 0);
+        total += l[i];
+        stores[i].resize(a);
+        for (int &c : stores[i]) {
+            cin >> c;
+            c--;
         }
-        fn.add_arc(i + n, n + s + 2, l, 0);
     }
-    auto [f, c] = fn.min_cost_max_flow(n + s + 1, n + s + 2);
-    cout << -c / 100;
+
+    FlowNetwork<long long> fn(n + s + 2);
+    for (int i = 0; i < s; i++) fn.add_arc(0, i + 1, l[i]);
+    for (int i = 0; i < s; i++)
+        for (int c : stores[i]) fn.add_arc(i + 1, c + s + 1, total);
+
+    vector<pair<int, int>> edges(n);
+    for (int i = 0; i < n; i++) {
+        fn.add_arc(i + s + 1, n + s + 1, 0);
+        edges[i] = {i + s + 1, fn.network[i + s + 1].size() - 1};
+    }
+
+    vector<int> indices(n);
+    iota(indices.begin(), indices.end(), 0);
+    sort(indices.begin(), indices.end(), [&](int i, int j) { return p[i] != p[j] ? p[i] > p[j] : i < j; });
+
+    auto money = 0.;
+    for (int i : indices) {
+        auto [v, ei] = edges[i];
+        fn.network[v][ei].cap += m[i];
+        money += fn.max_flow(0, n + s + 1) * (p[i] / 1e2);
+    }
+    cout << fixed << setprecision(6) << money;
 }
