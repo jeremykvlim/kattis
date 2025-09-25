@@ -117,341 +117,95 @@ double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
 }
 
 template <typename T>
-pair<vector<int>, double> travelling_salesman(const vector<Point<T>> &points, const vector<int> &starts) {
-    int n = points.size();
+T held_karp(int n, const vector<vector<T>> &dist, int src = 0) {
+    T inf = numeric_limits<T>::max() / 4;
+    vector<vector<T>> dp(1 << n, vector<T>(n, inf));
+    vector<vector<int>> prev(1 << n, vector<int>(n, -1));
 
-    vector<vector<double>> dist(n, vector<double>(n));
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++) dist[i][j] = euclidean_dist(points[i], points[j]);
+    for (int i = 0; i < n; i++) dp[1 << i][i] = dist[src][i + 1];
 
-    auto nearest_neighbor = [&](int s) {
-        vector<int> tour(n, -1);
-        tour[0] = s;
-        vector<bool> visited(n, false);
-        visited[s] = true;
-        for (int i = 1, v = 0; i < n; i++) {
-            int u = -1;
-            auto d = 1e9;
-            for (int t = 0; t < n; t++)
-                if (!visited[t] && d > dist[v][t]) {
-                    d = dist[v][t];
-                    u = t;
-                }
-
-            tour[i] = u;
-            visited[u] = true;
-            v = u;
-        }
-
-        return tour;
-    };
-
-    auto length = [&](const vector<int> &tour) {
-        auto len = dist[tour[n - 1]][tour[0]];
-        for (int i = 0; i < n - 1; i++) len += dist[tour[i]][tour[i + 1]];
-        return len;
-    };
-
-    auto two_opt = [&](vector<int> &tour) {
-        bool change;
-        do {
-            change = false;
-            for (int i = 1; i < n - 1; i++)
-                for (int j = i + 1; j < n; j++) {
-                    int a = tour[i - 1], b = tour[i], c = tour[j], d = (j + 1 == n ? tour[0] : tour[j + 1]);
-                    if (dist[a][c] + dist[b][d] < dist[a][b] + dist[c][d] - 1e-5) {
-                        reverse(tour.begin() + i, tour.begin() + j + 1);
-                        change = true;
+    for (int m1 = 1; m1 < 1 << n; m1++)
+        for (int i = 0; i < n; i++)
+            if ((m1 >> i) & 1)
+                if (dp[m1][i] != inf)
+                    for (int m2 = m1 ^ ((1 << n) - 1); m2; m2 &= m2 - 1) {
+                        int j = countr_zero((unsigned) m2), m3 = m1 | (1 << j);
+                        if (dp[m3][j] > dp[m1][i] + dist[i + 1][j + 1]) {
+                            dp[m3][j] = dp[m1][i] + dist[i + 1][j + 1];
+                            prev[m3][j] = i;
+                        }
                     }
-                }
-        } while (change);
-    };
 
-    mt19937 rng(random_device{}());
-    vector<int> tour;
-    double len;
-    bool change;
-
-    auto heuristic = [&]() -> bool {
-        return change;
-    };
-
-    for (int s : starts) {
-        tour = nearest_neighbor(s);
-        two_opt(tour);
-
-        len = length(tour);
-        while (heuristic()) {
-            change = false;
-            auto t = tour;
-            int i = -1, j = -1;
-            while (i == j) {
-                i = rng() % (n - 1) + 1;
-                j = rng() % (n - 1) + 1;
-            }
-            if (i > j) swap(i, j);
-            reverse(t.begin() + i, t.begin() + j + 1);
-            two_opt(t);
-
-            auto l = length(t);
-            if (len > l) {
-                len = l;
-                tour = t;
-                change = true;
-            }
-        }
-    }
-    if (n > 20) return {tour, len};
-
-    vector<double> min1(n, 1e20), min2(n, 1e20);
+    T len = inf;
+    int j = -1;
     for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++)
-            if (i != j) {
-                if (min1[i] > dist[i][j]) {
-                    min2[i] = min1[i];
-                    min1[i] = dist[i][j];
-                } else min2[i] = min(min2[i], dist[i][j]);
-            }
-    if (2 * len < accumulate(min1.begin(), min1.end(), 0) + accumulate(min2.begin(), min2.end(), 0) + 1e-5) return {tour, len};
-
-    vector<vector<int>> adj_list(n);
-    for (int u = 0; u < n; u++) {
-        for (int v = 0; v < n; v++)
-            if (u != v) adj_list[u].emplace_back(v);
-        sort(adj_list[u].begin(), adj_list[u].end(), [&](int v, int t) { return dist[u][v] < dist[u][t]; });
-    }
-
-    vector<int> t{0};
-    vector<vector<double>> memo(1 << n, vector<double>(n, 1e20));
-    auto dfs = [&](auto &&self, int mask = 1, int v = 0, double cost = 0) {
-        if (memo[mask][v] <= cost || len <= cost) return;
-        memo[mask][v] = cost;
-
-        if (mask == (1 << n) - 1) {
-            auto l = cost + dist[v][0];
-            if (len > l) {
-                len = l;
-                tour = t;
-            }
-            return;
+        if (len > dp.back()[i] + dist[i + 1][src]) {
+            len = dp.back()[i] + dist[i + 1][src];
+            j = i;
         }
-
-        vector<int> unvisited;
-        for (int u = 0; u < n; u++)
-            if (!((mask >> u) & 1)) unvisited.emplace_back(u);
-
-        auto next = 1e20, back = 1e20;
-        for (int u : unvisited) {
-            next = min(next, dist[v][u]);
-            back = min(back, dist[u][0]);
-        }
-
-        auto prim = [&]() -> double {
-            int m = unvisited.size();
-            if (m <= 1) return 0;
-
-            vector<bool> visited(m, false);
-            vector<double> d(m, 1e18);
-            d[0] = 0;
-            double weight = 0;
-            for (int _ = 0; _ < m; _++) {
-                int u = -1;
-                for (int i = 0; i < m; i++)
-                    if (!visited[i] && (u < 0 || d[i] < d[u])) u = i;
-                visited[u] = true;
-                weight += d[u];
-                for (int v = 0; v < m; v++)
-                    if (!visited[v]) d[v] = min(d[v], dist[unvisited[u]][unvisited[v]]);
-            }
-            return weight;
-        };
-        if (cost + prim() + next + back >= len) return;
-
-        for (int u : adj_list[v])
-            if (!((mask >> u) & 1)) {
-                t.emplace_back(u);
-                self(self, mask | (1 << u), u, cost + dist[v][u]);
-                t.pop_back();
-            }
-    };
-    dfs(dfs);
-    return {tour, len};
+    return len;
 }
 
-template <typename T, typename U>
-struct FlowNetwork {
-    struct Arc {
-        int u, rev;
-        T cap;
-        U cost;
-        Arc(int u, int rev, T cap, U cost) : u(u), rev(rev), cap(cap), cost(cost) {}
-    };
+template <typename T>
+pair<vector<int>, T> jonker_volgenant(const vector<vector<T>> &C) {
+    int n = C.size(), m = C[0].size();
 
-    int n;
-    vector<vector<Arc>> network;
-    vector<int> dist;
-    vector<typename vector<Arc>::iterator> it;
-    U inf;
-    FlowNetwork(int n) : n(n), network(n), inf(numeric_limits<U>::max()), dist(n), it(n) {}
-
-    void add_arc(int u, int v, T cap_uv, U cost, T cap_vu = 0) {
-        if (u == v) return;
-
-        network[u].emplace_back(v, network[v].size(), cap_uv, cost);
-        network[v].emplace_back(u, network[u].size() - 1, cap_vu, -cost);
-    }
-
-    bool bfs(int s, int t) {
-        fill(dist.begin(), dist.end(), -1);
-        dist[s] = 0;
-        queue<int> q;
-        q.emplace(s);
-        while (!q.empty()) {
-            int v = q.front();
-            q.pop();
-
-            for (auto [u, _, cap, __] : network[v])
-                if (cap > 0 && !~dist[u]) {
-                    dist[u] = dist[v] + 1;
-                    q.emplace(u);
-                }
+    vector<T> dist(m), potential(m);
+    vector<int> row_match(n, -1), col_match(m, -1), cols(m), prev(m);
+    iota(cols.begin(), cols.end(), 0);
+    T d = 0;
+    for (int i = 0, c1 = -1, temp = 0; i < n; i++) {
+        for (int c = 0; c < m; c++) {
+            dist[c] = C[i][c] - potential[c];
+            prev[c] = i;
         }
-        return ~dist[t];
-    }
 
-    T dfs(int v, int t, T flow) {
-        if (v == t) return flow;
-
-        for (; it[v] != network[v].end(); it[v]++) {
-            auto &[u, rev, cap, _] = *it[v];
-            if (cap > 0 && dist[u] == dist[v] + 1) {
-                T f = dfs(u, t, min(flow, cap));
-                if (f > 0) {
-                    cap -= f;
-                    network[u][rev].cap += f;
-                    return f;
-                }
-            }
-        }
-        return (T) 0;
-    }
-
-    T max_flow(int s, int t) {
-        T flow = 0, f;
-        while (bfs(s, t)) {
-            for (int v = 0; v < n; v++) it[v] = network[v].begin();
-            while ((f = dfs(s, t, numeric_limits<T>::max())) > 0) flow += f;
-        }
-        return flow;
-    }
-
-    pair<T, U> min_cost_max_flow(int s, int t) {
-        U cost = 0, epsilon = 0;
-        int scale = bit_ceil(2U * n);
-        for (int v = 0; v < n; v++)
-            for (auto &&a : network[v]) {
-                cost += a.cost * a.cap;
-                a.cost *= scale;
-                epsilon = max(epsilon, abs(a.cost));
-            }
-
-        T flow = max_flow(s, t);
-
-        vector<U> phi(n, 0), excess(n, 0);
-        vector<int> count(n, 0);
-        deque<int> active_stack;
-
-        auto push = [&](int v, Arc &a, U delta, bool active) {
-            if (delta > a.cap) delta = a.cap;
-            int u = a.u;
-            a.cap -= delta;
-            network[u][a.rev].cap += delta;
-            excess[v] -= delta;
-            excess[u] += delta;
-
-            if (active && 0 < excess[u] && excess[u] <= delta) active_stack.emplace_front(u);
-        };
-
-        auto relabel = [&](int v, U delta) {
-            if (delta < inf) phi[v] -= delta + epsilon;
-            else {
-                phi[v] -= epsilon;
-                count[v]--;
-            }
-        };
-
-        auto reduced_cost = [&](int v, const Arc &a) {
-            int diff = count[v] - count[a.u];
-            if (diff > 0) return inf;
-            if (diff < 0) return -inf;
-            return a.cost + phi[v] - phi[a.u];
-        };
-
-        auto check = [&](int v) {
-            if (excess[v]) return false;
-
-            U delta = inf;
-            for (auto &&a : network[v]) {
-                if (a.cap <= 0) continue;
-
-                U c = reduced_cost(v, a);
-                if (c < 0) return false;
-                delta = min(delta, c);
-            }
-
-            relabel(v, delta);
-            return true;
-        };
-
-        auto discharge = [&](int v) {
-            U delta = inf;
-
-            for (auto a = network[v].begin(); a != network[v].end(); a++) {
-                if (a->cap <= 0) continue;
-
-                if (reduced_cost(v, *a) < 0) {
-                    if (check(a->u)) {
-                        a--;
-                        continue;
+        int s = 0, t = 0;
+        for (;;) {
+            if (s == t) {
+                temp = s;
+                d = dist[cols[t++]];
+                for (int j = t; j < m; j++) {
+                    c1 = cols[j];
+                    if (d < dist[c1]) continue;
+                    if (d > dist[c1]) {
+                        d = dist[c1];
+                        t = s;
                     }
+                    cols[j] = exchange(cols[t++], c1);
+                }
 
-                    push(v, *a, excess[v], true);
-                    if (!excess[v]) return;
-                } else delta = min(delta, reduced_cost(v, *a));
+                for (int j = s; j < t; j++)
+                    if (!~col_match[c1 = cols[j]]) goto done;
             }
 
-            relabel(v, delta);
-            active_stack.emplace_front(v);
-        };
+            int c2 = cols[s++], r = col_match[c2];
+            for (int j = t; j < m; j++) {
+                c1 = cols[j];
+                if (dist[c1] > C[r][c1] - C[r][c2] + potential[c2] - potential[c1] + d) {
+                    dist[c1] = C[r][c1] - C[r][c2] + potential[c2] - potential[c1] + d;
+                    prev[c1] = r;
 
-        while (epsilon > 1) {
-            epsilon >>= 1;
-            active_stack.clear();
-
-            for (int v = 0; v < n; v++)
-                for (auto &&a : network[v])
-                    if (reduced_cost(v, a) < 0 && a.cap > 0) push(v, a, a.cap, false);
-
-            for (int v = 0; v < n; v++)
-                if (excess[v] > 0) active_stack.emplace_front(v);
-
-            while (!active_stack.empty()) {
-                int v = active_stack.front();
-                active_stack.pop_front();
-
-                discharge(v);
+                    if (dist[c1] == d) {
+                        if (!~col_match[c1]) goto done;
+                        cols[j] = exchange(cols[t++], c1);
+                    }
+                }
             }
         }
+        done:;
 
-        for (int v = 0; v < n; v++)
-            for (auto &&a : network[v]) {
-                a.cost /= scale;
-                cost -= a.cost * a.cap;
-            }
-
-        return {flow, cost / 2};
+        for (int j = 0; j < temp; j++) potential[cols[j]] += dist[cols[j]] - d;
+        for (int r = -1; r != i;) {
+            r = col_match[c1] = prev[c1];
+            swap(c1, row_match[r]);
+        }
     }
-};
+
+    T cost = 0;
+    for (int i = 0; i < n; i++) cost += C[i][row_match[i]];
+    return {row_match, cost};
+}
 
 int main() {
     ios::sync_with_stdio(false);
@@ -460,35 +214,37 @@ int main() {
     int d;
     cin >> d;
 
+    auto len = [&](const vector<Point<int>> &points) -> double {
+        int n = points.size();
+        vector<vector<double>> dist(n, vector<double>(n, 0));
+        for (int i = 1; i < n; i++) dist[0][i] = dist[i][0] = euclidean_dist(points[0], points[i]);
+        for (int i = 1; i < n; i++)
+            for (int j = 1; j < n; j++) dist[i][j] = euclidean_dist(points[i], points[j]);
+        return held_karp(n - 1, dist);
+    };
+
     double prior = 0;
-    vector<vector<Point<double>>> districts(d);
+    vector<vector<Point<int>>> districts(d);
     for (int i = 0; i < d; i++) {
         int n;
         cin >> n;
 
         districts[i].resize(n);
         for (auto &[x, y] : districts[i]) cin >> x >> y;
-
-        vector<int> s(n);
-        iota(s.begin(), s.end(), 0);
-        prior += travelling_salesman(districts[i], s).second;
+        prior += len(districts[i]);
     }
 
-    FlowNetwork<long long, long long> fn(d + 2);
-    for (int i = 0; i < d / 2; i++)
-        for (int j = d / 2; j < d; j++) {
-            vector<Point<double>> points;
-            for (auto p : districts[i]) points.emplace_back(p);
-            for (auto p : districts[j]) points.emplace_back(p);
-
-            vector<int> s(points.size());
-            iota(s.begin(), s.end(), 0);
-            fn.add_arc(i, j, 1, llround(travelling_salesman(points, s).second * 1e6));
+    int m = d / 2;
+    vector<int> l(m), r(m);
+    iota(l.begin(), l.end(), 0);
+    iota(r.begin(), r.end(), m);
+    vector<vector<double>> cost(m, vector<double>(m, 0));
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < m; j++) {
+            vector<Point<int>> points;
+            for (auto &p : districts[r[i]]) points.emplace_back(p);
+            for (auto &p : districts[l[j]]) points.emplace_back(p);
+            cost[i][j] = len(points);
         }
-
-    for (int i = 0; i < d; i++)
-        if (i < d / 2) fn.add_arc(d, i, 1, 0);
-        else fn.add_arc(i, d + 1, 1, 0);
-
-    cout << fixed << setprecision(2) << prior << " " << fn.min_cost_max_flow(d, d + 1).second * 1e-6;
+    cout << fixed << setprecision(2) << prior << " " << jonker_volgenant(cost).second;
 }
