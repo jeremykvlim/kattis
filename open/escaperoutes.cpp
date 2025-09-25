@@ -2,177 +2,227 @@
 using namespace std;
 
 template <typename T, typename U>
-struct FlowNetwork {
+struct BoundedFlowNetwork {
     struct Arc {
-        int u, rev;
+        int u, v;
         T cap;
         U cost;
-        Arc(int u, int rev, T cap, U cost) : u(u), rev(rev), cap(cap), cost(cost) {}
+        Arc(int u, int v, T cap, U cost) : u(u), v(v), cap(cap), cost(cost) {}
     };
 
-    int n;
-    vector<vector<Arc>> network;
-    vector<int> dist;
-    vector<typename vector<Arc>::iterator> it;
-    U inf;
-    FlowNetwork(int n) : n(n), network(n), inf(numeric_limits<U>::max()), dist(n), it(n) {}
+    int n, m;
+    vector<Arc> arcs;
+    vector<T> balance;
+    vector<U> potential;
+    vector<pair<int, int>> parent;
+    vector<int> depth, next, prev;
+    U lb_offset;
 
-    void add_arc(int u, int v, T cap_uv, U cost, T cap_vu = 0) {
-        if (u == v) return;
+    BoundedFlowNetwork(int n) : n(n), lb_offset(0), balance(n + 1, 0), potential(n + 1, 0), parent(n + 1, {-1, -1}),
+                                depth(n + 1, 1), next(2 * (n + 1), 0), prev(2 * (n + 1), 0) {}
 
-        network[u].emplace_back(v, network[v].size(), cap_uv, cost);
-        network[v].emplace_back(u, network[u].size() - 1, cap_vu, -cost);
+    void add_supply(int v, T b) {
+        balance[v] += b;
     }
 
-    bool bfs(int s, int t) {
-        fill(dist.begin(), dist.end(), -1);
-        dist[s] = 0;
-        queue<int> q;
-        q.emplace(s);
-        while (!q.empty()) {
-            int v = q.front();
-            q.pop();
+    void add_demand(int v, T b) {
+        balance[v] -= b;
+    }
 
-            for (auto [u, _, cap, __] : network[v])
-                if (cap > 0 && !~dist[u]) {
-                    dist[u] = dist[v] + 1;
-                    q.emplace(u);
+    int add_arc(int u, int v, T lb, T ub, U cost = 0) {
+        arcs.emplace_back(u, v, ub - lb, cost);
+        arcs.emplace_back(v, u, 0, -cost);
+        lb_offset += lb * cost;
+        add_supply(v, lb);
+        add_demand(u, lb);
+        return arcs.size() - 2;
+    }
+
+    void connect(int u, int v) {
+        next[u] = v;
+        prev[v] = u;
+    }
+
+    int build_spanning_tree(int s = -1, int t = -1) {
+        m = arcs.size();
+        U penalty = 1;
+        for (int e = 0; e < m; e += 2) penalty += abs(arcs[e].cost);
+
+        connect(n << 1, n << 1 | 1);
+        connect(n << 1 | 1, n << 1);
+        for (int i = 0; i < n; i++) {
+            int u = n, v = i;
+            T b = balance[i];
+            if (b < 0) {
+                b = -b;
+                swap(u, v);
+            }
+            int e = add_arc(u, v, 0, b, -penalty);
+            e ^= arcs[e].u != i;
+            parent[i] = {n, e};
+            potential[i] = potential[n] - arcs[e].cost;
+            connect(i << 1, i << 1 | 1);
+            connect(i << 1 | 1, next[n << 1]);
+            connect(n << 1, i << 1);
+        }
+
+        if (~s && ~t) return add_arc(t, s, 0, numeric_limits<T>::max() >> 2, -penalty) ^ 1;
+        return -1;
+    }
+
+    void network_simplex() {
+        auto reduced_cost = [&](int e) {
+            auto [u, v, cap, cost] = arcs[e];
+            return cost + potential[u] - potential[v];
+        };
+
+        depth[n] = 0;
+        auto pivot = [&](int in) {
+            auto [u, v, cap, cost] = arcs[in];
+            U phi = cost + potential[u] - potential[v];
+
+            T flow = arcs[in].cap;
+            int out = in, dir = -1, b = -1;
+            auto walk = [&](int x, int y) {
+                auto step = [&](int &a, int d, int steps = 1) {
+                    for (; steps; steps--, a = parent[a].first) {
+                        int e = parent[a].second;
+                        T f = arcs[e ^ !d].cap;
+                        if (make_pair(flow, out) > make_pair(f, e)) {
+                            tie(flow, out) = tie(f, e);
+                            dir = d;
+                            b = a;
+                        }
+                    }
+                };
+                if (depth[x] >= depth[y]) step(x, 0, depth[x] - depth[y]);
+                else step(y, 1, depth[y] - depth[x]);
+
+                while (x != y) {
+                    step(x, 0);
+                    step(y, 1);
                 }
-        }
-        return ~dist[t];
-    }
-
-    T dfs(int v, int t, T flow) {
-        if (v == t) return flow;
-
-        for (; it[v] != network[v].end(); it[v]++) {
-            auto &[u, rev, cap, _] = *it[v];
-            if (cap > 0 && dist[u] == dist[v] + 1) {
-                T f = dfs(u, t, min(flow, cap));
-                if (f > 0) {
-                    cap -= f;
-                    network[u][rev].cap += f;
-                    return f;
+                return x;
+            };
+            int lca = walk(u, v);
+            arcs[in].cap -= flow;
+            arcs[in ^ 1].cap += flow;
+            auto augment = [&](int a, int d) {
+                for (; a != lca; a = parent[a].first) {
+                    int e = parent[a].second;
+                    arcs[e ^ !d].cap -= flow;
+                    arcs[e ^ d].cap += flow;
                 }
-            }
-        }
-        return (T) 0;
-    }
+            };
+            augment(u, 0);
+            augment(v, 1);
 
-    T max_flow(int s, int t) {
-        T flow = 0, f;
-        while (bfs(s, t)) {
-            for (int v = 0; v < n; v++) it[v] = network[v].begin();
-            while ((f = dfs(s, t, numeric_limits<T>::max())) > 0) flow += f;
-        }
-        return flow;
-    }
+            if (in == out || dir == -1 || b == -1) return;
 
-    pair<T, U> min_cost_max_flow(int s, int t) {
-        U cost = 0, epsilon = 0;
-        int scale = bit_ceil(2U * n);
-        for (int v = 0; v < n; v++)
-            for (auto &&a : network[v]) {
-                cost += a.cost * a.cap;
-                a.cost *= scale;
-                epsilon = max(epsilon, abs(a.cost));
-            }
+            auto basis_exchange = [&](int a, int p, int in) {
+                auto update = [&](int a, int p) {
+                    for (int t = a, d = depth[p >> 1]; t != a + 1; t = next[t])
+                        if (!(t & 1)) {
+                            potential[t >> 1] += phi;
+                            depth[t >> 1] = ++d;
+                        } else d--;
 
-        T flow = max_flow(s, t);
+                    connect(prev[a], next[a + 1]);
+                    connect(a + 1, next[p]);
+                    connect(p, a);
+                };
 
-        vector<U> phi(n, 0), excess(n, 0);
-        vector<int> count(n, 0);
-        deque<int> active_stack;
+                do {
+                    update(a << 1, p << 1);
+                    if (a == b) break;
+                    auto [t, e] = parent[a];
+                    parent[a] = {p, in};
+                    p = exchange(a, t);
+                    in = e ^ 1;
+                } while (true);
+                parent[b] = {p, in};
+            };
 
-        auto push = [&](int v, Arc &a, U delta, bool active) {
-            if (delta > a.cap) delta = a.cap;
-            int u = a.u;
-            a.cap -= delta;
-            network[u][a.rev].cap += delta;
-            excess[v] -= delta;
-            excess[u] += delta;
-
-            if (active && 0 < excess[u] && excess[u] <= delta) active_stack.emplace_front(u);
+            if (!dir) {
+                phi = -phi;
+                basis_exchange(u, v, in);
+            } else basis_exchange(v, u, in ^ 1);
         };
 
-        auto relabel = [&](int v, U delta) {
-            if (delta < inf) phi[v] -= delta + epsilon;
-            else {
-                phi[v] -= epsilon;
-                count[v]--;
-            }
+        auto basis_edge = [&](int e) {
+            auto [u, v, cap, cost] = arcs[e];
+            int a = parent[u].second;
+            if (~a && (a >> 1) == (e >> 1)) return true;
+            int b = parent[v].second;
+            if (~b && (b >> 1) == (e >> 1)) return true;
+            return false;
         };
 
-        auto reduced_cost = [&](int v, const Arc &a) {
-            int diff = count[v] - count[a.u];
-            if (diff > 0) return inf;
-            if (diff < 0) return -inf;
-            return a.cost + phi[v] - phi[a.u];
-        };
-
-        auto check = [&](int v) {
-            if (excess[v]) return false;
-
-            U delta = inf;
-            for (auto &&a : network[v]) {
-                if (a.cap <= 0) continue;
-
-                U c = reduced_cost(v, a);
-                if (c < 0) return false;
-                delta = min(delta, c);
-            }
-
-            relabel(v, delta);
-            return true;
-        };
-
-        auto discharge = [&](int v) {
-            U delta = inf;
-
-            for (auto a = network[v].begin(); a != network[v].end(); a++) {
-                if (a->cap <= 0) continue;
-
-                if (reduced_cost(v, *a) < 0) {
-                    if (check(a->u)) {
-                        a--;
+        list<int> candidates;
+        for (int arc = 0, aug = arcs.size(), size = max(64, (int) sqrt(aug / 2)), len = size / 4, k = len / 10, count = 0;;) {
+            for (int _ = 0; _ < k && !candidates.empty(); _++) {
+                U cost = 0;
+                int in = -1;
+                for (auto it = candidates.begin(); it != candidates.end();) {
+                    int e = *it;
+                    U c = 0;
+                    if (arcs[e].cap <= 0 || basis_edge(e) || (c = reduced_cost(e)) >= 0) {
+                        it = candidates.erase(it);
                         continue;
                     }
-
-                    push(v, *a, excess[v], true);
-                    if (!excess[v]) return;
-                } else delta = min(delta, reduced_cost(v, *a));
+                    if (make_pair(cost, in) > make_pair(c, e)) tie(cost, in) = tie(c, e);
+                    it++;
+                }
+                if (!~in) break;
+                pivot(in);
+                count = 0;
             }
+            candidates.clear();
 
-            relabel(v, delta);
-            active_stack.emplace_front(v);
-        };
+            U cost = 0;
+            int in = -1;
+            for (int block = count + size; count < block; count++, ++arc %= aug)
+                if (!basis_edge(arc) && arcs[arc].cap > 0) {
+                    U c = reduced_cost(arc);
+                    if (c < 0) {
+                        if (candidates.size() < len) candidates.emplace_back(arc);
+                        if (make_pair(cost, in) > make_pair(c, arc)) tie(cost, in) = tie(c, arc);
+                    }
+                }
 
-        while (epsilon > 1) {
-            epsilon >>= 1;
-            active_stack.clear();
-
-            for (int v = 0; v < n; v++)
-                for (auto &&a : network[v])
-                    if (reduced_cost(v, a) < 0 && a.cap > 0) push(v, a, a.cap, false);
-
-            for (int v = 0; v < n; v++)
-                if (excess[v] > 0) active_stack.emplace_front(v);
-
-            while (!active_stack.empty()) {
-                int v = active_stack.front();
-                active_stack.pop_front();
-
-                discharge(v);
+            if (candidates.empty()) {
+                if (count >= aug) break;
+                continue;
             }
+            pivot(in);
+            count = 0;
         }
+    }
 
-        for (int v = 0; v < n; v++)
-            for (auto &&a : network[v]) {
-                a.cost /= scale;
-                cost -= a.cost * a.cap;
-            }
+    bool feasible() {
+        for (int i = 0; i < n; i++)
+            if (arcs[(i << 1) + m].cap) return false;
+        return true;
+    }
 
-        return {flow, cost / 2};
+    U min_cost() {
+        U cost = lb_offset;
+        for (int e = 0; e < m; e += 2) cost += arcs[e].cost * arcs[e ^ 1].cap;
+        return cost;
+    }
+
+    tuple<T, U, bool> min_cost_max_flow(int s, int t) {
+        int e = build_spanning_tree(s, t);
+        network_simplex();
+        if (!feasible()) return {(U) 0, (T) 0, false};
+        return {arcs[e].cap, min_cost(), true};
+    }
+
+    pair<U, bool> min_cost_b_flow() {
+        build_spanning_tree();
+        network_simplex();
+        if (!feasible()) return {(U) 0, false};
+        return {min_cost(), true};
     }
 };
 
@@ -180,30 +230,16 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int v, e;
-    cin >> v >> e;
+    int n, m;
+    cin >> n >> m;
 
-    FlowNetwork<int, int> fn(v + 1);
-    for (int _ = 0; _ < e; _++) {
+    BoundedFlowNetwork<int, long long> net(n);
+    for (int _ = 0; _ < m; _++) {
         int a, b;
         cin >> a >> b;
 
-        fn.add_arc(a, b, 1, -1);
-        fn.add_arc(a, b, e - 1, 0);
+        net.add_arc(a, b, 1, m, 0);
     }
-
-    auto temp = fn;
-    int l = 0, r = e, m;
-    while (l + 1 < r) {
-        m = l + (r - l) / 2;
-
-        fn.add_arc(v - 1, v, m, 0);
-        auto [f, c] = fn.min_cost_max_flow(0, v);
-        
-        if (c == -e) r = m;
-        else l = m;
-
-        fn = temp;
-    }
-    cout << r;
+    net.add_arc(n - 1, 0, 0, m, 1);
+    cout << net.min_cost_b_flow().first;
 }
