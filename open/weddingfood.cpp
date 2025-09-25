@@ -1,180 +1,66 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T, typename U>
-struct FlowNetwork {
-    struct Arc {
-        int u, rev;
-        T cap;
-        U cost;
-        Arc(int u, int rev, T cap, U cost) : u(u), rev(rev), cap(cap), cost(cost) {}
-    };
+template <typename T>
+pair<vector<int>, T> jonker_volgenant(const vector<vector<T>> &C) {
+    int n = C.size(), m = C[0].size();
 
-    int n;
-    vector<vector<Arc>> network;
-    vector<int> dist;
-    vector<typename vector<Arc>::iterator> it;
-    U inf;
-    FlowNetwork(int n) : n(n), network(n), inf(numeric_limits<U>::max()), dist(n), it(n) {}
-
-    void add_arc(int u, int v, T cap_uv, U cost, T cap_vu = 0) {
-        if (u == v) return;
-
-        network[u].emplace_back(v, network[v].size(), cap_uv, cost);
-        network[v].emplace_back(u, network[u].size() - 1, cap_vu, -cost);
-    }
-
-    bool bfs(int s, int t) {
-        fill(dist.begin(), dist.end(), -1);
-        dist[s] = 0;
-        queue<int> q;
-        q.emplace(s);
-        while (!q.empty()) {
-            int v = q.front();
-            q.pop();
-
-            for (auto [u, _, cap, __] : network[v])
-                if (cap > 0 && !~dist[u]) {
-                    dist[u] = dist[v] + 1;
-                    q.emplace(u);
-                }
+    vector<T> dist(m), potential(m);
+    vector<int> row_match(n, -1), col_match(m, -1), cols(m), prev(m);
+    iota(cols.begin(), cols.end(), 0);
+    T d = 0;
+    for (int i = 0, c1 = -1, temp = 0; i < n; i++) {
+        for (int c = 0; c < m; c++) {
+            dist[c] = C[i][c] - potential[c];
+            prev[c] = i;
         }
-        return ~dist[t];
-    }
 
-    T dfs(int v, int t, T flow) {
-        if (v == t) return flow;
-
-        for (; it[v] != network[v].end(); it[v]++) {
-            auto &[u, rev, cap, _] = *it[v];
-            if (cap > 0 && dist[u] == dist[v] + 1) {
-                T f = dfs(u, t, min(flow, cap));
-                if (f > 0) {
-                    cap -= f;
-                    network[u][rev].cap += f;
-                    return f;
-                }
-            }
-        }
-        return (T) 0;
-    }
-
-    T max_flow(int s, int t) {
-        T flow = 0, f;
-        while (bfs(s, t)) {
-            for (int v = 0; v < n; v++) it[v] = network[v].begin();
-            while ((f = dfs(s, t, numeric_limits<T>::max())) > 0) flow += f;
-        }
-        return flow;
-    }
-
-    pair<T, U> min_cost_max_flow(int s, int t) {
-        U cost = 0, epsilon = 0;
-        int scale = bit_ceil(2U * n);
-        for (int v = 0; v < n; v++)
-            for (auto &&a : network[v]) {
-                cost += a.cost * a.cap;
-                a.cost *= scale;
-                epsilon = max(epsilon, abs(a.cost));
-            }
-
-        T flow = max_flow(s, t);
-
-        vector<U> phi(n, 0), excess(n, 0);
-        vector<int> count(n, 0);
-        deque<int> active_stack;
-
-        auto push = [&](int v, Arc &a, U delta, bool active) {
-            if (delta > a.cap) delta = a.cap;
-            int u = a.u;
-            a.cap -= delta;
-            network[u][a.rev].cap += delta;
-            excess[v] -= delta;
-            excess[u] += delta;
-
-            if (active && 0 < excess[u] && excess[u] <= delta) active_stack.emplace_front(u);
-        };
-
-        auto relabel = [&](int v, U delta) {
-            if (delta < inf) phi[v] -= delta + epsilon;
-            else {
-                phi[v] -= epsilon;
-                count[v]--;
-            }
-        };
-
-        auto reduced_cost = [&](int v, const Arc &a) {
-            int diff = count[v] - count[a.u];
-            if (diff > 0) return inf;
-            if (diff < 0) return -inf;
-            return a.cost + phi[v] - phi[a.u];
-        };
-
-        auto check = [&](int v) {
-            if (excess[v]) return false;
-
-            U delta = inf;
-            for (auto &&a : network[v]) {
-                if (a.cap <= 0) continue;
-
-                U c = reduced_cost(v, a);
-                if (c < 0) return false;
-                delta = min(delta, c);
-            }
-
-            relabel(v, delta);
-            return true;
-        };
-
-        auto discharge = [&](int v) {
-            U delta = inf;
-
-            for (auto a = network[v].begin(); a != network[v].end(); a++) {
-                if (a->cap <= 0) continue;
-
-                if (reduced_cost(v, *a) < 0) {
-                    if (check(a->u)) {
-                        a--;
-                        continue;
+        int s = 0, t = 0;
+        for (;;) {
+            if (s == t) {
+                temp = s;
+                d = dist[cols[t++]];
+                for (int j = t; j < m; j++) {
+                    c1 = cols[j];
+                    if (d < dist[c1]) continue;
+                    if (d > dist[c1]) {
+                        d = dist[c1];
+                        t = s;
                     }
+                    cols[j] = exchange(cols[t++], c1);
+                }
 
-                    push(v, *a, excess[v], true);
-                    if (!excess[v]) return;
-                } else delta = min(delta, reduced_cost(v, *a));
+                for (int j = s; j < t; j++)
+                    if (!~col_match[c1 = cols[j]]) goto done;
             }
 
-            relabel(v, delta);
-            active_stack.emplace_front(v);
-        };
+            int c2 = cols[s++], r = col_match[c2];
+            for (int j = t; j < m; j++) {
+                c1 = cols[j];
+                if (dist[c1] > C[r][c1] - C[r][c2] + potential[c2] - potential[c1] + d) {
+                    dist[c1] = C[r][c1] - C[r][c2] + potential[c2] - potential[c1] + d;
+                    prev[c1] = r;
 
-        while (epsilon > 1) {
-            epsilon >>= 1;
-            active_stack.clear();
-
-            for (int v = 0; v < n; v++)
-                for (auto &&a : network[v])
-                    if (reduced_cost(v, a) < 0 && a.cap > 0) push(v, a, a.cap, false);
-
-            for (int v = 0; v < n; v++)
-                if (excess[v] > 0) active_stack.emplace_front(v);
-
-            while (!active_stack.empty()) {
-                int v = active_stack.front();
-                active_stack.pop_front();
-
-                discharge(v);
+                    if (dist[c1] == d) {
+                        if (!~col_match[c1]) goto done;
+                        cols[j] = exchange(cols[t++], c1);
+                    }
+                }
             }
         }
+        done:;
 
-        for (int v = 0; v < n; v++)
-            for (auto &&a : network[v]) {
-                a.cost /= scale;
-                cost -= a.cost * a.cap;
-            }
-
-        return {flow, cost / 2};
+        for (int j = 0; j < temp; j++) potential[cols[j]] += dist[cols[j]] - d;
+        for (int r = -1; r != i;) {
+            r = col_match[c1] = prev[c1];
+            swap(c1, row_match[r]);
+        }
     }
-};
+
+    T cost = 0;
+    for (int i = 0; i < n; i++) cost += C[i][row_match[i]];
+    return {row_match, cost};
+}
 
 int main() {
     ios::sync_with_stdio(false);
@@ -183,34 +69,23 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<int> c(n);
-    unordered_map<string, int> indices;
-    for (int i = 0; i < n; i++) {
+    vector<string> slices;
+    while (n--) {
         string t;
-        cin >> t >> c[i];
+        int c;
+        cin >> t >> c;
 
-        indices[t] = i;
+        while (c--) slices.emplace_back(t);
     }
 
-    vector<pair<int, int>> people(m);
-    for (auto &[like, dislike] : people) {
+    vector<vector<int>> cost(m, vector<int>(m, 1));
+    for (int i = 0; i < m; i++) {
         string _, t1, t2;
         cin >> _ >> t1 >> t2;
 
-        like = indices[t1];
-        dislike = indices[t2];
+        for (int j = 0; j < m; j++)
+            if (slices[j] == t1) cost[i][j]--;
+            else if (slices[j] == t2) cost[i][j] += 2;
     }
-
-    FlowNetwork<int, int> fn(n + m + 2);
-    for (int i = 0; i < n; i++) {
-        fn.add_arc(0, i + 1, c[i], 0);
-        for (int j = 0; j < m; j++) {
-            int cost = 0;
-            if (people[j].first == i) cost = -1;
-            else if (people[j].second == i) cost = 2;
-            fn.add_arc(i + 1, j + n + 1, 1, cost);
-            fn.add_arc(j + n + 1, n + m + 1, 1, 0);
-        }
-    }
-    cout << -fn.min_cost_max_flow(0, n + m + 1).second;
+    cout << m - jonker_volgenant(cost).second;
 }
