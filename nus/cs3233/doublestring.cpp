@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-vector<int> z_function(string s) {
+vector<int> z_function(const string &s) {
     vector<int> z(s.size());
     for (int i = 1, l = 0, r = 0; i < s.size(); i++) {
         if (i < r) z[i] = min(r - i, z[i - l]);
