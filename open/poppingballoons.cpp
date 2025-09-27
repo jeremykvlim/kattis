@@ -473,9 +473,10 @@ vector<T> polysub(const vector<T> &a, const vector<T> &b) {
 }
 
 template <typename T>
-T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
+T binomial_coefficient_mod_p(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
     if (k < 0 || k > n) return 0;
-    if (n >= p || k >= p) return C(n / p, k / p, p, fact, fact_inv) * C(n % p, k % p, p, fact, fact_inv);
+    if (n >= p || k >= p) return binomial_coefficient_mod_p(n / p, k / p, p, fact, fact_inv) *
+                                 binomial_coefficient_mod_p(n % p, k % p, p, fact, fact_inv);
     return fact[n] * fact_inv[k] * fact_inv[n - k];
 }
 
@@ -541,6 +542,6 @@ int main() {
 
     modint t = n;
     for (int k = 1; k <= n; k++)
-        if (count[k]) t -= count[k] / C(n, k, MOD, fact, fact_inv);
+        if (count[k]) t -= count[k] / binomial_coefficient_mod_p(n, k, MOD, fact, fact_inv);
     cout << t;
 }

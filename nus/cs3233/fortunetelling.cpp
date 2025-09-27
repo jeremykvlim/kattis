@@ -357,9 +357,10 @@ constexpr unsigned long long MOD = 998244353;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 template <typename T>
-T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
+T binomial_coefficient_mod_p(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
     if (k < 0 || k > n) return 0;
-    if (n >= p || k >= p) return C(n / p, k / p, p, fact, fact_inv) * C(n % p, k % p, p, fact, fact_inv);
+    if (n >= p || k >= p) return binomial_coefficient_mod_p(n / p, k / p, p, fact, fact_inv) *
+                                 binomial_coefficient_mod_p(n % p, k % p, p, fact, fact_inv);
     return fact[n] * fact_inv[k] * fact_inv[n - k];
 }
 
@@ -396,10 +397,10 @@ int main() {
     prepare();
 
     auto a = [&](int k) -> modint {
-        return ((k & 1) ? -1 : 1) * C(x - 1, k, MOD, fact, fact_inv);
+        return ((k & 1) ? -1 : 1) * binomial_coefficient_mod_p(x - 1, k, MOD, fact, fact_inv);
     };
 
     modint ways = 0;
-    for (int k = 0; k <= min(x + 1, y); k++) ways += (a(k) - 2 * a(k - 1) + 2 * a(k - 2)) * p2[x + y - k - 1] * C(x + y - k, y - k, MOD, fact, fact_inv);
+    for (int k = 0; k <= min(x + 1, y); k++) ways += (a(k) - 2 * a(k - 1) + 2 * a(k - 2)) * p2[x + y - k - 1] * binomial_coefficient_mod_p(x + y - k, y - k, MOD, fact, fact_inv);
     cout << ways;
 }

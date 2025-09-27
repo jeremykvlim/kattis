@@ -357,9 +357,10 @@ constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 template <typename T>
-T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
+T binomial_coefficient_mod_p(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
     if (k < 0 || k > n) return 0;
-    if (n >= p || k >= p) return C(n / p, k / p, p, fact, fact_inv) * C(n % p, k % p, p, fact, fact_inv);
+    if (n >= p || k >= p) return binomial_coefficient_mod_p(n / p, k / p, p, fact, fact_inv) *
+                                 binomial_coefficient_mod_p(n % p, k % p, p, fact, fact_inv);
     return fact[n] * fact_inv[k] * fact_inv[n - k];
 }
 
@@ -401,8 +402,8 @@ int main() {
         if (s == "0") return 0;
         int m = s.size();
         modint ways = 0;
-        for (int i = 2; i < m; i += 2) ways += 2LL * C(i - 1, i / 2 - 1, MOD, fact, fact_inv) * p2[i / 2 - 1] * p7[i - i / 2]
-                                             + 6LL * C(i - 1, i / 2, MOD, fact, fact_inv) * p2[i / 2] * p7[i - i / 2 - 1];
+        for (int i = 2; i < m; i += 2) ways += 2LL * binomial_coefficient_mod_p(i - 1, i / 2 - 1, MOD, fact, fact_inv) * p2[i / 2 - 1] * p7[i - i / 2]
+                                             + 6LL * binomial_coefficient_mod_p(i - 1, i / 2, MOD, fact, fact_inv) * p2[i / 2] * p7[i - i / 2 - 1];
         if (m & 1) return ways;
 
         int used = 0;
@@ -412,7 +413,7 @@ int main() {
                 if (d == 4) continue;
 
                 int n = m - i - 1, k = m / 2 - (used + (d == 6 || d == 8));
-                if (0 <= k && k <= n) ways += C(n, k, MOD, fact, fact_inv) * p2[k] * p7[n - k];
+                if (0 <= k && k <= n) ways += binomial_coefficient_mod_p(n, k, MOD, fact, fact_inv) * p2[k] * p7[n - k];
             }
             if (digit == 4) return ways;
             if (digit == 6 || digit == 8) used++;

@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -357,16 +357,18 @@ constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 template <typename T>
-T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
+T binomial_coefficient_mod_p(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
     if (k < 0 || k > n) return 0;
-    if (n >= p || k >= p) return C(n / p, k / p, p, fact, fact_inv) * C(n % p, k % p, p, fact, fact_inv);
+    if (n >= p || k >= p) return binomial_coefficient_mod_p(n / p, k / p, p, fact, fact_inv) *
+                                 binomial_coefficient_mod_p(n % p, k % p, p, fact, fact_inv);
     return fact[n] * fact_inv[k] * fact_inv[n - k];
 }
 
 template <typename T>
-T C(int n, int k1, int k2, int k3, int p, vector<T> &fact, vector<T> &fact_inv) {
+T trinomial_coefficient_mod_p(int n, int k1, int k2, int k3, int p, vector<T> &fact, vector<T> &fact_inv) {
     if (k1 < 0 || k1 > n || k2 < 0 || k2 > n || k3 < 0 || k3 > n) return 0;
-    if (n >= p || k1 >= p || k2 >= p || k3 >= p) return C(n / p, k1 / p, k2 / p, k3 / p, p, fact, fact_inv) * C(n % p, k1 % p, k2 % p, k3 % p, p, fact, fact_inv);
+    if (n >= p || k1 >= p || k2 >= p || k3 >= p) return trinomial_coefficient_mod_p(n / p, k1 / p, k2 / p, k3 / p, p, fact, fact_inv) *
+                                                        trinomial_coefficient_mod_p(n % p, k1 % p, k2 % p, k3 % p, p, fact, fact_inv);
     return fact[n] * fact_inv[k1] * fact_inv[k2] * fact_inv[k3];
 }
 
@@ -400,7 +402,8 @@ int main() {
         modint w = 0;
         for (int i = 0; 2 * i <= a - c + m; i++) {
             int j = i + c - m, k = a - i - j;
-            if (~(m - i - k)) w += C(i + j + k, i, j, k, MOD, fact, fact_inv) * C(m - i - k + a - 1, a - 1, MOD, fact, fact_inv) * p2[k];
+            if (~(m - i - k)) w += trinomial_coefficient_mod_p(i + j + k, i, j, k, MOD, fact, fact_inv) *
+                                   binomial_coefficient_mod_p(m - i - k + a - 1, a - 1, MOD, fact, fact_inv) * p2[k];
         }
 
         return w;

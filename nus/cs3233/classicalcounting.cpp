@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -358,9 +358,10 @@ using modint1 = MontgomeryModInt<integral_constant<decay<decltype(MOD1)>::type, 
 using modint2 = MontgomeryModInt<integral_constant<decay<decltype(MOD2)>::type, MOD2>>;
 
 template <typename T>
-T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
+T binomial_coefficient_mod_p(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
     if (k < 0 || k > n) return 0;
-    if (n >= p || k >= p) return C(n / p, k / p, p, fact, fact_inv) * C(n % p, k % p, p, fact, fact_inv);
+    if (n >= p || k >= p) return binomial_coefficient_mod_p(n / p, k / p, p, fact, fact_inv) *
+                                 binomial_coefficient_mod_p(n % p, k % p, p, fact, fact_inv);
     return fact[n] * fact_inv[k] * fact_inv[n - k];
 }
 
@@ -391,7 +392,8 @@ int main() {
     auto ways = [&](auto &fact, auto &fact_inv, int mod) -> long long {
         auto w = 0LL;
         for (int i = 0; i * (m + 1) <= k; i++) {
-            auto c = C(n, i, mod, fact, fact_inv) * C(n + k - i * (m + 1) - 1, k - i * (m + 1), mod, fact, fact_inv);
+            auto c = binomial_coefficient_mod_p(n, i, mod, fact, fact_inv) *
+                     binomial_coefficient_mod_p(n + k - i * (m + 1) - 1, k - i * (m + 1), mod, fact, fact_inv);
             i & 1 ? w -= c() : w += c();
         }
         w %= mod;

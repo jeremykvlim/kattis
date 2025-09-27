@@ -357,9 +357,10 @@ constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 template <typename T>
-T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
+T binomial_coefficient_mod_p(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
     if (k < 0 || k > n) return 0;
-    if (n >= p || k >= p) return C(n / p, k / p, p, fact, fact_inv) * C(n % p, k % p, p, fact, fact_inv);
+    if (n >= p || k >= p) return binomial_coefficient_mod_p(n / p, k / p, p, fact, fact_inv) *
+                                 binomial_coefficient_mod_p(n % p, k % p, p, fact, fact_inv);
     return fact[n] * fact_inv[k] * fact_inv[n - k];
 }
 
@@ -369,11 +370,11 @@ int main() {
 
     modint::init();
 
-    int n, k;
+    int n, K;
     long long s, a;
-    cin >> n >> k >> s >> a;
+    cin >> n >> K >> s >> a;
 
-    auto [l, r] = minmax(n, k);
+    auto [l, r] = minmax(n, K);
     vector<modint> fact(r + 1, 1), fact_inv(r + 1, 1);
     auto prepare = [&]() {
         auto inv = fact;
@@ -386,7 +387,7 @@ int main() {
     };
     prepare();
 
-    modint ak = a * k, ak1 = a * (k - 1);
+    modint ak = a * K, ak1 = a * (K - 1);
     vector<modint> ps(n + 1, 1), pak(n + 1, 1), pak1(n + 1, 1);
     for (int i = 1; i <= n; i++) {
         ps[i] = ps[i - 1] * s;
@@ -394,12 +395,13 @@ int main() {
         pak1[i] = pak1[i - 1] * ak1;
     }
 
-    modint ZK = 0;
-    for (int u = 0; u <= l; u++) ZK += C(n, u, MOD, fact, fact_inv) * C(k, u, MOD, fact, fact_inv) * ps[u] * pak[n - u];
+    modint ways_k = 0;
+    for (int k = 0; k <= l; k++) ways_k += binomial_coefficient_mod_p(n, k, MOD, fact, fact_inv) *
+                                           binomial_coefficient_mod_p(K, k, MOD, fact, fact_inv) * ps[k] * pak[n - k];
 
-    modint ZK1 = 0;
-    if (k)
-        for (int u = 0; u <= min(n, k - 1); u++) ZK1 += C(n, u, MOD, fact, fact_inv) * C(k - 1, u, MOD, fact, fact_inv) * ps[u] * pak1[n - u];
+    modint ways_k1 = 0;
+    for (int k = 0; k <= min(n, K - 1); k++) ways_k1 += binomial_coefficient_mod_p(n, k, MOD, fact, fact_inv) *
+                                                        binomial_coefficient_mod_p(K - 1, k, MOD, fact, fact_inv) * ps[k] * pak1[n - k];
 
-    cout << ZK - ZK1;
+    cout << ways_k - ways_k1;
 }

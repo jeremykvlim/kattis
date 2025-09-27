@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -357,9 +357,10 @@ constexpr unsigned int MOD = 1e4 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 template <typename T>
-T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
+T binomial_coefficient_mod_p(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
     if (k < 0 || k > n) return 0;
-    if (n >= p || k >= p) return C(n / p, k / p, p, fact, fact_inv) * C(n % p, k % p, p, fact, fact_inv);
+    if (n >= p || k >= p) return binomial_coefficient_mod_p(n / p, k / p, p, fact, fact_inv) *
+                                 binomial_coefficient_mod_p(n % p, k % p, p, fact, fact_inv);
     return fact[n] * fact_inv[k] * fact_inv[n - k];
 }
 
@@ -410,10 +411,10 @@ int main() {
             sort(rocks.begin(), rocks.end());
             for (int i = 0; i < rocks.size(); i++) {
                 auto [x1, y1] = rocks[i];
-                dp[i] = C(x1 + y1, x1, MOD, fact, fact_inv);
+                dp[i] = binomial_coefficient_mod_p(x1 + y1, x1, MOD, fact, fact_inv);
                 for (int j = 0; j < i; j++) {
                     auto [x2, y2] = rocks[j];
-                    if (x2 <= x1 && y2 <= y1) dp[i] -= dp[j] * C(x1 - x2 + y1 - y2, x1 - x2, MOD, fact, fact_inv);
+                    if (x2 <= x1 && y2 <= y1) dp[i] -= dp[j] * binomial_coefficient_mod_p(x1 - x2 + y1 - y2, x1 - x2, MOD, fact, fact_inv);
                 }
             }
         }
