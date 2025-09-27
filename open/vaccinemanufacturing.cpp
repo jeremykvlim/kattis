@@ -367,9 +367,9 @@ struct Trie {
 
     struct TrieNode {
         vector<int> next;
-        int end, pal;
+        int end, palindrome;
 
-        TrieNode(int range = 26) : next(range, -1), end(0), pal(0) {}
+        TrieNode(int range = 26) : next(range, -1), end(0), palindrome(0) {}
     };
 
     vector<TrieNode> T;
@@ -384,7 +384,7 @@ struct Trie {
             char c = s[i];
             int pos = c - a;
 
-            if ((affix_mask >> i) & 1) T[node].pal += count;
+            if ((affix_mask >> i) & 1) T[node].palindrome += count;
 
             if (T[node].next[pos] == -1) {
                 T[node].next[pos] = T.size();
@@ -394,7 +394,7 @@ struct Trie {
         }
 
         T[node].end += count;
-        T[node].pal += count;
+        T[node].palindrome += count;
     }
 
     vector<int> end_count(string &s) {
@@ -423,7 +423,7 @@ struct Trie {
             if (T[node].next[pos] == -1) return count;
             node = T[node].next[pos];
         }
-        return count + T[node].pal;
+        return count + T[node].palindrome;
     }
 
     int walk_right(string &s, const __int128 &affix_mask, int sl) {
@@ -437,7 +437,7 @@ struct Trie {
             if (T[node].next[pos] == -1) return count;
             node = T[node].next[pos];
         }
-        return count + T[node].pal;
+        return count + T[node].palindrome;
     }
 };
 
