@@ -28,7 +28,7 @@ int main() {
     cin >> s;
 
     auto dp = manacher(s);
-    auto k = 0LL;
+    int k = 0;
     for (int i = 1; i < 2 * s.size() - 1; i += 2) {
         int r = dp[i] * 2 - dp[i] * 2 % 4;
         if (r > k)
