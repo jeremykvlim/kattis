@@ -513,9 +513,9 @@ int main() {
     for (int i = 0; i < n; i++) {
         ways += sum * count[i] * freq[rev[i]];
         auto end_count_l = trie_l.end_count(rev[i]), end_count_r = trie_r.end_count(m[i]);
-        for (int t = 0; t < m[i].size(); t++) {
-            ways += trie_l.walk_left(m[i], pref_mask[i], m[i].size() - t - 1) * count[i] * end_count_l[t];
-            ways += trie_r.walk_right(m[i], suff_mask[i], t) * count[i] * end_count_r[t];
+        for (int k = 0; k < m[i].size(); k++) {
+            ways += trie_l.walk_left(m[i], pref_mask[i], m[i].size() - k - 1) * count[i] * end_count_l[k];
+            ways += trie_r.walk_right(m[i], suff_mask[i], k) * count[i] * end_count_r[k];
         }
     }
     cout << ways;
