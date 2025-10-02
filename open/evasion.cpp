@@ -33,7 +33,7 @@ int main() {
             for (auto [u, w, i] : adj_list[v])
                 if (dist[u] > d + w) {
                     dist[u] = d + w;
-                    pq.emplace(dist[u], u);
+                    pq.emplace(d + w, u);
                 }
         }
         return dist;
@@ -101,7 +101,7 @@ int main() {
         if (!hidden && valid[v])
             if (dist[v][1] > max(d, dist_p[v])) {
                 dist[v][1] = max(d, dist_p[v]);
-                pq.emplace(dist[v][1], v, 1);
+                pq.emplace(max(d, dist_p[v]), v, 1);
             }
 
         for (auto [u, w, i] : adj_list[v]) {
@@ -133,7 +133,7 @@ int main() {
                 if (on_p_to_s_path[u] && d + 2 * w == dist_p[u]) continue;
                 if (dist[u][0] > d + 2 * w) {
                     dist[u][0] = d + 2 * w;
-                    pq.emplace(dist[u][0], u, 0);
+                    pq.emplace(d + 2 * w, u, 0);
                 }
             } else {
                 if (s_to_t_dir[i]) {
@@ -162,7 +162,7 @@ int main() {
                 if (on_s_to_t_path[u] && d + 2 * w == dist_s[u] + p_to_s) continue;
                 if (dist[u][1] > d + 2 * w) {
                     dist[u][1] = d + 2 * w;
-                    pq.emplace(dist[u][1], u, 1);
+                    pq.emplace(d + 2 * w;, u, 1);
                 }
             }
         }

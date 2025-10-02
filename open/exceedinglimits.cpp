@@ -39,7 +39,7 @@ int main() {
                 for (auto [u, L, V] : adj_list[v])
                     if (dist[u] > d + L / (V + mid)) {
                         dist[u] = d + L / (V + mid);
-                        pq.emplace(dist[u], u);
+                        pq.emplace(d + L / (V + mid), u);
                     }
             }
             return dist[n - 1] <= t;

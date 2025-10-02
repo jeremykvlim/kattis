@@ -27,9 +27,9 @@ vector<vector<T>> dreyfus_wagner(int n, const vector<array<int, 3>> &edges, cons
             if (d != dist[v]) continue;
 
             for (auto [u, w] : adj_list[v])
-                if (dist[u] > dist[v] + w) {
-                    dist[u] = dist[v] + w;
-                    pq.emplace(dist[u], u);
+                if (dist[u] > d + w) {
+                    dist[u] = d + w;
+                    pq.emplace(d + w, u);
                 }
         }
     }

@@ -40,14 +40,14 @@ pair<T, vector<T>> linear_program_solution(const vector<vector<T>> &A, const vec
             int col = -1;
             for (int j = 0; j <= n; j++) {
                 if (phase == 2 && non_basic[j] == -1) continue;
-                if (col == -1 || make_pair(tableau[r][j], non_basic[j]) < make_pair(tableau[r][col], non_basic[col])) col = j;
+                if (col == -1 || pair<T, T>(tableau[r][j], non_basic[j]) < pair<T, T>(tableau[r][col], non_basic[col])) col = j;
             }
             if (tableau[r][col] >= -1e-8) return true;
 
             int row = -1;
             for (int i = 0; i < m; i++) {
                 if (tableau[i][col] <= 1e-8) continue;
-                if (row == -1 || make_pair(tableau[i][n + 1] / tableau[i][col], basic[i]) < make_pair(tableau[row][n + 1] / tableau[row][col], basic[row])) row = i;
+                if (row == -1 || pair<T, T>(tableau[i][n + 1] / tableau[i][col], basic[i]) < pair(tableau[row][n + 1] / tableau[row][col], basic[row])) row = i;
             }
             if (row == -1) return false;
 
@@ -66,7 +66,7 @@ pair<T, vector<T>> linear_program_solution(const vector<vector<T>> &A, const vec
             if (basic[i] == -1) {
                 int col = -1;
                 for (int j = 0; j <= n; j++)
-                    if (col == -1 || make_pair(tableau[i][j], non_basic[j]) < make_pair(tableau[i][col], non_basic[col])) col = j;
+                    if (col == -1 || pair<T, T>{tableau[i][j], non_basic[j]} < pair<T, T>{tableau[i][col], non_basic[col]}) col = j;
                 pivot(i, col);
             }
     }
@@ -78,31 +78,6 @@ pair<T, vector<T>> linear_program_solution(const vector<vector<T>> &A, const vec
     return {tableau[m][n + 1], solution};
 }
 
-vector<int> dijkstra_dense(int s, const vector<vector<int>> &adj_matrix) {
-    int n = adj_matrix.size();
-
-    vector<int> dist(n, INT_MAX), prev(n, -1);
-    dist[s] = 0;
-    vector<bool> visited(n, false);
-    for (int i = 0; i < n; i++) {
-        int d = INT_MAX, j = 0;
-        for (int k = 0; k < n; k++)
-            if (!visited[k] && d > dist[k]) {
-                d = dist[k];
-                j = k;
-            }
-
-        visited[j] = true;
-        for (int k = 0; k < n; k++)
-            if (!visited[k] && adj_matrix[j][k] > 0 && dist[k] > dist[j] + adj_matrix[j][k]) {
-                dist[k] = dist[j] + adj_matrix[j][k];
-                prev[k] = j;
-            }
-    }
-
-    return prev;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -110,16 +85,18 @@ int main() {
     int n;
     cin >> n;
 
-    vector<vector<int>> adj_matrix(n, vector<int>(n, 0));
+    vector<vector<pair<int, int>>> adj_list(n);
     vector<vector<int>> indices(n, vector<int>(n, -1));
     vector<array<int, 3>> edges;
     int count = 0;
     for (int i = 0; i < n; i++)
         for (int j = 0; j < n; j++) {
-            cin >> adj_matrix[i][j];
+            int k;
+            cin >> k;
 
-            if (adj_matrix[i][j] > 0) {
-                edges.push_back({i, j, adj_matrix[i][j]});
+            if (k > 0) {
+                edges.push_back({i, j, k});
+                adj_list[i].emplace_back(j, k);
                 indices[i][j] = count++;
             }
         }
@@ -131,11 +108,30 @@ int main() {
         c[indices[u][v]] = 1;
 
         A.emplace_back(c);
-        b.emplace_back(adj_matrix[u][v]);
+        b.emplace_back(w);
     }
 
+    vector<int> dist(n, INT_MAX), prev(n, -1);
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
     auto path = [&](int s, int d) -> tuple<vector<double>, vector<double>, int> {
-        auto prev = dijkstra_dense(s, adj_matrix);
+        fill(dist.begin(), dist.end(), INT_MAX);
+        fill(prev.begin(), prev.end(), -1);
+        dist[s] = 0;
+        pq.emplace(0, s);
+        while (!pq.empty()) {
+            auto [dv, v] = pq.top();
+            pq.pop();
+
+            if (dv != dist[v]) continue;
+
+            for (auto [u, w] : adj_list[v])
+                if (dist[u] > dv + w) {
+                    dist[u] = dv + w;
+                    pq.emplace(dv + w, u);
+                    prev[u] = v;
+                }
+        }
+
         vector<int> p;
         while (d != s) {
             p.emplace_back(indices[prev[d]][d]);
@@ -143,14 +139,14 @@ int main() {
         }
 
         vector<double> c_pos(count, 0), c_neg(count, 0);
-        int dist = 0;
+        int w = 0;
         for (int i : p) {
             c_pos[i] = 1;
             c_neg[i] = -1;
-            dist += edges[i][2];
+            w += edges[i][2];
         }
 
-        return {c_pos, c_neg, dist};
+        return {c_pos, c_neg, w};
     };
 
     int r;
@@ -160,11 +156,11 @@ int main() {
         int s, d, t;
         cin >> s >> d >> t;
 
-        auto [c_pos, c_neg, dist] = path(s, d);
+        auto [c_pos, c_neg, w] = path(s, d);
         A.emplace_back(c_pos);
         A.emplace_back(c_neg);
-        b.emplace_back(t - dist);
-        b.emplace_back(dist - t);
+        b.emplace_back(t - w);
+        b.emplace_back(w - t);
     }
 
     int q;
@@ -174,7 +170,7 @@ int main() {
         int s, d;
         cin >> s >> d;
 
-        auto [c_pos, c_neg, dist] = path(s, d);
-        cout << fixed << setprecision(6) << s << " " << d << " " << -linear_program_solution(A, b, c_neg).first + dist << " " << linear_program_solution(A, b, c_pos).first + dist << "\n";
+        auto [c_pos, c_neg, w] = path(s, d);
+        cout << fixed << setprecision(6) << s << " " << d << " " << -linear_program_solution(A, b, c_neg).first + w << " " << linear_program_solution(A, b, c_pos).first + w << "\n";
     }
 }

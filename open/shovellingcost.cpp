@@ -36,9 +36,9 @@ pair<T, vector<int>> dreyfus_wagner(int n, const vector<array<int, 3>> &edges, c
             if (d != dist[v]) continue;
 
             for (auto [u, w, i] : adj_list[v])
-                if (dist[u] > dist[v] + w) {
-                    dist[u] = dist[v] + w;
-                    pq.emplace(dist[u], u);
+                if (dist[u] > d + w) {
+                    dist[u] = d + w;
+                    pq.emplace(d + w, u);
                     prev[m1][u] = {v, i};
                 }
         }
