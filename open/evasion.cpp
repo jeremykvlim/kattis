@@ -162,7 +162,7 @@ int main() {
                 if (on_s_to_t_path[u] && d + 2 * w == dist_s[u] + p_to_s) continue;
                 if (dist[u][1] > d + 2 * w) {
                     dist[u][1] = d + 2 * w;
-                    pq.emplace(d + 2 * w;, u, 1);
+                    pq.emplace(d + 2 * w, u, 1);
                 }
             }
         }

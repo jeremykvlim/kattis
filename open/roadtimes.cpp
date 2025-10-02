@@ -40,14 +40,14 @@ pair<T, vector<T>> linear_program_solution(const vector<vector<T>> &A, const vec
             int col = -1;
             for (int j = 0; j <= n; j++) {
                 if (phase == 2 && non_basic[j] == -1) continue;
-                if (col == -1 || pair<T, T>(tableau[r][j], non_basic[j]) < pair<T, T>(tableau[r][col], non_basic[col])) col = j;
+                if (col == -1 || make_pair(tableau[r][j], non_basic[j]) < make_pair(tableau[r][col], non_basic[col])) col = j;
             }
             if (tableau[r][col] >= -1e-8) return true;
 
             int row = -1;
             for (int i = 0; i < m; i++) {
                 if (tableau[i][col] <= 1e-8) continue;
-                if (row == -1 || pair<T, T>(tableau[i][n + 1] / tableau[i][col], basic[i]) < pair(tableau[row][n + 1] / tableau[row][col], basic[row])) row = i;
+                if (row == -1 || make_pair(tableau[i][n + 1] / tableau[i][col], basic[i]) < make_pair(tableau[row][n + 1] / tableau[row][col], basic[row])) row = i;
             }
             if (row == -1) return false;
 
@@ -66,7 +66,7 @@ pair<T, vector<T>> linear_program_solution(const vector<vector<T>> &A, const vec
             if (basic[i] == -1) {
                 int col = -1;
                 for (int j = 0; j <= n; j++)
-                    if (col == -1 || pair<T, T>{tableau[i][j], non_basic[j]} < pair<T, T>{tableau[i][col], non_basic[col]}) col = j;
+                    if (col == -1 || make_pair(tableau[i][j], non_basic[j]) < make_pair(tableau[i][col], non_basic[col])) col = j;
                 pivot(i, col);
             }
     }
