@@ -42,22 +42,22 @@ int main() {
     }
 
     vector<int> prev(n + 1, 0), depth(n + 1, 0), heavy(n + 1, -1);
-    auto dfs = [&](auto &&self, int v = 1) -> int {
-        int size = 1, largest = 0;
+    auto hld = [&](auto &&self, int v = 1) -> int {
+        int subtree_size = 1, largest = 0;
         for (int u : adj_list[v])
             if (u != prev[v]) {
                 prev[u] = v;
                 depth[u] = depth[v] + 1;
-                int s = self(self, u);
-                size += s;
-                if (largest < s) {
-                    largest = s;
+                int size = self(self, u);
+                subtree_size += size;
+                if (largest < size) {
+                    largest = size;
                     heavy[v] = u;
                 }
             }
-        return size;
+        return subtree_size;
     };
-    dfs(dfs);
+    hld(hld);
 
     int lg = __lg(n) + 1;
     vector<vector<int>> lift(lg, vector<int>(n + 1, 0));
