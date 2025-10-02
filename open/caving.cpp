@@ -62,12 +62,12 @@ struct StaticTopTree {
                                                                                      adj_list(adj_list) {
         vals = values;
         auto hld = [&](auto &&self, int v = 0) -> int {
-            int subtree_size = 1, heavy = 0;
+            int subtree_size = 1, largest = 0;
             for (int &u : adj_list[v]) {
                 int size = self(self, u);
                 subtree_size += size;
-                if (heavy < size) {
-                    heavy = size;
+                if (largest < size) {
+                    largest = size;
                     swap(u, adj_list[v][0]);
                 }
             }
