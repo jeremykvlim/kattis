@@ -1,29 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-vector<long long> dijkstra(int s, vector<vector<pair<int, int>>> &adj_list) {
-    int n = adj_list.size();
-
-    vector<long long> dist(n, 1e18);
-    dist[s] = 0;
-    priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<>> pq;
-    pq.emplace(0, s);
-    while (!pq.empty()) {
-        auto [d, v] = pq.top();
-        pq.pop();
-
-        if (dist[v] != d) continue;
-
-        for (auto [u, w] : adj_list[v])
-            if (dist[u] > d + w) {
-                dist[u] = d + w;
-                pq.emplace(d + w, u);
-            }
-    }
-
-    return dist;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -40,19 +17,41 @@ int main() {
         adj_list_regular[u].emplace_back(v, t);
         adj_list_transpose[v].emplace_back(u, t);
     }
+
+    vector<long long> dist(n + 1);
+    priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<>> pq;
+    auto dijkstra = [&](int s, auto &adj_list) {
+        fill(dist.begin(), dist.end(), 1e18);
+        dist[s] = 0;
+        pq.emplace(0, s);
+        while (!pq.empty()) {
+            auto [d, v] = pq.top();
+            pq.pop();
+
+            if (d != dist[v]) continue;
+
+            for (auto [u, w] : adj_list[v])
+                if (dist[u] > d + w) {
+                    dist[u] = d + w;
+                    pq.emplace(d + w, u);
+                }
+        }
+        return dist;
+    };
     auto dist_regular = dijkstra(1, adj_list_regular), dist_transpose = dijkstra(n, adj_list_transpose);
 
+    queue<int> q;
+    vector<bool> valid(n + 1), visited(n + 1);
     long long l = 0, r = 1e12, mid;
     while (l + 1 < r) {
         mid = l + (r - l) / 2;
 
         auto check = [&](auto d) -> bool {
-            vector<bool> valid(n + 1, false);
+            fill(valid.begin(), valid.end(), false);
             for (int i = 1; i <= n; i++) valid[i] = (dist_transpose[i] <= d);
             if (valid[1]) return true;
 
-            queue<int> q;
-            vector<bool> visited(n + 1, false);
+            fill(visited.begin(), visited.end(), false);
             for (int i = 2; i <= n; i++)
                 if (valid[i] && dist_regular[i] + dist_transpose[i] <= a + d) {
                     q.emplace(i);
@@ -79,7 +78,7 @@ int main() {
             for (int i = 1; i <= n; i++)
                 if (visited[i] && !degree[i]) q.emplace(i);
 
-            vector<long long> dist(n + 1, -1e18);
+            fill(dist.begin(), dist.end(), -1e18);
             while (!q.empty()) {
                 int v = q.front();
                 q.pop();
@@ -95,7 +94,6 @@ int main() {
 
             for (int i = 1; i <= n; i++)
                 if (visited[i] && degree[i]) return true;
-
             return false;
         };
 

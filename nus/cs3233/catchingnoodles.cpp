@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -356,26 +356,6 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
-void dijkstra(int s, vector<vector<pair<int, int>>> &adj_list, vector<int> &dist, vector<modint> &count) {
-    count[s] = 1;
-    dist[s] = 0;
-    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
-    pq.emplace(0, s);
-    while (!pq.empty()) {
-        auto [d, v] = pq.top();
-        pq.pop();
-
-        if (dist[v] != d) continue;
-
-        for (auto [u, l] : adj_list[v])
-            if (dist[u] > d + l) {
-                dist[u] = d + l;
-                pq.emplace(d + l, u);
-                count[u] = count[v];
-            } else if (dist[u] == d + l) count[u] += count[v];
-    }
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -396,8 +376,27 @@ int main() {
 
     vector<int> dist1(j, INT_MAX), dist2(j, INT_MAX);
     vector<modint> count1(j, 0), count2(j, 0);
-    dijkstra(0, adj_list, dist1, count1);
-    dijkstra(j - 1, adj_list, dist2, count2);
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;
+    auto dijkstra = [&](int s, auto &dist, auto &count) {
+        count[s] = 1;
+        dist[s] = 0;
+        pq.emplace(0, s);
+        while (!pq.empty()) {
+            auto [d, v] = pq.top();
+            pq.pop();
+
+            if (dist[v] != d) continue;
+
+            for (auto [u, l] : adj_list[v])
+                if (dist[u] > d + l) {
+                    dist[u] = d + l;
+                    pq.emplace(d + l, u);
+                    count[u] = count[v];
+                } else if (dist[u] == d + l) count[u] += count[v];
+        }
+    };
+    dijkstra(0, dist1, count1);
+    dijkstra(j - 1, dist2, count2);
 
     if (dist2[0] == INT_MAX)
         while (j--) cout << "-1 ";
