@@ -44,7 +44,7 @@ int main() {
 
     auto divisors = sieve(5e5);
 
-    vector<int> label(1e5 + 1), subtree_size(1e5 + 1), heavy(1e5 + 1);
+    vector<int> label(1e5 + 1), heavy(1e5 + 1);
     vector<long long> depth(1e5 + 1), dist(5e5 + 1, -1);
     vector<vector<pair<int, int>>> adj_list(1e5 + 1);
     vector<vector<int>> bag(1e5 + 1);
@@ -69,20 +69,24 @@ int main() {
             adj_list[v].emplace_back(u, w);
         }
 
-        auto dfs1 = [&](auto &&self, int v = 1, int prev = -1) -> void {
-            subtree_size[v] = 1;
+        auto hld = [&](auto &&self, int v = 1, int prev = -1) -> int {
+            int subtree_size = 1, largest = 0;
             for (auto [u, w] : adj_list[v])
                 if (u != prev) {
                     depth[u] = depth[v] + w;
-                    self(self, u, v);
-                    subtree_size[v] += subtree_size[u];
-                    if (subtree_size[u] > subtree_size[heavy[v]]) heavy[v] = u;
+                    int size = self(self, u, v);
+                    subtree_size += size;
+                    if (largest < size) {
+                        largest = size;
+                        heavy[v] = u;
+                    }
                 }
+            return subtree_size;
         };
-        dfs1(dfs1);
+        hld(hld);
 
         auto g = 0LL;
-        auto dfs2 = [&](auto &&self, int v = 1, int prev = -1) -> void {
+        auto dfs = [&](auto &&self, int v = 1, int prev = -1) -> void {
             for (auto [u, w] : adj_list[v])
                 if (u != prev && u != heavy[v]) {
                     self(self, u, v);
@@ -120,7 +124,7 @@ int main() {
                     }
                 }
         };
-        dfs2(dfs2);
+        dfs(dfs);
 
         cout << g << "\n";
         for (int d : bag[1]) dist[d] = -1;
