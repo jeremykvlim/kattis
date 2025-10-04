@@ -4,6 +4,7 @@ using namespace std;
 vector<int> totients(int n) {
     vector<bool> prime(n + 1, true);
     vector<int> phis(n + 1, 0), primes;
+    phis[1] = 1;
     for (int i = 2; i <= n; i++) {
         if (prime[i]) {
             primes.emplace_back(i);
@@ -31,6 +32,11 @@ int main() {
 
     int n;
     cin >> n;
+    
+    if (n == 1) {
+        cout << 0;
+        exit(0);
+    }
 
     auto phis = totients(n);
 
@@ -42,6 +48,6 @@ int main() {
         r = n / (n / l);
         sum += pref[n / l] * (l + r) * (r - l + 1) / 2;
     }
-
+    sum -= 1LL * n * (n + 1) / 2;
     cout << sum;
 }
