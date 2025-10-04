@@ -149,46 +149,86 @@ struct SuffixArray {
 };
 
 template <typename T>
-struct WaveletTree {
-    vector<T> WT, temp;
-    vector<int> pref_zeroes, pref_ones;
-    int h;
+struct WaveletMatrix {
+    int lg;
+    vector<int> mid;
+    vector<vector<int>> pref;
+    vector<pair<T, int>> order;
 
-    void select(vector<array<int, 3>> &k_order_statistics) {
-        for (int b = h; ~b; b--) {
-            for (int i = 0; i < WT.size(); i++) {
-                pref_zeroes[i + 1] = pref_zeroes[i] + !((WT[i] >> b) & 1);
-                pref_ones[i + 1] = pref_ones[i] + ((WT[i] >> b) & 1);
-            }
+    WaveletMatrix(int n, vector<T> a) : lg(__lg(*max_element(a.begin(), a.end())) + 1), order(n) {
+        mid.resize(lg);
+        pref.assign(lg, vector<int>(n + 1, 0));
 
-            int zeroes = 0, ones = pref_zeroes.back();
-            for (int e : WT) temp[!((e >> b) & 1) ? zeroes++ : ones++] = e;
-            swap(WT, temp);
+        vector<pair<T, int>> temp(n);
+        for (int i = 0; i < n; i++) order[i] = {a[i], i};
+        for (int b = lg - 1; ~b; b--) {
+            for (int i = 0; i < n; i++) pref[b][i + 1] = pref[b][i] + ((order[i].first >> b) & 1);
 
-            for (auto &[l, r, k] : k_order_statistics) {
-                if (r - l < k || !k) continue;
-
-                int K = pref_zeroes[r] - pref_zeroes[l];
-                if (k <= K) {
-                    l = pref_zeroes[l];
-                    r = pref_zeroes[r];
-                } else {
-                    k -= K;
-                    l = pref_zeroes.back() + pref_ones[l];
-                    r = pref_zeroes.back() + pref_ones[r];
-                }
-            }
+            int zeroes = 0, ones = mid[b] = n - pref[b][n];
+            for (int i = 0; i < n; i++) temp[((order[i].first >> b) & 1) ? ones++ : zeroes++] = order[i];
+            order.swap(temp);
         }
     }
 
-    auto operator[](int i) {
-        return WT[i];
+    tuple<T, int, int, int> quantile(int l, int r, int k) {
+        T v = 0;
+        for (int b = lg - 1; ~b; b--) {
+            int zeroes = (r - pref[b][r]) - (l - pref[b][l]);
+            if (k >= zeroes) {
+                k -= zeroes;
+                v |= ((T) 1) << b;
+                l = pref[b][l] + mid[b];
+                r = pref[b][r] + mid[b];
+            } else {
+                l -= pref[b][l];
+                r -= pref[b][r];
+            }
+        }
+        return {v, k, r - l, order[l + k].second};
     }
 
-    WaveletTree(vector<T> a, vector<array<int, 3>> &k_order_statistics) : WT(a.begin(), a.end()), temp(a.size()),
-                                                                          pref_zeroes(a.size() + 1), pref_ones(a.size() + 1) {
-        h = __lg(*max_element(a.begin(), a.end()));
-        select(k_order_statistics);
+    int freq_less(int l, int r, T x) {
+        int f = 0;
+        for (int b = lg - 1; ~b; b--) {
+            if ((x >> b) & 1) {
+                f += (r - pref[b][r]) - (l - pref[b][l]);
+                l = pref[b][l] + mid[b];
+                r = pref[b][r] + mid[b];
+            } else {
+                l -= pref[b][l];
+                r -= pref[b][r];
+            }
+        }
+        return f;
+    }
+
+    int freq(int l, int r, T x) {
+        if ((((T) 1) << lg) <= x) return 0;
+        for (int b = lg - 1; ~b; b--) {
+            if ((x >> b) & 1) {
+                l = pref[b][l] + mid[b];
+                r = pref[b][r] + mid[b];
+            } else {
+                l -= pref[b][l];
+                r -= pref[b][r];
+            }
+        }
+        return r - l;
+    }
+
+    T lower_bound(int l, int r, T x) {
+        int f = freq_less(l, r, x);
+        return f == r - l ? -1 : get<0>(quantile(l, r, f));
+    }
+
+    T predecessor(int l, int r, T x) {
+        int f = freq_less(l, r, x);
+        return !f ? -1 : get<0>(quantile(l, r, f - 1));
+    }
+
+    T successor(int l, int r, T x) {
+        int f = freq_less(l, r, x) + freq(l, r, x);
+        return f == r - l ? -1 : get<0>(quantile(l, r, f));
     }
 };
 
@@ -201,20 +241,23 @@ int main() {
     cin >> s >> q;
 
     SuffixArray sa(s);
-    vector<array<int, 3>> k_order_statistics(q);
-    for (auto &[l, r, k] : k_order_statistics) {
+    WaveletMatrix wm(s.size(), sa.SA);
+    while (q--) {
         string t;
+        int k;
         cin >> t >> k;
 
         if (t.size() > s.size()) {
-            k = 0;
+            cout << "-1\n";
             continue;
         }
 
-        tie(l, r) = sa.matches(t);
-        if (r - l < k || s[sa[r - 1] + t.size() - 1] != t.back()) k = 0;
-    }
+        auto [l, r] = sa.matches(t);
+        if (r - l < k || s[sa[r - 1] + t.size() - 1] != t.back()) {
+            cout << "-1\n";
+            continue;
+        }
 
-    WaveletTree<int> wt(sa.SA, k_order_statistics);
-    for (auto [l, r, k] : k_order_statistics) cout << (k ? wt[r - 1] + 1 : -1) << "\n";
+        cout << get<0>(wm.quantile(l, r, k - 1)) + 1 << "\n";
+    }
 }
