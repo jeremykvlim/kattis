@@ -128,47 +128,6 @@ int main() {
         }
     if (edges.size() != m) impossible();
 
-    DisjointSets dsu(n + 1);
-    unordered_set<pair<int, int>, Hash> united;
-    for (auto &[u, v] : edges) {
-        dsu.unite(u, v);
-        united.emplace(u, v);
-    }
-
-    vector<int> components;
-    vector<bool> seen(n + 1, false);
-    for (int v = 1; v <= n; v++) {
-        int v_set = dsu.find(v);
-        if (!seen[v_set]) {
-            seen[v_set] = true;
-            components.emplace_back(v_set);
-        }
-    }
-
-    vector<vector<pair<int, int>>> comp_edges(n + 1);
-    for (auto [u, v] : edges) comp_edges[dsu.find(u)].emplace_back(u, v);
-
-    while (components.size() > 1) {
-        int c1 = components.back();
-        components.pop_back();
-        int c2 = components.back();
-        components.pop_back();
-
-        for (auto &[u1, v1] : comp_edges[c1])
-            for (auto &[u2, v2] : comp_edges[c2])
-                if (u1 != v2 && u2 != v1 && !united.count({u1, v2}) && !united.count({u2, v1})) {
-                    dsu.unite(u1, v2);
-                    united.emplace(u1, v2);
-                    dsu.unite(u2, v1);
-                    united.emplace(u2, v1);
-                    swap(v1, v2);
-                    components.emplace_back(dsu.find(c1));
-                    goto next;
-                }
-        impossible();
-        next:;
-    }
-
     cout << n << " " << m << "\n";
     for (auto [u, v] : edges) cout << u << " " << v << "\n";
 }
