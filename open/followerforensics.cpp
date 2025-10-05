@@ -157,8 +157,6 @@ int main() {
         for (auto &[u1, v1] : comp_edges[c1])
             for (auto &[u2, v2] : comp_edges[c2])
                 if (u1 != v2 && u2 != v1 && !united.count({u1, v2}) && !united.count({u2, v1})) {
-                    united.erase({u1, v1});
-                    united.erase({u2, v2});
                     dsu.unite(u1, v2);
                     united.emplace(u1, v2);
                     dsu.unite(u2, v1);
