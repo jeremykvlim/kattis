@@ -273,10 +273,9 @@ int main() {
 
     auto mobius = sieve(n);
     vector<int> cycles_per_l(n + 1, 0);
-    for (int i = 1; i <= n; i++) {
+    for (int i = 1; i <= n; i++)
         if (mobius[i])
             for (int l = 1; l * i <= n; l++) cycles_per_l[l] += mobius[i] * cycles_total[l * i];
-    }
 
     int len = 0;
     for (int l = 1; l <= n; l++) {
