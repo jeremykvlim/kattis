@@ -41,12 +41,11 @@ int main() {
     iota(order.begin(), order.end(), 0);
     sort(order.begin(), order.end(), [&](int i, int j) { return a[i] != a[j] ? a[i] > a[j] : i < j; });
 
-    vector<int> version(n, 0);
     priority_queue<array<int, 4>> pq;
     for (int i = 0; i < n; i++)
-        if (b[i]) pq.push({b[i], a[i], i, version[i]});
+        if (b[i]) pq.push({b[i], a[i], i, 0});
 
-    vector<int> visited(n, -1);
+    vector<int> visited(n, -1), version(n, 0);
     vector<pair<int, int>> edges;
     for (int u : order)
         if (a[u]) {
