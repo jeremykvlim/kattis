@@ -186,7 +186,7 @@ int main() {
         int t = wdsu.path_max(u, v);
         if (~t && ~wdsu.weight[t]) {
             if (w - wdsu.weight[t] != d) {
-                pq.push({w - wdsu.weight[t], i});
+                pq.emplace(w - wdsu.weight[t], i);
                 continue;
             }
             total += w - wdsu.weight[t];
