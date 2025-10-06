@@ -129,16 +129,16 @@ int main() {
         s = S == "imposter";
     }
 
-    WeightedDisjointSets dsu(n + 1);
+    WeightedDisjointSets wdsu(n + 1);
     int tl = 2 * m, tr = 2 * m;
     for (int i = t; i < m; i++) {
         auto [u, v, x] = edges[i];
-        dsu.unite(u, v, tl--, x);
+        wdsu.unite(u, v, tl--, x);
     }
 
     for (int i = 0; i <= m - t; i++) {
-        if (dsu.find(0) == dsu.find(k - 1)) {
-            cout << i + 1 << (!dsu.path_xor(0, k - 1) ? " crewmate" : " imposter");
+        if (wdsu.find(0) == wdsu.find(k - 1)) {
+            cout << i + 1 << (!wdsu.path_xor(0, k - 1) ? " crewmate" : " imposter");
             exit(0);
         }
 
@@ -148,9 +148,9 @@ int main() {
         }
 
         auto [u, v, x] = edges[i];
-        dsu.unite(u, v, tl--, x);
+        wdsu.unite(u, v, tl--, x);
 
         auto [a, b, _] = edges[i + t];
-        dsu.cut(a, b, tr--);
+        wdsu.cut(a, b, tr--);
     }
 }
