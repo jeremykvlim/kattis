@@ -189,7 +189,7 @@ int main() {
                 pq.emplace(w - wdsu.weight[t], i);
                 continue;
             }
-            total += w - wdsu.weight[t];
+            total += d;
             wdsu.unite(u, v, -1);
             W--;
         }
