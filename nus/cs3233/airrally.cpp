@@ -116,9 +116,9 @@ struct LinkCutTree : SplayTree {
     }
 
     long long path_sum(int i, int j) {
-        reroot(j);
-        access(i);
-        return ST[i].sum;
+        reroot(i);
+        access(j);
+        return ST[j].sum;
     }
 };
 
