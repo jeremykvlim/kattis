@@ -402,7 +402,7 @@ vector<modint> ntt(int n, const vector<modint> &f) {
 vector<modint> intt(int n, const vector<modint> &F) {
     auto f = F;
     cooley_tukey(n, f, [](int k) { return modint::pow(primitive_root(), (MOD - 1) / (k << 1)); });
-    auto n_inv = (modint) 1 / n;
+    auto n_inv = modint::inv(n);
     for (auto &v : f) v *= n_inv;
     reverse(f.begin() + 1, f.end());
     return f;
