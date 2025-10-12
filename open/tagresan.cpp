@@ -179,7 +179,7 @@ int main() {
                 for (int r2 = max(0, r1 - 2); r2 < min(n, r1 + 2); r2++)
                     for (int c2 = 0; c2 < 4; c2++) {
                         int u = grid[r1][c1], v = grid[r2][c2];
-                        if (u != v && degree[u] || degree[v]) {
+                        if (u != v && (degree[u] || degree[v])) {
                             auto happiness = 0.;
 
                             for (int t : adj_list[u])
