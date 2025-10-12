@@ -196,10 +196,8 @@ int main() {
 
                             if (sgn(happiness) == -1) {
                                 swap(grid[r1][c1], grid[r2][c2]);
-                                row[u] = r2;
-                                col[u] = c2;
-                                row[v] = r1;
-                                col[v] = c1;
+                                swap(row[u], row[v]);
+                                swap(col[u], col[v]);
                             }
                         }
                     }
