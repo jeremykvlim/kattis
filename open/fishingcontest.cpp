@@ -161,65 +161,6 @@ struct FenwickTree {
     FenwickTree(int n) : n(n) {}
 };
 
-struct PersistentSegmentTree {
-    struct Segment {
-        int value;
-
-        Segment(int v = -1) : value(v) {}
-
-        auto operator+=(const Segment &seg) {
-            value = max(value, seg.value);
-            return *this;
-        }
-
-        friend auto operator+(Segment sl, const Segment &sr) {
-            return sl += sr;
-        }
-    };
-
-    int n;
-    vector<int> roots;
-    vector<Segment> ST;
-    vector<pair<int, int>> children;
-
-    PersistentSegmentTree(int n) : n(n), roots{0}, ST(1), children{{0, 0}} {}
-
-    int modify(int i, const int &v, const int &pos) {
-        roots.emplace_back(modify(roots[i], v, pos, 1, n));
-        return roots.size() - 1;
-    }
-
-    int modify(int i, const int &v, const int &pos, int tl, int tr) {
-        if (tl + 1 == tr) {
-            children.emplace_back(0, 0);
-            ST.emplace_back(ST[i] + v);
-            return ST.size() - 1;
-        }
-
-        auto [cl, cr] = children[i];
-        int tm = tl + (tr - tl) / 2;
-        if (pos < tm) cl = modify(cl, v, pos, tl, tm);
-        else cr = modify(cr, v, pos, tm, tr);
-
-        children.emplace_back(cl, cr);
-        ST.emplace_back(ST[cl] + ST[cr]);
-        return ST.size() - 1;
-    }
-
-    Segment range_query(int i, int l, int r) {
-        return range_query(roots[i], l, r, 1, n);
-    }
-
-    Segment range_query(int i, int l, int r, int tl, int tr) {
-        if (!i || r <= tl || tr <= l) return {};
-        if (l <= tl && tr <= r) return ST[i];
-
-        auto [cl, cr] = children[i];
-        int tm = tl + (tr - tl) / 2;
-        return range_query(cl, l, r, tl, tm) + range_query(cr, l, r, tm, tr);
-    }
-};
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -258,7 +199,7 @@ int main() {
         }
 
     vector<vector<int>> dp(r, vector<int>(c, -1));
-    vector<vector<PersistentSegmentTree>> psts(r, vector<PersistentSegmentTree>(c, PersistentSegmentTree(l + 1)));
+    vector<vector<vector<int>>> time(r, vector<vector<int>>(c)), pref_max(r, vector<vector<int>>(c));
     vector<unordered_map<Point<int>, unordered_map<int, int>, Hash>> states(l + 1);
 
     auto encode = [&](int dx, int dy) {
@@ -266,21 +207,26 @@ int main() {
     };
 
     int m0 = encode(0, 0),
-        centre = m0 | encode(1, 0) | encode(0, 1) | encode(-1, 0) | encode(0, -1),
-        up = centre | encode(-2, 0) | encode(-1, -1) | encode(-1, 1),
-        down = centre | encode(2, 0) | encode(1, -1) | encode(1, 1),
-        left = centre | encode(0, -2) | encode(-1, -1) | encode(1, -1),
-        right = centre | encode(0, 2) | encode(-1, 1) | encode(1, 1);
+             centre = m0 | encode(1, 0) | encode(0, 1) | encode(-1, 0) | encode(0, -1),
+             up = centre | encode(-2, 0) | encode(-1, -1) | encode(-1, 1),
+             down = centre | encode(2, 0) | encode(1, -1) | encode(1, 1),
+             left = centre | encode(0, -2) | encode(-1, -1) | encode(1, -1),
+             right = centre | encode(0, 2) | encode(-1, 1) | encode(1, 1);
 
     int most = 0;
     for (int t1 = 0; t1 <= l; t1++) {
-        for (auto [p, count] : sweep[t1]) {
+        auto check = [&](auto p, int count) {
             auto [x1, y1] = p;
             if (dp[x1][y1] < count) {
                 dp[x1][y1] = count;
-                psts[x1][y1].modify(psts[x1][y1].roots.size() - 1, count, t1 + 1);
+                if (time[x1][y1].empty() || time[x1][y1].back() < t1 + 1) {
+                    time[x1][y1].emplace_back(t1 + 1);
+                    pref_max[x1][y1].emplace_back(pref_max[x1][y1].empty() ? count : max(pref_max[x1][y1].back(), count));
+                } else pref_max[x1][y1].back() = max(pref_max[x1][y1].back(), count);
             }
-        }
+        };
+
+        for (auto [p, count] : sweep[t1]) check(p, count);
 
         for (auto p : fish[t1]) {
             auto [x1, y1] = p;
@@ -288,7 +234,10 @@ int main() {
             for (int x2 : row[x1])
                 for (int y2 : col[y1]) {
                     int t2 = t1 - manhattan_dist(Point(x1, y1), Point(x2, y2)) + 1;
-                    if (t2 > 0) count = max(count, psts[x2][y2].range_query(psts[x2][y2].roots.size() - 1, 1, t2 + 1).value);
+                    if (t2 > 0) {
+                        int i = upper_bound(time[x2][y2].begin(), time[x2][y2].end(), t2) - time[x2][y2].begin() - 1;
+                        count = max(count, i < 0 ? -1 : pref_max[x2][y2][i]);
+                    }
                 }
 
             if (~count) states[t1][p][m0] = max(states[t1][p][m0], count + 1);
@@ -325,10 +274,7 @@ int main() {
                             if (t1 < t2 && t2 <= l) sweep[t2].emplace_back(Point(x2, y2), count);
                         }
 
-                    if (dp[x1][y1] < count) {
-                        dp[x1][y1] = count;
-                        psts[x1][y1].modify(psts[x1][y1].roots.size() - 1, count, t1 + 1);
-                    }
+                    check(p, count);
                 } else if (t1 < l) {
                     states[t1 + 1][p][m3] = max(states[t1 + 1][p][m3], count);
                     Point<int> pu = p + Point(-1, 0), pd = p + Point(1, 0), pl = p + Point(0, -1), pr = p + Point(0, 1);
