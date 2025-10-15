@@ -112,8 +112,58 @@ struct Point {
 };
 
 template <typename T>
-double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
-    return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
+T squared_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
+    return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
+}
+
+pair<int, unsigned __int128> bron_kerbosch(int n, vector<unsigned __int128> adj_list) {
+    int max_clique_size = 0;
+    unsigned __int128 clique_mask = 0;
+
+    auto dfs = [&](auto &&self, unsigned __int128 p, unsigned __int128 r = 0) {
+        if (!p) {
+            int size = popcount(r);
+            if (max_clique_size < size) {
+                max_clique_size = size;
+                clique_mask = r;
+            }
+            return;
+        }
+
+        if (popcount(r) + popcount(p) <= max_clique_size) return;
+
+        auto lsb = [&](unsigned __int128 v) {
+            return v ? ((v & ULLONG_MAX) ? countr_zero(v) : 64 + countr_zero(v >> 64)) : 0;
+        };
+
+        auto color_order = [&](unsigned __int128 p) -> vector<pair<int, int>> {
+            int color = 0;
+            vector<pair<int, int>> order;
+            while (p) {
+                color++;
+                for (auto q = p; q;) {
+                    int v = lsb(q);
+                    auto mask = (unsigned __int128) 1 << v;
+                    q &= q - 1;
+                    order.emplace_back(v, color);
+                    p &= ~mask;
+                    q &= ~adj_list[v];
+                }
+            }
+            reverse(order.begin(), order.end());
+            return order;
+        };
+
+        for (auto [v, color] : color_order(p)) {
+            if (popcount(r) + color <= max_clique_size) return;
+            auto mask = (unsigned __int128) 1 << v;
+            self(self, p & adj_list[v], r | mask);
+            p &= ~mask;
+        }
+    };
+    dfs(dfs, ((unsigned __int128) 1 << n) - 1);
+
+    return {max_clique_size, clique_mask};
 }
 
 int main() {
@@ -124,31 +174,19 @@ int main() {
     cin >> n >> d;
 
     vector<Point<int>> points(n);
-    vector<__int128> valid(n, 0);
+    vector<unsigned __int128> adj_list(n, 0);
     for (int i = 0; i < n; i++) {
         cin >> points[i].x >> points[i].y;
 
-        for (int j = i; ~j; j--)
-            if (euclidean_dist(points[i], points[j]) <= d) {
-                valid[i] |= ((__int128) 1) << j;
-                valid[j] |= ((__int128) 1) << i;
+        for (int j = i - 1; ~j; j--)
+            if (squared_dist(points[i], points[j]) <= d * d) {
+                adj_list[i] |= (unsigned __int128) 1 << j;
+                adj_list[j] |= (unsigned __int128) 1 << i;
             }
     }
 
-    vector<int> indices(n);
-    iota(indices.begin(), indices.end(), 0);
-    __int128 sensors = 0;
-    for (int _ = 0; _ < n; _++) {
-        shuffle(indices.begin(), indices.end(), mt19937(random_device{}()));
-
-        auto temp = (((__int128) 1) << n) - 1;
-        for (int i : indices)
-            if ((temp >> i) & 1) temp &= valid[i];
-
-        if (popcount((unsigned __int128) sensors) < popcount((unsigned __int128) temp)) sensors = temp;
-    }
-
-    cout << popcount((unsigned __int128) sensors) << "\n";
+    auto [max_clique_size, clique_mask] = bron_kerbosch(n, adj_list);
+    cout << max_clique_size << "\n";
     for (int i = 0; i < n; i++)
-        if ((sensors >> i) & 1) cout << i + 1 << " ";
+        if ((clique_mask >> i) & 1) cout << i + 1 << " ";
 }
