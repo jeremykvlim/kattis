@@ -8,14 +8,14 @@ int main() {
     int n, r;
     cin >> n >> r;
 
-    auto mask = (((__int128) 1) << r) - 1;
+    auto mask = ((__int128) 1 << r) - 1;
     vector<__int128> masks(2 * n);
     for (int i = 0; i < r; i++)
         for (int j = 0; j < 2 * n; j++) {
             int x;
             cin >> x;
 
-            if (x > n) masks[j] |= ((__int128) 1) << i;
+            if (x > n) masks[j] |= (__int128) 1 << i;
         }
     sort(masks.begin(), masks.end());
 

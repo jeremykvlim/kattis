@@ -43,21 +43,17 @@ int main() {
         fill(dp.begin(), dp.end(), 0);
         for (int i = 0; i < count; i++) random[i] = rng() % k;
         for (int i = 0; i < n; i++) color[i] = random[indices[artists[i]]];
-
-        for (int v = 0; v < n; v++) {
-            int m0 = 1 << color[v];
-            dp[m0] |= ((__int128) 1) << v;
-        }
-
+        for (int i = 0; i < n; i++) dp[1 << color[i]] |= (__int128) 1 << i;
+        
         for (int p = 2; p <= 9; p++)
             for (int m1 : masks[p])
                 for (int v = 0; v < n; v++) {
                     int m0 = 1 << color[v];
                     if (m0 & m1) {
                         int m2 = m1 ^ m0;
-                        for (int u : adj_list_transpose[v]) {
+                        for (int u : adj_list_transpose[v]) 
                             if ((dp[m2] >> u) & 1) {
-                                dp[m1] |= ((__int128) 1) << v;
+                                dp[m1] |= (__int128) 1 << v;
                                 prev[m1][v] = {m2, u};
                                 if (p == 9) {
                                     vector<int> path;
@@ -70,7 +66,6 @@ int main() {
                                     exit(0);
                                 }
                             }
-                        }
                     }
                 }
 

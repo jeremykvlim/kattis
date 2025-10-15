@@ -128,7 +128,7 @@ int main() {
     __int128 mask = 0;
     for (int v = 0; v < m; v++) {
         int i = cycle_id_p[v], j = cycle_id_q[v];
-        if (i != -1 && j != -1 && valid_p[i] && valid_q[j]) mask |= ((__int128) 1) << dsu.find(v);
+        if (i != -1 && j != -1 && valid_p[i] && valid_q[j]) mask |= (__int128) 1 << dsu.find(v);
     }
-    cout << (((__int128) 1) << popcount((unsigned __int128) mask));
+    cout << ((__int128) 1 << popcount((unsigned __int128) mask));
 }

@@ -445,7 +445,7 @@ pair<__int128, __int128> manacher(const string &s) {
     int n = s.size();
     if (!n) return {1, 1};
 
-    __int128 pref_mask = 1, suff_mask = ((__int128) 1) << n;
+    __int128 pref_mask = 1, suff_mask = (__int128) 1 << n;
     vector<int> dp(2 * n - 1, 0);
     for (int k = 0, l = -1, r = -1; k < 2 * n - 1; k++) {
         int i = (k + 1) >> 1, j = k >> 1, p = (i >= r ? 0 : min(r - i, dp[2 * (l + r) - k]));

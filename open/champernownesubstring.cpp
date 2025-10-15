@@ -28,7 +28,7 @@ int main() {
         cin >> s;
         int n = s.size();
 
-        auto index = ((__int128) 1) << 100;
+        auto index = (__int128) 1 << 100;
         for (int i = 0; i + n < champernowne.size(); i++) {
             if (mismatch(s.begin(), s.end(), champernowne.begin() + i, [](char c1, char c2) { return c1 == '?' || c1 == c2; }).first != s.end()) continue;
             index = i + 1;

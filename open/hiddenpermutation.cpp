@@ -250,7 +250,7 @@ int main() {
 
         count[periods[i]] = m[i];
     }
-    if (accumulate(m.begin(), m.end(), (__int128) 0) != ((__int128) 1) << n) impossible();
+    if (accumulate(m.begin(), m.end(), (__int128) 0) != (__int128) 1 << n) impossible();
 
     vector<int> w(n + 1, 0);
     for (int p = 1; p <= n; p++) {
