@@ -7,12 +7,12 @@ struct FenwickTree {
     function<T(T, T)> f;
 
     void update(int i, T v) {
-        for (; i; i &= i - 1) BIT[i] = f(BIT[i], v);
+        for (; i && i < BIT.size(); i += i & -i) BIT[i] = f(BIT[i], v);
     }
 
     T range_query(int i) {
         T v = 0;
-        for (; i && i < BIT.size(); i += i & -i) v = f(v, BIT[i]);
+        for (; i; i &= i - 1) v = f(v, BIT[i]);
         return v;
     }
 
@@ -51,9 +51,9 @@ int main() {
             a_min[i] = min(a_min[i], a[r]);
             a_max[i] = max(a_max[i], a[r]);
             if (a_min[i] < a[r] && a_max[i] > a[r]) break;
-            if ((a_min[i] == a[i] && a_max[i] == a[r]) || (a_max[i] == a[i] && a_min[i] == a[r])) fw.update(i, r - i + 1);
+            if ((a_min[i] == a[i] && a_max[i] == a[r]) || (a_max[i] == a[i] && a_min[i] == a[r])) fw.update(n - i + 1, r - i + 1);
         }
-        for (auto &[l, i] : queries[r]) len[i] = fw.range_query(l);
+        for (auto &[l, i] : queries[r]) len[i] = fw.range_query(n - l + 1);
     }
 
     for (int i = 1; i <= q; i++) cout << len[i] << "\n";

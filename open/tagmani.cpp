@@ -16,7 +16,7 @@ struct FenwickTree {
         return v;
     }
 
-    FenwickTree(int n, function<T(T, T)> func) : BIT(n, 0), f(func) {}
+    FenwickTree(int n, function<T(T, T)> func) : BIT(n, 0), f(move(func)) {}
 };
 
 struct CentroidDecomposition {
