@@ -26,7 +26,7 @@ int main() {
     int n;
     cin >> n;
 
-    vector<long long> a(n), b(n);
+    vector<int> a(n), b(n);
     for (int i = 0; i < n; i++) cin >> a[i] >> b[i];
 
     auto deduped = b;
