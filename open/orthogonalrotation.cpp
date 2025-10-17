@@ -411,7 +411,7 @@ vector<modint> intt(int n, const vector<modint> &F) {
 template <typename T>
 vector<T> convolve(const vector<T> &a, const vector<T> &b) {
     int da = a.size(), db = b.size(), m = da + db - 1, n = bit_ceil((unsigned) m);
-    if (n <= 16 || min(da, db) <= __lg(n)) {
+    if (n <= 64 || min(da, db) <= __lg(n)) {
         vector<modint> p(da), q(db);
         for (int i = 0; i < da; i++) p[i] = a[i];
         for (int i = 0; i < db; i++) q[i] = b[i];
@@ -424,7 +424,7 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
         for (int i = 0; i < db; i++) r[i] = q[i]();
         for (int i = m - 1; ~i; i--) {
             modint v = 0;
-            for (int j = 0; j <= min(i, da - 1); j++) v += p[j] * r[i - j];
+            for (int j = max(0, i - (db - 1)); j <= min(i, da - 1); j++) v += p[j] * r[i - j];
             r[i] = v();
         }
         return r;
