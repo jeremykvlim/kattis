@@ -25,22 +25,20 @@ int main() {
 
     int n, m;
     cin >> n >> m;
-
-    vector<int> s(n + 1), e(n + 1);
-    map<int, int> compress;
+    
+    vector<int> s(n + 1), e(n + 1), t(2 * n);
     for (int i = 1; i <= n; i++) {
         cin >> s[i] >> e[i];
 
-        compress[s[i]];
-        compress[e[i]];
+        t[2 * (i - 1)] = s[i];
+        t[2 * (i - 1) + 1] = e[i];
     }
-
-    int count = 1;
-    for (auto &[t, i] : compress) i = count++;
+    sort(t.begin(), t.end());
+    t.erase(unique(t.begin(), t.end()), t.end());
 
     for (int i = 1; i <= n; i++) {
-        s[i] = compress[s[i]];
-        e[i] = compress[e[i]];
+        s[i] = lower_bound(t.begin(), t.end(), s[i]) - t.begin() + 1;
+        e[i] = lower_bound(t.begin(), t.end(), e[i]) - t.begin() + 1;
     }
 
     vector<FenwickTree<int>> fws(__lg(n) + 1, FenwickTree<int>(2 * n + 1, [](int x, int y) { return max(x, y); }));
