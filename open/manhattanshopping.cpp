@@ -25,7 +25,7 @@ vector<T> fmt(int n, const vector<T> &F) {
 template <typename T>
 vector<T> OR_convolve(const vector<T> &a, const vector<T> &b) {
     int da = a.size(), db = b.size(), m = max(da, db), n = bit_ceil((unsigned) m);
-    if (n <= 16 || min(da, db) <= __lg(n)) {
+    if (n <= 64 || min(da, db) <= __lg(n)) {
         vector<T> c(n);
         for (int i = 0; i < da; i++)
             for (int j = 0; j < db; j++) c[i | j] += a[i] * b[j];
