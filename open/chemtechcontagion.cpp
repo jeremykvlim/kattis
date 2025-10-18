@@ -25,29 +25,31 @@ int main() {
     int n, m, q;
     cin >> n >> m >> q;
 
-    vector<vector<int>> adj_list(n + 1);
+    vector<vector<int>> adj_list(n);
     for (int _ = 0; _ < n - 1; _++) {
         int u, v;
         cin >> u >> v;
 
-        adj_list[u].emplace_back(v);
-        adj_list[v].emplace_back(u);
+        adj_list[u - 1].emplace_back(v - 1);
+        adj_list[v - 1].emplace_back(u - 1);
     }
 
-    vector<int> degree(n + 1, 0);
+    vector<int> degree(n, 0);
     vector<pair<int, int>> edges(m);
     for (auto &[u, v] : edges) {
         cin >> u >> v;
+        u--;
+        v--;
 
         degree[u]++;
         degree[v]++;
     }
 
-    vector<vector<int>> lift(__lg(n) + 1, vector<int>(n + 1, 1));
-    vector<int> depth(n + 1, 0), in(n + 1), out(n + 1);
-    vector<long long> degree_sum(n + 1, 0);
+    vector<vector<int>> lift(__lg(n) + 1, vector<int>(n, 0));
+    vector<int> depth(n, 0), in(n), out(n);
+    vector<long long> degree_sum(n, 0);
     int count = 0;
-    auto dfs1 = [&](auto &&self, int v = 1, int prev = -1) -> void {
+    auto dfs1 = [&](auto &&self, int v = 0, int prev = -1) -> void {
         in[v] = count++;
         if (~prev) {
             depth[v] = depth[prev] + 1;
@@ -81,19 +83,15 @@ int main() {
         return lift[0][u];
     };
 
-    vector<vector<int>> sweep(n + 1);
-    for (auto [u, v] : edges) {
-        if (depth[u] >= depth[v]) swap(u, v);
-        sweep[v].emplace_back(u);
-    }
-
     vector<pair<int, int>> queries(q);
     vector<int> lcas(q);
     vector<long long> pipes(q);
-    vector<vector<int>> indices(n + 1);
+    vector<vector<int>> indices(n);
     for (int i = 0; i < q; i++) {
         auto &[a, b] = queries[i];
         cin >> a >> b;
+        a--;
+        b--;
 
         lcas[i] = lca(a, b);
         pipes[i] = degree_sum[a] + degree_sum[b] - 2 * degree_sum[lcas[i]] + degree[lcas[i]];
@@ -101,9 +99,15 @@ int main() {
         indices[b].emplace_back(i);
     }
 
+    vector<vector<int>> sweep(n);
+    for (auto [u, v] : edges) {
+        if (depth[u] >= depth[v]) swap(u, v);
+        sweep[v].emplace_back(u);
+    }
+
     FenwickTree<long long> fw(n + 1);
-    vector<int> visits(n + 1, 0);
-    auto dfs2 = [&](auto &&self, int v = 1, int prev = -1) -> void {
+    vector<int> visits(n, 0);
+    auto dfs2 = [&](auto &&self, int v = 0, int prev = -1) -> void {
         for (int u : sweep[v]) {
             fw.update(in[u] + 1, 1);
             fw.update(out[u] + 1, -1);
