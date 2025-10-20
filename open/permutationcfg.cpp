@@ -37,14 +37,14 @@ int main() {
         indices[perm[i]] = i;
     }
 
-    vector<array<int, 3>> queries(Q);
     int a_max = 0;
+    vector<array<int, 3>> queries(Q);
     for (int q = 0; q < Q; q++) {
         int k, a;
         cin >> k >> a;
 
-        queries[q] = {a, k, q};
         a_max = max(a_max, a);
+        queries[q] = {a, k, q};
     }
     sort(queries.begin(), queries.end());
 
