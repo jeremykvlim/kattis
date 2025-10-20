@@ -15,6 +15,11 @@ struct FenwickTree {
         return sum;
     }
 
+    T range_sum_query(int l, int r) {
+        if (l >= r) return 0;
+        return pref_sum(r) - pref_sum(l);
+    }
+
     FenwickTree(int n) : BIT(n, 0) {}
 };
 
@@ -143,13 +148,13 @@ int main() {
         } else {
             if (count[t] < 2 ||
                 l[t] > 1 && fw_l2.pref_sum(l[t] - 1) ||
-                r[t] < n && fw_r2.pref_sum(n) > fw_r2.pref_sum(r[t]) ||
+                r[t] < n && fw_r2.range_sum_query(r[t], n) > 0 ||
                 l[t] > 1 && st.range_query(0, l[t] - 1).value > r[t]) {
                 cout << "-1\n";
                 continue;
             }
 
-            cout << (l[t] > 1 ? fw_l1.pref_sum(l[t] - 1) - fw_l1.pref_sum(0) : 0) + (r[t] < n ? fw_r1.pref_sum(n) - fw_r1.pref_sum(r[t]) : 0) << "\n";
+            cout << (l[t] > 1 ? fw_l1.range_sum_query(0, l[t] - 1) : 0) + (r[t] < n ? fw_r1.range_sum_query(r[t], n) : 0) << "\n";
         }
     }
 }

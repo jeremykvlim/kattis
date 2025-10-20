@@ -15,6 +15,11 @@ struct FenwickTree {
         return sum;
     }
 
+    T range_sum_query(int l, int r) {
+        if (l >= r) return 0;
+        return pref_sum(r) - pref_sum(l);
+    }
+
     FenwickTree(int n) : BIT(n, 0) {}
 };
 
@@ -25,28 +30,23 @@ int main() {
     int n;
     cin >> n;
 
-    map<int, int> indices;
     vector<int> h(n);
-    for (int &hi : h) {
-        cin >> hi;
+    for (int &hi : h) cin >> hi;
 
-        indices[hi];
-    }
+    auto deduped = h;
+    sort(deduped.begin(), deduped.end());
+    deduped.erase(unique(deduped.begin(), deduped.end()), deduped.end());
 
-    int unique = 0;
-    for (auto &[hi, i] : indices) i = unique++;
-    indices[INT_MAX] = unique;
-
-    FenwickTree<long long> fw1(unique + 1), fw2(unique + 1);
     auto messy = 0LL;
+    FenwickTree<long long> fw1(deduped.size() + 1), fw2(deduped.size() + 1);
     for (int i = n - 1; ~i; i--) {
-        int j = indices[h[i]], k = indices.upper_bound(h[i] / 2)->second;
+        int j = lower_bound(deduped.begin(), deduped.end(), h[i]) - deduped.begin(),
+            k = upper_bound(deduped.begin(), deduped.end(), h[i] / 2) - deduped.begin();
 
         auto ps1 = fw1.pref_sum(k), ps2 = fw2.pref_sum(k);
         fw1.update(j + 1, 1);
         fw2.update(j + 1, ps1);
         messy += ps2;
     }
-
     cout << messy;
 }

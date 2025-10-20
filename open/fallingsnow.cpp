@@ -370,6 +370,11 @@ struct FenwickTree {
         return sum;
     }
 
+    T range_sum_query(int l, int r) {
+        if (l >= r) return 0;
+        return pref_sum(r) - pref_sum(l);
+    }
+
     FenwickTree(int n) : BIT(n, 0) {}
 };
 
@@ -430,7 +435,7 @@ int main() {
 
     for (int i = m - 1; ~i; i--) {
         int j = lower_bound(levels.begin(), levels.end(), intervals[i].first) - levels.begin();
-        r[i] = fw_r.pref_sum(levels.size()) - fw_r.pref_sum(j + 1);
+        r[i] = fw_r.range_sum_query(j + 1, levels.size());
         fw_r.update(j + 1, intervals[i].second);
     }
 

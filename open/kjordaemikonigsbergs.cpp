@@ -15,6 +15,11 @@ struct FenwickTree {
         return sum;
     }
 
+    T range_sum_query(int l, int r) {
+        if (l >= r) return 0;
+        return pref_sum(r) - pref_sum(l);
+    }
+
     int kth(int k) {
         int i = 0;
         for (int m = bit_ceil(BIT.size()); m; m >>= 1)

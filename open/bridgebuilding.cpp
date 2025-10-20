@@ -16,8 +16,8 @@ struct FenwickTree {
     }
 
     T range_sum_query(int l, int r) {
-        if (l > r) return 0;
-        return pref_sum(r) - pref_sum(l - 1);
+        if (l >= r) return 0;
+        return pref_sum(r) - pref_sum(l);
     }
 
     FenwickTree(int n) : BIT(n, 0) {}
@@ -119,7 +119,7 @@ int main() {
 
             auto target = pref[j] + pref[i] + j - i;
             int l = max(i + 1, (int) (upper_bound(pref.begin(), pref.end(), target / 2) - pref.begin())), r = j - 1;
-            if (l <= r) total[id] += 2 * sum1.range_sum_query(l, r) - target * count1.range_sum_query(l, r);
+            if (l <= r) total[id] += 2 * sum1.range_sum_query(l - 1, r) - target * count1.range_sum_query(l - 1, r);
         }
     }
 
@@ -135,7 +135,7 @@ int main() {
 
             auto target = pref[j] + pref[i] - j + i;
             int l = i + 1, r = min(j - 1, (int) (lower_bound(pref.begin(), pref.end(), (target + 1) / 2) - pref.begin() - 1));
-            if (l <= r) total[id] -= 2 * sum2.range_sum_query(l, r) - target * count2.range_sum_query(l, r);
+            if (l <= r) total[id] -= 2 * sum2.range_sum_query(l - 1, r) - target * count2.range_sum_query(l - 1, r);
             most = max(most, total[id] += count2.pref_sum(i) * (pref[j] - pref[i] - j + i));
         }
     }

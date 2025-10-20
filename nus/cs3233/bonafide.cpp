@@ -155,6 +155,11 @@ struct FenwickTree {
         return sum;
     }
 
+    T range_sum_query(int l, int r) {
+        if (l >= r) return 0;
+        return pref_sum(r) - pref_sum(l);
+    }
+
     FenwickTree(int n) : BIT(n, 0) {}
 };
 
@@ -275,7 +280,7 @@ int main() {
                     fw_a.update(h + 1, half[h]);
                     fw_b.update(h + 1, -1);
                 }
-                count[i] += sgn * (fw_a.pref_sum(r + 1) - fw_a.pref_sum(l) + c * (fw_b.pref_sum(r + 1) - fw_b.pref_sum(l)) + base);
+                count[i] += sgn * (fw_a.range_sum_query(l, r + 1) + c * (fw_b.range_sum_query(l, r + 1)) + base);
             }
         };
         sweep(left, ql);

@@ -2,23 +2,6 @@
 using namespace std;
 
 template <typename T>
-struct FenwickTree {
-    vector<T> BIT;
-
-    void update(int i, T v) {
-        for (; i && i < BIT.size(); i += i & -i) BIT[i] += v;
-    }
-
-    T pref_sum(int i) {
-        T sum = 0;
-        for (; i; i &= i - 1) sum += BIT[i];
-        return sum;
-    }
-
-    FenwickTree(int n) : BIT(n, 0) {}
-};
-
-template <typename T>
 struct Point {
     T x, y;
 
@@ -137,6 +120,28 @@ template <typename T>
 T cross(const Point<T> &a, const Point<T> &b) {
     return (a.x * b.y) - (a.y * b.x);
 }
+
+template <typename T>
+struct FenwickTree {
+    vector<T> BIT;
+
+    void update(int i, T v) {
+        for (; i && i < BIT.size(); i += i & -i) BIT[i] += v;
+    }
+
+    T pref_sum(int i) {
+        T sum = 0;
+        for (; i; i &= i - 1) sum += BIT[i];
+        return sum;
+    }
+
+    T range_sum_query(int l, int r) {
+        if (l >= r) return 0;
+        return pref_sum(r) - pref_sum(l);
+    }
+
+    FenwickTree(int n) : BIT(n, 0) {}
+};
 
 int main() {
     ios::sync_with_stdio(false);

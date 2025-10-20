@@ -15,6 +15,11 @@ struct FenwickTree {
         return sum;
     }
 
+    T range_sum_query(int l, int r) {
+        if (l >= r) return 0;
+        return pref_sum(r) - pref_sum(l);
+    }
+
     FenwickTree(int n) : BIT(n, 0) {}
 };
 
@@ -48,7 +53,7 @@ int main() {
     FenwickTree<int> fw(n + 1);
     int slack = 0, j = 1;
     for (int i = n; i; i--) {
-        if (a[i] < fw.pref_sum(out[i]) - fw.pref_sum(in[i] + 1)) slack++;
+        if (a[i] < fw.range_sum_query(in[i] + 1, out[i])) slack++;
         else fw.update(in[i] + 1, 1);
 
         if (slack == n - k) {
