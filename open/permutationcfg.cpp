@@ -51,14 +51,13 @@ int main() {
     int a_curr = 0, i = 0;
     vector<int> answers(Q);
     FenwickTree<int> fw1(n + 1);
-    vector<array<int, 4>> sweep(Q);
+    vector<array<int, 4>> sweep;
     auto dfs = [&](auto &&self, int prev, int depth) -> void {
-        if (a_curr >= a_max) return;
         if (depth == 1) {
             for (; i < Q && queries[i][0] <= a_curr + prev; i++) {
                 auto [a, k, q] = queries[i];
                 answers[q] += fw1.range_sum_query(k - 1, n);
-                sweep[i] = {prev, a - a_curr, k, q};
+                if (prev >= k) sweep.push_back({prev, a - a_curr, k, q});
             }
             fw1.update(prev, 1);
             a_curr += prev;
@@ -78,9 +77,9 @@ int main() {
     i = 0;
     for (int j = 1; j <= n; j++) {
         fw2.update(indices[j] + 1, 1);
-        for (; i < Q && sweep[i][0] == j; i++) {
+        for (; i < sweep.size() && sweep[i][0] == j; i++) {
             auto [p, diff, k, q] = sweep[i];
-            answers[q] += p >= k && fw2.pref_sum(indices[k] + 1) <= diff;
+            answers[q] += fw2.pref_sum(indices[k] + 1) <= diff;
         }
     }
 
