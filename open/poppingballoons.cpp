@@ -451,25 +451,18 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
 }
 
 template <typename T>
-vector<T> polyadd(const vector<T> &a, const vector<T> &b) {
-    int da = a.size(), db = b.size();
-    auto [m, n] = minmax(da, db);
-    vector<T> c(n);
-    for (int i = 0; i < m; i++) c[i] = a[i] + b[i];
-    for (int i = m; i < da; i++) c[i] = a[i];
-    for (int i = m; i < db; i++) c[i] = b[i];
-    return c;
-}
+vector<T> binomial_transform(const vector<T> &a, const vector<T> &fact, const vector<T> &fact_inv) {
+    int n = a.size();
+    vector<T> x(n), y(n);
+    for (int i = 0; i < n; i++) {
+        x[i] = a[i] * fact_inv[i];
+        y[i] = fact_inv[i];
+    }
+    auto c = convolve(x, y);
 
-template <typename T>
-vector<T> polysub(const vector<T> &a, const vector<T> &b) {
-    int da = a.size(), db = b.size();
-    auto [m, n] = minmax(da, db);
-    vector<T> c(n);
-    for (int i = 0; i < m; i++) c[i] = a[i] - b[i];
-    for (int i = m; i < da; i++) c[i] = a[i];
-    for (int i = m; i < db; i++) c[i] = -b[i];
-    return c;
+    vector<T> b(n);
+    for (int k = 0; k < n; k++) b[k] = fact[k] * c[k];
+    return b;
 }
 
 template <typename T>
@@ -489,50 +482,19 @@ int main() {
     string s;
     cin >> s;
 
-    int n = s.size();
-    auto dnc = [&](auto &&self, int l, int r) {
-        array<array<vector<modint>, 3>, 3> f;
+    int m = s.size();
+    vector<int> pref_b(m + 1, 0), pref_y(m + 1, 0), suff_r(m, 0);
+    for (int i = 0; i < m; i++) {
+        pref_b[i + 1] = pref_b[i] + (s[i] == 'B');
+        pref_y[i + 1] = pref_y[i] + (s[i] == 'Y');
+    }
+    for (int i = m - 1; i; i--) suff_r[i - 1] = suff_r[i] + (s[i] == 'R');
 
-        if (l + 1 == r) {
-            int i = (s[l] == 'B' ? 0 : (s[l] == 'Y' ? 1 : 2));
-            f[i][i].assign(2, 0);
-            f[i][i][1] = 1;
-            return f;
-        }
-
-        int m = l + (r - l) / 2;
-        auto fl = self(self, l, m), fr = self(self, m, r);
-        for (int i = 0; i < 3; i++)
-            for (int j = i; j < 3; j++) {
-                f[i][j] = polyadd(fl[i][j], fr[i][j]);
-                vector<modint> a, b;
-                for (int x = i; x <= j; x++) {
-                    a = polyadd(a, fl[i][x]);
-                    b = polyadd(b, fr[x][j]);
-                }
-                if (a.empty() || b.empty()) continue;
-
-                auto c = convolve(a, b);
-                for (int x = i; x <= j; x++)
-                    for (int y = i; y < x; y++) {
-                        if (fl[i][x].empty() || fr[y][j].empty()) continue;
-                        c = polysub(c, convolve(fl[i][x], fr[y][j]));
-                    }
-                f[i][j] = polyadd(f[i][j], c);
-            }
-        return f;
-    };
-    auto f = dnc(dnc, 0, n);
-    vector<modint> count(n + 1, 0);
-    for (int i = 0; i < 3; i++)
-        for (int j = i; j < 3; j++)
-            for (int k = 1; k < f[i][j].size() && k <= n; k++) count[k] += f[i][j][k];
-
-    vector<modint> fact(n + 1, 1), fact_inv(n + 1, 1);
+    vector<modint> fact(m + 1, 1), fact_inv(m + 1, 1);
     auto prepare = [&]() {
         auto inv = fact;
 
-        for (int i = 1; i <= n; i++) {
+        for (int i = 1; i <= m; i++) {
             if (i > 1) inv[i] = (MOD - MOD / i) * inv[MOD % i];
             fact[i] = i * fact[i - 1];
             fact_inv[i] = inv[i] * fact_inv[i - 1];
@@ -540,8 +502,64 @@ int main() {
     };
     prepare();
 
-    modint t = n;
-    for (int k = 1; k <= n; k++)
-        if (count[k]) t -= count[k] / binomial_coefficient_mod_p(n, k, MOD, fact, fact_inv);
+    vector<modint> count(m + 1), total(m + 1);
+    auto dnc = [&](auto &&self, int l, int r) -> void {
+        if (l + 1 == r) return;
+
+        int mid = l + (r - l) / 2, ll = 1e9, lr = -1e9, rl = 1e9, rr = -1e9;
+        for (int i = l; i < mid; i++)
+            if (s[i] == 'B') {
+                int v = pref_b[i] - pref_y[i + 1];
+                ll = min(ll, v);
+                lr = max(lr, v);
+            }
+        for (int i = mid; i < r; i++)
+            if (s[i] == 'R') {
+                int v = suff_r[i] + pref_y[i + 1];
+                rl = min(rl, v);
+                rr = max(rr, v);
+            }
+
+        if (ll <= lr && rl <= rr) {
+            vector<modint> a(lr - ll + 1), b(rr - rl + 1);
+            for (int i = l; i < mid; i++)
+                if (s[i] == 'B') a[pref_b[i] - pref_y[i + 1] - ll]++;
+            for (int i = mid; i < r; i++)
+                if (s[i] == 'R') b[suff_r[i] + pref_y[i + 1] - rl]++;
+            auto c = convolve(a, b);
+            for (int i = 0; i < c.size(); i++) count[i + ll + rl] += c[i];
+        }
+
+        self(self, l, mid);
+        self(self, mid, r);
+    };
+    dnc(dnc, 0, m);
+
+    auto transform = [&](const vector<modint> &count) {
+        vector<modint> a(m + 1);
+        for (int i = 0; i <= m; i++) a[i] = count[m - i] * fact[m - i] * fact[i];
+        auto b = binomial_transform(a, fact, fact_inv);
+
+        vector<modint> c(m + 1);
+        for (int i = 0; i <= m; i++) c[i] = b[m - i] * fact_inv[m - i] * fact_inv[i];
+        return c;
+    };
+
+    auto c = transform(count);
+    for (int i = 2; i <= m; i++) total[i] += c[i - 2];
+
+    int n = pref_y[m];
+    fill(count.begin(), count.end(), 0);
+    for (int i = 0; i < m; i++) {
+        if (s[i] == 'B') count[pref_b[i] - pref_y[i + 1] + n]++;
+        if (s[i] == 'R') count[suff_r[i] + pref_y[i + 1]]++;
+    }
+    c = transform(count);
+    for (int i = 1; i <= m; i++) total[i] += c[i - 1];
+
+    for (int k = 1; k <= n; k++) total[k] += binomial_coefficient_mod_p(n, k, MOD, fact, fact_inv);
+
+    modint t = m;
+    for (int i = 1; i <= m; i++) t -= fact[i] * fact[m - i] * fact_inv[m] * total[i];
     cout << t;
 }
