@@ -44,9 +44,9 @@ struct FenwickTree2D {
         return sum;
     }
 
-    T rectangle_sum(int xl, int yl, int xr, int yr) {
-        if (xl > xr || yl > yr) return 0;
-        return pref_sum(xr, yr) - pref_sum(xl - 1, yr) - pref_sum(xr, yl - 1) + pref_sum(xl - 1, yl - 1);
+    T rectangle_sum(int xl, int xr, int yl, int yr) {
+        if (xl >= xr || yl >= yr) return 0;
+        return pref_sum(xr, yr) - pref_sum(xl, yr) - pref_sum(xr, yl) + pref_sum(xl, yl);
     }
 };
 
@@ -160,7 +160,7 @@ int main() {
 
         if (i + 1 < j) {
             int l = i + 1, r = j - 1;
-            total[id] += sum3.rectangle_sum(l, l, r, r) - target[id] * count3.rectangle_sum(l, l, r, r);
+            total[id] += sum3.rectangle_sum(l - 1, r, l - 1, r) - target[id] * count3.rectangle_sum(l - 1, r, l - 1, r);
         }
         most = max(most, total[id]);
     }
