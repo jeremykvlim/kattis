@@ -7,10 +7,11 @@ struct Matrix {
     vector<vector<T>> mat;
 
     Matrix(int n = 0) : Matrix(n, n) {}
-    Matrix(int row, int col, int v = 0) : r(row), c(col), mat(row, vector<T>(col, v)) {}
+    Matrix(int rows, int cols, int v = 0) : r(rows), c(cols), mat(rows, vector<T>(cols, v)) {}
+    Matrix(const vector<vector<T>> &mat) : r(mat.size()), c(mat[0].size()), mat(mat) {}
 
-    void resize_columns(int columns) {
-        c = columns;
+    void resize_columns(int cols) {
+        c = cols;
         for (auto &row : mat) row.resize(c);
     }
 

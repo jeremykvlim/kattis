@@ -182,7 +182,7 @@ struct GaloisField2Matrix {
     int r, c;
     vector<bitset<S>> mat;
 
-    GaloisField2Matrix(int row, bool v = false) : r(row), c(S), mat(row, v ? ~bitset<S>() : bitset<S>()) {}
+    GaloisField2Matrix(int rows, bool v = false) : r(rows), c(S), mat(rows, v ? ~bitset<S>() : bitset<S>()) {}
     GaloisField2Matrix(const vector<bitset<S>> &mat) : r(mat.size()), c(S), mat(mat) {}
 
     auto & operator[](int i) {
