@@ -9,7 +9,7 @@ int main() {
     string S;
     cin >> n >> t >> m >> S;
 
-    vector<vector<int>> pref(26, vector<int>(n + 1));
+    vector<vector<int>> pref(26, vector<int>(n + 1, 0));
     for (int c = 0; c < 26; c++)
         for (int i = 0; i < n; i++) pref[c][i + 1] = pref[c][i] + ((S[i] - 'A' + c) % 26);
 
