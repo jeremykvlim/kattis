@@ -1,28 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct Hash {
-    template <typename T>
-    static inline void combine(size_t &h, const T &v) {
-        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
-    }
-
-    template <typename T>
-    size_t operator()(const T &v) const {
-        if constexpr (requires { tuple_size<T>::value; })
-            return apply([](const auto &...e) {
-                size_t h = 0;
-                (combine(h, e), ...);
-                return h;
-            }, v);
-        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
-            size_t h = 0;
-            for (const auto &e : v) combine(h, e);
-            return h;
-        } else return hash<T>{}(v);
-    }
-};
-
 template <typename T>
 struct Fraction : array<T, 2> {
     using F = array<T, 2>;
@@ -199,6 +177,39 @@ pair<T, T> chinese_remainder_theorem(T a, T n, T b, T m) {
     return {r, lcm};
 }
 
+template <int S>
+struct GaloisField2Matrix {
+    int r, c;
+    vector<bitset<S>> mat;
+
+    GaloisField2Matrix(int n = 0) : GaloisField2Matrix(n, n) {}
+    GaloisField2Matrix(int row, bool v = false) : r(row), c(S), mat(row, v ? ~bitset<S>() : bitset<S>()) {}
+    GaloisField2Matrix(const vector<bitset<S>> &mat) : r(mat.size()), c(S), mat(mat) {}
+
+    auto & operator[](int i) {
+        return mat[i];
+    }
+};
+
+template <int S>
+void rref(GaloisField2Matrix<S> &matrix) {
+    int n = matrix.r, m = matrix.c;
+    int rank = 0;
+
+    for (int c = 0; c < m && rank < n; c++) {
+        int pivot = rank;
+        for (; pivot < n && !matrix[pivot][c]; pivot++);
+
+        if (pivot == n) continue;
+        swap(matrix[pivot], matrix[rank]);
+
+        for (int i = 0; i < n; i++)
+            if (i != rank && matrix[i][c]) matrix[i] ^= matrix[rank];
+
+        rank++;
+    }
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -251,7 +262,7 @@ int main() {
         auto [px, py, vx, vy] = particles[i];
         if (!vx) continue;
 
-        int avx = abs(vx), avy = abs(vy), l = (!vy ? avx : lcm(avx, avy)), 
+        int avx = abs(vx), avy = abs(vy), l = (!vy ? avx : lcm(avx, avy)),
             dx = w - px, n = 2 * w * (l / avx), a = (dx * (l / vx) + n) % n;
         if (!vy) {
             if (py == d) {
@@ -286,41 +297,57 @@ int main() {
 
     map<Fraction<int>, bitset<201>> sweep;
     for (int i = 0; i < p; i++)
-        for (int j = 0; j < count[i]; j++)
-            if (!solutions[i][j][1].numer()) sweep[solutions[i][j][0]][i] = true;
-            else {
-                auto f = solutions[i][j][0];
+        for (int j = 0; j < count[i]; j++) {
+            auto f = solutions[i][j][0];
+            if (!solutions[i][j][1].numer()) sweep[f][i] = true;
+            else
                 for (int _ = 0; _ < p; _++) {
                     sweep[f][i] = true;
                     f += solutions[i][j][1];
                 }
-            }
+        }
 
     if (sweep.empty()) {
         cout << "impossible";
         exit(0);
     }
 
-    vector<bitset<201>> basis(201);
+    vector<Fraction<int>> times;
+    vector<bitset<201>> rows;
     for (auto [f, bs] : sweep) {
-        for (int i = 0; i <= 200; i++)
-            if (bs[i]) {
-                if (basis[i].any()) bs ^= basis[i];
-                else {
-                    basis[i] = bs;
-                    break;
-                }
-            }
+        times.emplace_back(f);
+        rows.emplace_back(bs);
+    }
+
+    auto reachable = [&](int n) {
+        GaloisField2Matrix<201> m({rows.begin(), rows.begin() + n + 1});
+        rref(m);
 
         auto temp = cross;
-        for (int i = 0; i <= 200; i++)
-            if (temp[i]) {
-                if (basis[i].any()) temp ^= basis[i];
-                else goto next;
-            }
-        cout << fixed << setprecision(6) << (double) f.numer() / f.denom();
+        for (int r = 0; r <= n; r++) {
+            int pivot = -1;
+            for (int c = 0; c <= p; c++)
+                if (m[r][c]) {
+                    pivot = c;
+                    break;
+                }
+            if (pivot != -1 && temp[pivot]) temp ^= m[r];
+        }
+        return temp.none();
+    };
+
+    if (!reachable(rows.size() - 1)) {
+        cout << "impossible";
         exit(0);
-        next:;
     }
-    cout << "impossible";
+
+    int l = -1, r = rows.size(), m;
+    while (l + 1 < r) {
+        m = l + (r - l) / 2;
+
+        if (reachable(m)) r = m;
+        else l = m;
+    }
+    auto f = times[r];
+    cout << fixed << setprecision(6) << (double) f.numer() / f.denom();
 }
