@@ -1,0 +1,181 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+template <typename T>
+bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
+    return fabs(v1 - v2) <= epsilon;
+}
+
+template <typename T>
+int sgn(const T &v) {
+    if (!is_floating_point_v<T>) return (v > 0) - (v < 0);
+    return approximately_equal(v, (T) 0) ? 0 : (v > 0) - (v < 0);
+}
+
+template <typename T>
+struct Point {
+    T x, y;
+
+    Point() {}
+    Point(T x, T y) : x(x), y(y) {}
+
+    template <typename U>
+    Point(U x, U y) : x(x), y(y) {}
+
+    template <typename U>
+    Point(const Point<U> &p) : x((T) p.x), y((T) p.y) {}
+
+    const auto begin() const {
+        return &x;
+    }
+
+    const auto end() const {
+        return &y + 1;
+    }
+
+    Point operator-() const {
+        return {-x, -y};
+    }
+
+    bool operator<(const Point &p) const {
+        return x != p.x ? x < p.x : y < p.y;
+    }
+
+    bool operator>(const Point &p) const {
+        return x != p.x ? x > p.x : y > p.y;
+    }
+
+    bool operator==(const Point &p) const {
+        return x == p.x && y == p.y;
+    }
+
+    bool operator!=(const Point &p) const {
+        return x != p.x || y != p.y;
+    }
+
+    bool operator<=(const Point &p) const {
+        return *this < p || *this == p;
+    }
+
+    bool operator>=(const Point &p) const {
+        return *this > p || *this == p;
+    }
+
+    Point operator+(const Point &p) const {
+        return {x + p.x, y + p.y};
+    }
+
+    Point operator+(const T &v) const {
+        return {x + v, y + v};
+    }
+
+    Point & operator+=(const Point &p) {
+        x += p.x;
+        y += p.y;
+        return *this;
+    }
+
+    Point & operator+=(const T &v) {
+        x += v;
+        y += v;
+        return *this;
+    }
+
+    Point operator-(const Point &p) const {
+        return {x - p.x, y - p.y};
+    }
+
+    Point operator-(const T &v) const {
+        return {x - v, y - v};
+    }
+
+    Point & operator-=(const Point &p) {
+        x -= p.x;
+        y -= p.y;
+        return *this;
+    }
+
+    Point & operator-=(const T &v) {
+        x -= v;
+        y -= v;
+        return *this;
+    }
+
+    Point operator*(const T &v) const {
+        return {x * v, y * v};
+    }
+
+    Point & operator*=(const T &v) {
+        x *= v;
+        y *= v;
+        return *this;
+    }
+
+    Point operator/(const T &v) const {
+        return {x / v, y / v};
+    }
+
+    Point & operator/=(const T &v) {
+        x /= v;
+        y /= v;
+        return *this;
+    }
+};
+
+template <typename T>
+T dot(const Point<T> &a, const Point<T> &b) {
+    return (a.x * b.x) + (a.y * b.y);
+}
+
+template <typename T>
+T cross(const Point<T> &a, const Point<T> &b) {
+    return (a.x * b.y) - (a.y * b.x);
+}
+
+template <typename T>
+pair<bool, bool> point_in_polygon(const vector<Point<T>> &polygon, const Point<T> &p) {
+    bool in = false;
+    for (int i = 0; i < polygon.size(); i++) {
+        auto a = polygon[i] - p, b = polygon[(i + 1) % polygon.size()] - p;
+        if (a.y > b.y) swap(a, b);
+        if (sgn(a.y) <= 0 && 0 < sgn(b.y) && sgn(cross(a, b)) < 0) in = !in;
+        if (!sgn(cross(a, b)) && sgn(dot(a, b)) <= 0) return {false, true};
+    }
+    return {in, false};
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, m;
+    cin >> n >> m;
+
+    vector<vector<Point<long long>>> parks(n);
+    for (auto &park : parks) {
+        int k;
+        cin >> k;
+
+        park.resize(k);
+        for (auto &[x, y] : park) cin >> x >> y;
+    }
+
+    while (m--) {
+        Point<long long> p;
+        cin >> p.x >> p.y;
+
+        for (int i = 0; i < n; i++) {
+            auto [in, on] = point_in_polygon(parks[i], p);
+            if (on) {
+                cout << "Get off the fence of Park " << i + 1 << "\n";
+                goto next;
+            }
+            if (in) {
+                cout << "Inside Park " << i + 1 << "\n";
+                goto next;
+            }
+        }
+        cout << "Outside any park\n";
+        next:;
+    }
+}
