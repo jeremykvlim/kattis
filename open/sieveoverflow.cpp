@@ -26,22 +26,16 @@ int main() {
     long long m;
     cin >> m;
 
-    auto primes = sieve(ceil(sqrtl(m)));
-    long long l = 4, r = m, mid;
-    while (l + 1 < r) {
-        mid = l + (r - l) / 2;
+    int n = ceil(sqrtl(m));
+    auto primes = sieve(n);
 
-        auto safe = [&]() {
-            int limit = floor(sqrtl(mid));
-            for (int p : primes) {
-                if (p > limit) break;
-                if ((mid / p) + 1 > (m / p)) return false;
-            }
-            return true;
-        };
+    auto safe = 4LL, limit = m;
+    for (int i = 0; i < primes.size(); i++) {
+        int p = primes[i];
+        limit = min(limit, p * (m / p) - 1);
 
-        if (safe()) l = mid;
-        else r = mid;
+        int q = i + 1 < primes.size() ? primes[i + 1] : n + 1;
+        safe = max(safe, min(limit, (long long) q * q - 1));
     }
-    cout << l;
+    cout << safe;
 }
