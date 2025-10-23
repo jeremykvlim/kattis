@@ -326,10 +326,8 @@ int main() {
         auto pivot_cols = rref(m);
 
         auto temp = cross;
-        for (int r = 0; r < pivot_cols.size(); r++) {
-            int c = pivot_cols[r];
-            if (c <= p && temp[c]) temp ^= m[r];
-        }
+        for (int r = 0; r < pivot_cols.size(); r++)
+            if (temp[pivot_cols[r]]) temp ^= m[r];
         return temp.none();
     };
 
