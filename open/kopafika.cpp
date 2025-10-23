@@ -7,13 +7,13 @@ struct Treap {
     struct TreapNode {
         int l, r;
         unsigned long long prio;
-        pair<int, int> key;
+        pair<long long, int> key;
 
         long long val;
 
         TreapNode() : l(0), r(0), prio(0), key{0, 0}, val(0) {}
 
-        auto & operator=(const pair<int, int> &k) {
+        auto & operator=(const pair<long long, int> &k) {
             prio = rng();
             key = k;
             return *this;
@@ -49,7 +49,7 @@ struct Treap {
         }
     }
 
-    pair<int, int> split(int i, const pair<int, int> &key) {
+    pair<long long, int> split(int i, const pair<long long, int> &key) {
         if (!i) return {0, 0};
 
         push(i);
@@ -96,7 +96,7 @@ struct Treap {
         }
     }
 
-    int insert(const pair<int, int> &key) {
+    int insert(const pair<long long, int> &key) {
         int i = nodes++;
         T[i] = key;
 
@@ -104,11 +104,11 @@ struct Treap {
         return root = meld(meld(l, i), r);
     }
 
-    int erase(const pair<int, int> &key) {
+    int erase(const pair<long long, int> &key) {
         return root = erase(root, key);
     }
 
-    int erase(int i, const pair<int, int> &key) {
+    int erase(int i, const pair<long long, int> &key) {
         if (!i) return 0;
         if (T[i].key == key) return meld(T[i].l, T[i].r);
 
