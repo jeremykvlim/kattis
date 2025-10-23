@@ -191,22 +191,25 @@ struct GaloisField2Matrix {
 };
 
 template <int S>
-void rref(GaloisField2Matrix<S> &matrix) {
+vector<int> rref(GaloisField2Matrix<S> &matrix) {
     int n = matrix.r, m = matrix.c;
-    int rank = 0;
 
+    int rank = 0;
+    vector<int> pivot_cols;
     for (int c = 0; c < m && rank < n; c++) {
         int pivot = rank;
         for (; pivot < n && !matrix[pivot][c]; pivot++);
 
         if (pivot == n) continue;
         swap(matrix[pivot], matrix[rank]);
+        pivot_cols.emplace_back(c);
 
         for (int i = 0; i < n; i++)
             if (i != rank && matrix[i][c]) matrix[i] ^= matrix[rank];
 
         rank++;
     }
+    return pivot_cols;
 }
 
 int main() {
@@ -262,7 +265,7 @@ int main() {
         if (!vx) continue;
 
         int avx = abs(vx), avy = abs(vy), l = (!vy ? avx : lcm(avx, avy)),
-            dx = w - px, n = 2 * w * (l / avx), a = (dx * (l / vx) + n) % n;
+                dx = w - px, n = 2 * w * (l / avx), a = (dx * (l / vx) + n) % n;
         if (!vy) {
             if (py == d) {
                 solutions[i][0][0] = {a, l};
@@ -320,17 +323,12 @@ int main() {
 
     auto reachable = [&](int n) {
         GaloisField2Matrix<201> m({rows.begin(), rows.begin() + n + 1});
-        rref(m);
+        auto pivot_cols = rref(m);
 
         auto temp = cross;
-        for (int r = 0; r <= n; r++) {
-            int pivot = -1;
-            for (int c = 0; c <= p; c++)
-                if (m[r][c]) {
-                    pivot = c;
-                    break;
-                }
-            if (pivot != -1 && temp[pivot]) temp ^= m[r];
+        for (int r = 0; r < pivot_cols.size(); r++) {
+            int c = pivot_cols[r];
+            if (c <= p && temp[c]) temp ^= m[r];
         }
         return temp.none();
     };
