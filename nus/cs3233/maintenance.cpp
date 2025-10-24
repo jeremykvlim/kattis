@@ -426,20 +426,20 @@ int main() {
     };
 
     auto divs1 = divisors(pfs1), divs2 = divisors(pfs2);
-    sort(divs1.begin(), divs1.end(), [](auto p1, auto p2) { return p1.first < p2.first; });
-    sort(divs2.rbegin(), divs2.rend(), [](auto p1, auto p2) { return p1.first < p2.first; });
+    sort(divs1.begin(), divs1.end());
+    sort(divs2.begin(), divs2.end());
 
-    auto diff = DBL_MAX;
-    modint d;
-    for (int i = 0, j = 0; i < divs1.size(); i++) {
-        while (divs1[i].first + divs2[j].first > 0.5 * logk && j < divs2.size() - 1) j++;
-
-        for (int k = j - (j > 0); k <= j; k++)
-            if (diff > abs(divs1[i].first + divs2[k].first - 0.5 * logk)) {
-                diff = abs(divs1[i].first + divs2[k].first - 0.5 * logk);
-                d = divs1[i].second * divs2[k].second;
-            }
+    auto diff = LDBL_MAX;
+    modint D = 1;
+    for (int i = 0, j = divs2.size() - 1; i < divs1.size() && ~j;) {
+        auto d = divs1[i].first + divs2[j].first - 0.5 * logk;
+        if (diff > fabs(d)) {
+            diff = fabs(d);
+            D = divs1[i].second * divs2[j].second;
+        }
+        if (d < 0) i++;
+        else j--;
     }
 
-    cout << d + kmod / d;
+    cout << D + kmod / D;
 }
