@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -356,26 +356,6 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
-vector<pair<double, modint>> divisors(vector<pair<int, int>> &pfs) {
-    vector<pair<double, modint>> divs{{0, 1}};
-
-    auto dfs = [&](auto &&self, pair<double, modint> d = {0, 1}, int i = 0) {
-        if (i == pfs.size()) return;
-
-        self(self, d, i + 1);
-        auto [pf, pow] = pfs[i];
-        pair<double, modint> p{log(pf), pf};
-        while (pow--) {
-            d = {d.first + p.first, d.second * p.second};
-            divs.emplace_back(d);
-            self(self, d, i + 1);
-        }
-    };
-    dfs(dfs);
-    
-    return divs;
-}
-
 vector<int> sieve(int n) {
     vector<int> spf(n + 1, 0), primes;
     for (int i = 2; i <= n; i++) {
@@ -406,7 +386,7 @@ int main() {
     auto primes = sieve(99);
     vector<int> indices(primes.back() + 1), factors(primes.back() + 1, 0);
     for (int i = 0; i < primes.size(); i++) indices[primes[i]] = i;
-    
+
     pair<double, modint> K{0, 1};
     auto &[logk, kmod] = K;
     for (int i = 0; i < s.size() / 2; i++) {
@@ -424,6 +404,26 @@ int main() {
         (s1 <= s2 ? pfs1 : pfs2).emplace_back(primes[i], factors[i]);
         (s1 <= s2 ? s1 : s2) *= factors[i] + 1;
     }
+
+    auto divisors = [&](const auto &pfs) {
+        vector<pair<double, modint>> divs{{0, 1}};
+
+        auto dfs = [&](auto &&self, pair<double, modint> d = {0, 1}, int i = 0) {
+            if (i == pfs.size()) return;
+
+            self(self, d, i + 1);
+            auto [pf, pow] = pfs[i];
+            pair<double, modint> p{log(pf), pf};
+            while (pow--) {
+                d = {d.first + p.first, d.second * p.second};
+                divs.emplace_back(d);
+                self(self, d, i + 1);
+            }
+        };
+        dfs(dfs);
+
+        return divs;
+    };
 
     auto divs1 = divisors(pfs1), divs2 = divisors(pfs2);
     sort(divs1.begin(), divs1.end(), [](auto p1, auto p2) { return p1.first < p2.first; });
