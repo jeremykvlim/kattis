@@ -408,16 +408,16 @@ int main() {
     auto divisors = [&](const auto &pfs) {
         vector<pair<double, modint>> divs{{0, 1}};
 
-        auto dfs = [&](auto &&self, pair<double, modint> d = {0, 1}, int i = 0) {
+        auto dfs = [&](auto &&self, int i = 0, pair<double, modint> d = {0, 1}) {
             if (i == pfs.size()) return;
 
-            self(self, d, i + 1);
+            self(self, i + 1, d);
             auto [pf, pow] = pfs[i];
             pair<double, modint> p{log(pf), pf};
             while (pow--) {
                 d = {d.first + p.first, d.second * p.second};
                 divs.emplace_back(d);
-                self(self, d, i + 1);
+                self(self, i + 1, d);
             }
         };
         dfs(dfs);
