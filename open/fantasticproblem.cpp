@@ -140,9 +140,9 @@ int main() {
 
     vector<set<int>> indices(1e5 + 1);
     for (int i = 1; i <= n; i++)
-        for (int pf : factorize(v[i])) indices[pf].insert(i);
+        for (int pf : factorize(v[i])) indices[pf].emplace(i);
 
-    auto add = [&](int sl, int sr, int d) {
+    auto update = [&](int sl, int sr, int d) {
         int l = max(sr - k, 0), r = min(sl, n - k + 1);
         if (l < r) st.modify(l, r, d);
     };
@@ -151,7 +151,7 @@ int main() {
         if (!indices[p].empty()) {
             int prev = -1;
             for (int i : indices[p]) {
-                if (~prev) add(prev, i, 1);
+                if (~prev) update(prev, i, 1);
                 prev = i;
             }
         }
@@ -169,18 +169,18 @@ int main() {
             for (int pf : factorize(v[a])) {
                 auto it = indices[pf].find(a);
                 int l = it == indices[pf].begin() ? 0 : *prev(it), r = next(it) == indices[pf].end() ? 0 : *next(it);
-                if (l) add(l, a, -1);
-                if (r) add(a, r, -1);
-                if (l && r) add(l, r, 1);
+                if (l) update(l, a, -1);
+                if (r) update(a, r, -1);
+                if (l && r) update(l, r, 1);
                 indices[pf].erase(it);
             }
             for (int pf : factorize(b)) {
                 auto it = indices[pf].lower_bound(a);
                 int l = it == indices[pf].begin() ? 0 : *prev(it), r = it == indices[pf].end() ? 0 : *it;
-                if (l && r) add(l, r, -1);
+                if (l && r) update(l, r, -1);
                 indices[pf].emplace(a);
-                if (l) add(l, a, 1);
-                if (r) add(a, r, 1);
+                if (l) update(l, a, 1);
+                if (r) update(a, r, 1);
             }
             sum += b - v[a];
             v[a] = b;
