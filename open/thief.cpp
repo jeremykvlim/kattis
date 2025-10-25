@@ -43,7 +43,7 @@ int main() {
 
     vector<long long> dp(k + 1, -1e18), temp(k + 1, -1e18);
     dp[0] = 0;
-    for(int s = 1; s <= 300; s++) {
+    for (int s = 1; s <= 300; s++) {
         int steal = min((int) jewels[s].size(), k / s);
         if (!steal) continue;
 
