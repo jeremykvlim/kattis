@@ -1,6 +1,31 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+vector<T> min_plus_convolution(const vector<T> &convex, const vector<T> &arbitrary){
+    int da = convex.size(), db = arbitrary.size(), n = da + db - 1;
+
+    vector<T> c(n, numeric_limits<T>::max() / 4);
+    c[0] = convex[0] + arbitrary[0];
+    vector<int> indices(n + 1, 0);
+    indices[n] = db - 1;
+    for (int k = bit_ceil((unsigned) n) >> 1; k; k >>= 1)
+        for (int i = k; i < n; i += k << 1) {
+            int l = i - k, r = min(i + k, n);
+            indices[i] = indices[l];
+            for (int j = indices[l]; j <= indices[r]; j++) {
+                if (j <= i && i < j + da) {
+                    T t = arbitrary[j] + convex[i - j];
+                    if (c[i] > t) {
+                        c[i] = t;
+                        indices[i] = j;
+                    }
+                }
+            }
+        }
+    return c;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -15,52 +40,31 @@ int main() {
 
         jewels[s].emplace_back(v);
     }
-    for (int s = 1; s <= 300; s++) sort(jewels[s].rbegin(), jewels[s].rend());
 
-    vector<long long> dp(k + 1, -1e18);
+    vector<long long> dp(k + 1, -1e18), temp(k + 1, -1e18);
     dp[0] = 0;
-    for (int s = 1; s <= 300; s++)
-        if (!jewels[s].empty())
-            for (int r = 0; r < s; r++)
-                if (r <= k) {
-                    int size = (k - r) / s + 1;
-                    vector<long long> prev(size);
-                    for (int i = 0; i < size; i++) prev[i] = dp[i * s + r];
+    for(int s = 1; s <= 300; s++) {
+        int steal = min((int) jewels[s].size(), k / s);
+        if (!steal) continue;
 
-                    int steal = min(size, (int) jewels[s].size() + 1);
-                    vector<long long> pref(steal, 0);
-                    for (int i = 1; i < steal; i++) pref[i] = pref[i - 1] + jewels[s][i - 1];
+        sort(jewels[s].rbegin(), jewels[s].rend());
+        vector<long long> pref(steal + 1, 0);
+        for(int i = 0; i < steal; i++) pref[i + 1] = pref[i] + jewels[s][i];
 
-                    auto search = [&](int i, int j) {
-                        int l = j - 1, r = i + steal - 1, mid;
-                        while (l + 1 < r) {
-                            mid = l + (r - l) / 2;
+        vector<long long> a(steal + 1);
+        for (int i = 0; i <= steal; i++) a[i] = -pref[i];
 
-                            if (prev[i] + pref[mid - i] > prev[j] + pref[mid - j]) l = mid;
-                            else r = mid;
-                        }
-                        return l;
-                    };
+        fill(temp.begin(), temp.end(), -1e18);
+        for (int r = 0; r < s && r <= k; r++) {
+            int size = (k - r) / s + 1;
+            vector<long long> b(size);
+            for (int i = 0; i < size; i++) b[i] = -dp[i * s + r];
 
-                    vector<long long> temp(size, -1);
-                    deque<int> mono_indices;
-                    for (int i = 0; i < size; i++) {
-                        if (prev[i] >= 0) {
-                            while (mono_indices.size() > 1) {
-                                if (search(mono_indices[mono_indices.size() - 2], mono_indices.back()) >=
-                                    search(mono_indices.back(), i))
-                                    mono_indices.pop_back();
-                                else break;
-                            }
-                            mono_indices.emplace_back(i);
-                        }
-                        while (!mono_indices.empty() && mono_indices[0] <= i - steal) mono_indices.pop_front();
-                        while (mono_indices.size() > 1 && 
-			       prev[mono_indices[0]] + pref[i - mono_indices[0]] <= prev[mono_indices[1]] + pref[i - mono_indices[1]]) mono_indices.pop_front();
-                        if (!mono_indices.empty()) temp[i] = prev[mono_indices[0]] + pref[i - mono_indices[0]];
-                    }
-                    for (int i = 0; i < size; i++) dp[i * s + r] = temp[i];
-                }
+            auto c = min_plus_convolution(a, b);
+            for (int i = 0; i < size; i++) temp[i * s + r] = -c[i];
+        }
+        dp = temp;
+    }
 
     for (int i = 1; i <= k; i++) {
         dp[i] = max(dp[i], dp[i - 1]);
