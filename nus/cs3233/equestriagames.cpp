@@ -20,34 +20,41 @@ int main() {
     for (int i = n; i < 2 * n; i++) a[i] = a[i - n];
 
     int m = 2 * n;
-    vector<int> distinct(m + 2, m + 1), freq(temp.size(), 0);
-    vector<vector<int>> lift(__lg(n) + 1, vector<int>(m + 2, m + 1));
+    vector<int> jump(m + 2, m + 1), freq(temp.size(), 0);
     for (int l = 1, r = 1, count = 0; l <= m; l++) {
-        while (r <= m && count < c) {
+        for (; r <= m && count < c; r++)
             if (!freq[a[r - 1]]++) count++;
-            r++;
-        }
 
-        if (count >= c) distinct[l] = r;
-        else distinct[l] = m + 1;
+        if (count >= c) jump[l] = max(r, l + k);
+        else jump[l] = m + 1;
 
         if (!--freq[a[l - 1]]) count--;
-        lift[0][l] = min(m+1, max(distinct[l], l + k));
     }
 
-    for (int j = 1; j <= __lg(n); j++)
-        for (int i = 1; i <= m + 1; i++)
-            lift[j][i] = min(m + 1, lift[j - 1][lift[j - 1][i]]);
+    vector<int> block(m + 2, 0), next(m + 2, m + 1), count(m + 2, 0);
+    for (int i = 1; i <= m + 1; i++) block[i] = (i - 1) / ceil(sqrt(m));
 
-    int companies = 0;
+    for (int i = m; i; i--)
+        if (jump[i] >= m + 1 || block[i] != block[jump[i]]) {
+            next[i] = jump[i];
+            count[i] = 1;
+        } else {
+            next[i] = next[jump[i]];
+            count[i] = count[jump[i]] + 1;
+        }
+
+    int sold = 0;
     for (int l = 1; l <= n; l++) {
-        int count = 0;
-        for (int i = __lg(n), j = l; ~i; i--)
-            if (l + n >= lift[i][j]) {
-                j = lift[i][j];
-                count += 1 << i;
-            }
-        companies = max(companies, count);
+        int curr = l, s = 0;
+        while (curr <= l + n)
+            if (next[curr] <= l + n) {
+                s += count[curr];
+                curr = next[curr];
+            } else if (jump[curr] <= l + n) {
+                s++;
+                curr = jump[curr];
+            } else break;
+        sold = max(sold, s);
     }
-    cout << companies;
+    cout << sold;
 }
