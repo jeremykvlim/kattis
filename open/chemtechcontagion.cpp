@@ -50,42 +50,45 @@ int main() {
         degree[v]++;
     }
 
-    vector<vector<int>> lift(__lg(n) + 1, vector<int>(n, 0));
-    vector<int> depth(n, 0), in(n), out(n);
+    auto lsb = [&](int x) {
+        return x & -x;
+    };
+
+    vector<pair<int, int>> tour;
+    vector<int> index(n), depth(n, 0), in(n), out(n), anc_mask(n, 0), head(n + 1);
     vector<long long> degree_sum(n, 0);
     int count = 0;
-    auto dfs1 = [&](auto &&self, int v = 0, int prev = -1) -> void {
-        in[v] = count++;
-        if (~prev) {
-            depth[v] = depth[prev] + 1;
-            lift[0][v] = prev;
-            for (int i = 1; i <= __lg(n); i++) lift[i][v] = lift[i - 1][lift[i - 1][v]];
-        }
+    auto dfs1 = [&](auto &&self, int v = 0, int p = 0) -> void {
+        tour.emplace_back(v, p);
+        index[v] = in[v] = count++;
 
         for (int u : adj_list[v])
-            if (u != prev) {
+            if (u != p) {
                 depth[u] = depth[v] + 1;
                 degree_sum[u] = degree_sum[v] + degree[u];
                 self(self, u, v);
+                head[index[u]] = v;
+                if (lsb(index[v]) < lsb(index[u])) index[v] = index[u];
             }
         out[v] = count;
     };
     dfs1(dfs1);
-
-    auto ancestor = [&](int v, int u) {
-        return in[v] <= in[u] && in[u] < out[v];
-    };
+    for (auto [v, p] : tour) anc_mask[v] = anc_mask[p] | lsb(index[v]);
 
     auto lca = [&](int u, int v) -> int {
-        if (ancestor(u, v)) return u;
-        if (ancestor(v, u)) return v;
+        if (unsigned above = in[u] ^ in[v]; above) {
+            above = (anc_mask[u] & anc_mask[v]) & -bit_floor(above);
+            if (unsigned below = anc_mask[u] ^ above; below) {
+                below = bit_floor(below);
+                u = head[(in[u] & -below) | below];
+            }
+            if (unsigned below = anc_mask[v] ^ above; below) {
+                below = bit_floor(below);
+                v = head[(in[v] & -below) | below];
+            }
+        }
 
-        if (depth[u] < depth[v]) swap(u, v);
-
-        for (int i = __lg(n); ~i; i--)
-            if (!ancestor(lift[i][u], v)) u = lift[i][u];
-
-        return lift[0][u];
+        return depth[u] < depth[v] ? u : v;
     };
 
     vector<pair<int, int>> queries(q);
@@ -121,7 +124,7 @@ int main() {
 
         for (int i : indices[v]) {
             auto [a, b] = queries[i];
-            pipes[i] -= 2 * (fw.pref_sum(in[a] + 1) + fw.pref_sum(in[b] + 1) - 2 * fw.pref_sum(in[lcas[i]] + 1) + visits[lcas[i]]);
+            pipes[i] -= 2 * (fw.range_sum_query(in[lcas[i]] + 1, in[a] + 1) + fw.range_sum_query(in[lcas[i]] + 1, in[b] + 1) + visits[lcas[i]]);
         }
 
         for (int u : adj_list[v])
