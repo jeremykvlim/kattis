@@ -85,15 +85,15 @@ int main() {
     for (auto [v, p] : tour) anc_mask[v] = anc_mask[p] | lsb(index[v]);
 
     auto lca = [&](int u, int v) -> int {
-        if (unsigned above = in[u] ^ in[v]; above) {
+        if (unsigned above = index[u] ^ index[v]; above) {
             above = (anc_mask[u] & anc_mask[v]) & -bit_floor(above);
             if (unsigned below = anc_mask[u] ^ above; below) {
                 below = bit_floor(below);
-                u = head[(in[u] & -below) | below];
+                u = head[(index[u] & -below) | below];
             }
             if (unsigned below = anc_mask[v] ^ above; below) {
                 below = bit_floor(below);
-                v = head[(in[v] & -below) | below];
+                v = head[(index[v] & -below) | below];
             }
         }
 
