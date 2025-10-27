@@ -63,7 +63,7 @@ int main() {
     vector<vector<int>> lift(__lg(n) + 1, vector<int>(n, 0));
     vector<int> depth(n, 0), in(n), out(n);
     int count = 0;
-    auto dfs1 = [&](auto &&self, int v = 0, int prev = -1) -> void {
+    auto dfs = [&](auto &&self, int v = 0, int prev = -1) -> void {
         in[v] = count++;
         if (~prev) {
             depth[v] = depth[prev] + 1;
@@ -78,7 +78,7 @@ int main() {
             }
         out[v] = count;
     };
-    dfs1(dfs1);
+    dfs(dfs);
 
     auto ancestor = [&](int v, int u) {
         return in[v] <= in[u] && in[u] < out[v];
