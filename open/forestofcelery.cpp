@@ -166,25 +166,38 @@ int main() {
 
     auto convex_hull = monotone_chain(celery, true);
     int s = convex_hull.size();
-    vector<vector<int>> lift(__lg(n) + 1, vector<int>(n));
+    vector<int> step(n), next(n);
     for (int l = 0, r = 1, d = 0; l < n; l++) {
         for (; cross(alexa[l], convex_hull[d], convex_hull[(d + 1) % s]) < 0 || cross(alexa[l], convex_hull[d], convex_hull[(d + s - 1) % s]) < 0; ++d %= s);
         for (; cross(alexa[l], convex_hull[d], alexa[r]) < 0; ++r %= n);
-        lift[0][l] = (r - l - 1 + n) % n;
+        step[l] = (r - l - 1 + n) % n;
+        next[l] = (r - 1 + n) % n;
     }
 
-    for (int i = 1; i <= __lg(n); i++)
-        for (int j = 0; j < n; j++) lift[i][j] = min(n, lift[i - 1][j] + lift[i - 1][(lift[i - 1][j] + j) % n]);
+    int blocks = ceil(sqrt(n));
+    vector<int> dist(n, 0), jump(n);
+    for (int i = 0; i < n; i++) {
+        int j = i;
+        for (int _ = 0; _ < blocks; _++) {
+            dist[i] += step[j];
+            j = next[j];
+        }
+        jump[i] = j;
+    }
 
-    int count = 1e9;
-    for (int l = 0; l < n; l++) {
-        int c = 1;
-        for (int i = __lg(n), j = l, temp = n - 1; ~i && ~temp; i--)
-            if (temp >= lift[i][j]) {
-                temp -= lift[i][j];
-                j = (j + lift[i][j]) % n;
-                c += 1 << i;
-            }
+    int count = n;
+    for (int i = 0; i < n; i++) {
+        int j = i, remaining = n - 1, c = 1;
+        while (remaining >= dist[j]) {
+            remaining -= dist[j];
+            j = jump[j];
+            c += blocks;
+        }
+        while (remaining >= step[j]) {
+            remaining -= step[j];
+            j = next[j];
+            c++;
+        }
         count = min(count, c);
     }
     cout << count;
