@@ -69,7 +69,8 @@ int main() {
     int count = 0;
     auto dfs = [&](auto &&self, int v = 0) -> void {
         tour.emplace_back(v, prev[v]);
-        index[v] = in[v] = count++;
+        index[v] = tour.size();
+        in[v] = count++;
 
         for (int u : adj_list[v])
             if (u != prev[v]) {
