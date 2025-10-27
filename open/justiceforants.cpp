@@ -41,8 +41,16 @@ int main() {
         adj_list[i].emplace_back(p);
     }
 
-    vector<int> prev(n + 1, 0), depth(n + 1, 0), heavy(n + 1, -1);
+    auto lsb = [&](int x) {
+        return x & -x;
+    };
+
+    vector<pair<int, int>> tour;
+    vector<int> index(n + 1), depth(n + 1, 0), prev(n + 1, 0), anc_mask(n + 1, 0), head(n + 2), heavy(n + 1, -1);
     auto hld = [&](auto &&self, int v = 1) -> int {
+        tour.emplace_back(v, prev[v]);
+        index[v] = tour.size();
+
         int subtree_size = 1, largest = 0;
         for (int u : adj_list[v])
             if (u != prev[v]) {
@@ -54,41 +62,36 @@ int main() {
                     largest = size;
                     heavy[v] = u;
                 }
+                head[index[u]] = v;
+                if (lsb(index[v]) < lsb(index[u])) index[v] = index[u];
             }
         return subtree_size;
     };
     hld(hld);
+    for (auto [v, p] : tour) anc_mask[v] = anc_mask[p] | lsb(index[v]);
 
-    int lg = __lg(n) + 1;
-    vector<vector<int>> lift(lg, vector<int>(n + 1, 0));
-    for (int v = 1; v <= n; v++) lift[0][v] = prev[v];
-    for (int i = 1; i < lg; i++)
-        for (int v = 1; v <= n; v++) lift[i][v] = lift[i - 1][lift[i - 1][v]];
-
-    auto lca = [&](int u, int v) {
-        if (depth[u] < depth[v]) swap(u, v);
-
-        int diff = depth[u] - depth[v];
-        for (int i = 0; i < lg; i++)
-            if ((diff >> i) & 1) u = lift[i][u];
-
-        if (u == v) return u;
-
-        for (int i = lg - 1; ~i; i--)
-            if (lift[i][u] != lift[i][v]) {
-                u = lift[i][u];
-                v = lift[i][v];
+    auto lca = [&](int u, int v) -> int {
+        if (unsigned above = index[u] ^ index[v]; above) {
+            above = (anc_mask[u] & anc_mask[v]) & -bit_floor(above);
+            if (unsigned below = anc_mask[u] ^ above; below) {
+                below = bit_floor(below);
+                u = head[(index[u] & -below) | below];
             }
+            if (unsigned below = anc_mask[v] ^ above; below) {
+                below = bit_floor(below);
+                v = head[(index[v] & -below) | below];
+            }
+        }
 
-        return lift[0][u];
+        return depth[u] < depth[v] ? u : v;
     };
 
     auto dist = [&](int u, int v) {
         return depth[u] + depth[v] - 2 * depth[lca(u, v)];
     };
 
-    int count = 0, size = 0;
-    vector<int> head(n + 1, 0), chain_id(n + 1, -1), chain_pos(n + 1, -1);
+    int count = 0, chain_len = 0;
+    vector<int> chain_head(n + 1, 0), chain_id(n + 1, -1), chain_pos(n + 1, -1);
     vector<vector<int>> chains;
     queue<int> q;
     q.emplace(1);
@@ -101,15 +104,15 @@ int main() {
             chain_id[v] = count;
             chains[count].emplace_back(v);
             chain_pos[v] = chains[count].size() - 1;
-            head[v] = h;
+            chain_head[v] = h;
             for (int u : adj_list[v])
                 if (u != prev[v] && u != heavy[v]) q.emplace(u);
         }
-        size = max(size, (int) chains.back().size());
+        chain_len = max(chain_len, (int) chains.back().size());
         count++;
     }
 
-    int lg_len = __lg(size) + 1;
+    int lg_len = __lg(chain_len) + 1;
     vector<vector<int>> block_count(lg_len + 1, vector<int>(count, 0)), pref(lg_len + 1, vector<int>(count + 1, 0));
     for (int l = 0; l <= lg_len; l++)
         for (int c = 0, s = 1 << l; c < count; c++) {
@@ -132,13 +135,13 @@ int main() {
 
     auto decompose = [&](int u, int v) {
         vector<array<int, 4>> l, r;
-        while (head[u] != head[v])
-            if (depth[head[u]] >= depth[head[v]]) {
-                l.push_back({chain_id[u], chain_pos[head[u]], chain_pos[u], 1});
-                u = prev[head[u]];
+        while (chain_head[u] != chain_head[v])
+            if (depth[chain_head[u]] >= depth[chain_head[v]]) {
+                l.push_back({chain_id[u], chain_pos[chain_head[u]], chain_pos[u], 1});
+                u = prev[chain_head[u]];
             } else {
-                r.push_back({chain_id[v], chain_pos[head[v]], chain_pos[v], 0});
-                v = prev[head[v]];
+                r.push_back({chain_id[v], chain_pos[chain_head[v]], chain_pos[v], 0});
+                v = prev[chain_head[v]];
             }
 
         if (chain_pos[u] <= chain_pos[v]) l.push_back({chain_id[u], chain_pos[u], chain_pos[v], 0});
