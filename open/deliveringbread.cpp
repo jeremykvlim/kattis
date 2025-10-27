@@ -26,26 +26,32 @@ int main() {
         for (int j = 0; j < indices[i].size(); j++) pos[i][j] = d[indices[i][j]];
     }
 
-    int lg = __lg(K) + 1;
-    vector<vector<int>> lift(lg, vector<int>(n));
-    vector<vector<long long>> dist_lift(lg, vector<long long>(n));
+    vector<int> next(n);
+    vector<long long> step(n);
     for (int i = 0; i < n; i++) {
-        auto it = lower_bound(pos[(k[i] + 1) % K].begin(), pos[(k[i] + 1) % K].end(), d[i]);
-        if (it != pos[(k[i] + 1) % K].end()) {
-            int l = it - pos[(k[i] + 1) % K].begin();
-            lift[0][i] = indices[(k[i] + 1) % K][l];
-            dist_lift[0][i] = *it - d[i];
+        int j = (k[i] + 1) % K;
+        auto it = lower_bound(pos[j].begin(), pos[j].end(), d[i]);
+        if (it != pos[j].end()) {
+            int l = it - pos[j].begin();
+            next[i] = indices[j][l];
+            step[i] = *it - d[i];
         } else {
-            lift[0][i] = indices[(k[i] + 1) % K][0];
-            dist_lift[0][i] = (D - d[i]) + pos[(k[i] + 1) % K][0];
+            next[i] = indices[j][0];
+            step[i] = (D - d[i]) + pos[j][0];
         }
     }
 
-    for (int i = 1; i < lg; i++)
-        for (int j = 0; j < n; j++) {
-            lift[i][j] = lift[i - 1][lift[i - 1][j]];
-            dist_lift[i][j] = dist_lift[i - 1][j] + dist_lift[i - 1][lift[i - 1][j]];
+    int blocks = ceil(sqrt(K));
+    vector<int> jump(n);
+    vector<long long> block_step(n);
+    for (int i = 0; i < n; i++) {
+        int j = i;
+        for (int _ = 0; _ < blocks; _++) {
+            block_step[i] += step[j];
+            j = next[j];
         }
+        jump[i] = j;
+    }
 
     while (q--) {
         int dq, kq, nq;
@@ -68,11 +74,17 @@ int main() {
             dist = (D - dq) + pos[kq][0];
         }
 
-        for (int i = 0; i < lg; i++)
-            if (((nq - 1) >> i) & 1) {
-                dist += dist_lift[i][j];
-                j = lift[i][j];
-            }
+        int m = nq - 1;
+        while (m >= blocks) {
+            m -= blocks;
+            dist += block_step[j];
+            j = jump[j];
+        }
+        while (m) {
+            m--;
+            dist += step[j];
+            j = next[j];
+        }
         cout << dist << "\n";
     }
 }
