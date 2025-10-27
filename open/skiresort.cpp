@@ -190,7 +190,7 @@ int main() {
         int size = unique(vt.begin(), vt.begin() + 2 * a - 1) - vt.begin();
         for (int i = 1; i < size; i++) next[prev[vt[i]] = dt.lca(vt[i - 1], vt[i])].emplace_back(vt[i]);
 
-        auto dfs = [&](auto &&self, int v) -> void {
+        auto dfs3 = [&](auto &&self, int v) -> void {
             if (!seen[v]) {
                 dp[v][0] = 1;
                 for (int u : next[v]) {
@@ -236,7 +236,7 @@ int main() {
             }
             dp[v][1] += l + 1;
         };
-        dfs(dfs, vt[0]);
+        dfs3(dfs3, vt[0]);
 
         cout << dp[vt[0]][k] << "\n";
         for (int i = 0; i < size; i++) {
