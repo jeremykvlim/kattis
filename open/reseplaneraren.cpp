@@ -65,17 +65,18 @@ int main() {
     };
 
     vector<pair<int, int>> tour;
-    vector<int> index(n), depth(n, 0), in(n), out(n), prev(n), anc_mask(n, 0), head(n + 1);
+    vector<int> index(n), depth(n, 0), in(n), out(n), prev(n, 0), anc_mask(n, 0), head(n + 1);
     int count = 0;
-    auto dfs = [&](auto &&self, int v = 0, int p = 0) -> void {
-        tour.emplace_back(v, p);
+    auto dfs = [&](auto &&self, int v = 0) -> void {
+        tour.emplace_back(v, prev[v]);
         index[v] = in[v] = count++;
 
         for (int u : adj_list[v])
-            if (u != p) {
+            if (u != prev[v]) {
+                prev[u] = v;
                 depth[u] = depth[v] + 1;
-                self(self, u, v);
-                prev[u] = head[index[u]] = v;
+                self(self, u);
+                head[index[u]] = v;
                 if (lsb(index[v]) < lsb(index[u])) index[v] = index[u];
             }
         out[v] = count;
