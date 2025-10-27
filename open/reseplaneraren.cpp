@@ -60,40 +60,47 @@ int main() {
         adj_list[v - 1].emplace_back(u - 1);
     }
 
-    vector<vector<int>> lift(__lg(n) + 1, vector<int>(n, 0));
-    vector<int> depth(n, 0), in(n), out(n);
+    auto lsb = [&](int x) {
+        return x & -x;
+    };
+
+    vector<pair<int, int>> tour;
+    vector<int> index(n), depth(n, 0), in(n), out(n), prev(n), anc_mask(n, 0), head(n + 1);
     int count = 0;
-    auto dfs = [&](auto &&self, int v = 0, int prev = -1) -> void {
-        in[v] = count++;
-        if (~prev) {
-            depth[v] = depth[prev] + 1;
-            lift[0][v] = prev;
-            for (int i = 1; i <= __lg(n); i++) lift[i][v] = lift[i - 1][lift[i - 1][v]];
-        }
+    auto dfs = [&](auto &&self, int v = 0, int p = 0) -> void {
+        tour.emplace_back(v, p);
+        index[v] = in[v] = count++;
 
         for (int u : adj_list[v])
-            if (u != prev) {
+            if (u != p) {
                 depth[u] = depth[v] + 1;
                 self(self, u, v);
+                prev[u] = head[index[u]] = v;
+                if (lsb(index[v]) < lsb(index[u])) index[v] = index[u];
             }
         out[v] = count;
     };
     dfs(dfs);
-
-    auto ancestor = [&](int v, int u) {
-        return in[v] <= in[u] && in[u] < out[v];
-    };
+    for (auto [v, p] : tour) anc_mask[v] = anc_mask[p] | lsb(index[v]);
 
     auto lca = [&](int u, int v) -> int {
-        if (ancestor(u, v)) return u;
-        if (ancestor(v, u)) return v;
+        if (unsigned above = in[u] ^ in[v]; above) {
+            above = (anc_mask[u] & anc_mask[v]) & -bit_floor(above);
+            if (unsigned below = anc_mask[u] ^ above; below) {
+                below = bit_floor(below);
+                u = head[(in[u] & -below) | below];
+            }
+            if (unsigned below = anc_mask[v] ^ above; below) {
+                below = bit_floor(below);
+                v = head[(in[v] & -below) | below];
+            }
+        }
 
-        if (depth[u] < depth[v]) swap(u, v);
+        return depth[u] < depth[v] ? u : v;
+    };
 
-        for (int i = __lg(n); ~i; i--)
-            if (!ancestor(lift[i][u], v)) u = lift[i][u];
-
-        return lift[0][u];
+    auto ancestor = [&](int v, int u) {
+        return lca(v, u) == v;
     };
 
     vector<int> s(k), t(k), anc(k);
@@ -114,12 +121,12 @@ int main() {
     for (int i : order) {
         for (int u = dsu.find(s[i]); u && depth[u] >= depth[anc[i]]; u = dsu.find(u)) {
             deepest[u] = depth[anc[i]];
-            dsu.sets[u] = dsu.find(lift[0][u]);
+            dsu.sets[u] = dsu.find(prev[u]);
         }
 
         for (int v = dsu.find(t[i]); v && depth[v] >= depth[anc[i]]; v = dsu.find(v)) {
             deepest[v] = depth[anc[i]];
-            dsu.sets[v] = dsu.find(lift[0][v]);
+            dsu.sets[v] = dsu.find(prev[v]);
         }
     }
 
