@@ -250,10 +250,11 @@ struct DisjointSets {
 template <typename T>
 struct ReachabilityTree {
     int n;
-    vector<array<int, 3>> family;
+    vector<int> parent;
+    vector<vector<int>> adj_list;
     vector<int> weight;
 
-    ReachabilityTree(int m, vector<tuple<int, int, T>> &edges) : n(m), family(2 * m), weight(2 * m, 0) {
+    ReachabilityTree(int m, vector<tuple<int, int, T>> &edges) : n(m), parent(2 * m), adj_list(2 * m), weight(2 * m, 0) {
         sort(edges.begin(), edges.end(), [&](auto e1, auto e2) { return get<2>(e1) < get<2>(e2); });
         DisjointSets dsu(2 * n);
         for (auto [u, v, w] : edges) {
@@ -261,9 +262,9 @@ struct ReachabilityTree {
             if (u_set != v_set) {
                 n++;
                 weight[n] = w;
-                family[u_set][2] = family[v_set][2] = dsu.sets[u_set] = dsu.sets[v_set] = dsu.sets[n] = n;
-                family[n][0] = u_set;
-                family[n][1] = v_set;
+                parent[u_set] = parent[v_set] = dsu.sets[u_set] = dsu.sets[v_set] = dsu.sets[n] = n;
+                adj_list[n].emplace_back(u_set);
+                adj_list[n].emplace_back(v_set);
             }
         }
     }
@@ -271,9 +272,7 @@ struct ReachabilityTree {
     vector<int> post_order_traversal() {
         vector<int> order;
         auto dfs = [&](auto &&self, int v) -> void {
-            auto [l, r, p] = family[v];
-            if (l) self(self, l);
-            if (r) self(self, r);
+            for (int u : adj_list[v]) self(self, u);
             order.emplace_back(v);
         };
         dfs(dfs, n);
@@ -300,9 +299,9 @@ int main() {
     ReachabilityTree rt(n, edges);
     vector<int> dp(rt.n + 1, 0);
     for (int v : rt.post_order_traversal()) {
-        auto [l, r, p] = rt.family[v];
-        if (!l && !r) dp[v] = 1;
-        else dp[v] = (l ? dp[l] : 0) + (r ? dp[r] : 0);
+        if (rt.adj_list[v].empty()) dp[v] = 1;
+        else
+            for (int u : rt.adj_list[v]) dp[v] += dp[u];
     }
 
     BoundedFlowNetwork<int, int> bfn(rt.n + g + 1);
@@ -321,19 +320,16 @@ int main() {
 
     int delta = 0;
     for (int v = 1; v <= rt.n; v++)
-        if (rt.family[v][2]) {
-            int d = rt.weight[rt.family[v][2]] - rt.weight[v];
+        if (rt.parent[v]) {
+            int d = rt.weight[rt.parent[v]] - rt.weight[v];
             delta += d;
-            bfn.add_arc(v - 1, rt.family[v][2] - 1, 0, 1, -d);
-            if (v > n) bfn.add_arc(v - 1, rt.family[v][2] - 1, 0, dp[v] - 1, 0);
+            bfn.add_arc(v - 1, rt.parent[v] - 1, 0, 1, -d);
+            if (v > n) bfn.add_arc(v - 1, rt.parent[v] - 1, 0, dp[v] - 1, 0);
         }
     bfn.add_supply(rt.n + g, g);
     bfn.add_demand(rt.n - 1, g);
 
     auto [cost, feasible] = bfn.min_cost_b_flow();
-    if (!feasible || cost + delta > sum) {
-        cout << -1;
-        exit(0);
-    }
-    cout << cost + delta;
+    if (!feasible || cost + delta > sum) cout << -1;
+    else cout << cost + delta;
 }
