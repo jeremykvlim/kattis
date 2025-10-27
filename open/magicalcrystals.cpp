@@ -140,9 +140,9 @@ int main() {
         for (int i = 0; i + 1 < all.size(); i++) virtual_tree[lca(all[i], all[i + 1])].emplace_back(all[i + 1]);
 
         vector<int> order;
-        auto dfs2 = [&](auto &&self, int u) -> void {
-            for (int v : virtual_tree[u]) self(self, v);
-            order.emplace_back(u);
+        auto dfs2 = [&](auto &&self, int v) -> void {
+            for (int u : virtual_tree[v]) self(self, u);
+            order.emplace_back(v);
         };
         dfs2(dfs2, all[0]);
 
