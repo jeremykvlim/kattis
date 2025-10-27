@@ -102,7 +102,7 @@ int main() {
         }
 
         for (auto [r, q] : sweep_l[i]) {
-            int k = lower_bound(mono_dec.begin(), mono_dec.end(), make_pair(r, INT_MAX), greater<>()) - mono_dec.begin();
+            int k = lower_bound(mono_dec.begin(), mono_dec.end(), make_pair(r, INT_MAX), greater()) - mono_dec.begin();
             sum[q] -= dp_down[mono_dec[k].first];
             results[q] = b[mono_dec[k].first];
             if (k + 1 < mono_dec.size()) sum[q] += div_p2(mono_dec[k + 1].second, b[mono_dec[k].first] - b[mono_dec[k + 1].first]);

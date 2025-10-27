@@ -27,7 +27,7 @@ int main() {
     dp[0] = 1e9;
     for (int x = 0; x < n; x++) {
         int i = indices[x], r = max(0, min(m, ((x ? total[indices[x - 1]] : (int) 1e9) - (x + 1 < n ? total[indices[x + 1]] : 0)) / k)), score = 0;
-        nth_element(a[i].begin(), a[i].begin() + r, a[i].end(), greater<>());
+        nth_element(a[i].begin(), a[i].begin() + r, a[i].end(), greater());
         for (int j = 0; j < r; j++) score += a[i][j];
 
         vector<dynamic_bitset<>> bs(r + 1, dynamic_bitset<>(score + 1));

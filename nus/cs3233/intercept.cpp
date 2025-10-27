@@ -128,7 +128,7 @@ int main() {
     cin >> s >> t;
 
     vector<long long> dist(n);
-    priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<pair<long long, int>>> pq;
+    priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<>> pq;
     auto dijkstra = [&](int src, auto &adj_list) {
         fill(dist.begin(), dist.end(), 1e18);
         dist[src] = 0;

@@ -183,7 +183,7 @@ int main() {
 
         if (!leftover[c].empty()) {
             vector<vector<pair<long long, int>>> dist(s);
-            priority_queue<tuple<long long, int, int>, vector<tuple<long long, int, int>>, greater<tuple<long long, int, int>>> pq;
+            priority_queue<tuple<long long, int, int>, vector<tuple<long long, int, int>>, greater<>> pq;
             for (int x : leftover[c]) {
                 dist[c_indices[x]].emplace_back(0, x);
                 pq.emplace(0, c_indices[x], x);

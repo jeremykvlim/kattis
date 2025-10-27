@@ -19,7 +19,7 @@ int main() {
 
     vector<vector<long long>> dist(n + 1, vector<long long>(k, 1e18));
     dist[1][0] = 0;
-    priority_queue<tuple<long long, int, int>, vector<tuple<long long, int, int>>, greater<tuple<long long, int, int>>> pq;
+    priority_queue<tuple<long long, int, int>, vector<tuple<long long, int, int>>, greater<>> pq;
     pq.emplace(0, 1, 0);
     while (!pq.empty()) {
         auto [d, v, r] = pq.top();
