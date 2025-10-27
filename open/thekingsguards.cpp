@@ -279,27 +279,17 @@ struct ReachabilityTree {
         dfs(dfs, n);
         return order;
     }
-
-    vector<int> subtree_leaves() {
-        vector<int> dp(n + 1, 0);
-        for (int v : post_order_traversal()) {
-            auto [l, r, p] = family[v];
-            if (!l && !r) dp[v] = 1;
-            else dp[v] = (l ? dp[l] : 0) + (r ? dp[r] : 0);
-        }
-        return dp;
-    }
 };
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n, r, g;
-    cin >> n >> r >> g;
+    int n, R, g;
+    cin >> n >> R >> g;
 
     int sum = 0;
-    vector<tuple<int, int, int>> edges(r);
+    vector<tuple<int, int, int>> edges(R);
     for (auto &[a, b, c] : edges) {
         cin >> a >> b >> c;
 
@@ -308,7 +298,12 @@ int main() {
     for (int i = 2; i <= n; i++) edges.emplace_back(1, i, sum + 1);
 
     ReachabilityTree rt(n, edges);
-    auto dp = rt.subtree_leaves();
+    vector<int> dp(rt.n + 1, 0);
+    for (int v : rt.post_order_traversal()) {
+        auto [l, r, p] = rt.family[v];
+        if (!l && !r) dp[v] = 1;
+        else dp[v] = (l ? dp[l] : 0) + (r ? dp[r] : 0);
+    }
 
     BoundedFlowNetwork<int, int> bfn(rt.n + g + 1);
     for (int i = 0; i < g; i++) {
