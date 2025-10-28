@@ -45,6 +45,22 @@ struct ReachabilityTree {
     }
 };
 
+vector<vector<int>> virtual_tree(int n, vector<int> &vertices, const vector<int> &in, auto &&lca) {
+    auto dedupe = [&](auto &v) {
+        sort(v.begin(), v.end(), [&](int u, int v) { return in[u] < in[v]; });
+        v.erase(unique(v.begin(), v.end()), v.end());
+    };
+    dedupe(vertices);
+
+    int m = vertices.size();
+    for (int i = 0; i + 1 < m; i++) vertices.emplace_back(lca(vertices[i], vertices[i + 1]));
+    dedupe(vertices);
+
+    vector<vector<int>> virtual_tree(n);
+    for (int i = 0; i + 1 < vertices.size(); i++) virtual_tree[lca(vertices[i], vertices[i + 1])].emplace_back(vertices[i + 1]);
+    return virtual_tree;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -100,7 +116,6 @@ int main() {
     int q;
     cin >> q;
 
-    vector<vector<int>> virtual_tree(m);
     vector<int> crystals(m, 0), dp(m, 0);
     vector<bool> seen(m, false);
     while (q--) {
@@ -132,25 +147,19 @@ int main() {
             continue;
         }
 
-        sort(cities.begin(), cities.end(), [&](int u, int v) { return in[u] < in[v]; });
-        auto all = cities;
-        for (int i = 0; i + 1 < cities.size(); i++) all.emplace_back(lca(cities[i], cities[i + 1]));
-        sort(all.begin(), all.end(), [&](int u, int v) { return in[u] < in[v]; });
-        all.erase(unique(all.begin(), all.end()), all.end());
-        for (int i = 0; i + 1 < all.size(); i++) virtual_tree[lca(all[i], all[i + 1])].emplace_back(all[i + 1]);
-
+        auto vt = virtual_tree(m, cities, in, lca);
         vector<int> order;
         auto dfs2 = [&](auto &&self, int v) -> void {
-            for (int u : virtual_tree[v]) self(self, u);
+            for (int u : vt[v]) self(self, u);
             order.emplace_back(v);
         };
-        dfs2(dfs2, all[0]);
+        dfs2(dfs2, cities[0]);
 
         auto cost = 0LL;
         for (int v : order) {
             dp[v] = crystals[v];
             auto c = 0LL;
-            for (int u : virtual_tree[v]) {
+            for (int u : vt[v]) {
                 c += abs(dp[u]);
                 dp[v] += dp[u];
             }
@@ -158,8 +167,8 @@ int main() {
         }
         cout << cost << "\n";
 
-        for (int a : all) {
-            virtual_tree[a].clear();
+        for (int a : cities) {
+            vt[a].clear();
             dp[a] = 0;
         }
 
