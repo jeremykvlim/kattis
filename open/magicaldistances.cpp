@@ -17,10 +17,30 @@ struct DisjointSets {
         return false;
     }
 
+    void reset() {
+        iota(sets.begin(), sets.end(), 0);
+    }
+
     DisjointSets(int n) : sets(n) {
         iota(sets.begin(), sets.end(), 0);
     }
 };
+
+vector<pair<int, int>> virtual_tree(vector<int> &vertices, const vector<int> &in, auto &&lca) {
+    auto dedupe = [&](auto &v) {
+        sort(v.begin(), v.end(), [&](int u, int v) { return in[u] < in[v]; });
+        v.erase(unique(v.begin(), v.end()), v.end());
+    };
+    dedupe(vertices);
+
+    int m = vertices.size();
+    for (int i = 0; i + 1 < m; i++) vertices.emplace_back(lca(vertices[i], vertices[i + 1]));
+    dedupe(vertices);
+
+    vector<pair<int, int>> virtual_tree_edges(vertices.size() - 1);
+    for (int i = 0; i + 1 < vertices.size(); i++) virtual_tree_edges[i] = {lca(vertices[i], vertices[i + 1]), vertices[i + 1]};
+    return virtual_tree_edges;
+}
 
 int main() {
     ios::sync_with_stdio(false);
@@ -29,162 +49,130 @@ int main() {
     int n, m;
     cin >> n >> m;
 
+    DisjointSets dsu1(n + 1);
     vector<vector<pair<int, int>>> adj_list(n + 1);
+    vector<array<int, 3>> extra;
     while (m--) {
         int a, b, w;
         cin >> a >> b >> w;
 
-        adj_list[a].emplace_back(b, w);
-        adj_list[b].emplace_back(a, w);
+        if (dsu1.unite(a, b)) {
+            adj_list[a].emplace_back(b, w);
+            adj_list[b].emplace_back(a, w);
+        } else extra.push_back({a, b, w});
     }
 
-    vector<vector<int>> adj_list_bfs(n + 1);
-    vector<pair<int, int>> bfs_edge(n + 1, {0, 0});
-    vector<int> depth(n + 1, 0);
-    vector<bool> visited(n + 1, 0);
-    visited[1] = 1;
-    queue<int> q;
-    q.emplace(1);
-    while (!q.empty()) {
-        int v = q.front();
-        q.pop();
+    auto lsb = [&](int x) {
+        return x & -x;
+    };
+
+    vector<pair<int, int>> tour;
+    vector<int> index(n + 1), depth(n + 1, 0), in(n + 1), anc_mask(n + 1, 0), head(n + 2);
+    vector<array<int, 31>> pref(n + 1);
+    int count = 0;
+    auto dfs = [&](auto &&self, int v = 1, int prev = 1) -> void {
+        tour.emplace_back(v, prev);
+        index[v] = tour.size();
+        in[v] = count++;
 
         for (auto [u, w] : adj_list[v])
-            if (!visited[u]) {
-                visited[u] = true;
-                bfs_edge[u] = {v, w};
+            if (u != prev) {
                 depth[u] = depth[v] + 1;
-                adj_list_bfs[v].emplace_back(u);
-                adj_list_bfs[u].emplace_back(v);
-                q.emplace(u);
+                for (int b = 0; b <= 30; b++) pref[u][b] = pref[v][b] + ((w >> b) & 1);
+                self(self, u, v);
+                head[index[u]] = v;
+                if (lsb(index[v]) < lsb(index[u])) index[v] = index[u];
             }
-    }
-
-    vector<int> in(n + 1, -1), out(n + 1, -1);
-    int count = 0;
-    auto dfs = [&](auto &&self, int v = 1, int prev = -1) -> void {
-        in[v] = count++;
-        for (int u : adj_list_bfs[v])
-            if (u != prev) self(self, u, v);
-        out[v] = count;
     };
     dfs(dfs);
+    for (auto [v, p] : tour) anc_mask[v] = anc_mask[p] | lsb(index[v]);
 
-    int lg = __lg(n) + 1;
-    vector<vector<int>> lift(lg, vector<int>(n + 1, 0)), OR_lift(lg, vector<int>(n + 1, 0));
-    for (int v = 1; v <= n; v++) tie(lift[0][v], OR_lift[0][v]) = bfs_edge[v];
-
-    for (int i = 1; i < lg; i++)
-        for (int v = 1; v <= n; v++) {
-            lift[i][v] = lift[i - 1][lift[i - 1][v]];
-            OR_lift[i][v] = OR_lift[i - 1][v] | OR_lift[i - 1][lift[i - 1][v]];
+    auto lca = [&](int u, int v) -> int {
+        if (unsigned above = index[u] ^ index[v]; above) {
+            above = (anc_mask[u] & anc_mask[v]) & -bit_floor(above);
+            if (unsigned below = anc_mask[u] ^ above; below) {
+                below = bit_floor(below);
+                u = head[(index[u] & -below) | below];
+            }
+            if (unsigned below = anc_mask[v] ^ above; below) {
+                below = bit_floor(below);
+                v = head[(index[v] & -below) | below];
+            }
         }
 
-    vector<unordered_map<int, pair<int, int>>> memo(n + 1);
-    auto lca = [&](int u, int v) {
-        if (memo[u].count(v)) return memo[u][v];
-        if (memo[v].count(u)) return memo[v][u];
-        if (depth[u] < depth[v]) swap(u, v);
-
-        int diff = depth[u] - depth[v], OR_u = 0, OR_v = 0;
-        for (int k = 0; k < lg; k++)
-            if ((diff >> k) & 1) {
-                OR_u |= OR_lift[k][u];
-                u = lift[k][u];
-            }
-        if (u == v) return memo[u][v] = memo[v][u] = {u, OR_u};
-
-        for (int i = lg - 1; ~i; i--)
-            if (lift[i][u] != lift[i][v]) {
-                OR_u |= OR_lift[i][u];
-                OR_v |= OR_lift[i][v];
-                u = lift[i][u];
-                v = lift[i][v];
-            }
-
-        return memo[u][v] = memo[v][u] = {lift[0][u], OR_u | OR_v};
+        return depth[u] < depth[v] ? u : v;
     };
 
-    auto ancestor = [&](int v, int u) {
-        return in[v] <= in[u] && in[u] < out[v];
+    auto path_OR = [&](int u, int v) {
+        int OR = 0;
+        for (int a = lca(u, v), b = 0; b <= 30; b++)
+            if (pref[u][b] + pref[v][b] > 2 * pref[a][b]) OR |= 1 << b;
+        return OR;
     };
 
-    vector<int> base_v;
-    vector<array<int, 3>> base_e;
-    for (int v = 1; v <= n; v++)
-        for (auto [u, w] : adj_list[v])
-            if (v < u)
-                if (bfs_edge[u] != make_pair(v, w) && bfs_edge[v] != make_pair(u, w)) {
-                    base_v.emplace_back(v);
-                    base_v.emplace_back(u);
-                    base_e.push_back({v, u, w});
-                }
+    int q;
+    cin >> q;
 
-    auto prune = [&](auto &v) {
-        sort(v.begin(), v.end(), [&](int u, int v) { return in[u] < in[v]; });
-        v.erase(unique(v.begin(), v.end()), v.end());
-    };
-    prune(base_v);
-    int size = base_v.size();
-    for (int i = 1; i < size; i++) base_v.emplace_back(lca(base_v[i - 1], base_v[i]).first);
-    prune(base_v);
+    if (extra.empty()) {
+        while (q--) {
+            int s, t;
+            cin >> s >> t;
+            cout << path_OR(s, t) << "\n";
+        }
+        exit(0);
+    }
 
-    int Q;
-    cin >> Q;
+    int e = extra.size();
+    vector<int> base(2 * e);
+    for (int i = 0; i < e; i++) {
+        base[2 * i] = extra[i][0];
+        base[2 * i + 1] = extra[i][1];
+    }
+    sort(base.begin(), base.end(), [&](int u, int v) { return in[u] < in[v]; });
+    base.erase(unique(base.begin(), base.end()), base.end());
 
     vector<int> indices(n + 1, -1);
-    while (Q--) {
+    while (q--) {
         int s, t;
         cin >> s >> t;
-        if (s > t) swap(s, t);
 
-        auto vt = base_v;
-        vt.emplace_back(s);
-        vt.emplace_back(t);
-        prune(vt);
-        if (vt.size() != base_v.size()) {
-            auto add = [&](int v) {
-                int i = lower_bound(vt.begin(), vt.end(), v, [&](int u, int v) { return in[u] < in[v]; }) - vt.begin();
-                if (i) vt.emplace_back(lca(vt[i - 1], v).first);
-                if (i < vt.size() - 1) vt.emplace_back(lca(v, vt[i + 1]).first);
-            };
+        auto cities = base;
+        cities.emplace_back(s);
+        cities.emplace_back(t);
+        auto vt_edges = virtual_tree(cities, in, lca);
 
-            add(s);
-            add(t);
-            prune(vt);
+        for (int i = 0; i < cities.size(); i++) indices[cities[i]] = i;
+        int all = 0, k = vt_edges.size();
+        vector<array<int, 3>> edges(k + e);
+        for (int i = 0; i < k; i++) {
+            auto [a, b] = vt_edges[i];
+            int w = path_OR(a, b);
+            edges[i] = {indices[a], indices[b], w};
+            all |= w;
         }
-        for (int i = 0; i < vt.size(); i++) indices[vt[i]] = i;
 
-        vector<array<int, 3>> edges;
-        for (auto [u, v, w] : base_e) edges.push_back({indices[u], indices[v], w});
+        for (int i = 0; i < e; i++) {
+            auto [a, b, w] = extra[i];
+            edges[i + k] = {indices[a], indices[b], w};
+            all |= w;
+        }
 
-        stack<int> st;
-        for (int v : vt) {
-            while (!st.empty() && !(ancestor(st.top(), v))) st.pop();
-            if (!st.empty()) {
-                int u = st.top();
-                edges.push_back({indices[u], indices[v], lca(u, v).second});
+        int remove = 0;
+        DisjointSets dsu2(cities.size());
+        for (int b = 30; ~b; b--)
+            if ((all >> b) & 1) {
+                int temp = remove | (1 << b);
+                dsu2.reset();
+                for (auto [u, v, w] : edges)
+                    if (!(w & temp)) {
+                        dsu2.unite(u, v);
+                        if (dsu2.find(indices[s]) == dsu2.find(indices[t])) {
+                            remove = temp;
+                            goto next;
+                        }
+                    }
+                next:;
             }
-            st.emplace(v);
-        }
-
-        vector<int> active(edges.size());
-        iota(active.begin(), active.end(), 0);
-        int cost = 0;
-        for (int b = __lg((*max_element(edges.begin(), edges.end(), [](auto e1, auto e2) { return e1[2] < e2[2]; }))[2]); ~b; b--) {
-            DisjointSets dsu(vt.size());
-            vector<int> temp;
-            for (int i : active) {
-                auto [u, v, w] = edges[i];
-                if (!((w >> b) & 1)) {
-                    dsu.unite(u, v);
-                    temp.emplace_back(i);
-                }
-            }
-
-            if (dsu.find(indices[s]) == dsu.find(indices[t])) active = temp;
-            else cost |= 1 << b;
-        }
-        cout << cost << "\n";
+        cout << (all & ~remove) << "\n";
     }
 }
