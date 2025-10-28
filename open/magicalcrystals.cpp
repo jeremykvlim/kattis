@@ -45,7 +45,7 @@ struct ReachabilityTree {
     }
 };
 
-vector<vector<int>> virtual_tree(int n, vector<int> &vertices, const vector<int> &in, auto &&lca) {
+void build_virtual_tree(vector<vector<int>> &vt, vector<int> &vertices, const vector<int> &in, auto &&lca) {
     auto dedupe = [&](auto &v) {
         sort(v.begin(), v.end(), [&](int u, int v) { return in[u] < in[v]; });
         v.erase(unique(v.begin(), v.end()), v.end());
@@ -56,9 +56,7 @@ vector<vector<int>> virtual_tree(int n, vector<int> &vertices, const vector<int>
     for (int i = 0; i + 1 < m; i++) vertices.emplace_back(lca(vertices[i], vertices[i + 1]));
     dedupe(vertices);
 
-    vector<vector<int>> virtual_tree(n);
-    for (int i = 0; i + 1 < vertices.size(); i++) virtual_tree[lca(vertices[i], vertices[i + 1])].emplace_back(vertices[i + 1]);
-    return virtual_tree;
+    for (int i = 0; i + 1 < vertices.size(); i++) vt[lca(vertices[i], vertices[i + 1])].emplace_back(vertices[i + 1]);
 }
 
 int main() {
@@ -116,6 +114,7 @@ int main() {
     int q;
     cin >> q;
 
+    vector<vector<int>> vt(m);
     vector<int> crystals(m, 0), dp(m, 0);
     vector<bool> seen(m, false);
     while (q--) {
@@ -147,7 +146,8 @@ int main() {
             continue;
         }
 
-        auto vt = virtual_tree(m, cities, in, lca);
+        build_virtual_tree(vt, cities, in, lca);
+
         vector<int> order;
         auto dfs2 = [&](auto &&self, int v) -> void {
             for (int u : vt[v]) self(self, u);
@@ -167,11 +167,8 @@ int main() {
         }
         cout << cost << "\n";
 
-        for (int a : cities) {
-            vt[a].clear();
-            dp[a] = 0;
-        }
-
+        for (int a : cities) vt[a].clear();
+        for (int v : order) dp[v] = 0;
         for (int x : undo) {
             seen[x] = false;
             crystals[x] = 0;
