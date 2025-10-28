@@ -11,9 +11,9 @@ int main() {
     auto index = [](char c) {
         switch (c) {
             case 'A': return 0;
-            case 'C': return 1;
-            case 'G': return 2;
-            case 'T': return 3;
+            case 'G': return 1;
+            case 'T': return 2;
+            case 'C': return 3;
         }
     };
 
