@@ -37,9 +37,9 @@ vector<pair<int, int>> virtual_tree(vector<int> &vertices, const vector<int> &in
     for (int i = 0; i + 1 < m; i++) vertices.emplace_back(lca(vertices[i], vertices[i + 1]));
     dedupe(vertices);
 
-    vector<pair<int, int>> virtual_tree_edges(vertices.size() - 1);
-    for (int i = 0; i + 1 < vertices.size(); i++) virtual_tree_edges[i] = {lca(vertices[i], vertices[i + 1]), vertices[i + 1]};
-    return virtual_tree_edges;
+    vector<pair<int, int>> vt_edges(vertices.size() - 1);
+    for (int i = 0; i + 1 < vertices.size(); i++) vt_edges[i] = {lca(vertices[i], vertices[i + 1]), vertices[i + 1]};
+    return vt_edges;
 }
 
 int main() {
