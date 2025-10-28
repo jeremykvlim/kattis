@@ -23,50 +23,6 @@ struct Hash {
     }
 };
 
-struct DisjointSets {
-    vector<int> sets;
-
-    int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            return true;
-        }
-        return false;
-    }
-
-    DisjointSets(int n) : sets(n) {
-        iota(sets.begin(), sets.end(), 0);
-    }
-};
-
-vector<int> tarjan_lca(int n, int q, const vector<vector<int>> &adj_list, const vector<vector<pair<int, int>>> &queries) {
-    DisjointSets dsu(n);
-    vector<bool> visited(n, false);
-    vector<int> lca(q, -1), ancestor(n, -1);
-
-    auto dfs = [&](auto &&self, int v = 0) -> void {
-        visited[v] = true;
-        ancestor[v] = v;
-
-        for (int u : adj_list[v])
-            if (!visited[u]) {
-                self(self, u);
-                dsu.unite(v, u);
-                ancestor[dsu.find(v)] = v;
-            }
-
-        for (auto &[u, i] : queries[v])
-            if (visited[u]) lca[i] = ancestor[dsu.find(u)];
-    };
-    dfs(dfs);
-    return lca;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -74,157 +30,268 @@ int main() {
     int n;
     cin >> n;
 
-    vector<unordered_map<int, int>> adj_matrix(n);
-    unordered_set<pair<int, int>, Hash> edges;
-    auto add_edge = [&](int u, int v, int w) {
-        if (!adj_matrix[u].count(v)) adj_matrix[u][v] = w;
-        else adj_matrix[u][v] = min(adj_matrix[u][v], w);
-
-        if (!adj_matrix[v].count(u)) adj_matrix[v][u] = w;
-        else adj_matrix[v][u] = min(adj_matrix[v][u], w);
-
-        edges.emplace(minmax(u, v));
-    };
-
+    unordered_map<pair<int, int>, int, Hash> min_edges;
     for (int i = 0; i < n; i++) {
         int j, t;
         cin >> j >> t;
         j--;
 
-        add_edge(i, j, t);
+        auto p = minmax(i, j);
+        if (min_edges.count(p)) min_edges[p] = min(min_edges[p], t);
+        else min_edges[p] = t;
+    }
+
+    vector<int> degree(n);
+    vector<vector<pair<int, int>>> adj_list_graph(n);
+    vector<array<int, 3>> edges;
+    for (auto [p, w] : min_edges) {
+        auto [u, v] = p;
+        degree[u]++;
+        degree[v]++;
+        adj_list_graph[u].emplace_back(v, w);
+        adj_list_graph[v].emplace_back(u, w);
+        edges.push_back({u, v, w});
+    }
+
+    int ccs = 0;
+    vector<int> component(n, -1);
+    auto dfs1 = [&](auto &&self, int v) -> void {
+        for (auto [u, w] : adj_list_graph[v])
+            if (!~component[u]) {
+                component[u] = ccs;
+                self(self, u);
+            }
+    };
+    
+    for (int v = 0; v < n; v++)
+        if (!~component[v]) {
+            component[v] = ccs;
+            dfs1(dfs1, v);
+            ccs++;
+        }
+    
+    vector<vector<int>> members(ccs);
+    for (int v = 0; v < n; v++) members[component[v]].emplace_back(v);
+
+    queue<int> q;
+    for (int v = 0; v < n; v++)
+        if (degree[v] < 2) q.emplace(v);
+
+    vector<bool> cycle(n, true);
+    while (!q.empty()) {
+        int v = q.front();
+        q.pop();
+
+        if (!cycle[v]) continue;
+
+        cycle[v] = false;
+        for (auto [u, w] : adj_list_graph[v])
+            if (cycle[u])
+                if (--degree[u] == 1) q.emplace(u);
+    }
+
+    vector<vector<pair<int, int>>> adj_list_tree(n), adj_list_ring(n);
+    for (auto [u, v, w] : edges)
+        if (cycle[u] && cycle[v]) {
+            adj_list_ring[u].emplace_back(v, w);
+            adj_list_ring[v].emplace_back(u, w);
+        } else {
+            adj_list_tree[u].emplace_back(v, w);
+            adj_list_tree[v].emplace_back(u, w);
+        }
+
+    vector<int> parent(n, -1), root(n, -1);
+    vector<long long> tree_dist(n, 0);
+    auto dfs2 = [&](auto &&self, int v, int r) -> void {
+        for (auto [u, w] : adj_list_tree[v])
+            if (!~root[u]) {
+                parent[u] = v;
+                root[u] = r;
+                tree_dist[u] = tree_dist[v] + w;
+                self(self, u, r);
+            }
+    };
+
+    for (int v = 0; v < n; v++)
+        if (cycle[v] && !~root[v]) {
+            root[v] = v;
+            dfs2(dfs2, v, v);
+        }
+
+    for (int v = 0; v < n; v++)
+        if (!~root[v]) {
+            root[v] = v;
+            dfs2(dfs2, v, v);
+        }
+
+    vector<vector<int>> adj_list(n + 1);
+    for (int i = 0; i < n; i++)
+        if (parent[i] != -1) adj_list[parent[i]].emplace_back(i);
+        else adj_list[n].emplace_back(i);
+
+    auto lsb = [&](int x) {
+        return x & -x;
+    };
+
+    vector<pair<int, int>> tour;
+    vector<int> index(n + 1), depth(n + 1, 0), anc_mask(n + 1, 0), head(n + 2);
+    auto dfs = [&](auto &&self, int v, int prev) -> void {
+        tour.emplace_back(v, prev);
+        index[v] = tour.size();
+
+        for (int u : adj_list[v])
+            if (u != prev) {
+                depth[u] = depth[v] + 1;
+                self(self, u, v);
+                head[index[u]] = v;
+                if (lsb(index[v]) < lsb(index[u])) index[v] = index[u];
+            }
+    };
+    dfs(dfs, n, n);
+    for (auto [v, p] : tour) anc_mask[v] = anc_mask[p] | lsb(index[v]);
+
+    auto lca = [&](int u, int v) -> int {
+        if (unsigned above = index[u] ^ index[v]; above) {
+            above = (anc_mask[u] & anc_mask[v]) & -bit_floor(above);
+            if (unsigned below = anc_mask[u] ^ above; below) {
+                below = bit_floor(below);
+                u = head[(index[u] & -below) | below];
+            }
+            if (unsigned below = anc_mask[v] ^ above; below) {
+                below = bit_floor(below);
+                v = head[(index[v] & -below) | below];
+            }
+        }
+
+        return depth[u] < depth[v] ? u : v;
+    };
+
+    vector<int> ring_indices(n, -1);
+    vector<long long> ring_perimeter(ccs, 0);
+    vector<vector<long long>> ring_pref(ccs);
+    for (int c = 0; c < ccs; c++) {
+        int s = -1;
+        for (int v : members[c])
+            if (cycle[v]) {
+                s = v;
+                break;
+            }
+        if (s == -1) continue;
+
+        int v = s, u = -1;
+        vector<int> order;
+        vector<long long> weights;
+        do {
+            order.emplace_back(v);
+            int i = -1;
+            for (int j = 0; j < adj_list_ring[v].size(); j++)
+                if (adj_list_ring[v][j].first != u) {
+                    i = j;
+                    break;
+                }
+
+            auto [t, w] = adj_list_ring[v][i];
+            weights.emplace_back(w);
+            ring_perimeter[c] += w;
+            u = v;
+            v = t;
+        } while (v != s);
+
+        int m = order.size();
+        ring_pref[c].assign(m, 0);
+        for (int i = 0; i < m; i++) {
+            ring_indices[order[i]] = i;
+            if (i) ring_pref[c][i] = ring_pref[c][i - 1] + weights[i - 1];
+        }
     }
 
     int l;
     cin >> l;
 
-    while (l--) {
-        int x, y, t;
+    vector<int> houses;
+    vector<bool> seen(n, false);
+    vector<array<int, 3>> extra(l);
+    for (auto &[x, y, t] : extra) {
         cin >> x >> y >> t;
         x--;
         y--;
 
-        add_edge(x, y, t);
+        if (!seen[x]) {
+            seen[x] = true;
+            houses.emplace_back(x);
+        }
+        if (!seen[y]) {
+            seen[y] = true;
+            houses.emplace_back(y);
+        }
     }
 
-    int q;
-    cin >> q;
+    vector<int> indices(n, -1);
+    int m = houses.size();
+    for (int i = 0; i < m; i++) indices[houses[i]] = i;
 
-    vector<pair<int, int>> queries(q);
-    for (auto &[a, b] : queries) {
+    vector<vector<int>> component_houses(ccs);
+    for (int i = 0; i < m; i++) component_houses[component[houses[i]]].emplace_back(i);
+
+    auto base_time = [&](int a, int b) -> long long {
+        if (component[a] != component[b]) return 1e18;
+        if (root[a] == root[b]) return tree_dist[a] + tree_dist[b] - 2 * tree_dist[lca(a, b)];
+        else {
+            int c = component[root[a]], i = ring_indices[root[a]], j = ring_indices[root[b]];
+            auto dist = abs(ring_pref[c][i] - ring_pref[c][j]);
+            return tree_dist[a] + tree_dist[b] + min(dist, ring_perimeter[c] - dist);
+        }
+    };
+
+    vector<vector<long long>> dist(m, vector<long long>(m, 1e18));
+    for (int i = 0; i < m; i++) {
+        dist[i][i] = 0;
+        int u = houses[i];
+        for (int j = 0; j < m; j++)
+            if (i != j) {
+                int v = houses[j];
+                if (component[u] == component[v]) dist[i][j] = min(dist[i][j], base_time(u, v));
+            }
+    }
+
+    for (auto [x, y, t] : extra) {
+        int i = indices[x], j = indices[y];
+        if (i != -1 && j != -1)
+            if (dist[i][j] > t) dist[i][j] = dist[j][i] = t;
+    }
+
+    for (int i = 0; i < m; i++)
+        for (int j = 0; j < m; j++)
+            if (dist[j][i] != 1e18)
+                for (int k = 0; k < m; k++)
+                    if (dist[i][k] != 1e18) dist[j][k] = min(dist[j][k], dist[j][i] + dist[i][k]);
+
+    int Q;
+    cin >> Q;
+
+    while (Q--) {
+        int a, b;
         cin >> a >> b;
         a--;
         b--;
-    }
 
-    int count = 0;
-    vector<int> component(n, -1), c_indices(n, -1);
-    vector<vector<int>> components;
-    vector<vector<vector<int>>> c_adj_lists;
-    vector<long long> t(n, 0);
-    for (int i = 0; i < n; i++) {
-        if (~component[i]) continue;
-
-        vector<int> c;
-        vector<pair<int, int>> c_edges;
-        stack<pair<int, int>> st;
-        st.emplace(i, -1);
-        while (!st.empty()) {
-            auto [v, p] = st.top();
-            st.pop();
-
-            if (~component[v]) continue;
-
-            component[v] = count;
-            c.emplace_back(v);
-            c_indices[v] = c.size() - 1;
-            if (p != -1) {
-                c_edges.emplace_back(c_indices[p], c_indices[v]);
-                t[v] = t[p] + adj_matrix[p][v];
-                edges.erase(minmax(p, v));
-            }
-
-            for (auto [u, w] : adj_matrix[v]) st.emplace(u, v);
-        }
-
-        int s = c.size();
-        vector<vector<int>> c_adj_list(s);
-        for (auto [u, v] : c_edges) {
-            c_adj_list[u].emplace_back(v);
-            c_adj_list[v].emplace_back(u);
-        }
-
-        count++;
-        components.emplace_back(c);
-        c_adj_lists.emplace_back(c_adj_list);
-    }
-    vector<long long> time(q, 0);
-    vector<vector<int>> c_query_indices(count), leftover(count);
-    for (int i = 0; i < q; i++) {
-        auto [a, b] = queries[i];
-        if (component[a] == component[b]) c_query_indices[component[a]].emplace_back(i);
-        else time[i] = -1;
-    }
-    for (auto [u, v] : edges) leftover[component[u]].emplace_back(u);
-
-    for (int c = 0; c < count; c++) {
-        int s = components[c].size();
-
-        vector<vector<pair<int, int>>> lca_queries(s);
-        for (int qi : c_query_indices[c]) {
-            auto [a, b] = queries[qi];
-            lca_queries[c_indices[a]].emplace_back(c_indices[b], qi);
-            lca_queries[c_indices[b]].emplace_back(c_indices[a], qi);
-        }
-        auto lca = tarjan_lca(s, q, c_adj_lists[c], lca_queries);
-        for (int qi : c_query_indices[c]) {
-            auto [a, b] = queries[qi];
-            time[qi] = t[a] + t[b] - 2 * t[components[c][lca[qi]]];
-        }
-
-        if (!leftover[c].empty()) {
-            vector<vector<pair<long long, int>>> dist(s);
-            priority_queue<tuple<long long, int, int>, vector<tuple<long long, int, int>>, greater<>> pq;
-            for (int x : leftover[c]) {
-                dist[c_indices[x]].emplace_back(0, x);
-                pq.emplace(0, c_indices[x], x);
-            }
-
-            while (!pq.empty()) {
-                auto [d, v, x1] = pq.top();
-                pq.pop();
-
-                for (auto [dv, x2] : dist[v])
-                    if (d == dv && x1 == x2) goto valid;
-                continue;
-                
-                valid:;
-                for (auto [y, w] : adj_matrix[components[c][v]]) {
-                    if (component[y] != c) continue;
-
-                    int u = c_indices[y];
-                    for (auto &[du, x2] : dist[u])
-                        if (x1 == x2) {
-                            if (du > d + w) {
-                                du = d + w;
-                                pq.emplace(du, u, x1);
-                            }
-                            goto next;
+        auto t = base_time(a, b);
+        int ca = component[a], cb = component[b];
+        if (!component_houses[ca].empty() && !component_houses[cb].empty()) {
+            vector<long long> time_a(component_houses[ca].size(), 1e18), time_b(component_houses[cb].size(), 1e18);
+            for (int i = 0; i < component_houses[ca].size(); i++) time_a[i] = base_time(a, houses[component_houses[ca][i]]);
+            for (int j = 0; j < component_houses[cb].size(); j++) time_b[j] = base_time(houses[component_houses[cb][j]], b);
+            for (int i = 0; i < component_houses[ca].size(); i++)
+                if (time_a[i] != 1e18) {
+                    int u = component_houses[ca][i];
+                    for (int j = 0; j < component_houses[cb].size(); j++)
+                        if (time_b[j] != 1e18) {
+                            int v = component_houses[cb][j];
+                            if (dist[u][v] != 1e18) t = min(t, time_a[i] + time_b[j] + dist[u][v]);
                         }
-
-                    dist[u].emplace_back(d + w, x1);
-                    pq.emplace(d + w, u, x1);
-                    next:;
                 }
-            }
-
-            for (int i : c_query_indices[c]) {
-                auto [a, b] = queries[i];
-                for (auto [d1, x1] : dist[c_indices[a]])
-                    for (auto [d2, x2] : dist[c_indices[b]])
-                        if (x1 == x2) time[i] = min(time[i], d1 + d2);
-            }
         }
+        if (t == 1e18) cout << "-1\n";
+        else cout << t << "\n";
     }
-
-    for (auto ti : time) cout << ti << "\n";
 }
