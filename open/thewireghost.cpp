@@ -234,7 +234,7 @@ int main() {
             bool first = true;
             for (auto p : {l1.a, l1.b}) {
                 auto v = p - pivot, q = pivot + v * cos;
-                if (c == 'C') q += -~v * sin;
+                if (c == 'C') q -= ~v * sin;
                 else q += ~v * sin;
                 (first ? l2.a : l2.b) = q;
                 first = false;
@@ -256,7 +256,7 @@ int main() {
                     } else {
                         auto p = non_collinear_intersection(l1, l2);
                         if (point_on_line(p, l1) && point_on_line(p, l2))
-                            if (p != pivot) {
+                            if (!(point_on_line(pivot, l1) && point_on_line(pivot, l2))) {
                                 cout << "GHOST";
                                 exit(0);
                             }
