@@ -117,9 +117,11 @@ struct BlockCutTree {
         auto dfs = [&](auto &&self, int v, int prev = -1) -> void {
             order[v] = low[v] = ++count;
             st_v.emplace(v);
+            int children = 0;
             for (auto [u, i] : adj_list[v])
                 if (u != prev) {
                     if (!order[u]) {
+                        children++;
                         st_e.emplace(i);
                         self(self, u, v);
                         low[v] = min(low[v], low[u]);
@@ -133,7 +135,7 @@ struct BlockCutTree {
                                 edge_component[j] = bccs.size();
                             } while (j != i);
 
-                            cutpoint[v] = (order[v] > 1 || order[u] > 2);
+                            if (~prev && low[u] >= order[v]) cutpoint[v] = true;
                             bccs.emplace_back(vector<int>{v});
 
                             while (bccs.back().back() != u) {
@@ -146,6 +148,8 @@ struct BlockCutTree {
                         low[v] = min(low[v], order[u]);
                     }
                 }
+
+            if (!~prev && children > 1) cutpoint[v] = true;
         };
         for (int v = 0; v < n; v++)
             if (!order[v]) dfs(dfs, v);
