@@ -37,6 +37,10 @@ struct Point {
         return {-x, -y};
     }
 
+    Point operator~() const {
+        return {-y, x};
+    }
+
     bool operator<(const Point &p) const {
         return x != p.x ? x < p.x : y < p.y;
     }
@@ -229,10 +233,9 @@ int main() {
             Line<double> l2;
             bool first = true;
             for (auto p : {l1.a, l1.b}) {
-                auto v = p - pivot;
-                Point<double> q{pivot.x + cos * v.x, pivot.y + cos * v.y};
-                if (c == 'C') q += {sin * v.y, -sin * v.x};
-                else q += {-sin * v.y, sin * v.x};
+                auto v = p - pivot, q = pivot + v * cos;
+                if (c == 'C') q += -~v * sin;
+                else q += ~v * sin;
                 (first ? l2.a : l2.b) = q;
                 first = false;
             }

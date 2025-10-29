@@ -374,6 +374,10 @@ struct Point {
         return {-x, -y};
     }
 
+    Point operator~() const {
+        return {-y, x};
+    }
+
     bool operator<(const Point &p) const {
         return x != p.x ? x < p.x : y < p.y;
     }

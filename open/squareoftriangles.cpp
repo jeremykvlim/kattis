@@ -37,6 +37,10 @@ struct Point {
         return {-x, -y};
     }
 
+    Point operator~() const {
+        return {-y, x};
+    }
+
     bool operator<(const Point &p) const {
         return x != p.x ? x < p.x : y < p.y;
     }
@@ -164,22 +168,22 @@ vector<Point<T>> circle_circle_intersections(const Circle<T> &c1, const Circle<T
     T r1_sq = c1.radius * c1.radius, r2_sq = c2.radius * c2.radius,
       l = (d * d + r1_sq - r2_sq) / (2 * d);
 
-    Point<T> v = c2.origin - c1.origin, p = c1.origin + v * l / d;
+    auto v = c2.origin - c1.origin, p = c1.origin + v * l / d;
     if (d == c1.radius + c2.radius) return {p};
 
     T h = sqrt(r1_sq - l * l);
-    Point<T> u = {-v.y, v.x}, q = u * h / d;
+    auto u = ~v, q = u * h / d;
     return {p + q, p - q};
 }
 
 template <typename T>
-bool intersects(const array<Point<T>, 3> &t1, const array<Point<T>, 3> &t2) {
+bool triangles_intersect(const array<Point<T>, 3> &t1, const array<Point<T>, 3> &t2) {
     array<Point<T>, 6> axes;
 
     for (int i = 0; i < 3; i++) {
         auto v1 = t1[(i + 1) % 3] - t1[i], v2 = t2[(i + 1) % 3] - t2[i];
-        axes[i] = {-v1.y, v1.x};
-        axes[i + 3] = {-v2.y, v2.x};
+        axes[i] = ~v1;
+        axes[i + 3] = ~v2;
     }
 
     for (auto axis : axes) {
@@ -277,7 +281,7 @@ int main() {
                                     sgn(max({triangle[0].x, triangle[1].x, triangle[2].x, triangle[0].y, triangle[1].y, triangle[2].y}) - len) == 1) goto next;
 
                                 for (auto tri : prev)
-                                    if (intersects(tri, triangle)) goto next;
+                                    if (triangles_intersect(tri, triangle)) goto next;
 
                                 prev.emplace_back(triangle);
                                 if (j) {

@@ -59,6 +59,10 @@ struct Point {
         return {-x, -y};
     }
 
+    Point operator~() const {
+        return {-y, x};
+    }
+
     bool operator<(const Point &p) const {
         return x != p.x ? x < p.x : y < p.y;
     }
@@ -539,7 +543,7 @@ struct DelaunayTriangulation {
                     indices[f] = voronoi_vertices.size() - 1;
                 } else {
                     auto v = points[edges[e].dest] - points[edges[f].dest];
-                    voronoi_vertices.emplace_back(voronoi_vertices[indices[f]] + Point<T>(-v.y, v.x));
+                    voronoi_vertices.emplace_back(voronoi_vertices[indices[f]] + ~v);
                     indices[e] = voronoi_vertices.size() - 1;
                 }
             }

@@ -26,6 +26,10 @@ struct Point {
         return {-x, -y};
     }
 
+    Point operator~() const {
+        return {-y, x};
+    }
+
     bool operator<(const Point &p) const {
         return x != p.x ? x < p.x : y < p.y;
     }
@@ -174,8 +178,8 @@ pair<T, array<T, 4>> minimum_bounding_rectangle(vector<Point<T>> &points) {
         auto v = convex_hull[next(i)] - convex_hull[i];
         auto len = euclidean_dist(v);
         v /= len;
-        Point<T> w = {-v.y, v.x};
 
+        auto w = ~v;
         if (!i) {
             for (int j = 0; j < n; j++) {
                 auto x = dot(convex_hull[j], v), y = dot(convex_hull[j], w);

@@ -26,6 +26,10 @@ struct Point {
         return {-x, -y};
     }
 
+    Point operator~() const {
+        return {-y, x};
+    }
+
     bool operator<(const Point &p) const {
         return x != p.x ? x < p.x : y < p.y;
     }
@@ -160,9 +164,9 @@ int main() {
         for (int j = 1; j <= n; j++) points.emplace_back(coords[j] - coords[i], j);
 
         auto rotate = [&](auto &p) {
-            if (quadrant == 1) p = {p.y, -p.x};
-            else if (quadrant == 2) p = {-p.x, -p.y};
-            else p = {-p.y, p.x};
+            if (quadrant == 1) p = -~p;
+            else if (quadrant == 2) p = -p;
+            else p = ~p;
         };
         if (quadrant)
             for (auto &[p, _] : points) rotate(p);

@@ -26,6 +26,10 @@ struct Point {
         return {-x, -y};
     }
 
+    Point operator~() const {
+        return {-y, x};
+    }
+
     bool operator<(const Point &p) const {
         return x != p.x ? x < p.x : y < p.y;
     }
@@ -467,9 +471,10 @@ constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 template <typename T>
-T C(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
+T binomial_coefficient_mod_p(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
     if (k < 0 || k > n) return 0;
-    if (n >= p || k >= p) return C(n / p, k / p, p, fact, fact_inv) * C(n % p, k % p, p, fact, fact_inv);
+    if (n >= p || k >= p) return binomial_coefficient_mod_p(n / p, k / p, p, fact, fact_inv) *
+                                 binomial_coefficient_mod_p(n % p, k % p, p, fact, fact_inv);
     return fact[n] * fact_inv[k] * fact_inv[n - k];
 }
 
@@ -506,7 +511,7 @@ int main() {
 
     auto ways = [&](Point<int> a, Point<int> b) -> modint {
         auto c = b - a;
-        return C(c.x + c.y, c.x, MOD, fact, fact_inv);
+        return binomial_coefficient_mod_p(c.x + c.y, c.x, MOD, fact, fact_inv);
     };
 
     modint paths = 0;
