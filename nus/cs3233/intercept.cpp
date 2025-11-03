@@ -116,7 +116,7 @@ int main() {
     cin >> n >> m;
 
     vector<array<int, 3>> edges(m);
-    vector<vector<pair<int,long long>>> adj_list_regular(n), adj_list_transpose(n);
+    vector<vector<pair<int, long long>>> adj_list_regular(n), adj_list_transpose(n);
     for (auto &[u, v, w] : edges) {
         cin >> u >> v >> w;
 
