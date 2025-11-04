@@ -51,6 +51,7 @@ int main() {
         while (!dq.empty()) {
             int v = dq.front();
             dq.pop_front();
+            
             queued[v] = false;
 
             for (auto [u, d] : adj_list[v])
