@@ -152,14 +152,14 @@ int main() {
             long long v_extra = v.second.empty() ? n : 0, h_extra = h.second.empty() ? m : 0;
             auto calc_2D = [&](int i) {
                 if (i > k) return v_extra * h_extra;
-              
-                auto calc_1D = [&](auto &a, int i) {
-                    int b = block_id(i);
+
+                int b = block_id(i);
+                auto calc_1D = [&](auto &a) {
                     return a[0][i] + a[1][b] + a[2][b] * i;
                 };
-                return (calc_1D(v.first, i) + v_extra) * (calc_1D(h.first, i) + h_extra);
+                return (calc_1D(v.first) + v_extra) * (calc_1D(h.first) + h_extra);
             };
-
+            
             int i = 0;
             long long sum_v = 0, sum_h = 0, sum_both = 0, cost = 0;
             for (int b = 0; b < blocks; b++) {
