@@ -32,7 +32,7 @@ auto rerooting_dp(int n, const vector<T> &edges, const vector<int> &auxiliary) {
     };
 
     auto absorb = [&](vector<pair<State, int>> &states, int v) -> State {
-        State accumulate = base();
+        auto accumulate = base();
         for (auto [s, _] : states) accumulate = add(accumulate, s);
         accumulate[0] += accumulate[1] * auxiliary[v];
         accumulate[1]++;
@@ -74,7 +74,7 @@ auto rerooting_dp(int n, const vector<T> &edges, const vector<int> &auxiliary) {
         for (auto [u, w, i] : adj_list[v]) {
             states.clear();
             int k = pos[u];
-            if (k > 0) states.emplace_back(pref[k - 1], -1);
+            if (k) states.emplace_back(pref[k - 1], -1);
             if (k + 1 < m) states.emplace_back(suff[k + 1], -1);
             down[u] = absorb(states, v);
         }
