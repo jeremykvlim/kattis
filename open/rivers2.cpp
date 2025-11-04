@@ -149,21 +149,21 @@ int main() {
             long long c;
             cin >> c;
 
-            long long v_extra = v.second.empty() ? n : 0, h_extra = h.second.empty() ? m : 0;
+            long long extra_v = v.second.empty() ? n : 0, extra_h = h.second.empty() ? m : 0;
             auto calc_2D = [&](int i) {
-                if (i > k) return v_extra * h_extra;
+                if (i > k) return extra_v * extra_h;
 
                 int b = block_id(i);
                 auto calc_1D = [&](auto &a) {
                     return a[0][i] + a[1][b] + a[2][b] * i;
                 };
-                return (calc_1D(v.first) + v_extra) * (calc_1D(h.first) + h_extra);
+                return (calc_1D(v.first) + extra_v) * (calc_1D(h.first) + extra_h);
             };
             
             int i = 0;
             long long sum_v = 0, sum_h = 0, sum_both = 0, cost = 0;
             for (int b = 0; b < blocks; b++) {
-                auto temp = sum_both + both[b] + v_extra * (sum_h + h.first[3][b]) + h_extra * (sum_v + v.first[3][b]) + (calc_2D(k + 1) - calc_2D(b_r[b] + 1)) * b_r[b];
+                auto temp = sum_both + both[b] + extra_v * (sum_h + h.first[3][b]) + extra_h * (sum_v + v.first[3][b]) + (calc_2D(k + 1) - calc_2D(b_r[b] + 1)) * b_r[b];
                 if (c >= temp) {
                     sum_v += v.first[3][b];
                     sum_h += h.first[3][b];
@@ -174,12 +174,12 @@ int main() {
                 }
 
                 for (int j = b_l[b]; j <= b_r[b]; j++) {
-                    auto v_geq = v.first[0][j] + v.first[1][b] + v.first[2][b] * j, h_geq = h.first[0][j] + h.first[1][b] + h.first[2][b] * j;
-                    temp = sum_both + v_geq * h_geq + v_extra * (sum_h + h_geq) + h_extra * (sum_v + v_geq) + (calc_2D(k + 1) - calc_2D(j + 1)) * j;
+                    auto geq_v = v.first[0][j] + v.first[1][b] + v.first[2][b] * j, geq_h = h.first[0][j] + h.first[1][b] + h.first[2][b] * j;
+                    temp = sum_both + geq_v * geq_h + extra_v * (sum_h + geq_h) + extra_h * (sum_v + geq_v) + (calc_2D(k + 1) - calc_2D(j + 1)) * j;
                     if (c >= temp) {
-                        sum_v += v_geq;
-                        sum_h += h_geq;
-                        sum_both += v_geq * h_geq;
+                        sum_v += geq_v;
+                        sum_h += geq_h;
+                        sum_both += geq_v * geq_h;
                         cost = temp;
                         i = j;
                     } else goto done;
