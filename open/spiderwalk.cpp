@@ -33,12 +33,10 @@ int main() {
     int n, m, s;
     cin >> n >> m >> s;
 
-    vector<pair<int, int>> edges;
-    while (m--) {
-        int d, t;
+    vector<pair<int, int>> edges(m);
+    for (auto &[d, t] : edges) {
         cin >> d >> t;
-
-        edges.emplace_back(d, t - 1);
+        t--;
     }
     sort(edges.rbegin(), edges.rend());
 
