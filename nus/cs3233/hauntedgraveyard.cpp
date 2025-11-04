@@ -45,9 +45,9 @@ int main() {
 
         vector<int> dist(w * h, INT_MAX), count(w * h, 0);
         dist[0] = 0;
-        deque<int> dq{0};
         vector<bool> queued(w * h, false);
         queued[0] = true;
+        deque<int> dq{0};
         while (!dq.empty()) {
             int v = dq.front();
             dq.pop_front();
