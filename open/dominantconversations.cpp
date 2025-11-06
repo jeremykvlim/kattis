@@ -21,29 +21,24 @@ int main() {
             continue;
         }
 
-        vector<int> base(m), suff(m);
-        for (int i = 0; i < m; i++) base[i] = 2 * (i + 1) - indices[ai][i];
-        suff[m - 1] = base[m - 1];
-        for (int i = m - 2; ~i; i--) suff[i] = max(suff[i + 1], base[i]);
-
         auto process = [&](int l, int r) -> long long {
             int len = r - l + 1,
                 lz = min(l ? indices[ai][l] - indices[ai][l - 1] - 1 : indices[ai][0], len - 1),
                 tz = min(r + 1 < m ? indices[ai][r + 1] - indices[ai][r] - 1 : n - indices[ai][r] - 1, len - 1);
 
-            vector<int> seq(lz, -1);
+            vector<int> deltas(lz, -1);
             for (int i = l; i <= r; i++) {
-                seq.emplace_back(1);
-                if (i < r) seq.insert(seq.end(), indices[ai][i + 1] - indices[ai][i] - 1, -1);
+                deltas.emplace_back(1);
+                if (i < r) deltas.insert(deltas.end(), indices[ai][i + 1] - indices[ai][i] - 1, -1);
             }
-            seq.insert(seq.end(), tz, -1);
+            deltas.insert(deltas.end(), tz, -1);
 
             auto total = 0LL;
-            int sum = 0, p = 0, offset = seq.size() + 1;
+            int sum = 0, p = 0, offset = deltas.size() + 1;
             vector<int> freq(2 * offset + 1, 0);
             freq[p + offset] = 1;
-            for (int delta : seq)
-                if (delta == 1) {
+            for (int d : deltas)
+                if (d == 1) {
                     total += sum + freq[p + offset];
                     sum += freq[p + offset];
                     p++;
@@ -56,6 +51,11 @@ int main() {
                 }
             return total;
         };
+
+        vector<int> base(m), suff(m);
+        for (int i = 0; i < m; i++) base[i] = 2 * (i + 1) - indices[ai][i];
+        suff[m - 1] = base[m - 1];
+        for (int i = m - 2; ~i; i--) suff[i] = max(suff[i + 1], base[i]);
 
         int l = 0, pref = INT_MAX;
         auto dominated = 0LL;
