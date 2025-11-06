@@ -386,21 +386,21 @@ int main() {
         fill(visited_e.begin(), visited_e.end(), false);
         pq.push({0, s, 0});
         while (!pq.empty()) {
-            auto [d, v, j] = pq.top();
+            auto [d, v, e1] = pq.top();
             pq.pop();
 
             if (d != dist[v]) continue;
-            visited_e[j] = true;
+            visited_e[e1] = true;
 
             if (visited_v[v]) continue;
             visited_v[v] = true;
 
-            for (auto [u, w, k] : adj_list[v])
+            for (auto [u, w, e2] : adj_list[v])
                 if (dist[u] >= dist[v] + w) {
                     if (dist[u] > dist[v] + w) count1[u] = 0;
                     count1[u] += count1[v];
                     dist[u] = dist[v] + w;
-                    pq.push({dist[u], u, k});
+                    pq.push({dist[u], u, e2});
                 }
         }
 
@@ -408,11 +408,11 @@ int main() {
         auto dfs = [&](auto &&self, int v) {
             if (count2[v]) return;
             count2[v]++;
-            for (auto [u, w, k] : adj_list[v])
-                if (visited_e[k]) {
+            for (auto [u, w, e] : adj_list[v])
+                if (visited_e[e]) {
                     self(self, u);
                     count2[v] += count2[u];
-                    paths[k] += count1[v] * count2[u];
+                    paths[e] += count1[v] * count2[u];
                 }
         };
         dfs(dfs, s);
