@@ -92,7 +92,6 @@ int main() {
                     next:;
                 }
 
-
     auto [satisfiable, assignment] = sat.solve();
     if (!satisfiable) cout << "Villa";
     else {
