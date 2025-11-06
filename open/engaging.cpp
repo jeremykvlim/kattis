@@ -87,8 +87,8 @@ int main() {
         for (int j = 0; j < cols; j++) C[i][j] = offset - w[i][j];
     auto match = jonker_volgenant(C).first;
 
-    vector<pair<int, int>> gifts;
     int sum = 0;
+    vector<pair<int, int>> gifts;
     if (!transpose)
         for (int r = 0; r < rows; r++) {
             int c = match[r];
