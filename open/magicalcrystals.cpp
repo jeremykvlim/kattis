@@ -27,10 +27,9 @@ struct ReachabilityTree {
     int n;
     vector<int> parent;
     vector<vector<int>> adj_list;
-    vector<int> weight;
+    vector<T> weight;
 
     ReachabilityTree(int m, vector<tuple<int, int, T>> &edges) : n(m), parent(2 * m), adj_list(2 * m), weight(2 * m, 0) {
-        sort(edges.begin(), edges.end(), [&](auto e1, auto e2) { return get<2>(e1) < get<2>(e2); });
         DisjointSets dsu(2 * n);
         for (auto [u, v, w] : edges) {
             int u_set = dsu.find(u), v_set = dsu.find(v);
@@ -68,6 +67,7 @@ int main() {
 
     vector<tuple<int, int, int>> edges(n - 1);
     for (auto &[a, b, w] : edges) cin >> a >> b >> w;
+    sort(edges.begin(), edges.end(), [&](auto e1, auto e2) { return get<2>(e1) < get<2>(e2); });
 
     ReachabilityTree rt(n, edges);
     int m = rt.n + 1;
