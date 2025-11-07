@@ -36,7 +36,7 @@ int main() {
     for (int i = 0; i < n; i++) cin >> word[i] >> price[i];
 
     int m = message.size();
-    vector<vector<pair<pair<int, int>, int>>> items(m), items_cover(m);
+    vector<vector<pair<pair<int, int>, int>>> all(m), cover(m);
     for (int i = 0; i < m; i++) {
         unordered_map<pair<int, int>, int, Hash> cheapest;
         for (int j = 0; j < n; j++) {
@@ -52,8 +52,8 @@ int main() {
         }
 
         for (auto [s, p] : cheapest) {
-            items[i].emplace_back(s, p);
-            if (s.second & 1) items_cover[i].emplace_back(s, p);
+            all[i].emplace_back(s, p);
+            if (s.second & 1) cover[i].emplace_back(s, p);
         }
     }
 
@@ -86,15 +86,15 @@ int main() {
             };
             if ((mask1 & 1) || (mask2 & 1)) update(minmax(shift(s1), shift(s2)), p);
 
-            if (!(len1 && len2)) {
+            if (!len1 || !len2) {
                 if (!len1) swap(s1, s2);
 
-                for (auto [s3, p3] : ((mask1 & 1) || (mask2 & 1) ? items[i] : items_cover[i]))
+                for (auto [s3, p3] : ((mask1 & 1) || (mask2 & 1) ? all[i] : cover[i]))
                     if (overlap(s1, s3)) update(minmax(shift(s1), shift(s3)), p + p3);
 
                 if (!len1 && !len2)
-                    for (auto &[s3, p3] : items[i])
-                        for (auto &[s4, p4] : items_cover[i])
+                    for (auto &[s3, p3] : all[i])
+                        for (auto &[s4, p4] : cover[i])
                             if (overlap(s3, s4)) update(minmax(shift(s3), shift(s4)), p + p3 + p4);
             }
         }
