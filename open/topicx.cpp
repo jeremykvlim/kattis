@@ -34,7 +34,7 @@ int main() {
     vector<int> state(t, 0);
     auto dfs1 = [&](auto &&self, int v) -> bool {
         state[v] = 1;
-        for (auto u : adj_list[v])
+        for (int u : adj_list[v])
             if (!state[u]) {
                 if (self(self, u)) return true;
             } else if (state[u] == 1) return true;
