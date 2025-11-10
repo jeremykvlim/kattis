@@ -148,27 +148,27 @@ int main() {
 
         TwoSATSystem sat(count);
         auto id = [&](int v, int c) {
-            return a[v] == c ? ids[v] : ~ids[v];
+            return a[v] != c ? ids[v] : ~ids[v];
         };
-        for (auto [u, v] : edges2) {
+        for (auto [u, v] : edges2)
             if (color2[u] && !color2[v]) {
                 int c = color2[u];
-                if ((masks[v] >> (c - 1)) & 1) sat.assign(~id(v, c));
+                if ((masks[v] >> (c - 1)) & 1) sat.assign(id(v, c));
             } else if (!color2[u] && color2[v]) {
                 int c = color2[v];
-                if ((masks[u] >> (c - 1)) & 1) sat.assign(~id(u, c));
+                if ((masks[u] >> (c - 1)) & 1) sat.assign(id(u, c));
             } else if (!color2[u] && !color2[v]) {
                 int overlap = masks[u] & masks[v];
                 for (int c = 1; c <= 3; c++)
-                    if ((overlap >> (c - 1)) & 1) sat.add_clause(~id(u, c), ~id(v, c));
+                    if ((overlap >> (c - 1)) & 1) sat.add_clause(id(u, c), id(v, c));
             }
-        }
+
         auto [satisfiable, assignment] = sat.solve();
         if (satisfiable) {
             for (int u = k + 1; u <= n; u++)
                 if (color2[u]) color1[u] = color2[u];
                 else color1[u] = assignment[ids[u]] ? a[u] : b[u];
-                
+
             cout << "possible\n";
             for (int i = 1; i <= n; i++) cout << color1[i] << " ";
             exit(0);
