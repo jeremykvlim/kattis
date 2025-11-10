@@ -3,11 +3,10 @@ using namespace std;
 
 struct DominatorTree {
     int n;
-    vector<int> DT, semidom, sets, label, order, depth, in, out;
-    vector<vector<int>> adj_list_DT, lift;
+    vector<int> DT, semidom, sets, label, order;
+    vector<vector<int>> adj_list_DT;
     DominatorTree(int n, const vector<vector<int>> &adj_list, int root = 1) : n(n), DT(n + 1, -1), semidom(n + 1, -1), sets(n + 1, 0),
-                                                                              label(n + 1, 0), order(n + 1, -1), adj_list_DT(n + 1),
-                                                                              depth(n + 1), in(n + 1, 0), out(n + 1, 0), lift(__lg(n) + 1, vector<int>(n + 1, root)) {
+                                                                              label(n + 1, 0), order(n + 1, -1), adj_list_DT(n + 1) {
         build(adj_list, root);
     }
 
