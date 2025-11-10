@@ -4,7 +4,7 @@ using namespace std;
 struct BlockCutTree {
     int n;
     vector<vector<int>> BCT, bccs;
-    vector<int> node_id, index, depth, parent, anc_mask, head, sizes, cuts;
+    vector<int> node_id, index, depth, anc_mask, head, sizes, cuts;
     vector<long long> pref_sizes, pref_cuts;
     vector<bool> cutpoint;
     vector<pair<int, int>> tour;
@@ -53,7 +53,6 @@ struct BlockCutTree {
         BCT.resize(m);
         index.resize(m);
         depth.resize(m);
-        parent.resize(m);
         anc_mask.resize(m);
         head.resize(m + 1);
         node = 0;
@@ -81,17 +80,16 @@ struct BlockCutTree {
             return x & -x;
         };
 
-        auto dfs = [&](auto &&self, int v = 0) -> void {
-            tour.emplace_back(v, parent[v]);
+        auto dfs = [&](auto &&self, int v = 0, int prev = 0) -> void {
+            tour.emplace_back(v, prev);
             index[v] = tour.size();
 
             for (int u : BCT[v])
-                if (u != parent[v]) {
-                    parent[u] = v;
+                if (u != prev) {
                     depth[u] = depth[v] + 1;
                     pref_sizes[u] = pref_sizes[v] + sizes[u];
                     pref_cuts[u] = pref_cuts[v] + cuts[u];
-                    self(self, u);
+                    self(self, u, v);
                     head[index[u]] = v;
                     if (lsb(index[v]) < lsb(index[u])) index[v] = index[u];
                 }
