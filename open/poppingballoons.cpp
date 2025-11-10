@@ -451,7 +451,7 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
 }
 
 template <typename T>
-vector<T> binomial_transform(const vector<T> &a, const vector<T> &fact, const vector<T> &fact_inv) {
+vector<T> inverse_binomial_transform(const vector<T> &a, const vector<T> &fact, const vector<T> &fact_inv) {
     int n = a.size();
     vector<T> x(n), y(n);
     for (int i = 0; i < n; i++) {
@@ -538,7 +538,7 @@ int main() {
     auto transform = [&](const vector<modint> &count) {
         vector<modint> a(m + 1);
         for (int i = 0; i <= m; i++) a[i] = count[m - i] * fact[m - i] * fact[i];
-        auto b = binomial_transform(a, fact, fact_inv);
+        auto b = inverse_binomial_transform(a, fact, fact_inv);
 
         vector<modint> c(m + 1);
         for (int i = 0; i <= m; i++) c[i] = b[m - i] * fact_inv[m - i] * fact_inv[i];
