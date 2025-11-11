@@ -56,15 +56,6 @@ void rref(Matrix<T> &matrix) {
     }
 }
 
-void parse(string s, vector<int> &H, vector<int> &T) {
-    for (int i = 0; i < s.size(); i++)
-        for (int j = 0; j <= i; j++)
-            if (!j || s.substr(0, j) == s.substr(i - j, j)) {
-                if (s[j] == 'H') H[i] = j + 1;
-                if (s[j] == 'T') T[i] = j + 1;
-            }
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -81,6 +72,14 @@ int main() {
     }
 
     vector<int> H_g(n + 1), T_g(n + 1), H_k(m + 1), T_k(m + 1);
+    auto parse = [&](const string &s, vector<int> &H, vector<int> &T) {
+        for (int i = 0; i < s.size(); i++)
+            for (int j = 0; j <= i; j++)
+                if (!j || s.substr(0, j) == s.substr(i - j, j)) {
+                    if (s[j] == 'H') H[i] = j + 1;
+                    if (s[j] == 'T') T[i] = j + 1;
+                }
+    };
     parse(g, H_g, T_g);
     parse(k, H_k, T_k);
 
@@ -120,7 +119,6 @@ int main() {
             prob[indices[i][j]][indices[H_g[i]][H_k[j]]] -= p;
             prob[indices[i][j]][indices[T_g[i]][T_k[j]]] -= 100 - p;
         }
-
     rref(prob);
     cout << fixed << setprecision(6) << prob[count - 1][count] / prob[count - 1][count - 1];
 }
