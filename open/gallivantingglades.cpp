@@ -441,15 +441,15 @@ int main() {
     long long t;
     cin >> t;
 
-    vector<modint> dp(n, 0), temp(n, 0), a;
+    vector<modint> dp(n, 0), temp(n, 0), a{1};
     dp[0] = 1;
     while (a.size() < 2 * n) {
-        a.emplace_back(dp[0]);
         fill(temp.begin(), temp.end(), 0);
         for (int i = 0; i < n; i++)
             if (dp[i])
                 for (int j = 0; j < n; j++) temp[j] += adj_matrix[j][i] * dp[i];
         dp = temp;
+        a.emplace_back(dp[0]);
     }
 
     if (t < a.size()) {
