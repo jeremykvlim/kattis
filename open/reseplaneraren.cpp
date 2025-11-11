@@ -101,8 +101,8 @@ int main() {
         return depth[u] < depth[v] ? u : v;
     };
 
-    auto ancestor = [&](int v, int u) {
-        return lca(v, u) == v;
+    auto ancestor = [&](int u, int v) {
+        return lca(u, v) == u;
     };
 
     vector<int> s(k), t(k), anc(k);
