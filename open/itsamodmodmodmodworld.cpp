@@ -1,11 +1,25 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-long long sum(long long p, long long q, long long n) {
-    if (!n || !p) return 0;
-    if (n >= q) return (n / q) * p * (n + 1) - (n / q) * ((n / q) * p * q + p + q - 1) / 2 + sum(p, q, n % q);
-    if (p >= q) return (p / q) * n * (n + 1) / 2 + sum(p % q, q, n);
-    return ((n * p) / q) * n - sum(q, p, n * p / q);
+long long floor_division_sum(long long n, int a, int c, int d) {
+    auto sum = 0LL;
+    while (n) {
+        if (a >= d) {
+            sum += (a / d) * (__int128) (n * (n - 1)) / 2;
+            a %= d;
+        }
+        if (c >= d) {
+            sum += n * (c / d);
+            c %= d;
+        }
+
+        auto y_max = a * n + c;
+        if (y_max < d) break;
+        n = y_max / d;
+        c = y_max % d;
+        swap(a, d);
+    }
+    return sum;
 }
 
 int main() {
@@ -18,8 +32,6 @@ int main() {
     while (w--) {
         long long p, q, n;
         cin >> p >> q >> n;
-
-        auto g = __gcd(p, q);
-        cout << p * n * (n + 1) / 2 - q * sum(p / g, q / g, n) << "\n";
+        cout << p * n * (n + 1) / 2 - q * floor_division_sum(n + 1, p, 0, q) << "\n";
     }
 }
