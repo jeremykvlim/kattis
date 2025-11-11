@@ -335,7 +335,7 @@ U & operator<<(U &stream, const BarrettModInt<T> &v) {
 
 template <typename T, typename U>
 U & operator>>(U &stream, BarrettModInt<T> &v) {
-    typename common_type<typename BarrettModInt<T>::I, long long>::type x;
+    typename make_signed<typename BarrettModInt<T>::I>::type x;
     stream >> x;
     v = BarrettModInt<T>(x);
     return stream;

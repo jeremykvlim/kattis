@@ -333,7 +333,7 @@ U & operator<<(U &stream, const ModInt<T> &v) {
 
 template <typename T, typename U>
 U & operator>>(U &stream, ModInt<T> &v) {
-    typename common_type<typename ModInt<T>::T, long long>::type x;
+    typename make_signed<typename ModInt<T>::T>::type x;
     stream >> x;
     v = ModInt<T>(x);
     return stream;

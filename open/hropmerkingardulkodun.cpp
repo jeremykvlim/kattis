@@ -349,7 +349,7 @@ U & operator<<(U &stream, const MontgomeryModInt<T> &v) {
 
 template <typename T, typename U>
 U & operator>>(U &stream, MontgomeryModInt<T> &v) {
-    typename common_type<typename MontgomeryModInt<T>::T, long long>::type x;
+    typename make_signed<typename MontgomeryModInt<T>::T>::type x;
     stream >> x;
     v = MontgomeryModInt<T>(x);
     return stream;
