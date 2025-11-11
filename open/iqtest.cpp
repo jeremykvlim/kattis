@@ -413,7 +413,7 @@ T kitamasa(const vector<T> &c, const vector<T> &a, long long k) {
         }
         return value;
     };
-    auto value = pow(base, k);
+    auto value = pow(base, k + 1);
 
     T kth = 0;
     for (int i = 0; i < n; i++) kth += value[i + 1] * a[i];
@@ -438,7 +438,7 @@ int main() {
 
         auto c = berlekamp_massey(a);
         a.resize(c.size());
-        long long term = kitamasa(c, a, n + 1)();
+        long long term = kitamasa(c, a, n)();
         if (term > MOD / 2) term -= MOD;
         cout << term << "\n";
     }
