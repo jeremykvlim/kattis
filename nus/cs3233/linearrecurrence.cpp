@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -350,61 +350,6 @@ auto &m = MOD<unsigned int>::value;
 using modint = BarrettModInt<MOD<unsigned int>>;
 
 template <typename T>
-struct Matrix {
-    int r, c;
-    vector<vector<T>> mat;
-
-    Matrix(int n = 0) : Matrix(n, n) {}
-    Matrix(int rows, int cols, int v = 0) : r(rows), c(cols), mat(rows, vector<T>(cols, v)) {}
-    Matrix(const vector<vector<T>> &mat) : r(mat.size()), c(mat[0].size()), mat(mat) {}
-
-    friend auto operator*(Matrix<T> &A, Matrix<T> &B) {
-        int r1 = A.r, r2 = B.r, c2 = B.c;
-
-        Matrix<T> C(r1, c2);
-        for (int i = 0; i < r1; i++)
-            for (int j = 0; j < c2; j++)
-                for (int k = 0; k < r2; k++) C[i][j] += A[i][k] * B[k][j];
-
-        return C;
-    }
-
-    friend auto operator*(Matrix<T> &A, vector<T> &v) {
-        int n = A.r, m = v.size();
-
-        vector<T> u(n, 0);
-        for (int i = 0; i < n; i++)
-            for (int j = 0; j < m; j++) u[i] += A[i][j] * v[j];
-
-        return u;
-    }
-
-    auto & operator[](int i) {
-        return mat[i];
-    }
-};
-
-template <typename T>
-Matrix<T> I(int n) {
-    Matrix<T> I(n);
-    for (int i = 0; i < n; i++) I[i][i] = 1;
-    return I;
-}
-
-template <typename T, typename U>
-Matrix<T> matpow(Matrix<T> A, U exponent) {
-    int n = A.r;
-    auto B = I<T>(n);
-
-    while (exponent) {
-        if (exponent & 1) B = A * B;
-        A = A * A;
-        exponent >>= 1;
-    }
-    return B;
-}
-
-template <typename T>
 T kitamasa(const vector<T> &c, const vector<T> &a, long long k) {
     int n = a.size();
 
@@ -449,7 +394,7 @@ int main() {
     vector<long long> a(n + 1), x(n);
     for (auto &ai : a) cin >> ai;
     for (auto &xi : x) cin >> xi;
-    auto d = a[0] - accumulate(a.begin(), a.end(), 0LL) + 1;
+    x.emplace_back(a[0]);
 
     int q;
     cin >> q;
@@ -465,24 +410,14 @@ int main() {
             continue;
         }
 
-        if (!d || __gcd(d, m) != 1) {
-            Matrix<modint> A(n + 1);
-            for (int i = 0; i <= n; i++) A[0][i] = a[(i + 1) % (n + 1)];
-            for (int i = 1; i < n; i++) A[i][i - 1] = 1;
-            A[n][n] = 1;
-            A = matpow(A, t - n + 1);
-
-            vector<modint> v(n + 1, 1);
-            for (int i = 0; i < n; i++) v[i] = x[n - 1 - i];
-            cout << (A * v)[0] << "\n";
-        } else {
-            auto s = (modint) a[0] / d;
-            vector<modint> c(n), y(n);
-            for (int i = 1; i <= n; i++) {
-                c[i - 1] = a[i];
-                y[i - 1] = x[i - 1] - s;
-            }
-            cout << kitamasa(c, y, t + 1) + s << "\n";
+        vector<modint> c(n + 1), y(n + 1);
+        c[0] = a[1] + 1;
+        c[n] = -a[n];
+        for (int i = n; ~i; i--) {
+            y[i] = x[i];
+            if (i) y[n] += a[i] * x[n - i];
+            if (i > 1) c[i - 1] = a[i] - a[i - 1];
         }
+        cout << kitamasa(c, y, t + 1) << "\n";
     }
 }
