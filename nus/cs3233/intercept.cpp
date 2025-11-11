@@ -3,11 +3,13 @@ using namespace std;
 
 struct DominatorTree {
     int n;
-    vector<int> DT, semidom, sets, label, order, depth, in, out;
-    vector<vector<int>> adj_list_DT, lift;
+    vector<int> DT, semidom, sets, label, order, index, depth, anc_mask, head;
+    vector<vector<int>> adj_list_DT;
+    vector<pair<int, int>> tour;
+
     DominatorTree(int n, const vector<vector<int>> &adj_list, int root = 1) : n(n), DT(n + 1, -1), semidom(n + 1, -1), sets(n + 1, 0),
                                                                               label(n + 1, 0), order(n + 1, -1), adj_list_DT(n + 1),
-                                                                              depth(n + 1), in(n + 1, 0), out(n + 1, 0), lift(__lg(n) + 1, vector<int>(n + 1, root)) {
+                                                                              index(n + 1), depth(n + 1, 0), anc_mask(n + 1), head(n + 2) {
         build(adj_list, root);
     }
 
@@ -50,22 +52,24 @@ struct DominatorTree {
         for (int v = 1; v <= n; v++)
             if (v != root) adj_list_DT[DT[v]].emplace_back(v);
 
-        depth[root] = 1;
-        int count2 = 0;
-        auto dfs2 = [&](auto &&self, int v, int prev = -1) -> void {
-            in[v] = count2++;
-            if (~prev) {
-                depth[v] = depth[prev] + 1;
-                lift[0][v] = prev;
-                for (int i = 1; i <= __lg(n); i++) lift[i][v] = lift[i - 1][lift[i - 1][v]];
-            }
+        auto lsb = [&](int x) {
+            return x & -x;
+        };
+
+        auto dfs = [&](auto &&self, int v = 1, int prev = 1) -> void {
+            tour.emplace_back(v, prev);
+            index[v] = tour.size();
 
             for (int u : adj_list_DT[v])
-                if (u != prev) self(self, u, v);
-
-            out[v] = count2;
+                if (u != prev) {
+                    depth[u] = depth[v] + 1;
+                    self(self, u, v);
+                    head[index[u]] = v;
+                    if (lsb(index[v]) < lsb(index[u])) index[v] = index[u];
+                }
         };
-        dfs2(dfs2, root);
+        dfs(dfs, root);
+        for (auto [v, p] : tour) anc_mask[v] = anc_mask[p] | lsb(index[v]);
     }
 
     int find(int v, bool compress = false) {
@@ -79,28 +83,24 @@ struct DominatorTree {
         return compress ? u : label[v];
     }
 
-    bool ancestor(int v, int u) {
-        return in[v] <= in[u] && in[u] < out[v];
+    bool ancestor(int u, int v) {
+        return lca(u, v) == u;
     }
 
     int lca(int u, int v) {
-        if (ancestor(u, v)) return u;
-        if (ancestor(v, u)) return v;
+        if (unsigned above = index[u] ^ index[v]; above) {
+            above = (anc_mask[u] & anc_mask[v]) & -bit_floor(above);
+            if (unsigned below = anc_mask[u] ^ above; below) {
+                below = bit_floor(below);
+                u = head[(index[u] & -below) | below];
+            }
+            if (unsigned below = anc_mask[v] ^ above; below) {
+                below = bit_floor(below);
+                v = head[(index[v] & -below) | below];
+            }
+        }
 
-        if (depth[u] < depth[v]) swap(u, v);
-
-        for (int i = __lg(n); ~i; i--)
-            if (!ancestor(lift[i][u], v)) u = lift[i][u];
-
-        return DT[u];
-    }
-
-    int level_ancestor(int v, int l) {
-        if (!l) return v;
-
-        for (int i = 0; i <= __lg(n); i++)
-            if ((l >> i) & 1) v = lift[i][v];
-        return v;
+        return depth[u] < depth[v] ? u : v;
     }
 
     int & operator[](int i) {
