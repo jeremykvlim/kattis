@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -357,55 +357,67 @@ constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 template <typename T>
-struct Matrix {
-    int r, c;
-    vector<vector<T>> mat;
+vector<T> berlekamp_massey(const vector<T> &s) {
+    int n = s.size();
 
-    Matrix(int n = 0) : Matrix(n, n) {}
-    Matrix(int rows, int cols, int v = 0) : r(rows), c(cols), mat(rows, vector<T>(cols, v)) {}
-    Matrix(const vector<vector<T>> &mat) : r(mat.size()), c(mat[0].size()), mat(mat) {}
+    vector<T> B{-1}, C{-1};
+    T b = 1;
+    for (int e = 1; e <= n; e++) {
+        int l = C.size();
+        T d = 0;
+        for (int i = 0; i < l; i++) d += C[i] * s[e - l + i];
+        B.emplace_back(0);
+        if (!d) continue;
 
-    friend auto operator*(Matrix<T> &A, Matrix<T> &B) {
-        int r1 = A.r, r2 = B.r, c2 = B.c;
-
-        Matrix<T> C(r1, c2);
-        for (int i = 0; i < r1; i++)
-            for (int j = 0; j < c2; j++)
-                for (int k = 0; k < r2; k++) C[i][j] += A[i][k] * B[k][j];
-
-        return C;
+        int m = B.size();
+        T f = d / b;
+        if (l < m) {
+            auto t = C;
+            C.insert(C.begin(), m - l, 0);
+            for (int i = 0; i < m; i++) C[m - 1 - i] -= f * B[m - 1 - i];
+            B = t;
+            b = d;
+        } else
+            for (int i = 0; i < m; i++) C[l - 1 - i] -= f * B[m - 1 - i];
     }
-
-    auto begin() {
-        return mat.begin();
-    }
-    auto end() {
-        return mat.end();
-    }
-
-    auto & operator[](int i) {
-        return mat[i];
-    }
-};
-
-template <typename T>
-Matrix<T> I(int n) {
-    Matrix<T> I(n);
-    for (int i = 0; i < n; i++) I[i][i] = 1;
-    return I;
+    C.pop_back();
+    reverse(C.begin(), C.end());
+    return C;
 }
 
-template <typename T, typename U>
-Matrix<T> matpow(Matrix<T> A, U exponent) {
-    int n = A.r;
-    auto B = I<T>(n);
+template <typename T>
+T kitamasa(const vector<T> &c, const vector<T> &a, long long k) {
+    int n = a.size();
 
-    while (exponent) {
-        if (exponent & 1) B = B * A;
-        A = A * A;
-        exponent >>= 1;
-    }
-    return B;
+    auto mul = [&](const vector<T> &x, const vector<T> &y) {
+        vector<T> z(2 * n + 1);
+        for (int i = 0; i <= n; i++)
+            for (int j = 0; j <= n; j++) z[i + j] += x[i] * y[j];
+
+        for (int i = 2 * n; i > n; i--)
+            for (int j = 0; j < n; j++) z[i - j - 1] += z[i] * c[j];
+
+        z.resize(n + 1);
+        return z;
+    };
+
+    vector<T> base(n + 1, 0);
+    base[1] = 1;
+    auto pow = [&](vector<T> base, long long exponent) {
+        vector<T> value(n + 1);
+        value[0] = 1;
+        while (exponent) {
+            if (exponent & 1) value = mul(value, base);
+            base = mul(base, base);
+            exponent >>= 1;
+        }
+        return value;
+    };
+    auto value = pow(base, k);
+
+    T kth = 0;
+    for (int i = 0; i < n; i++) kth += value[i + 1] * a[i];
+    return kth;
 }
 
 int main() {
@@ -428,13 +440,26 @@ int main() {
         exit(0);
     }
 
-    Matrix<modint> dp(m);
+    vector<vector<int>> adj_list(m);
     for (int i = 0; i < m; i++)
-        for (int j = 0; j < m; j++) dp[i][j] = !(valid[i] & valid[j]);
+        for (int j = 0; j < m; j++)
+            if (!(valid[i] & valid[j])) adj_list[i].emplace_back(j);
 
-    dp = matpow(dp, n - 1);
-    modint ways = 0;
-    for (auto row : dp)
-        for (auto e : row) ways += e;
-    cout << ways;
+    vector<modint> dp(m, 1), temp(m), a{1, m};
+    while (a.size() < 2 * m) {
+        fill(temp.begin(), temp.end(), 0);
+        for (int i = 0; i < m; i++)
+            for (int j : adj_list[i]) temp[i] += dp[j];
+        dp = temp;
+        a.emplace_back(accumulate(dp.begin(), dp.end(), (modint) 0));
+    }
+
+    if (n <= 2 * m) {
+        cout << a[n];
+        exit(0);
+    }
+
+    auto c = berlekamp_massey(a);
+    a.resize(c.size());
+    cout << kitamasa(c, a, n + 1);
 }
