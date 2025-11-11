@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -345,48 +345,38 @@ constexpr unsigned int MOD = 1e3;
 using modint = BarrettModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 template <typename T>
-struct Matrix {
-    int r, c;
-    vector<vector<T>> mat;
+T kitamasa(const vector<T> &c, const vector<T> &a, long long k) {
+    int n = a.size();
 
-    Matrix(int n = 0) : Matrix(n, n) {}
-    Matrix(int rows, int cols, int v = 0) : r(rows), c(cols), mat(rows, vector<T>(cols, v)) {}
-    Matrix(const vector<vector<T>> &mat) : r(mat.size()), c(mat[0].size()), mat(mat) {}
+    auto mul = [&](const vector<T> &x, const vector<T> &y) {
+        vector<T> z(2 * n + 1);
+        for (int i = 0; i <= n; i++)
+            for (int j = 0; j <= n; j++) z[i + j] += x[i] * y[j];
 
-    friend auto operator*(Matrix<T> &A, Matrix<T> &B) {
-        int r1 = A.r, r2 = B.r, c2 = B.c;
+        for (int i = 2 * n; i > n; i--)
+            for (int j = 0; j < n; j++) z[i - j - 1] += z[i] * c[j];
 
-        Matrix<T> C(r1, c2);
-        for (int i = 0; i < r1; i++)
-            for (int j = 0; j < c2; j++)
-                for (int k = 0; k < r2; k++) C[i][j] += A[i][k] * B[k][j];
+        z.resize(n + 1);
+        return z;
+    };
 
-        return C;
-    }
+    vector<T> base(n + 1, 0);
+    base[1] = 1;
+    auto pow = [&](vector<T> base, long long exponent) {
+        vector<T> value(n + 1);
+        value[0] = 1;
+        while (exponent) {
+            if (exponent & 1) value = mul(value, base);
+            base = mul(base, base);
+            exponent >>= 1;
+        }
+        return value;
+    };
+    auto value = pow(base, k);
 
-    auto & operator[](int i) {
-        return mat[i];
-    }
-};
-
-template <typename T>
-Matrix<T> I(int n) {
-    Matrix<T> I(n);
-    for (int i = 0; i < n; i++) I[i][i] = 1;
-    return I;
-}
-
-template <typename T, typename U>
-Matrix<T> matpow(Matrix<T> A, U exponent) {
-    int n = A.r;
-    auto B = I<T>(n);
-
-    while (exponent) {
-        if (exponent & 1) B = A * B;
-        A = A * A;
-        exponent >>= 1;
-    }
-    return B;
+    T kth = 0;
+    for (int i = 0; i < n; i++) kth += value[i + 1] * a[i];
+    return kth;
 }
 
 int main() {
@@ -394,17 +384,14 @@ int main() {
     cin.tie(nullptr);
 
     modint::init();
-    
+
     int t;
     cin >> t;
 
+    vector<modint> c{6, -4}, a{1, 3};
     for (int x = 1; x <= t; x++) {
         int n;
         cin >> n;
-
-        Matrix<modint> A(2);
-        A[0] = {3, 5};
-        A[1] = {1, 3};
-        cout << "Case #" << x << ": " << setw(3) << setfill('0') << 2 * matpow(A, n)[0][0] - 1 << "\n";
+        cout << "Case #" << x << ": " << setw(3) << setfill('0') << 2 * kitamasa(c, a, n + 1) - 1 << "\n";
     }
 }
