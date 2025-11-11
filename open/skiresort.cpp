@@ -3,11 +3,13 @@ using namespace std;
 
 struct DominatorTree {
     int n;
-    vector<int> DT, semidom, sets, label, order, depth, in, out;
-    vector<vector<int>> adj_list_DT, lift;
-    DominatorTree(int n, const vector<vector<int>> &adj_list, int root = 1) : n(n), DT(n + 1, -1), semidom(n + 1, -1), sets(n + 1, 0), 
+    vector<int> DT, semidom, sets, label, order, index, depth, anc_mask, head;
+    vector<vector<int>> adj_list_DT;
+    vector<pair<int, int>> tour;
+
+    DominatorTree(int n, const vector<vector<int>> &adj_list, int root = 1) : n(n), DT(n + 1, -1), semidom(n + 1, -1), sets(n + 1, 0),
                                                                               label(n + 1, 0), order(n + 1, -1), adj_list_DT(n + 1),
-                                                                              depth(n + 1), in(n + 1, 0), out(n + 1, 0), lift(__lg(n) + 1, vector<int>(n + 1, root)) {
+                                                                              index(n + 1), depth(n + 1, 0), anc_mask(n + 1), head(n + 2) {
         build(adj_list, root);
     }
 
@@ -50,22 +52,24 @@ struct DominatorTree {
         for (int v = 1; v <= n; v++)
             if (v != root) adj_list_DT[DT[v]].emplace_back(v);
 
-        depth[root] = 1;
-        int count2 = 0;
-        auto dfs2 = [&](auto &&self, int v, int prev = -1) -> void {
-            in[v] = count2++;
-            if (~prev) {
-                depth[v] = depth[prev] + 1;
-                lift[0][v] = prev;
-                for (int i = 1; i <= __lg(n); i++) lift[i][v] = lift[i - 1][lift[i - 1][v]];
-            }
+        auto lsb = [&](int x) {
+            return x & -x;
+        };
+
+        auto dfs = [&](auto &&self, int v = 1, int prev = 1) -> void {
+            tour.emplace_back(v, prev);
+            index[v] = tour.size();
 
             for (int u : adj_list_DT[v])
-                if (u != prev) self(self, u, v);
-
-            out[v] = count2;
+                if (u != prev) {
+                    depth[u] = depth[v] + 1;
+                    self(self, u, v);
+                    head[index[u]] = v;
+                    if (lsb(index[v]) < lsb(index[u])) index[v] = index[u];
+                }
         };
-        dfs2(dfs2, root);
+        dfs(dfs, root);
+        for (auto [v, p] : tour) anc_mask[v] = anc_mask[p] | lsb(index[v]);
     }
 
     int find(int v, bool compress = false) {
@@ -79,34 +83,40 @@ struct DominatorTree {
         return compress ? u : label[v];
     }
 
-    bool ancestor(int v, int u) {
-        return in[v] <= in[u] && in[u] < out[v];
-    }
-
     int lca(int u, int v) {
-        if (ancestor(u, v)) return u;
-        if (ancestor(v, u)) return v;
+        if (unsigned above = index[u] ^ index[v]; above) {
+            above = (anc_mask[u] & anc_mask[v]) & -bit_floor(above);
+            if (unsigned below = anc_mask[u] ^ above; below) {
+                below = bit_floor(below);
+                u = head[(index[u] & -below) | below];
+            }
+            if (unsigned below = anc_mask[v] ^ above; below) {
+                below = bit_floor(below);
+                v = head[(index[v] & -below) | below];
+            }
+        }
 
-        if (depth[u] < depth[v]) swap(u, v);
-
-        for (int i = __lg(n); ~i; i--)
-            if (!ancestor(lift[i][u], v)) u = lift[i][u];
-
-        return DT[u];
-    }
-
-    int level_ancestor(int v, int l) {
-        if (!l) return v;
-
-        for (int i = 0; i <= __lg(n); i++)
-            if ((l >> i) & 1) v = lift[i][v];
-        return v;
+        return depth[u] < depth[v] ? u : v;
     }
 
     int & operator[](int i) {
         return DT[i];
     }
 };
+
+void build_virtual_tree(vector<vector<int>> &vt, vector<int> &vertices, vector<int> &prev, const vector<int> &in, auto &&lca) {
+    auto dedupe = [&](auto &v) {
+        sort(v.begin(), v.end(), [&](int u, int v) { return in[u] < in[v]; });
+        v.erase(unique(v.begin(), v.end()), v.end());
+    };
+    dedupe(vertices);
+
+    int m = vertices.size();
+    for (int i = 0; i + 1 < m; i++) vertices.emplace_back(lca(vertices[i], vertices[i + 1]));
+    dedupe(vertices);
+
+    for (int i = 0; i + 1 < vertices.size(); i++) vt[prev[vertices[i + 1]] = lca(vertices[i], vertices[i + 1])].emplace_back(vertices[i + 1]);
+}
 
 int main() {
     ios::sync_with_stdio(false);
@@ -127,14 +137,16 @@ int main() {
     int count = 0;
     vector<int> in(n + 1, -1), out(n + 1, -1), extra;
     vector<vector<int>> adj_list_tree(n + 1);
+    vector<int> parent(n + 1, 0);
     auto dfs1 = [&](auto &&self, int v = 1) -> void {
         in[v] = count++;
 
         bool add = false;
         for (int u : adj_list[v])
             if (!~in[u]) {
-                self(self, u);
+                parent[u] = v;
                 adj_list_tree[v].emplace_back(u);
+                self(self, u);
             } else add = true;
 
         out[v] = count;
@@ -169,31 +181,58 @@ int main() {
     };
     dfs2(dfs2);
 
+    vector<int> heavy(n + 1, -1);
+    auto hld = [&](auto &&self, int v = 1) -> int {
+        int subtree_size = 1, largest = 0;
+        for (int u : dt.adj_list_DT[v]) {
+            int size = self(self, u);
+            subtree_size += size;
+            if (largest < size) {
+                largest = size;
+                heavy[v] = u;
+            }
+        }
+        return subtree_size;
+    };
+    hld(hld);
+
+    vector<int> chain_head(n + 1, 0), chain_pos(n + 1, 0), chain_vertex(n + 1, 0);
+    int pos = 0;
+    q.emplace(1);
+    while (!q.empty()) {
+        int h = q.front();
+        q.pop();
+
+        for (int v = h; v != -1; v = heavy[v]) {
+            chain_vertex[pos] = v;
+            chain_pos[v] = pos++;
+            chain_head[v] = h;
+
+            for (int u : dt.adj_list_DT[v])
+                if (u != heavy[v]) q.push(u);
+        }
+    }
+
     vector<bool> seen(n + 1, false);
-    vector<int> labels(n + 1), vt(2 * n - 1), prev(n + 1);
-    vector<vector<int>> next(n + 1);
+    vector<int> labels(n + 1), prev(n + 1);
+    vector<vector<int>> vt(n + 1);
     vector<vector<long long>> dp(n + 1, vector<long long>(5, 0));
     while (Q--) {
         int k, a;
         cin >> k >> a;
 
-        for (int i = 0; i < a; i++) {
-            cin >> labels[i];
+        labels.resize(a);
+        for (int &i : labels) {
+            cin >> i;
 
-            seen[labels[i]] = true;
+            seen[i] = true;
         }
-        sort(labels.begin(), labels.begin() + a, [&](int u, int v) { return in[u] < in[v]; });
-
-        for (int i = 0; i < a; i++) vt[i] = labels[i];
-        for (int i = 0; i < a - 1; i++) vt[i + a] = dt.lca(labels[i], labels[i + 1]);
-        sort(vt.begin(), vt.begin() + 2 * a - 1, [&](int u, int v) { return in[u] < in[v]; });
-        int size = unique(vt.begin(), vt.begin() + 2 * a - 1) - vt.begin();
-        for (int i = 1; i < size; i++) next[prev[vt[i]] = dt.lca(vt[i - 1], vt[i])].emplace_back(vt[i]);
+        build_virtual_tree(vt, labels, prev, in, [&](int u, int v) { return dt.lca(u, v); });
 
         auto dfs3 = [&](auto &&self, int v) -> void {
             if (!seen[v]) {
                 dp[v][0] = 1;
-                for (int u : next[v]) {
+                for (int u : vt[v]) {
                     self(self, u);
                     vector<long long> temp(k + 1, 0);
                     for (int i = 0; i <= k; i++)
@@ -203,8 +242,8 @@ int main() {
             }
 
             vector<int> c;
-            for (int u = v; prev[u] && c.size() + next[prev[u]].size() - 1 <= k; u = prev[u])
-                for (int t : next[prev[u]])
+            for (int u = v; prev[u] && c.size() + vt[prev[u]].size() - 1 <= k; u = prev[u])
+                for (int t : vt[prev[u]])
                     if (t != u) c.emplace_back(t);
 
             auto ancestor = [&](int v, int u) {
@@ -227,23 +266,50 @@ int main() {
                 return true;
             };
 
-            int l = -1, r = dt.depth[v] - dt.depth[prev[v]], m;
-            while (l + 1 < r) {
-                m = l + (r - l) / 2;
+            int u = v;
+            auto sum = 0LL;
+            auto search = [&](int l, int r) {
+                while (l + 1 < r) {
+                    int mid = l + (r - l) / 2;
 
-                if (valid(dt.level_ancestor(v, m))) l = m;
-                else r = m;
+                    if (valid(chain_vertex[chain_pos[u] - mid])) l = mid;
+                    else r = mid;
+                }
+                sum += l + 1;
+            };
+
+            auto climb = [&]() {
+                int h = chain_head[u], len = chain_pos[u] - chain_pos[h] + 1;
+                if (valid(h)) {
+                    sum += len;
+                    u = dt[h];
+                    return true;
+                } else {
+                    search(-1, len);
+                    dp[v][1] += sum;
+                    return false;
+                }
+            };
+
+            while (prev[v] && chain_head[u] != chain_head[prev[v]])
+                if (!climb()) return;
+
+            if (prev[v]) search(-1, chain_pos[u] - chain_pos[prev[v]] + 1);
+            else {
+                while (chain_head[u] != chain_head[1])
+                    if (!climb()) return;
+                search(-1, chain_pos[u] - chain_pos[1] + 1);
             }
-            dp[v][1] += l + 1;
+            dp[v][1] += sum;
         };
-        dfs3(dfs3, vt[0]);
+        dfs3(dfs3, labels[0]);
 
-        cout << dp[vt[0]][k] << "\n";
-        for (int i = 0; i < size; i++) {
-            prev[vt[i]] = 0;
-            next[vt[i]].clear();
-            fill(dp[vt[i]].begin(), dp[vt[i]].end(), 0);
+        cout << dp[labels[0]][k] << "\n";
+        for (int i : labels) {
+            prev[i] = 0;
+            vt[i].clear();
+            fill(dp[i].begin(), dp[i].end(), 0);
+            seen[i] = false;
         }
-        for (int i = 0; i < a; i++) seen[labels[i]] = false;
     }
 }
