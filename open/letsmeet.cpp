@@ -48,13 +48,14 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<vector<bool>> adj_matrix(n, vector<bool>(n, false)), meet(n, vector<bool>(n, false));
+    vector<vector<int>> adj_list(n);
     vector<int> degree(n, 0);
     while (m--) {
         int u, v;
         cin >> u >> v;
 
-        adj_matrix[u][v] = adj_matrix[v][u] = true;
+        adj_list[u].emplace_back(v);
+        adj_list[v].emplace_back(u);
         degree[u]++;
         degree[v]++;
     }
@@ -62,6 +63,12 @@ int main() {
     int s, t;
     cin >> s >> t;
 
+    if (s == t) {
+        cout << 0;
+        exit(0);
+    }
+
+    vector<vector<bool>> meet(n, vector<bool>(n, false));
     queue<pair<int, int>> q;
     for (int i = 0; i < n; i++) {
         meet[i][i] = true;
@@ -72,11 +79,11 @@ int main() {
         auto [u, v] = q.front();
         q.pop();
 
-        for (int i = 0; i < n; i++)
-            for (int j = 0; j < n; j++)
-                if (adj_matrix[u][i] && adj_matrix[v][j] && !meet[i][j]) {
-                    meet[i][j] = true;
-                    q.emplace(i, j);
+        for (int a : adj_list[u])
+            for (int b : adj_list[v])
+                if (!meet[a][b]) {
+                    meet[a][b] = true;
+                    q.emplace(a, b);
                 }
     }
 
@@ -85,20 +92,30 @@ int main() {
         exit(0);
     }
 
-    Matrix<double> A(n * n + n);
+    vector<int> id(n * n, -1), U, V;
     for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++) {
-            if (i == j || !meet[i][j]) {
-                A[i * n + j][i * n + j] = 1;
-                continue;
+        for (int j = i + 1; j < n; j++)
+            if (meet[i][j]) {
+                id[i * n + j] = U.size();
+                U.emplace_back(i);
+                V.emplace_back(j);
             }
 
-            A[i * n + j][i * n + j] = A[i * n + j][n * n] = degree[i] * degree[j];
-            for (int k = 0; k < n; k++)
-                for (int l = 0; l < n; l++)
-                    if (adj_matrix[i][k] && adj_matrix[j][l]) A[i * n + j][k * n + l] = -1;
-        }
-
+    int k = U.size();
+    Matrix<double> A(k, k + 1);
+    for (int i = 0; i < k; i++) {
+        int u = U[i], v = V[i];
+        A[i][i] = A[i][k] = degree[u] * degree[v];
+        for (int a : adj_list[u])
+            for (int b : adj_list[v])
+                if (a != b) {
+                    auto [x, y] = minmax(a, b);
+                    int j = id[x * n + y];
+                    if (j != -1) A[i][j]--;
+                }
+    }
     rref(A);
-    cout << fixed << setprecision(6) << A[s * n + t][n * n];
+
+    auto [x, y] = minmax(s, t);
+    cout << fixed << setprecision(6) << A[id[x * n + y]][k];
 }
