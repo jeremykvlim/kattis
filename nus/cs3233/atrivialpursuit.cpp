@@ -395,7 +395,7 @@ vector<T> factorize(T n) {
             return;
         }
 
-        auto pf = brent(m);
+        T pf = brent(m);
         pfs.emplace_back(pf);
         self(self, m / pf);
     };

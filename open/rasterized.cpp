@@ -139,7 +139,7 @@ vector<pair<T, int>> factorize(T n) {
             return;
         }
 
-        auto pf = brent(m);
+        T pf = brent(m);
         pfs[pf]++;
         self(self, m / pf);
     };
