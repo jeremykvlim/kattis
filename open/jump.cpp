@@ -178,7 +178,7 @@ pair<T, T> bezout(T a, T b) {
 
 template <typename T>
 pair<T, T> chinese_remainder_theorem(T a, T n, T b, T m) {
-    T g = __gcd(n, m);
+    T g = __gcd(m, n);
     if ((b - a) % g) return {0, -1};
 
     if (m > n) {
