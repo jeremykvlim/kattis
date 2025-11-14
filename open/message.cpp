@@ -340,56 +340,266 @@ U & operator>>(U &stream, ModInt<T> &v) {
 }
 
 template <typename T>
-struct MOD {
+struct DynamicMod {
     static inline T value;
 };
 
-auto &m = MOD<unsigned long long>::value;
-using modint = ModInt<MOD<unsigned long long>>;
+auto &MOD = DynamicMod<unsigned long long>::value;
+using modint = ModInt<DynamicMod<unsigned long long>>;
 
 template <typename T>
-struct Matrix {
-    int r, c;
-    vector<vector<T>> mat;
+T brent(T n) {
+    if (!(n & 1)) return 2;
 
-    Matrix(int n = 0) : Matrix(n, n) {}
-    Matrix(int rows, int cols, int v = 0) : r(rows), c(cols), mat(rows, vector<T>(cols, v)) {}
-    Matrix(const vector<vector<T>> &mat) : r(mat.size()), c(mat[0].size()), mat(mat) {}
+    mt19937_64 rng(random_device{}());
+    for (;;) {
+        T x = 2, y = 2, g = 1, q = 1, xs = 1, c = rng() % (n - 1) + 1;
+        for (int i = 1; g == 1; i <<= 1, y = x) {
+            for (int j = 1; j < i; j++) x = mul(x, x, n) + c;
+            for (int j = 0; j < i && g == 1; j += 128) {
+                xs = x;
+                for (int k = 0; k < min(128, i - j); k++) {
+                    x = mul(x, x, n) + c;
+                    q = mul(q, max(x, y) - min(x, y), n);
+                }
+                g = __gcd(q, n);
+            }
+        }
 
-    friend auto operator*(Matrix<T> &A, Matrix<T> &B) {
-        int r1 = A.r, r2 = B.r, c2 = B.c;
-
-        Matrix<T> C(r1, c2);
-        for (int i = 0; i < r1; i++)
-            for (int j = 0; j < c2; j++)
-                for (int k = 0; k < r2; k++) C[i][j] += A[i][k] * B[k][j];
-
-        return C;
+        if (g == n) g = 1;
+        while (g == 1) {
+            xs = mul(xs, xs, n) + c;
+            g = __gcd(max(xs, y) - min(xs, y), n);
+        }
+        if (g != n) return isprime(g) ? g : brent(g);
     }
-
-    auto & operator[](int i) {
-        return mat[i];
-    }
-};
-
-template <typename T>
-Matrix<T> I(int n) {
-    Matrix<T> I(n);
-    for (int i = 0; i < n; i++) I[i][i] = 1;
-    return I;
 }
 
-template <typename T, typename U>
-Matrix<T> matpow(Matrix<T> A, U exponent) {
-    int n = A.r;
-    auto B = I<T>(n);
+template <typename T>
+vector<pair<T, pair<T, int>>> factorize(T n) {
+    unordered_map<T, pair<T, int>> pfs;
 
-    while (exponent) {
-        if (exponent & 1) B = A * B;
-        A = A * A;
-        exponent >>= 1;
+    auto add = [&](T pf) {
+        auto it = pfs.find(pf);
+        if (it == pfs.end()) pfs.emplace(pf, make_pair(pf, 1));
+        else {
+            it->second.first *= pf;
+            it->second.second++;
+        }
+    };
+
+    auto dfs = [&](auto &&self, T m) -> void {
+        if (m < 2) return;
+        if (isprime(m)) {
+            add(m);
+            return;
+        }
+
+        T pf = brent(m);
+        add(pf);
+        self(self, m / pf);
+    };
+    dfs(dfs, n);
+
+    return {pfs.begin(), pfs.end()};
+}
+
+template <typename T>
+pair<T, T> bezout(T a, T b) {
+    if (!a) return {0, 1};
+    auto [x, y] = bezout(b % a, a);
+    return {y - (b / a) * x, x};
+}
+
+template <typename T>
+pair<T, T> chinese_remainder_theorem(T a, T n, T b, T m) {
+    T g = __gcd(m, n);
+    if ((b - a) % g) return {0, -1};
+
+    if (m > n) {
+        swap(a, b);
+        swap(n, m);
     }
-    return B;
+
+    a %= n;
+    b %= m;
+    T lcm = n / g * m;
+
+    n /= g;
+    m /= g;
+    auto [x, y] = bezout(n, m);
+    T r = ((__int128) a * m * y + (__int128) b * n * x) % lcm;
+    if (r < 0) r += lcm;
+    return {r, lcm};
+}
+
+vector<modint> reeds_sloane(const vector<modint> &S) {
+    using U = typename decay<decltype(MOD)>::type;
+    using T = make_signed_t<U>;
+
+    int n = 0;
+    U undo = MOD;
+    auto pfs = factorize(MOD);
+    vector<vector<U>> coeffs;
+    for (auto &[pf, pows] : pfs) {
+        auto [pp, e] = pows;
+        MOD = pp;
+        modint::init();
+
+        vector<U> pw(e, 1);
+        for (int i = 1; i < e; i++) pw[i] = pw[i - 1] * pf;
+
+        vector<vector<modint>> a(e), b(e), a_new(e), b_new(e), a_old(e), b_old(e);
+        vector<modint> theta(e), theta_old(e);
+        vector<int> u(e), u_old(e), r(e);
+        auto normalize = [&](int i, modint d) {
+            if (!d) {
+                theta[i] = 1;
+                u[i] = e;
+                return false;
+            }
+
+            U discrepancy = d();
+            u[i] = 0;
+            while (!(discrepancy % pf)) {
+                discrepancy /= pf;
+                u[i]++;
+            }
+            theta[i] = discrepancy;
+            return true;
+        };
+
+        for (int i = 0; i < e; i++) {
+            a[i] = a_new[i] = {pw[i]};
+            b[i] = {0};
+            b_new[i] = {theta[i] = S[0] * pw[i]};
+            normalize(i, theta[i]);
+        }
+
+        auto L = [&](const auto &a, const auto &b) {
+            auto degree = [&](const auto &poly) {
+                return poly.size() > 1 || (poly.size() == 1 && poly[0]) ? poly.size() - 1 : -1;
+            };
+            return max(degree(a), degree(b) + 1);
+        };
+
+        for (int k = 1; k < S.size(); k++) {
+            for (int g = 0; g < e; g++)
+                if (L(a_new[g], b_new[g]) > L(a[g], b[g])) {
+                    int h = e - 1 - u[g];
+                    a_old[g] = a[h];
+                    b_old[g] = b[h];
+                    theta_old[g] = theta[h];
+                    u_old[g] = u[h];
+                    r[g] = k - 1;
+                }
+
+            a = a_new;
+            b = b_new;
+
+            for (int i = 0; i < e; i++) {
+                modint d = 0;
+                for (int x = 0; x < a[i].size() && x <= k; x++) d += a[i][x] * S[k - x];
+                if (!normalize(i, d)) continue;
+
+                int g = e - 1 - u[i];
+                if (!L(a[g], b[g])) {
+                    if (b_new[i].size() < k + 1) b_new[i].resize(k + 1);
+                    b_new[i][k] += d;
+                } else {
+                    auto c = theta[i] * modint::inv(theta_old[g]);
+                    for (int pow = u[i] - u_old[g]; pow; pow--) c *= pf;
+
+                    if (a_new[i].size() < a_old[g].size() + k - r[g]) a_new[i].resize(a_old[g].size() + k - r[g]);
+                    for (int x = 0; x < a_old[g].size(); x++) a_new[i][x + k - r[g]] -= c * a_old[g][x];
+                    while (!a_new[i].empty() && !a_new[i].back()) a_new[i].pop_back();
+
+                    if (b_new[i].size() < b_old[g].size() + k - r[g]) b_new[i].resize(b_old[g].size() + k - r[g]);
+                    for (int x = 0; x < b_old[g].size(); x++) b_new[i][x + k - r[g]] -= c * b_old[g][x];
+                    while (!b_new[i].empty() && !b_new[i].back()) b_new[i].pop_back();
+                }
+            }
+        }
+
+        coeffs.emplace_back();
+        for (auto c : a_new[0]) coeffs.back().emplace_back(c());
+        n = max(n, (int) coeffs.back().size());
+    }
+    MOD = undo;
+    modint::init();
+
+    vector<modint> A(n - 1);
+    for (int i = 1; i < n; i++) {
+        T r = 0, lcm = 1;
+        for (int j = 0; j < coeffs.size(); j++) {
+            T pp = pfs[j].second.first;
+            tie(r, lcm) = chinese_remainder_theorem(r, lcm, i < coeffs[j].size() ? (T) coeffs[j][i] % pp : 0, pp);
+        }
+        A[i - 1] = -r;
+    }
+    return A;
+}
+
+template <typename T>
+vector<T> berlekamp_massey(const vector<T> &S) {
+    vector<T> B{-1}, C{-1};
+    T b = 1;
+    for (int n = 1; n <= S.size(); n++) {
+        int l = C.size();
+        T d = 0;
+        for (int i = 0; i < l; i++) d += C[i] * S[n - l + i];
+        B.emplace_back(0);
+        if (!d) continue;
+
+        int m = B.size();
+        T f = d / b;
+        if (l < m) {
+            auto temp = C;
+            C.insert(C.begin(), m - l, 0);
+            for (int i = 0; i < m; i++) C[m - 1 - i] -= f * B[m - 1 - i];
+            B = temp;
+            b = d;
+        } else
+            for (int i = 0; i < m; i++) C[l - 1 - i] -= f * B[m - 1 - i];
+    }
+    C.pop_back();
+    reverse(C.begin(), C.end());
+    return C;
+}
+
+template <typename T>
+T kitamasa(const vector<T> &c, const vector<T> &a, long long k) {
+    int n = a.size();
+
+    auto mul = [&](const vector<T> &x, const vector<T> &y) {
+        vector<T> z(2 * n + 1);
+        for (int i = 0; i <= n; i++)
+            for (int j = 0; j <= n; j++) z[i + j] += x[i] * y[j];
+
+        for (int i = 2 * n; i > n; i--)
+            for (int j = 0; j < n; j++) z[i - j - 1] += z[i] * c[j];
+
+        z.resize(n + 1);
+        return z;
+    };
+
+    vector<T> base(n + 1, 0);
+    base[1] = 1;
+    auto pow = [&](vector<T> base, long long exponent) {
+        vector<T> value(n + 1);
+        value[0] = 1;
+        while (exponent) {
+            if (exponent & 1) value = mul(value, base);
+            base = mul(base, base);
+            exponent >>= 1;
+        }
+        return value;
+    };
+    auto value = pow(base, k + 1);
+
+    T kth = 0;
+    for (int i = 0; i < n; i++) kth += value[i + 1] * a[i];
+    return kth;
 }
 
 vector<vector<int>> kmp_automaton(string s) {
@@ -420,19 +630,34 @@ int main() {
     while (t--) {
         long long n;
         string p;
-        cin >> n >> m >> p;
+        cin >> n >> MOD >> p;
 
         modint::init();
 
         int s = p.size();
         auto fsm = kmp_automaton(p);
 
-        Matrix<modint> count(s);
-        for (int i = 0; i < s; i++)
-            for (int c = 0; c < 26; c++)
-                if (fsm[i][c] < s) count[i][fsm[i][c]]++;
+        vector<modint> dp(s), temp(s), a{1};
+        dp[0] = 1;
+        while (a.size() < 2 * s) {
+            fill(temp.begin(), temp.end(), (modint) 0);
+            for (int i = 0; i < s; i++)
+                if (dp[i])
+                    for (int c = 0; c < 26; c++) {
+                        int j = fsm[i][c];
+                        if (j < s) temp[j] += dp[i];
+                    }
+            dp = temp;
+            a.emplace_back(accumulate(dp.begin(), dp.end(), (modint) 0));
+        }
 
-        count = matpow(count, n);
-        cout << modint::pow(26, n) - accumulate(count[0].begin(), count[0].end(), (modint) 0) << "\n";
+        if (n < a.size()) {
+            cout << modint::pow(26, n) - a[n] << "\n";
+            continue;
+        }
+
+        auto c = isprime(MOD) ? berlekamp_massey(a) : reeds_sloane(a);
+        a.resize(c.size());
+        cout << modint::pow(26, n) - kitamasa(c, a, n) << "\n";
     }
 }
