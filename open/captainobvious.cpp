@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -354,12 +354,12 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 }
 
 template <typename T>
-struct MOD {
+struct DynamicMod {
     static inline T value;
 };
 
-auto &m = MOD<unsigned int>::value;
-using modint = MontgomeryModInt<MOD<unsigned int>>;
+auto &MOD = DynamicMod<unsigned int>::value;
+using modint = MontgomeryModInt<DynamicMod<unsigned int>>;
 
 int main() {
     ios::sync_with_stdio(false);
@@ -370,8 +370,8 @@ int main() {
 
     while (t--) {
         int k;
-        cin >> k >> m;
-        
+        cin >> k >> MOD;
+
         modint::init();
 
         vector<modint> p(k);
@@ -389,6 +389,6 @@ int main() {
             for (int j = 0; j < k; j++) a[j] -= a[j + 1] * curr;
         }
 
-        cout << m - inner_product(p.begin(), p.end(), a.begin(), (modint) 0, plus<>(), [&](auto x, auto y) { return x * y; }) << "\n";
+        cout << MOD - inner_product(p.begin(), p.end(), a.begin(), (modint) 0, plus<>(), [&](auto x, auto y) { return x * y; }) << "\n";
     }
 }

@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -342,12 +342,12 @@ U & operator>>(U &stream, BarrettModInt<T> &v) {
 }
 
 template <typename T>
-struct MOD {
+struct DynamicMod {
     static inline T value;
 };
 
-auto &m = MOD<unsigned int>::value;
-using modint = BarrettModInt<MOD<unsigned int>>;
+auto &MOD = DynamicMod<unsigned int>::value;
+using modint = BarrettModInt<DynamicMod<unsigned int>>;
 
 template <typename T>
 struct Point {
@@ -490,7 +490,7 @@ int main() {
     cin.tie(nullptr);
 
     long long a, b, n, x2, y2;
-    cin >> m >> a >> b >> n >> x2 >> y2;
+    cin >> MOD >> a >> b >> n >> x2 >> y2;
 
     if (!n || !~x2 && !~y2) {
         cout << "-1 -1";

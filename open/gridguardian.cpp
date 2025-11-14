@@ -354,12 +354,12 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 }
 
 template <typename T>
-struct MOD {
+struct DynamicMod {
     static inline T value;
 };
 
-auto &p = MOD<unsigned long long>::value;
-using modint = MontgomeryModInt<MOD<unsigned long long>>;
+auto &MOD = DynamicMod<unsigned long long>::value;
+using modint = MontgomeryModInt<DynamicMod<unsigned long long>>;
 
 template <typename T, typename F>
 void fast_superset_transform(int n, vector<T> &v, F &&f) {
@@ -373,7 +373,7 @@ int main() {
     cin.tie(nullptr);
 
     int n, m;
-    cin >> n >> m >> p;
+    cin >> n >> m >> MOD;
 
     if (n & 1 && m & 1) {
         cout << 1;

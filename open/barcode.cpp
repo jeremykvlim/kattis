@@ -342,12 +342,12 @@ U & operator>>(U &stream, BarrettModInt<T> &v) {
 }
 
 template <typename T>
-struct MOD {
+struct DynamicMod {
     static inline T value;
 };
 
-auto &m = MOD<unsigned int>::value;
-using modint = BarrettModInt<MOD<unsigned int>>;
+auto &MOD = DynamicMod<unsigned int>::value;
+using modint = BarrettModInt<DynamicMod<unsigned int>>;
 
 template <typename T>
 T binomial_coefficient_mod_p(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
@@ -380,7 +380,7 @@ int main() {
 
     while (t--) {
         int n;
-        cin >> n >> m;
+        cin >> n >> MOD;
 
         modint::init();
 
@@ -389,7 +389,7 @@ int main() {
             vector<modint> inv(n / 2 + 1, 1);
 
             for (int i = 1; i <= n / 2; i++) {
-                if (i > 1) inv[i] = (m - m / i) * inv[m % i];
+                if (i > 1) inv[i] = (MOD - MOD / i) * inv[MOD % i];
                 fact_inv[i] = inv[i] * fact_inv[i - 1];
             }
 
@@ -397,11 +397,11 @@ int main() {
         };
         prepare();
 
-        auto [fib1, fib2] = fib(n, m);
+        auto [fib1, fib2] = fib(n, MOD);
         modint count = fib1 + fib2;
         if (!(n & 1)) {
             count -= n / 2 + 1;
-            count += binomial_coefficient_mod_p(n, n / 2, m, fact, fact_inv);
+            count += binomial_coefficient_mod_p(n, n / 2, MOD, fact, fact_inv);
         }
 
         cout << count << "\n";

@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -342,19 +342,19 @@ U & operator>>(U &stream, BarrettModInt<T> &v) {
 }
 
 template <typename T>
-struct MOD {
+struct DynamicMod {
     static inline T value;
 };
 
-auto &m = MOD<unsigned int>::value;
-using modint = BarrettModInt<MOD<unsigned int>>;
+auto &MOD = DynamicMod<unsigned int>::value;
+using modint = BarrettModInt<DynamicMod<unsigned int>>;
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     int n;
-    cin >> n >> m;
+    cin >> n >> MOD;
 
     modint::init();
 
@@ -380,7 +380,7 @@ int main() {
             if (!state[u]) {
                 if (self(self, u)) return true;
             } else if (state[u] == 1) return true;
-        
+
         state[v] = 2;
         return false;
     };

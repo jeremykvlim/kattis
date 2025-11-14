@@ -356,21 +356,21 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 }
 
 template <typename T>
-struct MOD {
+struct DynamicMod {
     static inline T value;
 };
 
-auto &p = MOD<unsigned long long>::value;
-using modint = MontgomeryModInt<MOD<unsigned long long>>;
+auto &MOD = DynamicMod<unsigned long long>::value;
+using modint = MontgomeryModInt<DynamicMod<unsigned long long>>;
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     long long x;
-    cin >> x >> p;
+    cin >> x >> MOD;
 
-    if (p == 2) {
+    if (MOD == 2) {
         cout << "0 0";
         exit(0);
     }
@@ -385,13 +385,13 @@ int main() {
         if (pos.find(fact()) == pos.end()) pos[fact()] = i;
     }
 
-    for (int r = sqrt(p - 1) + 1;; r = r << 1 | 1) {
+    for (int r = sqrt(MOD - 1) + 1;; r = r << 1 | 1) {
         modint f = 1;
         for (int i = 1; i <= r; f *= i++) {
             fact = f * x;
             if (i & 1) fact = -fact;
             if (pos.find(fact()) != pos.end()) {
-                cout << pos[fact()] << " " << p - i;
+                cout << pos[fact()] << " " << MOD - i;
                 exit(0);
             }
         }

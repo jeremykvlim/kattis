@@ -342,19 +342,19 @@ U & operator>>(U &stream, BarrettModInt<T> &v) {
 }
 
 template <typename T>
-struct MOD {
+struct DynamicMod {
     static inline T value;
 };
 
-auto &m = MOD<unsigned int>::value;
-using modint = BarrettModInt<MOD<unsigned int>>;
+auto &MOD = DynamicMod<unsigned int>::value;
+using modint = BarrettModInt<DynamicMod<unsigned int>>;
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     int n, M, k;
-    cin >> n >> M >> k >> m;
+    cin >> n >> M >> k >> MOD;
 
     modint::init();
 
