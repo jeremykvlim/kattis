@@ -357,23 +357,23 @@ constexpr unsigned long long MOD = 1e9 + 9;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 template <typename T>
-vector<T> berlekamp_massey(const vector<T> &s) {
+vector<T> berlekamp_massey(const vector<T> &S) {
     vector<T> B{-1}, C{-1};
     T b = 1;
-    for (int e = 1; e <= s.size(); e++) {
+    for (int n = 1; n <= S.size(); n++) {
         int l = C.size();
         T d = 0;
-        for (int i = 0; i < l; i++) d += C[i] * s[e - l + i];
+        for (int i = 0; i < l; i++) d += C[i] * S[n - l + i];
         B.emplace_back(0);
         if (!d) continue;
 
         int m = B.size();
         T f = d / b;
         if (l < m) {
-            auto t = C;
+            auto temp = C;
             C.insert(C.begin(), m - l, 0);
             for (int i = 0; i < m; i++) C[m - 1 - i] -= f * B[m - 1 - i];
-            B = t;
+            B = temp;
             b = d;
         } else
             for (int i = 0; i < m; i++) C[l - 1 - i] -= f * B[m - 1 - i];
