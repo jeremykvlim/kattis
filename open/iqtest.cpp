@@ -358,11 +358,9 @@ using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MO
 
 template <typename T>
 vector<T> berlekamp_massey(const vector<T> &s) {
-    int n = s.size();
-
     vector<T> B{-1}, C{-1};
     T b = 1;
-    for (int e = 1; e <= n; e++) {
+    for (int e = 1; e <= s.size(); e++) {
         int l = C.size();
         T d = 0;
         for (int i = 0; i < l; i++) d += C[i] * s[e - l + i];
