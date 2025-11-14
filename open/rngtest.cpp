@@ -101,31 +101,43 @@ bool isprime(unsigned long long n) {
 }
 
 template <typename M>
-struct ModInt {
-    using T = typename decay<decltype(M::value)>::type;
-    using U = typename conditional<is_same<T, unsigned int>::value, unsigned long long, typename conditional<is_same<T, unsigned long long>::value, unsigned __int128, void>::type>::type;
-    using I = typename conditional<is_same<T, unsigned int>::value, int, typename conditional<is_same<T, unsigned long long>::value, long long, void>::type>::type;
+struct BarrettModInt {
+    using G = int;
+    using H = long long;
+    using I = unsigned int;
+    using J = unsigned long long;
+    using K = unsigned __int128;
 
-    T value;
+    I value;
     static inline bool prime_mod;
+    static inline J inv_mod;
+    static constexpr int bit_length = sizeof(J) * 8;
 
     static void init() {
-        prime_mod = mod() == 998244353 || mod() == (unsigned long long) 1e9 + 7 || mod() == (unsigned long long) 1e9 + 9 || mod() == (unsigned long long) 1e6 + 69 || mod() == 2524775926340780033 || isprime(mod());
+        prime_mod = mod() == 998244353 || mod() == 1e9 + 7 || mod() == 1e9 + 9 || mod() == 1e6 + 69 || isprime(mod());
+        inv_mod = (J) -1 / mod();
     }
 
-    constexpr ModInt() : value() {}
+    constexpr BarrettModInt() : value() {}
 
-    ModInt(const I &x) {
+    template <typename V>
+    BarrettModInt(const V &x) {
         value = normalize(x);
     }
 
-    static T normalize(const I &x) {
-        I v = x;
+    template <typename V>
+    static I normalize(const V &x) {
+        V v = x;
         if (!(-mod() <= x && x < mod())) v = x % mod();
         return v < 0 ? v + mod() : v;
     }
 
-    const T & operator()() const {
+    static I reduce(J v) {
+        H r = (H) (v - (((K) v * inv_mod) >> bit_length) * mod());
+        return r >= mod() ? r - mod() : r;
+    }
+
+    const I & operator()() const {
         return value;
     }
 
@@ -134,28 +146,30 @@ struct ModInt {
         return (V) value;
     }
 
-    constexpr static I mod() {
+    constexpr static H mod() {
         return M::value;
     }
 
-    inline auto & operator+=(const ModInt &v) {
-        if ((I) (value += v.value) >= mod()) value -= mod();
+    inline auto & operator+=(const BarrettModInt &v) {
+        H t = (H) value + v.value;
+        value = t >= mod() ? t - mod() : t;
         return *this;
     }
 
-    inline auto & operator-=(const ModInt &v) {
-        if ((I) (value -= v.value) < 0) value += mod();
+    inline auto & operator-=(const BarrettModInt &v) {
+        H t = (H) value - v.value;
+        value = t < 0 ? t + mod() : t;
         return *this;
     }
 
     template <typename V>
     inline auto & operator+=(const V &v) {
-        return *this += ModInt(v);
+        return *this += BarrettModInt(v);
     }
 
     template <typename V>
     inline auto & operator-=(const V &v) {
-        return *this -= ModInt(v);
+        return *this -= BarrettModInt(v);
     }
 
     auto & operator++() {
@@ -175,33 +189,21 @@ struct ModInt {
     }
 
     auto operator-() const {
-        return (ModInt) 0 - *this;
+        return (BarrettModInt) 0 - *this;
     }
 
     template <typename V = M>
-    typename enable_if<is_same<typename ModInt<V>::T, unsigned int>::value, ModInt>::type &operator*=(const ModInt &v) {
-        value = normalize((U) value * v.value);
+    typename enable_if<is_same<typename BarrettModInt<V>::I, unsigned int>::value, BarrettModInt>::type & operator*=(const BarrettModInt &v) {
+        value = reduce((J) value * v.value);
         return *this;
     }
 
-    template <typename V = M>
-    typename enable_if<is_same<typename ModInt<V>::T, unsigned long long>::value, ModInt>::type &operator*=(const ModInt &v) {
-        value = normalize(mul(value, v.value, mod()));
-        return *this;
-    }
-
-    template <typename V = M>
-    typename enable_if<!is_integral<typename ModInt<V>::T>::value, ModInt>::type &operator*=(const ModInt &v) {
-        value = normalize(value * v.value);
-        return *this;
-    }
-
-    auto & operator/=(const ModInt &v) {
+    auto & operator/=(const BarrettModInt &v) {
         return *this *= inv(v);
     }
 
-    static ModInt pow(ModInt base, T exponent) {
-        ModInt v = 1;
+    static BarrettModInt pow(BarrettModInt base, J exponent) {
+        BarrettModInt v = 1;
         while (exponent) {
             if (exponent & 1) v *= base;
             base *= base;
@@ -210,132 +212,132 @@ struct ModInt {
         return v;
     }
 
-    static ModInt inv(const ModInt &v) {
+    static BarrettModInt inv(const BarrettModInt &v) {
         if (prime_mod) return pow(v, mod() - 2);
 
-        T x = 0, y = 1, a = v.value, m = mod();
+        H x = 0, y = 1, a = v.value, m = mod();
         while (a) {
-            T t = m / a;
+            H t = m / a;
             m -= t * a;
             swap(a, m);
             x -= t * y;
             swap(x, y);
         }
 
-        return (ModInt) x;
+        return (BarrettModInt) x;
     }
 };
 
 template <typename T>
-bool operator==(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+bool operator==(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
     return lhs.value == rhs.value;
 }
 
 template <typename T, typename U>
-bool operator==(const ModInt<T> &lhs, U rhs) {
-    return lhs == ModInt<T>(rhs);
+bool operator==(const BarrettModInt<T> &lhs, U rhs) {
+    return lhs == BarrettModInt<T>(rhs);
 }
 
 template <typename T, typename U>
-bool operator==(U lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) == rhs;
+bool operator==(U lhs, const BarrettModInt<T> &rhs) {
+    return BarrettModInt<T>(lhs) == rhs;
 }
 
 template <typename T>
-bool operator!=(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+bool operator!=(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
     return !(lhs == rhs);
 }
 
 template <typename T, typename U>
-bool operator!=(const ModInt<T> &lhs, U rhs) {
+bool operator!=(const BarrettModInt<T> &lhs, U rhs) {
     return !(lhs == rhs);
 }
 
 template <typename T, typename U>
-bool operator!=(U lhs, const ModInt<T> &rhs) {
+bool operator!=(U lhs, const BarrettModInt<T> &rhs) {
     return !(lhs == rhs);
 }
 
 template <typename T>
-bool operator>(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+bool operator>(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
     return lhs.value > rhs.value;
 }
 
 template <typename T>
-bool operator<(const ModInt<T> &lhs, const ModInt<T> &rhs) {
+bool operator<(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
     return lhs.value < rhs.value;
 }
 
 template <typename T>
-ModInt<T> operator+(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) += rhs;
+BarrettModInt<T> operator+(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
+    return BarrettModInt<T>(lhs) += rhs;
 }
 
 template <typename T, typename U>
-ModInt<T> operator+(const ModInt<T> &lhs, U rhs) {
-    return ModInt<T>(lhs) += rhs;
+BarrettModInt<T> operator+(const BarrettModInt<T> &lhs, U rhs) {
+    return BarrettModInt<T>(lhs) += rhs;
 }
 
 template <typename T, typename U>
-ModInt<T> operator+(U lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) += rhs;
+BarrettModInt<T> operator+(U lhs, const BarrettModInt<T> &rhs) {
+    return BarrettModInt<T>(lhs) += rhs;
 }
 
 template <typename T>
-ModInt<T> operator-(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) -= rhs;
+BarrettModInt<T> operator-(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
+    return BarrettModInt<T>(lhs) -= rhs;
 }
 
 template <typename T, typename U>
-ModInt<T> operator-(const ModInt<T> &lhs, U rhs) {
-    return ModInt<T>(lhs) -= rhs;
+BarrettModInt<T> operator-(const BarrettModInt<T> &lhs, U rhs) {
+    return BarrettModInt<T>(lhs) -= rhs;
 }
 
 template <typename T, typename U>
-ModInt<T> operator-(U lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) -= rhs;
+BarrettModInt<T> operator-(U lhs, const BarrettModInt<T> &rhs) {
+    return BarrettModInt<T>(lhs) -= rhs;
 }
 
 template <typename T>
-ModInt<T> operator*(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) *= rhs;
+BarrettModInt<T> operator*(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
+    return BarrettModInt<T>(lhs) *= rhs;
 }
 
 template <typename T, typename U>
-ModInt<T> operator*(const ModInt<T> &lhs, U rhs) {
-    return ModInt<T>(lhs) *= rhs;
+BarrettModInt<T> operator*(const BarrettModInt<T> &lhs, U rhs) {
+    return BarrettModInt<T>(lhs) *= rhs;
 }
 
 template <typename T, typename U>
-ModInt<T> operator*(U lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) *= rhs;
+BarrettModInt<T> operator*(U lhs, const BarrettModInt<T> &rhs) {
+    return BarrettModInt<T>(lhs) *= rhs;
 }
 
 template <typename T>
-ModInt<T> operator/(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) /= rhs;
+BarrettModInt<T> operator/(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
+    return BarrettModInt<T>(lhs) /= rhs;
 }
 
 template <typename T, typename U>
-ModInt<T> operator/(const ModInt<T> &lhs, U rhs) {
-    return ModInt<T>(lhs) /= rhs;
+BarrettModInt<T> operator/(const BarrettModInt<T> &lhs, U rhs) {
+    return BarrettModInt<T>(lhs) /= rhs;
 }
 
 template <typename T, typename U>
-ModInt<T> operator/(U lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) /= rhs;
+BarrettModInt<T> operator/(U lhs, const BarrettModInt<T> &rhs) {
+    return BarrettModInt<T>(lhs) /= rhs;
 }
 
 template <typename T, typename U>
-U & operator<<(U &stream, const ModInt<T> &v) {
+U & operator<<(U &stream, const BarrettModInt<T> &v) {
     return stream << v();
 }
 
 template <typename T, typename U>
-U & operator>>(U &stream, ModInt<T> &v) {
-    typename make_signed<typename ModInt<T>::T>::type x;
+U & operator>>(U &stream, BarrettModInt<T> &v) {
+    typename make_signed<typename BarrettModInt<T>::I>::type x;
     stream >> x;
-    v = ModInt<T>(x);
+    v = BarrettModInt<T>(x);
     return stream;
 }
 
@@ -344,8 +346,8 @@ struct DynamicMod {
     static inline T value;
 };
 
-auto &MOD = DynamicMod<unsigned long long>::value;
-using modint = ModInt<DynamicMod<unsigned long long>>;
+auto &MOD = DynamicMod<unsigned int>::value;
+using modint = BarrettModInt<DynamicMod<unsigned int>>;
 
 template <typename T>
 T brent(T n) {
