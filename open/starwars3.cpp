@@ -2,16 +2,38 @@
 using namespace std;
 
 template <typename T>
-vector<complex<T>> quadratic_roots(T a, T b, T c) {
-    if (fabs(a) < 1e-8 && fabs(b) < 1e-8) return {};
-    if (fabs(a) < 1e-8) return {(-c / b)};
+T kitamasa(const vector<T> &c, const vector<T> &a, long long k) {
+    int n = a.size();
 
-    complex<T> discriminant(b * b - 4 * a * c, 0);
-    return {(-b + sqrt(discriminant)) / (2 * a), (-b - sqrt(discriminant)) / (2 * a)};
-}
+    auto mul = [&](const vector<T> &x, const vector<T> &y) {
+        vector<T> z(2 * n + 1);
+        for (int i = 0; i <= n; i++)
+            for (int j = 0; j <= n; j++) z[i + j] += x[i] * y[j];
 
-double normal_cdf(double z) {
-    return 0.5 * erfc(-z / sqrt(2));
+        for (int i = 2 * n; i > n; i--)
+            for (int j = 0; j < n; j++) z[i - j - 1] += z[i] * c[j];
+
+        z.resize(n + 1);
+        return z;
+    };
+
+    vector<T> base(n + 1, 0);
+    base[1] = 1;
+    auto pow = [&](vector<T> base, long long exponent) {
+        vector<T> value(n + 1);
+        value[0] = 1;
+        while (exponent) {
+            if (exponent & 1) value = mul(value, base);
+            base = mul(base, base);
+            exponent >>= 1;
+        }
+        return value;
+    };
+    auto value = pow(base, k + 1);
+
+    T kth = 0;
+    for (int i = 0; i < n; i++) kth += value[i + 1] * a[i];
+    return kth;
 }
 
 int main() {
@@ -22,45 +44,34 @@ int main() {
     long double p;
     cin >> n >> p;
 
-    auto buy = floor((long double) (n - 1) / 100);
     if (p == 1) {
-        cout << fixed << setprecision(6) << buy * 5;
+        cout << fixed << setprecision(6) << 5 * floor((long double) (n - 1) / 100);
         exit(0);
     }
 
+    int m = 100;
     auto q = 1 - p;
-    if (n <= 1000) {
-        vector<double> dp1(101, 0), dp2(101, 0), a(101), b(101);
-        while (n--) {
-            a[0] = 1;
-            b[0] = 0;
-            for (int i = 1; i <= 100; i++) {
-                a[i] = q * a[i - 1];
-                b[i] = q * b[i - 1] + p * dp2[i - 1];
-            }
-            dp1[0] = (1 + b[100]) / (1 - a[100]);
-            for (int i = 1; i <= 100; i++) dp1[i] = q * dp1[i - 1] + p * dp2[i - 1];
-            dp2.swap(dp1);
-        }
-        cout << fixed << setprecision(6) << dp2[100] * 5;
+    vector<long double> p_exact(m + 1);
+    p_exact[0] = powl(q, m);
+    for (int k = 1; k <= m; k++) p_exact[k] = p_exact[k - 1] * (m - k + 1) / k * p / q;
+    auto d = 1 - p_exact[0];
+
+    vector<long double> dp(m + 1, 0);
+    for (int i = 1; i <= m; i++) {
+        dp[i] = p_exact[0];
+        for (int k = 1; k < i; k++) dp[i] += p_exact[k] * (1 + dp[i - k]);
+        dp[i] /= d;
+    }
+
+    if (n <= m) {
+        cout << fixed << setprecision(6) << 5 * dp[n];
         exit(0);
     }
 
-    double l = 1, r = 12, m;
-    while (l + 1e-6 < r && l + l * 1e-6 < r) {
-        m = l + (r - l) / 2;
-
-        if (1 - normal_cdf(m) <= 1e-12) r = m;
-        else l = m;
+    vector<long double> c(m), a(m);
+    for (int i = 1; i <= m; i++) {
+        c[i - 1] = p_exact[i] / d;
+        a[i - 1] = dp[i] - i / (m * p);
     }
-
-    auto bound = [&](double m) {
-        return pow(quadratic_roots(p, m * sqrt(p * q), - ((long double) n - 0.5))[0].real(), 2);
-    };
-    buy = max(buy, floorl(bound(m) / 100));
-    for (auto k = buy + 1; k <= ceill(bound(-m) / 100); k++) {
-        auto mu = 100 * k * p, sigma = sqrt(mu * q);
-        buy += normal_cdf(((long double) n - 0.5 - mu) / sigma);
-    }
-    cout << fixed << setprecision(6) << buy * 5;
+    cout << fixed << setprecision(6) << 5 * (kitamasa(c, a, n - 1) + n / (m * p));
 }
