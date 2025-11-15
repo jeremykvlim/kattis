@@ -10,14 +10,14 @@ struct Matrix {
     Matrix(int rows, int cols, int v = 0) : r(rows), c(cols), mat(rows, vector<T>(cols, v)) {}
     Matrix(const vector<vector<T>> &mat) : r(mat.size()), c(mat[0].size()), mat(mat) {}
 
-    friend auto operator*(Matrix<T> &A, Matrix<T> &B) {
-        int r1 = A.r, r2 = B.r, c2 = B.c;
+    friend auto operator*(const Matrix<T> &A, const Matrix<T> &B) {
+        int r1 = A.r, c1 = A.c, c2 = B.c;
 
         Matrix<T> C(r1, c2);
         for (int i = 0; i < r1; i++)
-            for (int j = 0; j < c2; j++)
-                for (int k = 0; k < r2; k++) C[i][j] += A[i][k] * B[k][j];
-
+            for (int k = 0; k < c1; k++)
+                if (A.mat[i][k])
+                    for (int j = 0; j < c2; j++) C.mat[i][j] += A.mat[i][k] * B.mat[k][j];
         return C;
     }
 
