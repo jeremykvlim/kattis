@@ -56,10 +56,9 @@ int main() {
     for (int k = 1; k <= m; k++) p_exact[k] = p_exact[k - 1] * (m - k + 1) / k * p / q;
     auto d = 1 - p_exact[0];
 
-    vector<long double> dp(m + 1, 0);
+    vector<long double> dp(m + 1, p_exact[0]);
     for (int i = 1; i <= m; i++) {
-        dp[i] = p_exact[0];
-        for (int k = 1; k < i; k++) dp[i] += p_exact[k] * (1 + dp[i - k]);
+        for (int k = 1; k < i; k++) dp[i] += p_exact[k] * (dp[i - k] + 1);
         dp[i] /= d;
     }
 
