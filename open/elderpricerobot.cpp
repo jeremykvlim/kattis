@@ -35,13 +35,13 @@ int main() {
     }
 
     vector<int> score(n);
-    FenwickTree<int> fw(p_max + 2, [](int x, int y) { return min(x, y); });
+    FenwickTree<long long> fw(p_max + 2, [](auto x, auto y) { return min(x, y); });
     for (int i = n - 1; ~i; i--) {
         score[i] = fw.range_query(p[i] + 1) - 1;
         fw.update(p[i] + 1, i + 1);
     }
 
     for (int i = 0; i < n; i++)
-        if (score[i] < 0) cout << "infinity\n";
+        if (score[i] < 1) cout << "infinity\n";
         else cout << score[i] - i << "\n";
 }
