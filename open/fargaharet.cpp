@@ -11,15 +11,13 @@ struct Matrix {
     Matrix(const vector<vector<T>> &mat) : r(mat.size()), c(mat[0].size()), mat(mat) {}
 
     friend auto operator*(const Matrix<T> &A, const Matrix<T> &B) {
-        int r1 = A.r, r2 = B.r, c2 = B.c;
+        int r1 = A.r, c1 = A.c, c2 = B.c;
 
         Matrix<T> C(r1, c2);
         for (int i = 0; i < r1; i++)
-            for (int j = 0; j < c2; j++) {
-                C[i][j] = j < c2 - 1 ? 0 : A[i][c2 - 1];
-                for (int k = 0; k < r2; k++) C[i][j] += A[i][k] * B[k][j];
-            }
-
+            for (int k = 0; k < c1; k++)
+                if (A.mat[i][k])
+                    for (int j = 0; j < c2; j++) C.mat[i][j] += A.mat[i][k] * B.mat[k][j];
         return C;
     }
 
@@ -27,7 +25,7 @@ struct Matrix {
         return mat[i];
     }
 
-    const auto & operator[](int i) const {
+    auto & operator[](int i) const {
         return mat[i];
     }
 };
@@ -66,10 +64,15 @@ struct SegmentTree {
             auto temp = update();
 
             for (int c = 0; c < 10; c++) A[c] = update(c, 1);
+
+            M = Matrix<unsigned long long>(11);
             for (int r = 0; r < 10; r++) {
                 M[r][10] = temp[r];
                 for (int c = 0; c < 10; c++) M[r][c] = A[c][r] - temp[r];
             }
+            for (int c = 0; c < 10; c++) M[10][c] = 0;
+            M[10][10] = 1;
+
             return *this;
         }
 
@@ -95,7 +98,7 @@ struct SegmentTree {
         return ST[i];
     }
 
-    SegmentTree(int n, int s, const vector<int> &arr) : n(n), ST(2 * n, I<unsigned long long>(10, 11)) {
+    SegmentTree(int n, int s, const vector<int> &arr) : n(n), ST(2 * n, I<unsigned long long>(11, 11)) {
         size = s;
         a = arr;
         A = Matrix<unsigned long long>(10);
