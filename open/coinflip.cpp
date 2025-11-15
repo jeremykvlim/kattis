@@ -1,6 +1,10 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+double normal_cdf(double z) {
+    return 0.5 * erfc(-z / sqrt(2));
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -26,15 +30,11 @@ int main() {
         exit(0);
     }
 
-    double mean = 0, variance = 0;
+    double mu = 0, variance = 0;
     for (auto pi : p) {
-        mean += pi;
+        mu += pi;
         variance += pi * (1 - pi);
     }
-    auto standard_deviation = sqrt(variance);
-
-    auto cdf = [&](double x) {
-        return 0.5 * (1 + erf((x - mean) / (standard_deviation * sqrt(2))));
-    };
-    for (double k = 0; k <= n; k++) cout << fixed << setprecision(6) << cdf(k + 0.5) - cdf(k - 0.5) << " ";
+    auto sigma = sqrt(variance);
+    for (double k = 0; k <= n; k++) cout << fixed << setprecision(6) << normal_cdf((k + 0.5 - mu) / sigma) - normal_cdf((k - 0.5 - mu) / sigma) << " ";
 }
