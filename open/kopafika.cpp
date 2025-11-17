@@ -29,13 +29,13 @@ struct Treap {
         return i;
     }
 
-    void apply(int i, const long long &k, const long long &v) {
+    void apply(int i, const long long &key, const long long &val) {
         if (!i) return;
 
-        T[i].key.first += k;
-        T[i].val += v;
-        lazy_key[i] += k;
-        lazy_val[i] += v;
+        T[i].key.first += key;
+        T[i].val += val;
+        lazy_key[i] += key;
+        lazy_val[i] += val;
     }
 
     void push(int i) {
