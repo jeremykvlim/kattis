@@ -100,7 +100,8 @@ struct Treap {
         T[i] = key;
 
         auto [l, r] = split(root, key);
-        return root = meld(meld(l, i), r);
+        root = meld(meld(l, i), r);
+        return i;
     }
 
     int erase(const pair<long long, int> &key) {
