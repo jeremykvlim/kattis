@@ -8,7 +8,6 @@ struct Treap {
         int l, r;
         unsigned long long prio;
         pair<long long, int> key;
-
         long long val;
 
         TreapNode() : l(0), r(0), prio(0), key{0, 0}, val(0) {}
@@ -49,7 +48,7 @@ struct Treap {
         }
     }
 
-    pair<long long, int> split(int i, const pair<long long, int> &key) {
+    pair<int, int> split(int i, const pair<long long, int> &key) {
         if (!i) return {0, 0};
 
         push(i);
