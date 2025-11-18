@@ -76,8 +76,7 @@ int main() {
         int a, b;
         cin >> a >> b;
 
-        adj_matrix[a][b] = false;
-        adj_matrix[b][a] = false;
+        adj_matrix[a][b] = adj_matrix[b][a] = false;
     }
 
     vector<LiChaoSegmentTree> lcsts(6, LiChaoSegmentTree(V.size(), V));
@@ -113,10 +112,7 @@ int main() {
     }
 
     vector<int> subseq;
-    while (j != -1) {
-        subseq.emplace_back(j + 1);
-        j = prev[j];
-    }
+    for (; ~j; j = prev[j]) subseq.emplace_back(j + 1);
     reverse(subseq.begin(), subseq.end());
 
     cout << (long long) m << "\n" << subseq.size() << "\n";
