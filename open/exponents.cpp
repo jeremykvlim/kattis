@@ -1,19 +1,20 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename C>
 struct CartesianTree {
     int root;
     vector<array<int, 3>> CT;
 
-    template <typename T, typename C>
-    CartesianTree(const vector<T> &a, const C &&cmp) {
+    template <typename T>
+    CartesianTree(const vector<T> &a) {
         int n = a.size();
         CT.resize(n, {0, 0, 0});
 
         for (int i = 1; i < n; i++) {
             auto &[l, r, p] = CT[i];
             p = i - 1;
-            while (cmp(a[p], a[i])) p = CT[p][2];
+            while (C()(a[p], a[i])) p = CT[p][2];
             l = CT[p][1];
             CT[p][1] = CT[l][2] = i;
         }
@@ -55,7 +56,7 @@ int main() {
         return v >> min(31, exponent);
     };
 
-    CartesianTree ct1(b, less<>());
+    CartesianTree<less<>> ct1(b);
     vector<int> dp_up(n);
     auto calc_l = [&](auto &ct, int i) {
         auto [l, r, p] = ct[i];
@@ -109,7 +110,7 @@ int main() {
         }
     }
 
-    CartesianTree ct2(b, less_equal<>());
+    CartesianTree<less_equal<>> ct2(b);
     fill(dp_up.begin(), dp_up.end(), 0);
     dp1(dp1, ct2, ct2.root);
 
