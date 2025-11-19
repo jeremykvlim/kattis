@@ -104,21 +104,17 @@ struct LinkCutTree : SplayTree {
         ST[i].family[2] = j;
     }
 
-    void cut(int i) {
+    void cut(int i, int j) {
+        reroot(j);
         access(i);
-        ST[i].family[0] = ST[ST[i].family[0]].family[2] = 0;
+        ST[i].family[0] = ST[j].family[2] = 0;
         pull(i);
     }
 
-    void cut(int i, int j) {
-        reroot(i);
-        cut(j);
-    }
-
     long long path_sum(int i, int j) {
-        reroot(i);
-        access(j);
-        return ST[j].sum;
+        reroot(j);
+        access(i);
+        return ST[i].sum;
     }
 };
 
@@ -161,18 +157,19 @@ int main() {
 
         if (k) p += s1;
         auto r = p % both, hits = p / both * 2 - k;
-        if (nodes[r].count(hits)) return nodes[r][hits];
+
+        auto it1 = nodes[r].lower_bound(hits);
+        if (it1 != nodes[r].end() && it1->first == hits) return it1->second;
 
         int i = count++;
-        nodes[r][hits] = i;
+        it1 = nodes[r].emplace_hint(it1, hits, i);
         cycles[i] = {r, hits};
 
-        auto it1 = nodes[r].upper_bound(hits);
-        int j = it1 == nodes[r].end() ? 2 : it1->second;
+        auto it2 = next(it1);
+        int j = it2 == nodes[r].end() ? 2 : it2->second;
         unite(i, j);
 
-        auto it2 = nodes[r].lower_bound(hits);
-        int h = it2 == nodes[r].begin() ? 0 : prev(it2)->second;
+        int h = it1 == nodes[r].begin() ? 0 : prev(it1)->second;
         if (h && !haze[h]) unite(h, i);
         return i;
     };
