@@ -100,16 +100,19 @@ struct LinkCutTree : SplayTree {
         ST[i].family[2] = j;
     }
 
-    void cut(int i, int j) {
+    void split(int i, int j) {
         reroot(j);
         access(i);
+    }
+
+    void cut(int i, int j) {
+        split(i, j);
         ST[i].family[0] = ST[j].family[2] = 0;
         pull(i);
     }
 
     vector<int> path(int i, int j) {
-        reroot(i);
-        access(j);
+        split(i, j);
         vector<int> path;
         auto dfs = [&](auto &&self, int v) -> void {
             if (!v) return;
@@ -118,7 +121,7 @@ struct LinkCutTree : SplayTree {
             if (ST[v].value != -1) path.emplace_back(ST[v].value);
             self(self, ST[v].family[1]);
         };
-        dfs(dfs, j);
+        dfs(dfs, i);
         return path;
     }
 };
@@ -150,17 +153,15 @@ pair<vector<int>, vector<bool>> kruskal(int n, vector<array<int, 4>> edges) {
 
     vector<int> mst;
     vector<bool> in_mst(edges.size(), false);
-    for (auto [w, u, v, i] : edges) {
+    for (auto [w, u, v, i] : edges)
         if (dsu.unite(u, v)) {
             mst.emplace_back(i);
             in_mst[i] = true;
             if (mst.size() == n - 1) break;
         }
-    }
 
     return {mst, in_mst};
 }
-
 template <typename T>
 vector<complex<T>> quadratic_roots(T a, T b, T c) {
     if (fabs(a) < 1e-8 && fabs(b) < 1e-8) return {};

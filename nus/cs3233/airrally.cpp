@@ -104,16 +104,19 @@ struct LinkCutTree : SplayTree {
         ST[i].family[2] = j;
     }
 
-    void cut(int i, int j) {
+    void split(int i, int j) {
         reroot(j);
         access(i);
+    }
+
+    void cut(int i, int j) {
+        split(i, j);
         ST[i].family[0] = ST[j].family[2] = 0;
         pull(i);
     }
 
     long long path_sum(int i, int j) {
-        reroot(j);
-        access(i);
+        split(i, j);
         return ST[i].sum;
     }
 };
