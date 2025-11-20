@@ -1,52 +1,172 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct DisjointSets {
-    vector<int> sets;
+struct SplayTree {
+    struct SplayNode {
+        array<int, 3> family;
+        bool flip, used;
+        int base, aggregate, count;
 
-    int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
+        SplayNode() : family{0, 0, 0}, flip(false), used(false), base(-1), aggregate(-1), count(0) {}
+    };
 
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            return true;
+    vector<SplayNode> ST;
+
+    SplayTree(int n, int m, const auto &edges) : ST(n + m + 1) {
+        for (int i = 1; i <= n; i++) {
+            ST[i].base = ST[i].aggregate = -1e9;
+            ST[i].used = true;
         }
-        return false;
+        for (auto [w, i, u, v] : edges) ST[i].base = ST[i].aggregate = w;
     }
 
-    DisjointSets(int n) : sets(n) {
-        iota(sets.begin(), sets.end(), 0);
+    auto & operator[](int i) {
+        return ST[i];
+    }
+
+    void pull(int i) {
+        if (!i) return;
+        auto [l, r, p] = ST[i].family;
+        ST[i].aggregate = ST[i].base;
+        ST[i].count = !ST[i].used;
+        if (ST[i].aggregate < ST[l].aggregate) {
+            ST[i].aggregate = ST[l].aggregate;
+            ST[i].count = ST[l].count;
+        } else if (ST[i].aggregate == ST[l].aggregate) ST[i].count += ST[l].count;
+
+        if (ST[i].aggregate < ST[r].aggregate) {
+            ST[i].aggregate = ST[r].aggregate;
+            ST[i].count = ST[r].count;
+        } else if (ST[i].aggregate == ST[r].aggregate) ST[i].count += ST[r].count;
+    }
+
+    void flip(int i) {
+        if (!i) return;
+        auto &[l, r, p] = ST[i].family;
+        swap(l, r);
+        ST[i].flip ^= true;
+    }
+
+    void push(int i) {
+        if (!i) return;
+        if (ST[i].flip) {
+            auto [l, r, p] = ST[i].family;
+            if (l) flip(l);
+            if (r) flip(r);
+            ST[i].flip = false;
+        }
+    }
+
+    void splay(int i) {
+        auto root = [&](int i) {
+            auto [l, r, p] = ST[ST[i].family[2]].family;
+            return !i || l != i && r != i;
+        };
+
+        auto child = [&](int i, int parent) { return ST[parent].family[1] == i; };
+
+        auto rotate = [&](int i) {
+            int j = ST[i].family[2], k = ST[j].family[2];
+            if (!root(j)) ST[k].family[child(j, k)] = i;
+
+            int c = child(i, j), s = ST[j].family[c] = ST[i].family[c ^ 1];
+            if (s) ST[s].family[2] = j;
+
+            ST[i].family[c ^ 1] = j;
+            ST[i].family[2] = k;
+            ST[j].family[2] = i;
+            pull(j);
+        };
+
+        auto propagate = [&](auto &&self, int i) -> void {
+            if (!root(i)) self(self, ST[i].family[2]);
+            push(i);
+        };
+
+        propagate(propagate, i);
+        while (!root(i)) {
+            int j = ST[i].family[2], k = ST[j].family[2];
+            if (!root(j)) rotate(child(i, j) != child(j, k) ? i : j);
+            rotate(i);
+        }
+        pull(i);
+    }
+
+    int subtree_min(int i) {
+        while (ST[i].family[0]) {
+            push(i);
+            i = ST[i].family[0];
+        }
+        push(i);
+        return i;
     }
 };
 
-vector<int> tarjan(int n, vector<vector<pair<int, int>>> &adj_list, vector<int> &sources) {
-    static vector<int> order(n + 1, 0), low(n + 1, 0);
-    static int count = 0;
-    vector<bool> visited(n + 1, false);
-    vector<int> bridges;
+struct LinkCutTree : SplayTree {
+    LinkCutTree(int n, int m, const auto &edges) : SplayTree(n, m, edges) {}
 
-    auto dfs = [&](auto &&self, int v, int prev = -1) -> void {
-        order[v] = low[v] = ++count;
-        visited[v] = true;
+    void access(int i) {
+        for (int u = 0, v = i; v; u = v, v = ST[v].family[2]) {
+            splay(v);
+            ST[v].family[1] = u;
+            pull(v);
+        }
+        splay(i);
+    }
 
-        for (auto [u, i] : adj_list[v])
-            if (i != prev) {
-                if (!visited[u]) {
-                    self(self, u, i);
-                    low[v] = min(low[v], low[u]);
-                    if (low[u] > order[v]) bridges.emplace_back(i);
-                } else low[v] = min(low[v], order[u]);
+    int find(int i) {
+        access(i);
+        i = subtree_min(i);
+        splay(i);
+        return i;
+    }
+
+    void reroot(int i) {
+        access(i);
+        flip(i);
+        pull(i);
+    }
+
+    void link(int i, int j) {
+        reroot(i);
+        ST[i].family[2] = j;
+    }
+
+    void split(int i, int j) {
+        reroot(j);
+        access(i);
+    }
+
+    void cut(int i, int j) {
+        split(i, j);
+        ST[i].family[0] = ST[j].family[2] = 0;
+        pull(i);
+    }
+
+    int count_path_max(int i) {
+        if (!ST[i].count) return 0;
+        int count = 0;
+        auto dfs = [&](auto &&self, int v) -> void {
+            if (!v) return;
+            auto [l, r, p] = ST[v].family;
+            if (l && ST[l].aggregate == ST[i].aggregate && ST[l].count) self(self, l);
+            if (r && ST[r].aggregate == ST[i].aggregate && ST[r].count) self(self, r);
+            if (!ST[v].used && ST[v].base == ST[i].aggregate) {
+                ST[v].used = true;
+                count++;
             }
-    };
+            pull(v);
+        };
+        dfs(dfs, i);
+        return count;
+    }
 
-    for (int v : sources)
-        if (!visited[v]) dfs(dfs, v);
-
-    return bridges;
-}
+    int query(int i, int j, int w) {
+        split(i, j);
+        if (ST[i].aggregate < w) return 1;
+        return count_path_max(i) + 1;
+    }
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -57,55 +177,18 @@ int main() {
 
     vector<array<int, 4>> edges(m);
     for (int i = 0; i < m; i++) {
-        int u, v, w;
-        cin >> u >> v >> w;
+        cin >> edges[i][2] >> edges[i][3] >> edges[i][0];
 
-        edges[i] = {w, u, v, i};
+        edges[i][1] = i + n + 1;
     }
     sort(edges.begin(), edges.end());
 
-    DisjointSets dsu(n + 1);
-    vector<bool> heavy(m, false);
-    vector<vector<pair<int, int>>> adj_list(n + 1);
-    for (int i = 0, j = 1; i < m; i = j++) {
-        while (j < m && edges[i][0] == edges[j][0]) j++;
-
-        vector<int> sources;
-        vector<array<int, 3>> temp;
-        for (int k = i; k < j; k++) {
-            auto [w, u, v, e] = edges[k];
-
-            int u_set = dsu.find(u), v_set = dsu.find(v);
-            if (u_set == v_set) heavy[e] = true;
-            else {
-                sources.emplace_back(u_set);
-                sources.emplace_back(v_set);
-                temp.push_back({u_set, v_set, e});
-            }
-        }
-
-        if (!sources.empty()) {
-            sort(sources.begin(), sources.end());
-            sources.erase(unique(sources.begin(), sources.end()), sources.end());
-
-            for (int k = 0; k < temp.size(); k++) {
-                auto [u, v, e] = temp[k];
-
-                adj_list[u].emplace_back(v, k);
-                adj_list[v].emplace_back(u, k);
-            }
-
-            auto bridges = tarjan(n, adj_list, sources);
-            sort(bridges.begin(), bridges.end());
-
-            for (int k = 0; k < temp.size(); k++)
-                if (!binary_search(bridges.begin(), bridges.end(), k)) heavy[temp[k][2]] = true;
-
-            for (int v : sources) adj_list[v].clear();
-        }
-
-        for (int k = i; k < j; k++) dsu.unite(edges[k][1], edges[k][2]);
-    }
-
-    cout << count_if(heavy.begin(), heavy.end(), [&](bool h) { return h; });
+    LinkCutTree lct(n, m, edges);
+    int heavy = 0;
+    for (auto [w, i, u, v] : edges)
+        if (lct.find(u) != lct.find(v)) {
+            lct.link(u, i);
+            lct.link(i, v);
+        } else heavy += lct.query(u, v, w);
+    cout << heavy;
 }
