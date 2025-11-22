@@ -36,7 +36,7 @@ tuple<T, T, T> extended_gcd(const T &a, const T &b) {
             auto round_div = [&](auto part) {
                 return (part >= 0) ? (part + denom / 2) / denom : (part - denom / 2) / denom;
             };
-            return complex<long long>(round_div(numer.real()), round_div(numer.imag()));
+            return (T) {round_div(numer.real()), round_div(numer.imag())};
         };
         auto q = div(x, y), r = x - q * y;
         return {q, r};
