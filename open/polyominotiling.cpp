@@ -25,7 +25,7 @@ pair<int, int> gambini_vuillon(string &b) {
         return 'l';
     };
     int PS = 0, PH = 0;
-    for (int i = 1; i < n; i++) {
+    for (int i = 1; i < n; i++)
         if (b[0] == bar(b[i])) {
             int x1 = 0, y1 = 1, x2 = i, y2 = i + 1;
             while (b[x1 - 1 + n] == bar(b[y2 + n])) {
@@ -37,7 +37,7 @@ pair<int, int> gambini_vuillon(string &b) {
                 x2--;
             }
             int m = x2 - y1;
-            if (m - n != x1 - y2 || m <= 0) continue;
+            if (m - n != x1 - y2 || m < 1) continue;
 
             auto U = b.substr(y1 + n, m), V = b.substr(y2 + n, m);
             PS += equal(U.begin(), U.end(), V.rbegin(), [&](const char &c1, const char &c2) { return c1 == bar(c2); });
@@ -57,7 +57,6 @@ pair<int, int> gambini_vuillon(string &b) {
                 }
             }
         }
-    }
     return {PS, PH};
 }
 
