@@ -27,13 +27,6 @@ string longest_common_subsequence(const string &a, const string &b) {
         return dp;
     };
 
-    auto pref_dp = [&](const auto &dp, int m) {
-        vector<int> pref(m + 1, 0);
-        for (int i = 0, j = 0; i < dp.size(); i++)
-            for (int b = 0; b < 64 && j < m; b++, j++) pref[j + 1] = pref[j] + ((dp[i] >> b) & 1);
-        return pref;
-    };
-
     auto hirschberg = [&](auto &&self, const string &a, int al, int ar, const string &b, int bl, int br) {
         if (al >= ar || bl >= br) return;
 
@@ -47,7 +40,14 @@ string longest_common_subsequence(const string &a, const string &b) {
         auto b_rev = b.substr(bl, len_b);
         reverse(b_rev.begin(), b_rev.end());
 
-        auto pref = pref_dp(dp(a, al, am, masks(b, bl, br)), len_b), pref_rev = pref_dp(dp(a_rev, 0, len_a, masks(b_rev, 0, len_b)), len_b);
+        auto pref_dp = [&](const auto &dp) {
+            vector<int> pref(len_b + 1, 0);
+            for (int i = 0, j = 0; i < dp.size(); i++)
+                for (int b = 0; b < 64 && j < len_b; b++, j++) pref[j + 1] = pref[j] + ((dp[i] >> b) & 1);
+            return pref;
+        };
+
+        auto pref = pref_dp(dp(a, al, am, masks(b, bl, br))), pref_rev = pref_dp(dp(a_rev, 0, len_a, masks(b_rev, 0, len_b)));
         int k = 0;
         for (int i = 0, longest = -1; i <= len_b; i++) {
             int len = pref[i] + pref_rev[len_b - i];
