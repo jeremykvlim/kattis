@@ -13,7 +13,7 @@ string longest_common_subsequence(const string &a, const string &b) {
 
     auto dp = [&](const string &s, int l, int r, const auto &masks) {
         int w = masks[0].size();
-        vector<unsigned long long> dp(w, 0), x(w), y(w), z(w);
+        vector<unsigned long long> dp(w, 0);
         for (int k = l; k < r; k++) {
             int pos = s[k] - 'a';
             bool carry = true, borrow = false;
