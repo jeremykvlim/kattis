@@ -16,21 +16,13 @@ string longest_common_subsequence(const string &a, const string &b) {
         vector<unsigned long long> dp(w, 0), x(w), y(w), z(w);
         for (int k = l; k < r; k++) {
             int pos = s[k] - 'a';
-            for (int i = 0; i < w; i++) x[i] = dp[i] | masks[pos][i];
-
-            bool carry = true;
+            bool carry = true, borrow = false;
             for (int i = 0; i < w; i++) {
-                y[i] = (dp[i] << 1) | carry;
+                auto m1 = dp[i] | masks[pos][i], m2 = (dp[i] << 1) | carry;
                 carry = dp[i] >> 63;
+                dp[i] = m1 & ~(m1 - m2 - borrow);
+                borrow = m1 < m2 + borrow;
             }
-
-            bool borrow = false;
-            for (int i = 0; i < w; i++) {
-                z[i] = x[i] - y[i] - borrow;
-                borrow = (x[i] < y[i] + borrow);
-            }
-
-            for (int i = 0; i < w; i++) dp[i] = x[i] & ~z[i];
         }
         return dp;
     };
