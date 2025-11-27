@@ -13,6 +13,7 @@ vector<int> duval(const vector<int> &s) {
 
         for (; i <= k; i += j - k) factors.emplace_back(i);
     }
+    factors.emplace_back(n);
     return factors;
 }
 
@@ -35,7 +36,6 @@ int main() {
         auto temp = seqs[i];
         for (int &e : temp) e = -e;
         auto factors = duval(temp);
-        factors.emplace_back(L);
         for (int j = 0; j < factors.size() - 1; j++) f.push_back({i, factors[j], factors[j + 1]});
     }
     sort(f.begin(), f.end(), [&](const auto &a1, const auto &a2) {
