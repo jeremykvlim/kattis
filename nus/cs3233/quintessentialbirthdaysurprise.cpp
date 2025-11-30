@@ -3,12 +3,12 @@ using namespace std;
 
 struct LiChaoSegmentTree {
     struct Function {
-        __int128 m, c;
+        long long m, c;
         int i;
 
-        Function(__int128 m = 0, __int128 c = -1e20, int i = -1) : m(m), c(c), i(i) {}
+        Function(long long m = 0, long long c = -1e10, int i = -1) : m(m), c(c), i(i) {}
 
-        __int128 operator()(long long x) {
+        long long operator()(long long x) {
             return m * x + c;
         }
     };
@@ -21,20 +21,25 @@ struct LiChaoSegmentTree {
     }
 
     void insert(int i, int l, int r, Function f) {
+        bool left = f(xs[l]) > ST[i](xs[l]);
+        if (l + 1 == r) {
+            if (left) ST[i] = f;
+            return;
+        }
+
         int m = midpoint(l, r);
-        bool left = f(xs[l]) > ST[i](xs[l]), mid = f(xs[m]) > ST[i](xs[m]);
+        bool mid = f(xs[m]) > ST[i](xs[m]);
         if (mid) swap(f, ST[i]);
 
-        if (l + 1 == r) return;
         if (left != mid) insert(i << 1, l, m, f);
         else insert(i << 1 | 1, m, r, f);
     }
 
-    pair<__int128, int> query(long long x) {
+    pair<long long, int> query(long long x) {
         return query(1, lower_bound(xs.begin(), xs.end(), x) - xs.begin(), 0, n);
     }
 
-    pair<__int128, int> query(int i, int pos, int l, int r) {
+    pair<long long, int> query(int i, int pos, int l, int r) {
         if (l + 1 == r) return {ST[i](xs[pos]), ST[i].i};
 
         int m = midpoint(l, r);
@@ -82,12 +87,12 @@ int main() {
     vector<LiChaoSegmentTree> lcsts(6, LiChaoSegmentTree(V.size(), V));
     vector<int> prev(n, -1);
     int j = -1;
-    __int128 m = -1e20;
+    long long m = -1e10;
     for (int i = 0; i < n; i++) {
         auto [t, v, e] = events[i];
 
         int k = -1;
-        __int128 satisfaction = -1e20;
+        long long satisfaction = -1e10;
         for (int d = 1; d <= 5; d++)
             if (adj_matrix[d][e]) {
                 auto [s, l] = lcsts[d].query(v);
@@ -115,6 +120,6 @@ int main() {
     for (; ~j; j = prev[j]) subseq.emplace_back(j + 1);
     reverse(subseq.begin(), subseq.end());
 
-    cout << (long long) m << "\n" << subseq.size() << "\n";
+    cout << m << "\n" << subseq.size() << "\n";
     for (int i : subseq) cout << i << " ";
 }
