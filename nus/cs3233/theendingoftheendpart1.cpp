@@ -125,16 +125,38 @@ T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
     return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
-template <typename T>
-void add(deque<Point<T>> &half_hull, Point<T> p, bool collinear = false) {
-    auto clockwise = [&]() {
-        T cross_product = cross(half_hull[1], half_hull[0], p);
-        return collinear ? cross_product <= 0 : cross_product < 0;
-    };
+template <typename T, int sign = -1, bool collinear = false>
+struct MonotonicHull {
+    deque<Point<T>> dq;
 
-    while (half_hull.size() > 1 && clockwise()) half_hull.pop_front();
-    half_hull.emplace_front(p);
-}
+    bool violates(const auto &a, const auto &b, const auto &c) {
+        auto cp = cross(a, b, c);
+        if constexpr (sign < 0) cp = -cp;
+        return collinear ? cp >= 0 : cp > 0;
+    }
+
+    void add(const auto &p) {
+        while (dq.size() > 1 && violates(dq[1], dq[0], p)) dq.pop_front();
+        dq.emplace_front(p);
+    }
+
+    T query(auto q) {
+        auto f = [&](const auto &p) {
+            return p.x * q.x + p.y * q.y;
+        };
+
+        while (dq.size() > 1 && f(dq[dq.size() - 1]) >= f(dq[dq.size() - 2])) dq.pop_back();
+        return dq[dq.size() - 1].x;
+    }
+
+    auto & operator[](int i) {
+        return dq[i];
+    }
+
+    const auto & operator[](int i) const {
+        return dq[i];
+    }
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -143,27 +165,40 @@ int main() {
     int r, c;
     cin >> r >> c;
 
-    vector<Point<long long>> e(r), n(c);
-    auto read = [](vector<Point<long long>> &d, int size) {
-        for (int i = 0; i < size; i++) {
-            long long s;
-            cin >> s;
+    long long prev;
+    cin >> prev;
 
-            d[i] = {i, s};
+    vector<Point<__int128>> mono;
+    while (r-- > 1) {
+        long long l;
+        cin >> l;
+
+        mono.push_back({prev - l, 1});
+        while (mono.size() > 1 && cross(mono[mono.size() - 2], mono.back()) < 0) {
+            auto p = mono.back();
+            mono.pop_back();
+
+            mono.back() += p;
         }
-    };
-    read(e, r);
-    read(n, c);
+        prev = l;
+    }
 
-    deque<Point<long long>> east, north;
-    for (auto p : e) add(east, p);
-    for (auto p : n) add(north, p);
+    MonotonicHull<long long> hull;
+    for (int i = 1; i <= c; i++) {
+        long long d;
+        cin >> d;
 
-    vector<pair<Point<long long>, char>> route;
-    for (int i = east.size() - 1; i; i--) route.emplace_back(east[i - 1] - east[i], 'N');
-    for (int i = north.size() - 1; i; i--) route.emplace_back(north[i - 1] - north[i], 'E');
-    sort(route.begin(), route.end(), [&](auto p1, auto p2) { return cross(p1.first, p2.first) > 0; });
+        hull.add(Point((long long) i, d));
+    }
 
-    for (auto [point, direction] : route)
-        while (point.x--) cout << direction;
+    string s;
+    int col = 1;
+    for (auto q : mono) {
+        auto x = hull.query(q);
+        if (x > col) s.append(x - col, 'E');
+        col = x;
+        s.append(q.y, 'N');
+    }
+    if (col < c) s.append(c - col, 'E');
+    cout << s;
 }
