@@ -20,11 +20,16 @@ struct LiChaoSegmentTree {
     }
 
     void insert(int i, int l, int r, Function f) {
+        bool left = f(l) < ST[i](l);
+        if (l + 1 == r) {
+            if (left) ST[i] = f;
+            return;
+        }
+
         int m = midpoint(l, r);
-        bool left = f(l) < ST[i](l), mid = f(m) < ST[i](m);
+        bool mid = f(m) < ST[i](m);
         if (mid || f.m == ST[i].m && (f.xr > ST[i].xr || f.c < ST[i].c)) swap(f, ST[i]);
 
-        if (l + 1 == r) return;
         if (left != mid) insert(i << 1, l, m, f);
         else insert(i << 1 | 1, m, r, f);
     }
