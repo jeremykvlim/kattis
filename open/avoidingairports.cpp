@@ -120,16 +120,42 @@ T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
     return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
-template <typename T>
-void add(deque<Point<T>> &half_hull, Point<T> p, bool collinear = false) {
-    auto clockwise = [&]() {
-        T cross_product = cross(half_hull[1], half_hull[0], p);
-        return collinear ? cross_product <= 0 : cross_product < 0;
-    };
+template <typename T, int sign = -1, bool collinear = false>
+struct MonotonicHull {
+    deque<Point<T>> dq;
 
-    while (half_hull.size() > 1 && clockwise()) half_hull.pop_front();
-    half_hull.emplace_front(p);
-}
+    bool violates(const auto &a, const auto &b, const auto &c) {
+        auto cp = cross(a, b, c);
+        if constexpr (sign < 0) cp = -cp;
+        return collinear ? cp >= 0 : cp > 0;
+    }
+
+    void add(const auto &p) {
+        while (dq.size() > 1 && violates(dq[1], dq[0], p)) dq.pop_front();
+        dq.emplace_front(p);
+    }
+
+    T query(T x) {
+        auto f = [&](const auto &p) {
+            return p.x * x + p.y;
+        };
+
+        while (dq.size() > 1 && f(dq[dq.size() - 1]) >= f(dq[dq.size() - 2])) dq.pop_back();
+        return f(dq[dq.size() - 1]);
+    }
+
+    bool empty() const {
+        return dq.empty();
+    }
+
+    auto & operator[](int i) {
+        return dq[i];
+    }
+
+    const auto & operator[](int i) const {
+        return dq[i];
+    }
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -138,38 +164,30 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<pair<int, int>> edges(m);
-    vector<tuple<long long, int, bool>> times(2 * m);
+    vector<int> indices(1e6 + 1, -1);
+    vector<array<int, 4>> flights(m);
     for (int i = 0; i < m; i++) {
-        int a, b, s, e;
+        auto &[a, b, s, e] = flights[i];
         cin >> a >> b >> s >> e;
 
-        edges[i] = {a, b};
-        times[2 * i] = {s, i, false};
-        times[2 * i + 1] = {e, i, true};
+        indices[s] = indices[e] = i;
     }
-    sort(times.begin(), times.end(), [](auto t1, auto t2) { return get<0>(t1) != get<0>(t2) ? get<0>(t1) < get<0>(t2) : get<2>(t1) < get<2>(t2); });
 
-    vector<long long> dp(m, LLONG_MAX);
-    vector<deque<Point<long long>>> half_hulls(n + 1);
-    half_hulls[1].emplace_back(0, 0);
+    vector<long long> dp(m + 1, LLONG_MAX);
+    vector<MonotonicHull<long long, 1, true>> hull(n + 1);
+    hull[1].add(Point(0LL, 0LL));
     auto sum = LLONG_MAX;
-    for (auto [t, i, end] : times) {
-        auto [u, v] = edges[i];
-        if (end) {
-            if (dp[i] == LLONG_MAX) continue;
+    for (int t = 0; t <= 1e6; t++) {
+        int i = indices[t];
+        if (!~i) continue;
 
-            add(half_hulls[v], {2 * t, dp[i] + t * t});
-        } else {
-            auto f = [&](auto p) {
-                return -p.x * t + p.y;
-            };
-            while (half_hulls[u].size() > 1 && f(half_hulls[u].back()) >= f(half_hulls[u][half_hulls[u].size() - 2])) half_hulls[u].pop_back();
-
-            if (!half_hulls[u].empty()) dp[i] = min(dp[i], t * t + f(half_hulls[u].back()));
+        auto [a, b, s, e] = flights[i];
+        if (s == t) {
+            if (!hull[a].empty()) dp[i] = hull[a].query(s) + (long long) s * s;
+            if (b == n) sum = min(sum, dp[i]);
         }
 
-        if (v == n) sum = min(sum, dp[i]);
+        if (e == t && dp[i] != LLONG_MAX) hull[b].add(Point(-2LL * e, dp[i] + (long long) e * e));
     }
 
     cout << sum;
