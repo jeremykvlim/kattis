@@ -1,25 +1,28 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+struct AffineFunction {
+    T m, c;
+    int xr;
+
+    AffineFunction(T m = 0, T c = 1e18, int xr = -1) : m(m), c(c), xr(xr) {}
+
+    T operator()(T x) {
+        return x > xr ? 1e18 : m * x + c;
+    }
+};
+
+template <typename T>
 struct LiChaoSegmentTree {
-    struct Function {
-        long long m, c;
-        int xr;
-
-        Function(long long m = 0, long long c = 1e18, int xr = -1) : m(m), c(c), xr(xr) {}
-
-        long long operator()(int x) {
-            return x > xr ? 1e18 : m * x + c;
-        }
-    };
     int n;
-    vector<Function> ST;
+    vector<AffineFunction<T>> ST;
 
-    void insert(Function f) {
+    void insert(AffineFunction<T> f) {
         insert(1, 0, n, f);
     }
 
-    void insert(int i, int l, int r, Function f) {
+    void insert(int i, int l, int r, AffineFunction<T> f) {
         bool left = f(l) < ST[i](l);
         if (l + 1 == r) {
             if (left) ST[i] = f;
@@ -34,11 +37,11 @@ struct LiChaoSegmentTree {
         else insert(i << 1 | 1, m, r, f);
     }
 
-    long long query(int x) {
+    T query(int x) {
         return query(1, x, 0, n);
     }
 
-    long long query(int i, int x, int l, int r) {
+    T query(int i, int x, int l, int r) {
         if (l + 1 == r) return ST[i](x);
 
         int m = midpoint(l, r);
@@ -102,7 +105,7 @@ int main() {
     vector<vector<tuple<int, long long, int>>> funcs(n + 1);
     vector<long long> dp(n + 1, 1e18);
     dp[0] = 0;
-    vector<LiChaoSegmentTree> lcsts(31, n + 1);
+    vector<LiChaoSegmentTree<long long>> lcsts(31, n + 1);
     for (int xl = 0; xl <= n; xl++) {
         if (xl) {
             for (auto [slope, y_intercept, xr] : funcs[xl]) lcsts[slope].insert({slope, y_intercept, xr});
