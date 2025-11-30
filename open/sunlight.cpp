@@ -125,16 +125,33 @@ T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
     return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
-template <typename T>
-void add(deque<Point<T>> &half_hull, Point<T> p, bool collinear = false) {
-    auto clockwise = [&]() {
-        T cross_product = cross(half_hull[1], half_hull[0], p);
-        return collinear ? cross_product <= 0 : cross_product < 0;
-    };
+template <typename T, int sign = -1, bool collinear = false>
+struct MonotonicHull {
+    deque<T> dq;
 
-    while (half_hull.size() > 1 && clockwise()) half_hull.pop_front();
-    half_hull.emplace_front(p);
-}
+    bool violates(const T &a, const T &b, const T &c) {
+        auto cp = cross(a, b, c);
+        if constexpr (sign < 0) cp = -cp;
+        return collinear ? cp >= 0 : cp > 0;
+    }
+
+    void add(const auto &p) {
+        while (dq.size() > 1 && violates(dq[1], dq[0], p)) dq.pop_front();
+        dq.emplace_front(p);
+    }
+
+    int size() const {
+        return dq.size();
+    }
+
+    auto & operator[](int i) {
+        return dq[i];
+    }
+
+    const auto & operator[](int i) const {
+        return dq[i];
+    }
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -144,21 +161,21 @@ int main() {
     cin >> n;
 
     vector<double> hours(n, 12);
-    vector<Point<long long>> points(n, {0, 0}), points_reflected(n, {0, 0});
+    vector<Point<long long>> points(n, {0, 0}), reflected(n, {0, 0});
     for (int i = 0; i < n; i++) {
         cin >> points[i].x >> points[i].y;
 
-        points_reflected[i] = {-points[i].x, points[i].y};
+        reflected[i] = {-points[i].x, points[i].y};
     }
 
-    deque<Point<long long>> W_to_E, E_to_W;
+    MonotonicHull<Point<long long>> W_to_E, E_to_W;
     for (int i = 0; i < n; i++) {
-        add(W_to_E, points_reflected[i]);
-        if (W_to_E.size() > 1 && W_to_E[1].y > points_reflected[i].y) hours[i] -= angle(W_to_E[1] - points_reflected[i]) * 12 / M_PI;
+        W_to_E.add(reflected[i]);
+        if (W_to_E.size() > 1 && W_to_E[1].y > reflected[i].y) hours[i] -= angle(W_to_E[1] - reflected[i]) * 12 / M_PI;
     }
     for (int i = n - 1; ~i; i--) {
-        add(E_to_W, points[i]);
+        E_to_W.add(points[i]);
         if (E_to_W.size() > 1 && E_to_W[1].y > points[i].y) hours[i] -= angle(E_to_W[1] - points[i]) * 12 / M_PI;
     }
-    for (int i = 0; i < n; i++) cout << fixed << setprecision(4) << hours[i] << "\n";
+    for (auto h : hours) cout << fixed << setprecision(4) << h << "\n";
 }
