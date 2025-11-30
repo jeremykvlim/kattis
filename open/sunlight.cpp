@@ -127,9 +127,9 @@ T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
 
 template <typename T, int sign = -1, bool collinear = false>
 struct MonotonicHull {
-    deque<T> dq;
+    deque<Point<T>> dq;
 
-    bool violates(const T &a, const T &b, const T &c) {
+    bool violates(const auto &a, const auto &b, const auto &c) {
         auto cp = cross(a, b, c);
         if constexpr (sign < 0) cp = -cp;
         return collinear ? cp >= 0 : cp > 0;
@@ -168,7 +168,7 @@ int main() {
         reflected[i] = {-points[i].x, points[i].y};
     }
 
-    MonotonicHull<Point<long long>> W_to_E, E_to_W;
+    MonotonicHull<long long> W_to_E, E_to_W;
     for (int i = 0; i < n; i++) {
         W_to_E.add(reflected[i]);
         if (W_to_E.size() > 1 && W_to_E[1].y > reflected[i].y) hours[i] -= angle(W_to_E[1] - reflected[i]) * 12 / M_PI;
