@@ -432,15 +432,15 @@ int main() {
         cin >> n >> k >> c;
 
         auto c_good = 0LL, mod_product = 1LL;
-        auto count = [&](long long n, long long c, auto &fact, auto &fact_inv, int mod) {
+        auto count = [&](auto &fact, auto &fact_inv, int mod) {
             auto choices = 2 * binomial_coefficient_mod_p(n - 1, c - 1, mod, fact, fact_inv);
             c_good = chinese_remainder_theorem(c_good, mod_product, (long long) choices(), (long long) mod).first;
             mod_product *= mod;
         };
-        count(n, c, fact1, fact_inv1, MOD1);
-        count(n, c, fact2, fact_inv2, MOD2);
-        count(n, c, fact3, fact_inv3, MOD3);
-        count(n, c, fact4, fact_inv4, MOD4);
+        count(fact1, fact_inv1, MOD1);
+        count(fact2, fact_inv2, MOD2);
+        count(fact3, fact_inv3, MOD3);
+        count(fact4, fact_inv4, MOD4);
 
         cout << c_good << "\n";
     }
