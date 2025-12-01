@@ -163,17 +163,15 @@ int main() {
     cin.tie(nullptr);
 
     int r, c;
-    cin >> r >> c;
-
     long long prev;
-    cin >> prev;
+    cin >> r >> c >> prev;
 
     vector<Point<__int128>> mono;
     while (r-- > 1) {
         long long l;
         cin >> l;
 
-        mono.push_back({prev - l, 1});
+        mono.emplace_back(prev - l, 1);
         while (mono.size() > 1 && cross(mono[mono.size() - 2], mono.back()) < 0) {
             auto p = mono.back();
             mono.pop_back();
