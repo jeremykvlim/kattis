@@ -365,6 +365,35 @@ T binomial_coefficient_mod_p(long long n, long long k, int p, vector<T> &fact, v
     return fact[n] * fact_inv[k] * fact_inv[n - k];
 }
 
+template <typename T>
+pair<T, T> bezout(T a, T b) {
+    if (!a) return {0, 1};
+    auto [x, y] = bezout(b % a, a);
+    return {y - (b / a) * x, x};
+}
+
+template <typename T>
+pair<T, T> chinese_remainder_theorem(T a, T n, T b, T m) {
+    T g = __gcd(m, n);
+    if ((b - a) % g) return {0, -1};
+
+    if (m > n) {
+        swap(a, b);
+        swap(n, m);
+    }
+
+    a %= n;
+    b %= m;
+    T lcm = n / g * m;
+
+    n /= g;
+    m /= g;
+    auto [x, y] = bezout(n, m);
+    T r = ((__int128) a * m * y + (__int128) b * n * x) % lcm;
+    if (r < 0) r += lcm;
+    return {r, lcm};
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -389,8 +418,8 @@ int main() {
     prepare(fact1, fact_inv1, MOD1);
     prepare(fact2, fact_inv2, MOD2);
 
-    auto ways = [&](auto &fact, auto &fact_inv, int mod) -> long long {
-        auto w = 0LL;
+    auto ways = [&](auto &fact, auto &fact_inv, int mod) -> int {
+        int w = 0;
         for (int i = 0; i * (m + 1) <= k; i++) {
             auto c = binomial_coefficient_mod_p(n, i, mod, fact, fact_inv) *
                      binomial_coefficient_mod_p(n + k - i * (m + 1) - 1, k - i * (m + 1), mod, fact, fact_inv);
@@ -401,8 +430,5 @@ int main() {
 
         return w;
     };
-
-    auto w1 = ways(fact1, fact_inv1, MOD1), w2 = ways(fact2, fact_inv2, MOD2);
-    while (w2 % MOD1 != w1) w2 += MOD2;
-    cout << w2;
+    cout << chinese_remainder_theorem(ways(fact1, fact_inv1, MOD1), (int) MOD1, ways(fact2, fact_inv2, MOD2), (int) MOD2).first;
 }
