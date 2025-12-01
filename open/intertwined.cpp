@@ -1,6 +1,28 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+struct Hash {
+    template <typename T>
+    static inline void combine(size_t &h, const T &v) {
+        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
+    }
+
+    template <typename T>
+    size_t operator()(const T &v) const {
+        if constexpr (requires { tuple_size<T>::value; })
+            return apply([](const auto &...e) {
+                size_t h = 0;
+                (combine(h, e), ...);
+                return h;
+            }, v);
+        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
+            size_t h = 0;
+            for (const auto &e : v) combine(h, e);
+            return h;
+        } else return hash<T>{}(v);
+    }
+};
+
 template <typename T>
 struct Point {
     T x, y;
@@ -191,6 +213,8 @@ int main() {
     }
 
     vector<int> order{0};
+    vector<double> pref{0};
+    unordered_map<pair<int, int>, int, Hash> pos;
     for (int i = 0, count = 0, q = 0;; ++q %= 4) {
         vector<pair<Point<long long>, int>> points;
         for (int j = 1; j <= n; j++) points.emplace_back(rotations[q][j] - rotations[q][i], j);
@@ -239,15 +263,20 @@ int main() {
         d = len;
         i = points[indices.back()].second;
 
-        for (int j : indices) order.emplace_back(points[j].second);
-        if (order.size() > 2)
-            for (int k = order.size() - 2, l = order.size() - 1; k; k--)
-                if (order[k - 1] == order[l - 1] && order[k] == order[l]) {
-                    len = 0;
-                    for (int j = k; j < l; j++) len += euclidean_dist(coords[order[j + 1]], coords[order[j]]);
-
-                    if (d > len) d -= (int) (d / len - 1) * len;
-                    break;
-                }
+        int p = -1;
+        for (int j = 0; j < indices.size(); j++) {
+            int u = order.back(), v = points[indices[j]].second;
+            order.emplace_back(v);
+            pref.emplace_back(pref.back() + euclidean_dist(coords[u], coords[v]));
+            if (j == indices.size() - 1) {
+                auto it = pos.find({u, v});
+                if (it != pos.end()) p = it->second;
+            }
+            pos[{u, v}] = order.size() - 1;
+        }
+        if (~p) {
+            auto len = pref[order.size() - 1] - pref[p];
+            if (d > len) d -= (int) (d / len - 1) * len;
+        }
     }
 }
