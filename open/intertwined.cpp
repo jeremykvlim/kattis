@@ -125,17 +125,33 @@ T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
     return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
-template <typename T>
-void add(deque<pair<Point<T>, int>> &half_hull, vector<vector<int>> &adj_list, pair<Point<T>, int> p, bool collinear = false) {
-    auto clockwise = [&]() {
-        T cross_product = cross(half_hull[1].first, half_hull[0].first, p.first);
-        return collinear ? cross_product <= 0 : cross_product < 0;
-    };
+template <typename T, int sign = -1, bool collinear = false>
+struct MonotonicHull {
+    deque<pair<Point<T>, int>> dq;
 
-    while (half_hull.size() > 1 && clockwise()) half_hull.pop_front();
-    adj_list[half_hull[0].second].emplace_back(p.second);
-    half_hull.emplace_front(p);
-}
+    bool violates(const auto &a, const auto &b, const auto &c) {
+        auto cp = cross(a, b, c);
+        if constexpr (sign < 0) cp = -cp;
+        return collinear ? cp >= 0 : cp > 0;
+    }
+
+    void add(const auto &p) {
+        while (dq.size() > 1 && violates(dq[1].first, dq[0].first, p.first)) dq.pop_front();
+        dq.emplace_front(p);
+    }
+
+    int size() const {
+        return dq.size();
+    }
+
+    auto & operator[](int i) {
+        return dq[i];
+    }
+
+    const auto & operator[](int i) const {
+        return dq[i];
+    }
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -158,23 +174,34 @@ int main() {
         exit(0);
     }
 
+    vector<vector<Point<long long>>> rotations(4, vector<Point<long long>>(n + 1));
+    for (int q = 0; q < 4; q++)
+        for (int j = 0; j <= n; j++) {
+            auto p = coords[j];
+            if (!q) rotations[q][j] = p;
+            else if (q == 1) rotations[q][j] = -~p;
+            else if (q == 2) rotations[q][j] = -p;
+            else rotations[q][j] = ~p;
+        }
+
+    vector<vector<int>> quadrant_order(4, vector<int>(n));
+    for (int q = 0; q < 4; q++) {
+        iota(quadrant_order[q].begin(), quadrant_order[q].end(), 1);
+        sort(quadrant_order[q].begin(), quadrant_order[q].end(), [&](int i, int j) { return rotations[q][i] < rotations[q][j]; });
+    }
+
     vector<int> order{0};
-    for (int i = 0, count = 0, quadrant = 0;; ++quadrant %= 4) {
+    for (int i = 0, count = 0, q = 0;; ++q %= 4) {
         vector<pair<Point<long long>, int>> points;
-        for (int j = 1; j <= n; j++) points.emplace_back(coords[j] - coords[i], j);
+        for (int j = 1; j <= n; j++) points.emplace_back(rotations[q][j] - rotations[q][i], j);
 
-        auto rotate = [&](auto &p) {
-            if (quadrant == 1) p = -~p;
-            else if (quadrant == 2) p = -p;
-            else p = ~p;
-        };
-        if (quadrant)
-            for (auto &[p, _] : points) rotate(p);
+        vector<pair<Point<long long>, int>> temp;
+        for (int j : quadrant_order[q]) {
+            auto diff = points[j - 1].first;
+            if (diff.x < 0 || diff.y < 0) continue;
+            temp.emplace_back(diff, j - 1);
+        }
 
-        auto temp = points;
-        for (int j = 0; j < temp.size(); j++) temp[j].second = j;
-
-        temp.erase(remove_if(temp.begin(), temp.end(), [&](auto p) { return p.first.x < 0 || p.first.y < 0; }), temp.end());
         if (temp.empty()) {
             next:;
             if (++count == 4) {
@@ -187,13 +214,17 @@ int main() {
         sort(temp.begin(), temp.end(), [&](auto p1, auto p2) { return p1.first < p2.first; });
         if (temp.front().first != Point<long long>{0, 0}) temp.insert(temp.begin(), {Point<long long>{0, 0}, 0});
 
-        deque<pair<Point<long long>, int>> half_hull{{Point<long long>{0, 0}, 0}};
+        MonotonicHull<long long> hull;
         vector<vector<int>> adj_list(temp.size());
-        for (int j = 1; j < temp.size(); j++) add(half_hull, adj_list, {temp[j].first, j});
+        for (int j = 0; j < temp.size(); j++) {
+            hull.add(pair{temp[j].first, j});
+            if (hull.size() > 1) adj_list[hull[1].second].emplace_back(j);
+        }
 
         vector<int> indices;
+        auto len = d;
         int v = 0;
-        for (auto len = d; len >= 0;) {
+        while (len >= 0) {
             auto it = find_if(adj_list[v].rbegin(), adj_list[v].rend(), [&](int u) { return len >= euclidean_dist(temp[v].first, temp[u].first); });
             if (it == adj_list[v].rend()) break;
 
@@ -205,15 +236,14 @@ int main() {
         if (indices.empty()) goto next;
 
         count = 0;
-        d -= euclidean_dist(points[indices[0]].first);
-        for (int j = 1; j < indices.size(); j++) d -= euclidean_dist(points[indices[j]].first, points[indices[j - 1]].first);
+        d = len;
         i = points[indices.back()].second;
 
         for (int j : indices) order.emplace_back(points[j].second);
-        if (order.size() >= 3)
+        if (order.size() > 2)
             for (int k = order.size() - 2, l = order.size() - 1; k; k--)
                 if (order[k - 1] == order[l - 1] && order[k] == order[l]) {
-                    double len = 0;
+                    len = 0;
                     for (int j = k; j < l; j++) len += euclidean_dist(coords[order[j + 1]], coords[order[j]]);
 
                     if (d > len) d -= (int) (d / len - 1) * len;
