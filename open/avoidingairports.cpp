@@ -140,8 +140,8 @@ struct MonotonicHull {
             return p.x * x + p.y;
         };
 
-        while (dq.size() > 1 && f(dq[dq.size() - 1]) >= f(dq[dq.size() - 2])) dq.pop_back();
-        return f(dq[dq.size() - 1]);
+        while (dq.size() > 1 && f(dq.back()) >= f(dq[dq.size() - 2])) dq.pop_back();
+        return f(dq.back());
     }
 
     bool empty() const {
