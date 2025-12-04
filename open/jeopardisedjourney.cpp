@@ -150,10 +150,11 @@ vector<bool> tarjan(int n, vector<vector<int>> &adj_list) {
                     children++;
                     self(self, u, v);
                     low[v] = min(low[v], low[u]);
-                    if (prev != -1 && low[u] >= order[v]) cutpoint[v] = true;
+                    if (low[u] >= order[v] && ~prev) cutpoint[v] = true;
                 } else low[v] = min(low[v], order[u]);
             }
-        if (prev == -1 && children > 1) cutpoint[v] = true;
+        
+        if (!~prev && children > 1) cutpoint[v] = true;
     };
     dfs(dfs, n - 1);
 
