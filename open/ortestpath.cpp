@@ -135,7 +135,7 @@ struct BlockCutTree {
                                 edge_component[j] = bccs.size();
                             } while (j != i);
 
-                            if (~prev && low[u] >= order[v]) cutpoint[v] = true;
+                            if (~prev) cutpoint[v] = true;
                             bccs.emplace_back(vector<int>{v});
 
                             while (bccs.back().back() != u) {
