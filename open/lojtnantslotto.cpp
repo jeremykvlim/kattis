@@ -2,9 +2,8 @@
 using namespace std;
 
 template <typename T>
-vector<T> min_plus_convolution(vector<T> &convex, vector<T> &arbitrary) {
-    if (arbitrary.empty()) arbitrary.emplace_back(0);
-    if (convex.empty()) return arbitrary;
+vector<T> min_plus_convolution(const vector<T> &convex, const vector<T> &arbitrary) {
+    if (arbitrary.empty() || convex.empty()) return {0};
 
     int n = arbitrary.size() + convex.size() - 1, m = arbitrary.size(), lg = __lg(n) + 1;
     if (n == 1) return {arbitrary[0] + convex[0]};

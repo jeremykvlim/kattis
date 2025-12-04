@@ -2,27 +2,45 @@
 using namespace std;
 
 template <typename T>
-vector<T> min_plus_convolution(const vector<T> &convex, const vector<T> &arbitrary){
-    int da = convex.size(), db = arbitrary.size(), n = da + db - 1;
+vector<T> min_plus_convolution(const vector<T> &convex, const vector<T> &arbitrary) {
+    if (arbitrary.empty() || convex.empty()) return {0};
 
-    vector<T> c(n, numeric_limits<T>::max() / 4);
-    c[0] = convex[0] + arbitrary[0];
-    vector<int> indices(n + 1, 0);
-    indices[n] = db - 1;
-    for (int k = bit_ceil((unsigned) n) >> 1; k; k >>= 1)
-        for (int i = k; i < n; i += k << 1) {
-            int l = i - k, r = min(i + k, n);
-            indices[i] = indices[l];
-            for (int j = indices[l]; j <= indices[r]; j++) {
-                if (j <= i && i < j + da) {
-                    T t = arbitrary[j] + convex[i - j];
-                    if (c[i] > t) {
-                        c[i] = t;
-                        indices[i] = j;
-                    }
-                }
-            }
+    int n = arbitrary.size() + convex.size() - 1, m = arbitrary.size(), lg = __lg(n) + 1;
+    if (n == 1) return {arbitrary[0] + convex[0]};
+
+    vector<int> indices(n);
+    auto cmp = [&] (int i, int j, int k) {
+        if (i < k) return false;
+        if (i - j >= convex.size()) return true;
+        return arbitrary[j] + convex[i - j] >= arbitrary[k] + convex[i - k];
+    };
+
+    vector<vector<int>> candidates(lg);
+    candidates[0].resize(m);
+    iota(candidates[0].begin(), candidates[0].end(), 0);
+    for (int b = 0; b < lg; b++) {
+        vector<int> temp{candidates[b][0]};
+        for (int i = 1; i < candidates[b].size(); i++) {
+            int j = candidates[b][i], s = temp.size();
+            for (; !temp.empty() && cmp((s - 1) << b, temp.back(), j); s = temp.size()) temp.pop_back();
+            if (s << b < n) temp.emplace_back(j);
         }
+        swap(candidates[b], temp);
+
+        if (b + 1 < lg) candidates[b + 1] = candidates[b];
+        else {
+            indices[0] = candidates[b][0];
+            if (candidates[b].size() > 1 && cmp(0, candidates[b][0], candidates[b][1])) indices[0] = candidates[b][1];
+        }
+    }
+
+    for (int b = lg - 1, p2 = 1 << b; ~b; b--, p2 >>= 1)
+        for (int i = p2, j = 0; i < n; i += p2 << 1, j--)
+            for (int r = i + p2 >= n ? m - 1 : indices[i + p2]; j < candidates[b].size() && candidates[b][j] <= r; j++)
+                if (cmp(i, indices[i], candidates[b][j])) indices[i] = candidates[b][j];
+
+    vector<T> c(n);
+    for (int i = 0; i < n; i++) c[i] = arbitrary[indices[i]] + convex[i - indices[i]];
     return c;
 }
 
