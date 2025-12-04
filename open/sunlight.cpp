@@ -126,9 +126,7 @@ T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
 }
 
 template <typename T, int sign = -1, bool collinear = false>
-struct MonotonicHull {
-    deque<Point<T>> dq;
-
+struct MonotonicHull : deque<Point<T>> {
     bool violates(const auto &a, const auto &b, const auto &c) {
         auto cp = cross(a, b, c);
         if constexpr (sign < 0) cp = -cp;
@@ -136,20 +134,8 @@ struct MonotonicHull {
     }
 
     void add(const auto &p) {
-        while (dq.size() > 1 && violates(dq[1], dq[0], p)) dq.pop_front();
-        dq.emplace_front(p);
-    }
-
-    int size() const {
-        return dq.size();
-    }
-
-    auto & operator[](int i) {
-        return dq[i];
-    }
-
-    const auto & operator[](int i) const {
-        return dq[i];
+        while (this->size() > 1 && violates((*this)[1], (*this)[0], p)) this->pop_front();
+        this->emplace_front(p);
     }
 };
 
