@@ -428,19 +428,7 @@ int main() {
     int m;
     cin >> n >> m;
 
-    vector<modint> a(2 * m, 0);
-    a[0] = 1;
-    for (int i = 1; i < 2 * m; i++)
-        if (i < m) a[i] = modint::pow(2, i - 1);
-        else
-            for (int j = 1; j < m; j++) a[i] += a[i - j];
-
-    if (n <= 2 * m) {
-        cout << a[n - 1];
-        exit(0);
-    }
-
-    auto c = berlekamp_massey(a);
-    a.resize(c.size());
-    cout << kitamasa(c, a, n - 1);
+    vector<modint> c(m - 1, 1);
+    for (int i = 2; i < m - 1; i++) c[i] = c[i - 1] * 2;
+    cout << kitamasa(vector<modint>(m - 1, 1), c, n - 1);
 }
