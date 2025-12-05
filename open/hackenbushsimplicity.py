@@ -1,6 +1,6 @@
 import sys
 
-sys.set_int_max_str_digits(2000000)
+sys.set_int_max_str_digits(100000)
 
 def parse(s):
     if '/2^' in s:
