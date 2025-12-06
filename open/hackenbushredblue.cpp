@@ -23,7 +23,7 @@ int main() {
         adj_list[y].emplace_back(x, i);
     }
 
-    vector<int> memo1(1 << 21, -1);
+    vector<int> memo1(1 << (m + 1), -1);
     auto prune = [&](int mask) -> int {
         if (~memo1[mask]) return memo1[mask];
 
@@ -49,7 +49,7 @@ int main() {
         return memo1[mask];
     };
 
-    vector<pair<long long, int>> memo2(1 << 21, {-1, -1});
+    vector<pair<long long, int>> memo2(1 << (m + 1), {-1, -1});
     auto dfs = [&](auto &&self, int m0) -> pair<long long, int> {
         if (memo2[m0] != make_pair(-1LL, -1)) return memo2[m0];
         if (!m0) return memo2[m0] = {0, 0};
