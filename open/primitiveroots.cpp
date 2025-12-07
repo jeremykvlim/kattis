@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -149,14 +149,14 @@ vector<T> factorize(T n) {
 }
 
 template <typename T>
-T primitive_root(T m) {
+T primitive_root_mod_m(T m) {
     if (m == 1 || m == 2 || m == 4) return m - 1;
-    if (!(m & 3)) return -1;
+    if (!(m & 3)) return m;
 
     auto pfs = factorize(m);
     sort(pfs.begin(), pfs.end());
     pfs.erase(unique(pfs.begin(), pfs.end()), pfs.end());
-    if (pfs.size() > 2 || (pfs.size() == 2 && m & 1)) return -1;
+    if (pfs.size() > 2 || (pfs.size() == 2 && (m & 1))) return m;
 
     auto phi = !(m & 1) ? m / 2 / pfs[1] * (pfs[1] - 1) : m / pfs[0] * (pfs[0] - 1);
     pfs = factorize(phi);
@@ -165,7 +165,7 @@ T primitive_root(T m) {
     for (auto g = 2LL; g < m; g++)
         if (gcd(g, m) == 1 && all_of(pfs.begin(), pfs.end(), [&](auto pf) { return pow((T) g, phi / pf, m) != 1; })) return g;
 
-    return -1;
+    return m;
 }
 
 int main() {
@@ -174,5 +174,7 @@ int main() {
 
     long long m;
     cin >> m;
-    cout << primitive_root(m);
+
+    auto g = primitive_root_mod_m(m);
+    cout << (g == m ? -1 : g);
 }
