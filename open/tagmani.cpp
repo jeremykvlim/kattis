@@ -52,7 +52,7 @@ struct CentroidDecomposition {
         int c = dfs2(dfs2, subtree_size[root], root);
         removed[c] = true;
 
-        if (dist.size() <= layer) dist.emplace_back(vector<long long>(adj_list.size(), 0));
+        if (dist.size() <= layer) dist.emplace_back(vector(adj_list.size(), 0LL));
         auto dfs3 = [&](auto &&self, int v, int prev = -1, long long d = 0) -> void {
             dist[layer][v] = d;
             centroids[v].emplace_back(c, layer);
