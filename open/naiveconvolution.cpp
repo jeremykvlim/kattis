@@ -631,7 +631,7 @@ int main() {
         poly2_s[i] = q + r;
     }
 
-    auto r = convolve(poly1_r, poly2_r), q = convolve(poly1_q, poly2_q), s = convolve(poly1_s, poly2_s);
+    auto q = convolve(poly1_q, poly2_q), r = convolve(poly1_r, poly2_r), s = convolve(poly1_s, poly2_s);
     vector<__int128> poly3(n + m - 1);
     for (int i = 0; i < n + m - 1; i++) poly3[i] = (__int128) k * (s[i] - r[i] + q[i] * (k - 1)) + r[i];
     while (poly3.size() > 1 && !poly3.back()) poly3.pop_back();
