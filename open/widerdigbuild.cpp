@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-
+    
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -100,6 +100,74 @@ bool isprime(unsigned long long n) {
     return lucas_pseudoprime();
 }
 
+template <typename T>
+T brent(T n) {
+    if (!(n & 1)) return 2;
+
+    mt19937_64 rng(random_device{}());
+    for (;;) {
+        T x = 2, y = 2, g = 1, q = 1, xs = 1, c = rng() % (n - 1) + 1;
+        for (int i = 1; g == 1; i <<= 1, y = x) {
+            for (int j = 1; j < i; j++) x = mul(x, x, n) + c;
+            for (int j = 0; j < i && g == 1; j += 128) {
+                xs = x;
+                for (int k = 0; k < min(128, i - j); k++) {
+                    x = mul(x, x, n) + c;
+                    q = mul(q, max(x, y) - min(x, y), n);
+                }
+                g = __gcd(q, n);
+            }
+        }
+
+        if (g == n) g = 1;
+        while (g == 1) {
+            xs = mul(xs, xs, n) + c;
+            g = __gcd(max(xs, y) - min(xs, y), n);
+        }
+        if (g != n) return isprime(g) ? g : brent(g);
+    }
+}
+
+template <typename T>
+vector<T> factorize(T n) {
+    vector<T> pfs;
+
+    auto dfs = [&](auto &&self, T m) -> void {
+        if (m < 2) return;
+        if (isprime(m)) {
+            pfs.emplace_back(m);
+            return;
+        }
+
+        T pf = brent(m);
+        pfs.emplace_back(pf);
+        self(self, m / pf);
+    };
+    dfs(dfs, n);
+
+    return pfs;
+}
+
+template <typename T>
+T primitive_root_mod_m(T m) {
+    if (m == 1 || m == 2 || m == 4) return m - 1;
+    if (!(m & 3)) return m;
+
+    auto pfs = factorize(m);
+    sort(pfs.begin(), pfs.end());
+    pfs.erase(unique(pfs.begin(), pfs.end()), pfs.end());
+    if (pfs.size() > 2 || (pfs.size() == 2 && (m & 1))) return m;
+
+    auto phi = !(m & 1) ? m / 2 / pfs[1] * (pfs[1] - 1) : m / pfs[0] * (pfs[0] - 1);
+    pfs = factorize(phi);
+    sort(pfs.begin(), pfs.end());
+    pfs.erase(unique(pfs.begin(), pfs.end()), pfs.end());
+    for (auto g = 2LL; g < m; g++)
+        if (gcd(g, m) == 1 && all_of(pfs.begin(), pfs.end(), [&](auto pf) { return pow((T) g, phi / pf, m) != 1; })) return g;
+
+    return m;
+}
+
 template <typename M>
 struct MontgomeryModInt {
     using T = typename decay<decltype(M::value)>::type;
@@ -108,6 +176,8 @@ struct MontgomeryModInt {
     using J = typename conditional<is_same<T, unsigned int>::value, long long, typename conditional<is_same<T, unsigned long long>::value, __int128, void>::type>::type;
 
     T value;
+    static inline int p2;
+    static inline T g;
     static inline pair<T, U> r;
     static inline bool prime_mod;
     static constexpr int bit_length = sizeof(T) * 8;
@@ -116,12 +186,20 @@ struct MontgomeryModInt {
         prime_mod = mod() == 998244353 || mod() == (unsigned long long) 1e9 + 7 || mod() == (unsigned long long) 1e9 + 9 || mod() == (unsigned long long) 1e6 + 69 || mod() == 2524775926340780033 || isprime(mod());
         r = {mod(), - (U) mod() % mod()};
         while (mod() * r.first != 1) r.first *= (T) 2 - mod() * r.first;
+        g = primitive_root_mod_m(mod());
+        p2 = 0;
+        for (T t = mod() - 1; !(t & 1); t >>= 1) p2++;
     }
 
     constexpr MontgomeryModInt() : value() {}
 
     MontgomeryModInt(const J &x) {
         value = reduce((U) x * r.second);
+    }
+
+    template <typename N, typename = enable_if_t<!is_same<M, N>::value && is_same<typename MontgomeryModInt<N>::T, T>::value>>
+    MontgomeryModInt(const MontgomeryModInt<N> &x) {
+        value = reduce((U) x() * r.second);
     }
 
     static T reduce(const U &x) {
@@ -138,8 +216,22 @@ struct MontgomeryModInt {
         return (V) value;
     }
 
+    I recover() const {
+        T v = reduce((U) value);
+        return v > mod() / 2 ? v - mod() : v;
+    }
+
     constexpr static T mod() {
         return M::value;
+    }
+
+    constexpr static T primitive_root() {
+        return g;
+    }
+
+    constexpr static bool ntt_viable(int n) {
+        if (!prime_mod || (n & (n - 1)) || g == mod()) return false;
+        return __lg(n) <= p2;
     }
 
     inline auto & operator+=(const MontgomeryModInt &v) {
@@ -182,21 +274,9 @@ struct MontgomeryModInt {
         return (MontgomeryModInt) 0 - *this;
     }
 
-    template <typename V = M>
-    typename enable_if<is_same<typename MontgomeryModInt<V>::T, unsigned int>::value, MontgomeryModInt>::type & operator*=(const MontgomeryModInt &v) {
-        value = reduce((unsigned long long) value * v.value);
-        return *this;
-    }
-
-    template <typename V = M>
-    typename enable_if<is_same<typename MontgomeryModInt<V>::T, unsigned long long>::value, MontgomeryModInt>::type & operator*=(const MontgomeryModInt &v) {
-        value = reduce((unsigned __int128) value * v.value);
-        return *this;
-    }
-
-    template <typename V = M>
-    typename enable_if<!is_integral<typename MontgomeryModInt<V>::T>::value, MontgomeryModInt>::type & operator*=(const MontgomeryModInt &v) {
-        value = reduce(value * v.value);
+    MontgomeryModInt & operator*=(const MontgomeryModInt &v) {
+        if constexpr (is_same_v<T, unsigned int>) value = reduce((unsigned long long) value * v.value);
+        else value = reduce((unsigned __int128) value * v.value);
         return *this;
     }
 
