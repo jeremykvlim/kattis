@@ -584,23 +584,23 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
 
 template <typename T>
 vector<T> polyinv(const vector<T> &a, int n) {
-    vector<modint> ntt_a_inv{modint::inv(a[0])};
-    while (ntt_a_inv.size() < n) {
-        int m = ntt_a_inv.size() << 1;
+    vector<modint> f_a_inv{modint::inv(a[0])};
+    while (f_a_inv.size() < n) {
+        int m = f_a_inv.size() << 1;
 
-        vector<modint> ntt_a(min((int) a.size(), m));
-        for (int i = 0; i < ntt_a.size(); i++) ntt_a[i] = a[i];
+        vector<modint> f_a(min((int) a.size(), m));
+        for (int i = 0; i < f_a.size(); i++) f_a[i] = a[i];
 
-        auto temp = convolve(convolve(ntt_a_inv, ntt_a_inv), ntt_a);
-        ntt_a_inv.resize(m);
+        auto temp = convolve(convolve(f_a_inv, f_a_inv), f_a);
+        f_a_inv.resize(m);
         for (int i = 0; i < m; i++) {
-            ntt_a_inv[i] *= 2;
-            if (i < temp.size()) ntt_a_inv[i] -= temp[i];
+            f_a_inv[i] *= 2;
+            if (i < temp.size()) f_a_inv[i] -= temp[i];
         }
     }
 
     vector<T> a_inv(n);
-    for (int i = 0; i < n; i++) a_inv[i] = ntt_a_inv[i]();
+    for (int i = 0; i < n; i++) a_inv[i] = f_a_inv[i]();
     return a_inv;
 }
 
