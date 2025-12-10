@@ -160,19 +160,9 @@ pair<T, T> chinese_remainder_theorem(T a, T n, T b, T m) {
     T g = __gcd(m, n);
     if ((b - a) % g) return {0, -1};
 
-    if (m > n) {
-        swap(a, b);
-        swap(n, m);
-    }
-
-    a %= n;
-    b %= m;
-    T lcm = n / g * m;
-
-    n /= g;
-    m /= g;
-    auto [x, y] = bezout(n, m);
-    T r = ((__int128) a * m * y + (__int128) b * n * x) % lcm;
+    T n0 = n / g, m0 = m / g, lcm = n0 * m;
+    auto [x, y] = bezout(n0, m0);
+    T r = ((__int128) n * (((__int128) ((b - a) / g) * x % m0 + m0) % m0) + a) % lcm;
     if (r < 0) r += lcm;
     return {r, lcm};
 }
