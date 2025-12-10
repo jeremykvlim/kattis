@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -436,6 +436,152 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
+template <typename T>
+pair<T, T> bezout(T a, T b) {
+    if (!a) return {0, 1};
+    auto [x, y] = bezout(b % a, a);
+    return {y - (b / a) * x, x};
+}
+
+template <typename T>
+pair<T, T> chinese_remainder_theorem(T a, T n, T b, T m) {
+    T g = __gcd(m, n);
+    if ((b - a) % g) return {0, -1};
+
+    T n0 = n / g, m0 = m / g, lcm = n0 * m;
+    auto [x, y] = bezout(n0, m0);
+    T r = ((__int128) n * (((__int128) ((b - a) / g) * x % m0 + m0) % m0) + a) % lcm;
+    if (r < 0) r += lcm;
+    return {r, lcm};
+}
+
+template <typename T, typename R>
+void cooley_tukey(int n, vector<T> &v, R root) {
+    static vector<int> rev;
+    static vector<T> twiddles;
+
+    if (rev.size() != n) {
+        rev.resize(n);
+        for (int i = 0; i < n; i++) rev[i] = (rev[i >> 1] | (i & 1) << __lg(n)) >> 1;
+    }
+
+    if (twiddles.size() < n) {
+        int m = max(2, (int) twiddles.size());
+        twiddles.resize(n, 1);
+
+        for (int k = m; k < n; k <<= 1) {
+            auto w = root(k);
+            for (int i = k; i < k << 1; i++) twiddles[i] = i & 1 ? twiddles[i >> 1] * w : twiddles[i >> 1];
+        }
+    }
+
+    for (int i = 0; i < n; i++)
+        if (i < rev[i]) swap(v[i], v[rev[i]]);
+
+    for (int k = 1; k < n; k <<= 1)
+        for (int i = 0; i < n; i += k << 1)
+            for (int j = 0; j < k; j++) {
+                auto t = v[i + j + k] * twiddles[j + k];
+                v[i + j + k] = v[i + j] - t;
+                v[i + j] += t;
+            }
+}
+
+template <typename M>
+vector<M> ntt(int n, const vector<M> &f) {
+    auto F = f;
+    cooley_tukey(n, F, [](int k) { return M::pow(M::primitive_root(), (M::mod() - 1) / (k << 1)); });
+    return F;
+}
+
+template <typename M>
+vector<M> intt(int n, const vector<M> &F) {
+    auto f = F;
+    cooley_tukey(n, f, [](int k) { return M::pow(M::primitive_root(), (M::mod() - 1) / (k << 1)); });
+    auto n_inv = M::inv(n);
+    for (auto &v : f) v *= n_inv;
+    reverse(f.begin() + 1, f.end());
+    return f;
+}
+
+template <typename T>
+vector<T> convolve(const vector<T> &a, const vector<T> &b) {
+    int da = a.size(), db = b.size(), m = da + db - 1, n = bit_ceil((unsigned) m);
+    if (n <= 64 || min(da, db) <= __lg(n)) {
+        vector<modint> p(da), q(db);
+        for (int i = 0; i < da; i++) p[i] = a[i];
+        for (int i = 0; i < db; i++) q[i] = b[i];
+        if (da > db) {
+            swap(p, q);
+            swap(da, db);
+        }
+
+        vector<T> r(m, 0);
+        for (int i = 0; i < db; i++) r[i] = q[i]();
+        for (int i = m - 1; ~i; i--) {
+            modint v = 0;
+            for (int j = max(0, i - (db - 1)); j <= min(i, da - 1); j++) v += p[j] * r[i - j];
+            r[i] = v.recover();
+        }
+        return r;
+    }
+
+    if (!modint::ntt_viable(n)) {
+        constexpr unsigned long long ntt_mod1 = 39582418599937, ntt_mod2 = 79164837199873;
+        using ntt_modint1 = MontgomeryModInt<integral_constant<decay<decltype(ntt_mod1)>::type, ntt_mod1>>;
+        using ntt_modint2 = MontgomeryModInt<integral_constant<decay<decltype(ntt_mod2)>::type, ntt_mod2>>;
+
+        ntt_modint1::init();
+        ntt_modint2::init();
+
+        vector<ntt_modint1> ntt_a1(n), ntt_b1(n);
+        vector<ntt_modint2> ntt_a2(n), ntt_b2(n);
+        for (int i = 0; i < da; i++) {
+            ntt_a1[i] = a[i];
+            ntt_a2[i] = a[i];
+        }
+        for (int i = 0; i < db; i++) {
+            ntt_b1[i] = b[i];
+            ntt_b2[i] = b[i];
+        }
+
+        auto F_a1 = ntt(n, ntt_a1), F_b1 = ntt(n, ntt_b1);
+        auto F_a2 = ntt(n, ntt_a2), F_b2 = ntt(n, ntt_b2);
+
+        vector<ntt_modint1> F_c1(n);
+        vector<ntt_modint2> F_c2(n);
+        for (int i = 0; i < n; i++) {
+            F_c1[i] = F_a1[i] * F_b1[i];
+            F_c2[i] = F_a2[i] * F_b2[i];
+        }
+        auto f_c1 = intt(n, F_c1);
+        auto f_c2 = intt(n, F_c2);
+
+        vector<T> c(m);
+        for (int i = 0; i < m; i++) c[i] = modint{chinese_remainder_theorem<__int128>(f_c1[i](), ntt_mod1, f_c2[i](), ntt_mod2).first}.recover();
+        return c;
+    }
+
+    vector<modint> ntt_a(n);
+    for (int i = 0; i < da; i++) ntt_a[i] = a[i];
+
+    vector<modint> F_a = ntt(n, ntt_a), F_b;
+    if (a == b) F_b = F_a;
+    else {
+        vector<modint> ntt_b(n);
+        for (int i = 0; i < db; i++) ntt_b[i] = b[i];
+        F_b = ntt(n, ntt_b);
+    }
+
+    vector<modint> F_c(n);
+    for (int i = 0; i < n; i++) F_c[i] = F_a[i] * F_b[i];
+    auto f_c = intt(n, F_c);
+
+    vector<T> c(m);
+    for (int i = 0; i < m; i++) c[i] = f_c[i].recover();
+    return c;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -448,75 +594,85 @@ int main() {
 
     if (n == 1) {
         int count = 0;
-        for (int x = 0; x < 10; x++) count += (x % p == k);
+        for (int d = 0; d <= 9; d++) count += (d % p == k);
         cout << count;
         exit(0);
     }
 
+    auto half = n / 2;
     if (p == 2 || p == 5) {
-        modint count = 0, c = modint::pow(10, (n - 1) / 2);
-        for (int x = 1; x < 10; x++)
-            if (x % p == k) count += c;
-        cout << count;
+        int count = 0;
+        for (int d = 1; d <= 9; d++) count += (d % p == k);
+        cout << modint::pow(10, half - !(n & 1)) * count;
         exit(0);
     }
-
-    vector<int> indices;
-    int inv10 = pow(10, p - 2, p);
-    for (int i = 1; i < 10; i++) indices.emplace_back(mul(inv10, (p + k - mul(i, pow(10, n - 1, p) + 1, p)), p));
 
     int m = 1;
-    for (int power = 10 % p; power != 1; m++) power = mul(power, 10, p);
+    vector<int> p10{1 % p};
+    for (int power = 10 % p; power != 1; power = mul(power, 10, p), m++) p10.emplace_back(power);
 
-    n -= 2;
-    auto half = n / 2, remaining = half % m;
-    vector<int> cycle_weights(m), leftover_weights;
-    for (auto i = 0LL, j = n - 1; i < m; i++, j--) {
-        cycle_weights[i] = pow(10, i, p);
-        if (j > 0) cycle_weights[i] = (cycle_weights[i] + pow(10, j, p)) % p;
+    vector<int> weights((min(half, (long long) m + 1)) + 1, 0);
+    for (int i = 1, l = 0, r = (n - 1) % m; i < weights.size(); i++, ++l %= m, (--r += m) %= m) weights[i] = (p10[l] + p10[r]) % p;
+
+    vector<modint> dp(p, 0);
+    for (int d = 1; d <= 9; d++) dp[mul(d, weights[1], p)]++;
+
+    auto cyclic_convolve = [&](const vector<modint> &a, const vector<modint> &b) {
+        auto c = convolve(a, b);
+
+        vector<modint> cyclic(p);
+        for (int k = 0; k < p; k++) {
+            cyclic[k] = c[k];
+            if (k + p < c.size()) cyclic[k] += c[k + p];
+        }
+        return cyclic;
+    };
+
+    vector<int> shift(10);
+    auto update = [&](const vector<modint> &v, int w) {
+        for (int d = 0; d <= 9; d++) shift[d] = mul(d, w, p);
+
+        vector<modint> u(p, 0);
+        for (int i = 0; i < p; i++)
+            if (v[i])
+                for (int d = 0; d <= 9; d++) u[(i + shift[d]) % p] += v[i];
+        return u;
+    };
+
+    auto remaining = half - 1;
+    if (remaining) {
+        if (remaining < m) {
+            vector<modint> temp(p, 0);
+            temp[0] = 1;
+            for (int i = 2; i <= half; i++) temp = update(temp, weights[i]);
+            dp = cyclic_convolve(dp, temp);
+        } else {
+            int r = remaining % m;
+            vector<modint> cycle(p, 0);
+            cycle[0] = 1;
+            for (int i = 0; i < r; i++) cycle = update(cycle, weights[i + 2]);
+            auto temp = cycle;
+            for (int i = r; i < m; i++) cycle = update(cycle, weights[i + 2]);
+
+            auto pow = [&](vector<modint> base, auto exponent) {
+                vector<modint> value(p, 0);
+                value[0] = 1;
+                while (exponent) {
+                    if (exponent & 1) value = cyclic_convolve(base, value);
+                    base = cyclic_convolve(base, base);
+                    exponent >>= 1;
+                }
+                return value;
+            };
+            dp = cyclic_convolve(dp, pow(cycle, remaining / m));
+            if (r) dp = cyclic_convolve(dp, temp);
+        }
     }
 
-    if (n & 1)
-        for (auto i = half - remaining, j = half + remaining; i <= j; i++, j--)
-            if (i == j) leftover_weights.emplace_back(pow(10, i, p));
-            else leftover_weights.emplace_back((pow(10, i, p) + pow(10, j, p)) % p);
-    else
-        for (auto i = half - remaining, j = half + remaining - 1; i < j; i++, j--)
-            leftover_weights.emplace_back((pow(10, i, p) + pow(10, j, p)) % p);
-
-    auto process = [&](vector<int> &weights) {
-        vector<modint> dp(p, 0);
-        dp[0] = 1;
-        for (int w : weights) {
-            vector<modint> temp(p, 0);
-            for (int d = 0; d < 10; d++)
-                for (int i = 0, j = d * w; i < p; i++) temp[(i + j) % p] += dp[i];
-            dp = temp;
-        }
-        return dp;
-    };
-    auto base = process(cycle_weights), leftover = process(leftover_weights);
-
-    auto mul = [&](const vector<modint> &a, const vector<modint> &b) {
-        vector<modint> c(p, 0);
-        for (int i = 0; i < p; i++)
-            for (int j = 0; j < p; j++) c[(i + j) % p] += a[i] * b[j];
-        return c;
-    };
-
-    auto pow = [&](vector<modint> base, auto exponent) {
-        vector<modint> value(p, 0);
-        value[0] = 1;
-        while (exponent) {
-            if (exponent & 1) value = mul(base, value);
-            base = mul(base, base);
-            exponent >>= 1;
-        }
-        return value;
-    };
-
-    auto c = mul(pow(base, half / m), leftover);
-    modint count = 0;
-    for (int i : indices) count += c[i];
-    cout << count;
+    if (n & 1) {
+        vector<modint> temp(p, 0);
+        for (int d = 0; d <= 9; d++) temp[mul(d, p10[half % m], p)]++;
+        dp = cyclic_convolve(dp, temp);
+    }
+    cout << dp[k];
 }
