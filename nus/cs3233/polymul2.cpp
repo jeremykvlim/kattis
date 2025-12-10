@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -582,17 +582,6 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
     return c;
 }
 
-template <typename T>
-vector<T> polyadd(const vector<T> &a, const vector<T> &b) {
-    int da = a.size(), db = b.size();
-    auto [m, n] = minmax(da, db);
-    vector<T> c(n);
-    for (int i = 0; i < m; i++) c[i] = a[i] + b[i];
-    for (int i = m; i < da; i++) c[i] = a[i];
-    for (int i = m; i < db; i++) c[i] = b[i];
-    return c;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -602,30 +591,19 @@ int main() {
     int t;
     cin >> t;
 
-    auto read = []() -> pair<int, vector<int>> {
+    auto read = [&]() -> vector<long long> {
         int degree;
         cin >> degree;
 
-        vector<int> poly(degree + 1);
-        for (int &a : poly) cin >> a;
+        vector<long long> poly(degree + 1);
+        for (auto &a : poly) cin >> a;
 
-        return {degree + 1, poly};
+        return poly;
     };
 
     while (t--) {
-        auto [deg1, poly1] = read();
-        auto [deg2, poly2] = read();
-        int deg3 = max(deg1, deg2);
-        vector<int> poly3(deg3);
-        for (int i = 0; i < deg3; i++)
-            if (i < deg1 && i < deg2) poly3[i] = max({0, -poly1[i], -poly2[i], -poly1[i] - poly2[i]});
-            else if (i < deg1) poly3[i] = max(0, -poly1[i]);
-            else poly3[i] = max(0, -poly2[i]);
-
-        auto _1_3 = polyadd(poly1, poly3), _2_3 = polyadd(poly2, poly3), _1_2_3 = polyadd(polyadd(poly1, poly2), poly3),
-            x = convolve(_1_3, _2_3), y = convolve(poly3, _1_2_3);
-        cout << deg1 + deg2 - 2 << "\n";
-        for (int i = 0; i < deg1 + deg2 - 1; i++) cout << x[i] - y[i] << " ";
-        cout << "\n";
+        auto poly1 = read(), poly2 = read();
+        cout << poly1.size() + poly2.size() - 2 << "\n";
+        for (auto a : convolve(poly1, poly2)) cout << a << " ";
     }
 }
