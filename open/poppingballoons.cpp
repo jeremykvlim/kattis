@@ -534,19 +534,19 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
         ntt_modint1::init();
         ntt_modint2::init();
 
-        vector<ntt_modint1> ntt_a1(n), ntt_b1(n);
-        vector<ntt_modint2> ntt_a2(n), ntt_b2(n);
+        vector<ntt_modint1> f_a1(n), f_b1(n);
+        vector<ntt_modint2> f_a2(n), f_b2(n);
         for (int i = 0; i < da; i++) {
-            ntt_a1[i] = a[i];
-            ntt_a2[i] = a[i];
+            f_a1[i] = a[i];
+            f_a2[i] = a[i];
         }
         for (int i = 0; i < db; i++) {
-            ntt_b1[i] = b[i];
-            ntt_b2[i] = b[i];
+            f_b1[i] = b[i];
+            f_b2[i] = b[i];
         }
 
-        auto F_a1 = ntt(n, ntt_a1), F_b1 = ntt(n, ntt_b1);
-        auto F_a2 = ntt(n, ntt_a2), F_b2 = ntt(n, ntt_b2);
+        auto F_a1 = ntt(n, f_a1), F_b1 = ntt(n, f_b1);
+        auto F_a2 = ntt(n, f_a2), F_b2 = ntt(n, f_b2);
 
         vector<ntt_modint1> F_c1(n);
         vector<ntt_modint2> F_c2(n);
@@ -562,15 +562,15 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
         return c;
     }
 
-    vector<modint> ntt_a(n);
-    for (int i = 0; i < da; i++) ntt_a[i] = a[i];
+    vector<modint> f_a(n);
+    for (int i = 0; i < da; i++) f_a[i] = a[i];
 
-    vector<modint> F_a = ntt(n, ntt_a), F_b;
+    vector<modint> F_a = ntt(n, f_a), F_b;
     if (a == b) F_b = F_a;
     else {
-        vector<modint> ntt_b(n);
-        for (int i = 0; i < db; i++) ntt_b[i] = b[i];
-        F_b = ntt(n, ntt_b);
+        vector<modint> f_b(n);
+        for (int i = 0; i < db; i++) f_b[i] = b[i];
+        F_b = ntt(n, f_b);
     }
 
     vector<modint> F_c(n);
