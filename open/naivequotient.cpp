@@ -622,11 +622,8 @@ pair<vector<T>, vector<T>> polydiv(const vector<T> &a, const vector<T> &b) {
     vector<T> r(min(da, db - 1));
     for (int i = 0; i < r.size(); i++) r[i] = a[i] - (i < c.size() ? c[i] : 0);
 
-    auto trim = [&](auto &p) {
-        while (p.size() > 1 && !p.back()) p.pop_back();
-    };
-    trim(q);
-    trim(r);
+    while (q.size() > 1 && !q.back()) q.pop_back();
+    while (r.size() > 1 && !r.back()) r.pop_back();
     return {q, r};
 }
 
