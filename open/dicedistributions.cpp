@@ -584,23 +584,20 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
 
 template <typename T>
 vector<T> polyinv(const vector<T> &a, int n) {
-    vector<modint> f_a_inv{modint::inv(a[0])};
-    while (f_a_inv.size() < n) {
-        int m = f_a_inv.size() << 1;
+    vector<T> a_inv{(T) 1 / a[0]};
+    while (a_inv.size() < n) {
+        int m = a_inv.size() << 1;
 
-        vector<modint> f_a(min((int) a.size(), m));
+        vector<T> f_a(min((int) a.size(), m));
         for (int i = 0; i < f_a.size(); i++) f_a[i] = a[i];
 
-        auto temp = convolve(convolve(f_a_inv, f_a_inv), f_a);
-        f_a_inv.resize(m);
+        auto temp = convolve(convolve(a_inv, a_inv), f_a);
+        a_inv.resize(m);
         for (int i = 0; i < m; i++) {
-            f_a_inv[i] *= 2;
-            if (i < temp.size()) f_a_inv[i] -= temp[i];
+            a_inv[i] *= 2;
+            if (i < temp.size()) a_inv[i] -= temp[i];
         }
     }
-
-    vector<T> a_inv(n);
-    for (int i = 0; i < n; i++) a_inv[i] = f_a_inv[i]();
     return a_inv;
 }
 
