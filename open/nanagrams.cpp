@@ -436,97 +436,60 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
-modint ways(unordered_map<long long, vector<long long>> &adj_list, unordered_map<long long, int> &count, long long s) {
-    map<int, modint> ways_len;
-    unordered_map<long long, modint> ways_num{{s, 1}};
-    unordered_map<long long, int> digits{{s, 0}};
-    unordered_set<long long> visited;
-    queue<long long> q;
-    q.emplace(s);
-    while (!q.empty()) {
-        auto v = q.front();
-        q.pop();
-
-        if (visited.count(v)) continue;
-
-        visited.emplace(v);
-        ways_len[digits[v]] += ways_num[v];
-        for (auto u : adj_list[v]) {
-            if (!ways_num.count(u)) ways_num[u];
-
-            ways_num[u] += ways_num[v] * count[u];
-            digits[u] = digits[v] + 1;
-            q.emplace(u);
-        }
-    }
-
-    return (*prev(ways_len.end())).second;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     modint::init();
 
-    int n, m, a, b, c, d;
+    int n, m;
+    long long a, b, c, d;
     cin >> n >> m >> a >> b >> c >> d;
 
-    auto encode = [](long long n) -> long long {
-        if (!n) return 1;
+    auto encode = [&](long long x) -> string {
+        if (!x) return "0";
 
-        auto e = 0LL;
-        while (n) {
-            e += 1LL << ((n % 10) << 2);
-            n /= 10;
-        }
-
-        return e;
+        string s;
+        for (; x; x /= 10) s += (char) ('0' + (x % 10));
+        sort(s.begin(), s.end());
+        return s;
     };
 
-    unordered_map<long long, int> count;
     unordered_set<long long> seen;
-    int x = d;
-    while (n--) {
-        if (!seen.count(x)) count[encode(x)]++;
+    unordered_map<string, int> count;
+    for (int x = d; n--; x = ((long long) a * x + b) % c)
+        if (seen.emplace(x).second) count[encode(x)]++;
 
-        seen.emplace(x);
-        x = ((long long) a * x + b) % c;
-    }
-
-    auto make = [](long long xi, long long xj) -> int {
-        auto decode = [](long long x, int d) -> long long {
-            return (x >> (d << 2)) & 15;
-        };
-
-        int digits_diff = 0;
-        for (int d = 0; d <= 9; d++) {
-            auto count_diff = decode(xj, d) - decode(xi, d);
-
-            if (count_diff == 1) digits_diff++;
-            if (count_diff < 0 || count_diff > 1 || digits_diff > 1) return 0;
-        }
-
-        return digits_diff;
-    };
-
-    unordered_map<long long, vector<long long>> adj_list;
-    for (auto [xi, ci] : count)
-        for (auto [xj, cj] : count)
-            if (xi != xj && make(xi, xj)) adj_list[xi].emplace_back(xj);
-
-    unordered_map<long long, modint> cache;
+    unordered_map<string, pair<int, modint>> memo;
     while (m--) {
         long long s;
         cin >> s;
 
-        s = encode(s);
-        if (cache.count(s)) {
-            cout << cache[s] << "\n";
-            continue;
-        }
+        auto dp = [&](auto &&self, const string &s) -> pair<int, modint> {
+            auto it1 = memo.find(s);
+            if (it1 != memo.end()) return it1->second;
 
-        cache[s] = ways(adj_list, count, s);
-        cout << cache[s] << "\n";
+            modint ways = 1;
+            int len = s.size();
+            for (int d = 0; d <= 9; d++) {
+                auto t = s;
+                char c = (char) ('0' + d);
+                t.insert(lower_bound(t.begin(), t.end(), c), c);
+
+                auto it2 = count.find(t);
+                if (it2 == count.end()) continue;
+
+                auto [l, w] = self(self, t);
+                w *= it2->second;
+                if (len < l) {
+                    len = l;
+                    ways = w;
+                } else if (l == len) ways += w;
+            }
+            return memo[s] = {len, ways};
+        };
+
+        if (!seen.count(s)) cout << "0\n";
+        else cout << dp(dp, encode(s)).second << "\n";
     }
 }
