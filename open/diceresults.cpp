@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -584,23 +584,20 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
 
 template <typename T>
 vector<T> polyinv(const vector<T> &a, int n) {
-    vector<modint> f_a_inv{modint::inv(a[0])};
-    while (f_a_inv.size() < n) {
-        int m = f_a_inv.size() << 1;
+    vector<T> a_inv{(T) 1 / a[0]};
+    while (a_inv.size() < n) {
+        int m = a_inv.size() << 1;
 
-        vector<modint> f_a(min((int) a.size(), m));
+        vector<T> f_a(min((int) a.size(), m));
         for (int i = 0; i < f_a.size(); i++) f_a[i] = a[i];
 
-        auto temp = convolve(convolve(f_a_inv, f_a_inv), f_a);
-        f_a_inv.resize(m);
+        auto temp = convolve(convolve(a_inv, a_inv), f_a);
+        a_inv.resize(m);
         for (int i = 0; i < m; i++) {
-            f_a_inv[i] *= 2;
-            if (i < temp.size()) f_a_inv[i] -= temp[i];
+            a_inv[i] *= 2;
+            if (i < temp.size()) a_inv[i] -= temp[i];
         }
     }
-
-    vector<T> a_inv(n);
-    for (int i = 0; i < n; i++) a_inv[i] = f_a_inv[i]();
     return a_inv;
 }
 
@@ -610,7 +607,7 @@ vector<T> polyder(const vector<T> &a) {
     if (n <= 1) return {0};
 
     vector<T> D(n - 1);
-    for (int i = 1; i < n; i++) D[i - 1] = ((modint) i * a[i])();
+    for (int i = 1; i < n; i++) D[i - 1] = i * a[i];
     return D;
 }
 
@@ -619,40 +616,40 @@ vector<T> polyint(const vector<T> &a) {
     int n = a.size();
 
     vector<T> I(n + 1, 0);
-    for (int i = 1; i <= n; i++) I[i] = (modint::inv(i) * a[i - 1])();
+    for (int i = 1; i <= n; i++) I[i] = ((T) 1 / i) * a[i - 1];
     return I;
 }
 
 template <typename T>
 vector<T> polyln(const vector<T> &a, int n) {
-    auto derivln = convolve(polyder(a), polyinv(a, n));
-    derivln.resize(n - 1);
-    auto ln = polyint(derivln);
-    ln.resize(n);
-    return ln;
+    auto der_ln_a = convolve(polyder(a), polyinv(a, n));
+    der_ln_a.resize(n - 1);
+    auto ln_a = polyint(der_ln_a);
+    ln_a.resize(n);
+    return ln_a;
 }
 
 template<typename T>
 vector<T> polyexp(const vector<T> &a, int n) {
-    vector<T> e{(T) 1};
-    while (e.size() < n) {
-        int m = min((int) e.size() << 1, n);
+    vector<T> E{(T) 1};
+    while (E.size() < n) {
+        int m = min((int) E.size() << 1, n);
 
-        vector<T> temp = e;
+        auto temp = E;
         temp.resize(m);
-        auto lne = polyln(temp, m);
+        auto ln_E = polyln(temp, m);
 
-        vector<T> diff(m, 0);
-        diff[0] = 1;
+        vector<T> F(m, 0);
+        F[0] = 1;
         for (int i = 0; i < m; i++) {
-            if (i < a.size()) diff[i] += a[i];
-            diff[i] -= lne[i];
+            if (i < a.size()) F[i] += a[i];
+            F[i] -= ln_E[i];
         }
-        e = convolve(e, diff);
-        e.resize(m);
+        E = convolve(E, F);
+        E.resize(m);
     }
-    e.resize(n);
-    return e;
+    E.resize(n);
+    return E;
 }
 
 int main() {
@@ -665,8 +662,7 @@ int main() {
     cin >> n;
 
     int sum = 0;
-    vector<int> h(n);
-    unordered_map<int, int> count;
+    vector<int> h(n), count(2e5 + 1, 0);
     for (int &hi : h) {
         cin >> hi;
 
@@ -678,9 +674,10 @@ int main() {
     vector<modint> F(m + 1, 0);
     for (int k = 1; k <= m; k++) F[k] = modint::inv(k) * n;
 
-    for (auto [hi, c] : count)
-        for (int k = hi, i = 1; k <= m; k += hi, i++) F[k] -= modint::inv(i) * c;
+    for (int hi = 1; hi <= 2e5; hi++)
+        if (count[hi])
+            for (int k = hi, i = 1; k <= m; k += hi, i++) F[k] -= modint::inv(i) * count[hi];
 
-    auto e = polyexp(F, m + 1);
-    for (int i = 1; i <= sum; i++) cout << (i < n ? 0 : e[i - n]) << "\n";
+    auto E = polyexp(F, m + 1);
+    for (int i = 1; i <= sum; i++) cout << (i < n ? 0 : E[i - n]) << "\n";
 }
