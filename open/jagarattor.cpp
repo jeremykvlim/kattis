@@ -170,21 +170,21 @@ int main() {
     }
 
     BlockCutTree bct(n, m, adj_list);
-    vector<array<int, 3>> base_states(2 * m);
+    vector<array<int, 3>> states(2 * m);
     for (int i = 0; i < m; i++) {
-        base_states[2 * i] = {pipes[i][1], bct.edge_component[i], encode(i, 0)};
-        base_states[2 * i + 1] = {pipes[i][0], bct.edge_component[i], encode(i, 1)};
+        states[2 * i] = {pipes[i][1], bct.edge_component[i], encode(i, 0)};
+        states[2 * i + 1] = {pipes[i][0], bct.edge_component[i], encode(i, 1)};
     }
-    sort(base_states.begin(), base_states.end());
+    sort(states.begin(), states.end());
 
     int count = 0;
     vector<int> base_nodes(2 * m);
     vector<vector<int>> node_states;
     for (int i = 0; i < 2 * m;) {
-        int v = base_states[i][0], c = base_states[i][1];
+        int v = states[i][0], c = states[i][1];
         node_states.emplace_back();
-        for (; i < 2 * m && base_states[i][0] == v && base_states[i][1] == c; i++) {
-            int s = base_states[i][2];
+        for (; i < 2 * m && states[i][0] == v && states[i][1] == c; i++) {
+            int s = states[i][2];
             base_nodes[s] = count;
             node_states.back().emplace_back(s);
         }
@@ -279,8 +279,8 @@ int main() {
         }
         if (!~c) continue;
 
-        int i = lower_bound(base_states.begin(), base_states.end(), array<int, 3>{r, c, 0}) - base_states.begin();
-        if (i < 2 * m && base_states[i][0] == r && base_states[i][1] == c) Q_component[q] = component[base_nodes[base_states[i][2]]];
+        int i = lower_bound(states.begin(), states.end(), array<int, 3>{r, c, 0}) - states.begin();
+        if (i < 2 * m && states[i][0] == r && states[i][1] == c) Q_component[q] = component[base_nodes[states[i][2]]];
     }
 
     vector<bool> visited(sccs + 1, false);
