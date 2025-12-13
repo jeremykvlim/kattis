@@ -136,7 +136,7 @@ struct BlockCutTree {
                             } while (j != i);
 
                             if (~prev) cutpoint[v] = true;
-                            bccs.emplace_back(vector<int>{v});
+                            bccs.emplace_back(vector{v});
 
                             while (bccs.back().back() != u) {
                                 bccs.back().emplace_back(st_v.top());

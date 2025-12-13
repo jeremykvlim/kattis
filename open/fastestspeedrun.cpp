@@ -73,7 +73,7 @@ pair<T, vector<int>> edmonds_dense(int n, vector<vector<pair<int, T>>> adj_list_
 
                 if (visited[u] == count) {
                     cycle[u] = true;
-                    cycles.emplace_back(vector<int>{u});
+                    cycles.emplace_back(vector{u});
                     while (s.top() != u) {
                         cycle[s.top()] = true;
                         cycles.back().emplace_back(s.top());

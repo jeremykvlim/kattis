@@ -29,7 +29,7 @@ struct BlockCutTree {
 
                         if (low[u] >= order[v]) {
                             cutpoint[v] = (order[v] > 1 || order[u] > 2);
-                            bccs.emplace_back(vector<int>{v});
+                            bccs.emplace_back(vector{v});
 
                             while (bccs.back().back() != u) {
                                 bccs.back().emplace_back(st.top());
