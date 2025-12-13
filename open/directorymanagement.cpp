@@ -47,7 +47,7 @@ int main() {
                 name.emplace_back(s);
                 size.emplace_back(1);
                 prev_size.emplace_back(1);
-                last.emplace_back(vector<string>{s});
+                last.emplace_back(vector{s});
                 children.emplace_back();
                 int u = nodes++;
                 undo.emplace(1, u);
