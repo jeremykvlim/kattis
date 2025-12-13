@@ -3,14 +3,14 @@ using namespace std;
 
 struct BlockCutTree {
     int n;
-    vector<vector<int>> BCT, bccs;
+    vector<vector<int>> BCT, bccs, cutpoint_children;
     vector<int> node_id, in, out, parent, edge_component;
     vector<bool> cutpoint;
 
-    BlockCutTree(int n, int m, vector<vector<pair<int, int>>> &adj_list) : n(n), node_id(n + 1, -1), cutpoint(n + 1, false), edge_component(m) {
+    BlockCutTree(int n, int m, vector<vector<pair<int, int>>> &adj_list) : n(n), node_id(n + 1, -1), edge_component(m), cutpoint(n + 1, false) {
         tarjan(adj_list);
         build();
-    };
+    }
 
     void tarjan(vector<vector<pair<int, int>>> &adj_list) {
         vector<int> order(n + 1, 0), low(n + 1, 0);
@@ -37,7 +37,7 @@ struct BlockCutTree {
                             } while (j != i);
 
                             cutpoint[v] = (order[v] > 1 || order[u] > 2);
-                            bccs.emplace_back(vector<int>{v});
+                            bccs.emplace_back(vector{v});
 
                             while (bccs.back().back() != u) {
                                 bccs.back().emplace_back(st_v.top());
@@ -86,6 +86,13 @@ struct BlockCutTree {
             out[v] = count;
         };
         dfs(dfs);
+
+        cutpoint_children.assign(m, {});
+        for (int v = bccs.size(); v < m; v++) {
+            for (int u : BCT[v])
+                if (parent[u] == v) cutpoint_children[v].emplace_back(u);
+            sort(cutpoint_children[v].begin(), cutpoint_children[v].end(), [&](int x, int y) { return in[x] < in[y]; });
+        }
     }
 
     bool ancestor(int v, int u) {
@@ -141,23 +148,23 @@ int main() {
 
     vector<array<int, 4>> pipes(m);
     vector<vector<pair<int, int>>> adj_list(n + 1);
-    vector<unordered_map<int, int>> pipe_index(n + 1);
     for (int i = 0; i < m; i++) {
         auto &[u, v, a, b] = pipes[i];
         cin >> u >> v >> a >> b;
 
         adj_list[u].emplace_back(v, i);
         adj_list[v].emplace_back(u, i);
-        pipe_index[u][v] = pipe_index[v][u] = i;
     }
+    for (int v = 1; v <= n; v++) sort(adj_list[v].begin(), adj_list[v].end(), [&](auto &p1, auto &p2) { return p1.first < p2.first; });
 
     auto encode = [&](int i, int dir) { return (i << 1) | dir; };
-    auto decode = [&](int state) -> pair<int, int> { return {state >> 1, state & 1}; };
+    auto decode = [&](int state) { return make_pair(state >> 1, state & 1); };
 
     vector<int> next(2 * m);
     for (int i = 0; i < m; i++) {
         auto [u, v, a, b] = pipes[i];
-        int j = pipe_index[v][a], k = pipe_index[u][b];
+        int j = lower_bound(adj_list[v].begin(), adj_list[v].end(), a, [&](auto p, int x) { return p.first < x; })->second,
+            k = lower_bound(adj_list[u].begin(), adj_list[u].end(), b, [&](auto p, int x) { return p.first < x; })->second;
         next[encode(i, 0)] = encode(j, pipes[j][0] != v);
         next[encode(i, 1)] = encode(k, pipes[k][0] != u);
     }
@@ -170,58 +177,71 @@ int main() {
     }
     sort(base_states.begin(), base_states.end());
 
-    int states = 2 * m;
-    vector<int> extra_states(states);
-    for (int i = 0; i < 2 * m; states++) {
-        auto [v, c, _] = base_states[i];
-        for (; i < 2 * m && base_states[i][0] == v && base_states[i][1] == c; i++) extra_states[i] = states;
+    int count = 0;
+    vector<int> base_nodes(2 * m);
+    vector<vector<int>> node_states;
+    for (int i = 0; i < 2 * m;) {
+        int v = base_states[i][0], c = base_states[i][1];
+        node_states.emplace_back();
+        for (; i < 2 * m && base_states[i][0] == v && base_states[i][1] == c; i++) {
+            int s = base_states[i][2];
+            base_nodes[s] = count;
+            node_states.back().emplace_back(s);
+        }
+        count++;
     }
 
-    vector<vector<int>> adj_list_rat(states);
-    for (int i = 0; i < 2 * m; i++) adj_list_rat[i].emplace_back(next[i]);
-    for (int i = 0; i < 2 * m; i++) {
-        int s1 = base_states[i][2], s2 = extra_states[i];
-        adj_list_rat[s1].emplace_back(s2);
-        adj_list_rat[s2].emplace_back(s1);
+    vector<vector<int>> adj_list_rat(count);
+    for (int state = 0; state < 2 * m; state++) {
+        int u = base_nodes[state], v = base_nodes[next[state]];
+        if (u != v) adj_list_rat[u].emplace_back(v);
     }
+
+    auto dedupe = [&](auto &v) {
+        sort(v.begin(), v.end());
+        v.erase(unique(v.begin(), v.end()), v.end());
+    };
+    for (auto &neighbors : adj_list_rat) dedupe(neighbors);
 
     vector<pair<int, int>> SR(Q);
     vector<int> T(Q);
     for (int i = 0; i < Q; i++) cin >> SR[i].first >> SR[i].second >> T[i];
 
     if (adjacent_find(SR.begin(), SR.end(), not_equal_to<>()) == SR.end()) {
-        auto [s, r] = SR[0];
+        auto [s0, r0] = SR[0];
         vector<bool> reachable(n + 1, false);
-        reachable[s] = true;
+        reachable[s0] = true;
         queue<int> q;
-        q.emplace(s);
+        q.emplace(s0);
         while (!q.empty()) {
             int v = q.front();
             q.pop();
 
             for (auto [u, i] : adj_list[v])
-                if (!reachable[u] && u != r) {
+                if (!reachable[u] && u != r0) {
                     reachable[u] = true;
                     q.emplace(u);
                 }
         }
 
-        vector<int> valid;
-        for (auto [u, i] : adj_list[r])
-            if (reachable[u]) valid.emplace_back(encode(i, pipes[i][0] != u));
+        vector<int> start_groups;
+        for (auto [u, i] : adj_list[r0])
+            if (reachable[u]) start_groups.emplace_back(base_nodes[encode(i, pipes[i][0] != u)]);
+        sort(start_groups.begin(), start_groups.end());
+        start_groups.erase(unique(start_groups.begin(), start_groups.end()), start_groups.end());
 
-        vector<bool> visited(states, false), trapped(n + 1, false);
-        for (int v : valid) {
-            visited[v] = true;
-            q.emplace(v);
+        vector<bool> visited(count, false), trapped(n + 1, false);
+        for (int g : start_groups) {
+            visited[g] = true;
+            q.emplace(g);
         }
 
         while (!q.empty()) {
             int v = q.front();
             q.pop();
 
-            if (v < 2 * m) {
-                auto [i, dir] = decode(v);
+            for (int s : node_states[v]) {
+                auto [i, dir] = decode(next[s]);
                 trapped[pipes[i][dir ^ 1]] = true;
             }
 
@@ -236,11 +256,12 @@ int main() {
         exit(0);
     }
 
-    auto [sccs, component] = tarjan(states, adj_list_rat);
+    auto [sccs, component] = tarjan(count, adj_list_rat);
     vector<vector<int>> dag(sccs + 1);
-    for (int v = 0; v < states; v++)
+    for (int v = 0; v < count; v++)
         for (int u : adj_list_rat[v])
             if (component[v] != component[u]) dag[component[v]].emplace_back(component[u]);
+    for (int c = 1; c <= sccs; c++) dedupe(dag[c]);
 
     vector<int> Q_component(Q, -1);
     for (int q = 0; q < Q; q++) {
@@ -249,19 +270,17 @@ int main() {
         int vr = bct.node_id[r], vs = bct.node_id[s], c = -1;
         if (!bct.iscutpoint(vr)) c = bct.edge_component[adj_list[r][0].second];
         else {
-            for (auto [u, i] : adj_list[r]) {
-                int comp = bct.edge_component[i];
-                if ((bct.parent[comp] == vr && bct.ancestor(comp, vs)) || (bct.parent[vr] == comp && !bct.ancestor(vr, vs))){
-                    c = comp;
-                    break;
-                }
+            if (!bct.ancestor(vr, vs)) c = bct.parent[vr];
+            else {
+                auto &children = bct.cutpoint_children[vr];
+                auto it = upper_bound(children.begin(), children.end(), bct.in[vs], [&](int count, int v) { return count < bct.in[v]; });
+                if (it != children.begin()) c = *prev(it);
             }
         }
         if (!~c) continue;
 
-        array<int, 3> state{r, c, 0};
-        int i = lower_bound(base_states.begin(), base_states.end(), state) - base_states.begin();
-        if (i < 2 * m && base_states[i][0] == r && base_states[i][1] == c) Q_component[q] = component[extra_states[i]];
+        int i = lower_bound(base_states.begin(), base_states.end(), array<int, 3>{r, c, 0}) - base_states.begin();
+        if (i < 2 * m && base_states[i][0] == r && base_states[i][1] == c) Q_component[q] = component[base_nodes[base_states[i][2]]];
     }
 
     vector<bool> visited(sccs + 1, false);
@@ -276,27 +295,27 @@ int main() {
         if (!visited[c]) dfs(dfs, c);
 
     auto deduped = T;
-    sort(deduped.begin(), deduped.end());
-    deduped.erase(unique(deduped.begin(), deduped.end()), deduped.end());
+    dedupe(deduped);
     int s = deduped.size();
     vector<int> indices(n + 1, -1);
     for (int i = 0; i < s; i++) indices[deduped[i]] = i;
 
     vector<vector<int>> T_components(s);
-    for (int v = 0; v < 2 * m; v++) {
-        int u = next[v];
-        auto [i, dir] = decode(u);
-        if (~indices[pipes[i][dir ^ 1]]) T_components[indices[pipes[i][dir ^ 1]]].emplace_back(component[v]);
+    for (int state = 0; state < 2 * m; state++) {
+        auto [i, dir] = decode(next[state]);
+        if (~indices[pipes[i][dir ^ 1]]) T_components[indices[pipes[i][dir ^ 1]]].emplace_back(component[base_nodes[state]]);
     }
 
     const int size = 1 << 11;
     int k = (s + size - 1) / size;
     vector<vector<int>> blocks(k);
     vector<int> T_rev(Q);
-    for (int q = 0; q < Q; q++) {
-        int t = indices[T[q]];
-        blocks[t / size].emplace_back(q);
-        T_rev[q] = t;
+    for (int qi = 0; qi < Q; qi++) {
+        int t = indices[T[qi]];
+        if (t != -1) {
+            blocks[t / size].emplace_back(qi);
+            T_rev[qi] = t;
+        } else T_rev[qi] = -1;
     }
 
     vector<bool> trapped(Q, false);
@@ -313,7 +332,7 @@ int main() {
 
         for (int q : blocks[b]) {
             int c = Q_component[q];
-            if (~c && dp[c][T_rev[q] - tl]) trapped[q] = true;
+            if (~c && tl <= T_rev[q] && T_rev[q] < tr && dp[c][T_rev[q] - tl]) trapped[q] = true;
         }
     }
 
