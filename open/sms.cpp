@@ -52,7 +52,7 @@ struct Trie {
 
         if (!T[node].count) {
             T[node].count = ++count;
-            words.emplace_back(vector<string>());
+            words.emplace_back();
         }
 
         words[T[node].count - 1].emplace_back(s);
