@@ -162,6 +162,7 @@ pair<vector<int>, vector<bool>> kruskal(int n, vector<array<int, 4>> edges) {
 
     return {mst, in_mst};
 }
+
 template <typename T>
 vector<complex<T>> quadratic_roots(T a, T b, T c) {
     if (fabs(a) < 1e-8 && fabs(b) < 1e-8) return {};
