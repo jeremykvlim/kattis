@@ -172,7 +172,7 @@ vector<complex<T>> quadratic_roots(T a, T b, T c) {
 }
 
 template <typename T>
-int kinetic_euclidean_minimum_spanning_tree(int n, const vector<array<T, 6>> &points) {
+int kinetic_euclidean_mst(int n, const vector<array<T, 6>> &points) {
     int m = n * (n - 1) / 2;
     vector<pair<int, int>> edges(m);
     for (int i = 0, k = 0; i < n; i++)
@@ -334,6 +334,6 @@ int main() {
     while (cin >> d) {
         vector<array<int, 6>> points(d);
         for (auto &[x, y, z, vx, vy, vz] : points) cin >> x >> y >> z >> vx >> vy >> vz;
-        cout << kinetic_euclidean_minimum_spanning_tree(d, points) << "\n";
+        cout << kinetic_euclidean_mst(d, points) << "\n";
     }
 }
