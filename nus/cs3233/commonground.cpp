@@ -293,10 +293,11 @@ int main() {
     vector<array<long long, 3>> players(2 * n);
     for (auto &[x, y, r] : players) cin >> x >> y >> r;
 
-    auto union_area = [&](const vector<array<long long, 3>> &team) {
+    auto union_area = [&](int il, int ir) {
         auto extra = 0ULL;
         auto NE = 0LL, NW = 0LL, SE = 0LL, SW = 0LL;
-        for (auto [x, y, r] : team) {
+        for (int i = il; i < ir; i++) {
+            auto [x, y, r] = players[i];
             NE = max(NE, r - ((L - x) + y));
             NW = max(NW, r - (x + y));
             SE = max(SE, r - ((L - x) + (w - y)));
@@ -305,18 +306,19 @@ int main() {
         extra -= NE * NE + NW * NW + SE * SE + SW * SW;
         extra *= 2;
 
-        vector<array<long long, 4>> rectangles(team.size());
-        vector<pair<long long, long long>> N, S, E, W;
-        for (int i = 0; i < team.size(); i++) {
-            auto [x, y, r] = team[i];
+        int m = ir - il;
+        vector<array<long long, 4>> rectangles(m);
+        vector<vector<pair<long long, long long>>> dirs(4);
+        for (int i = 0; i < m; i++) {
+            auto [x, y, r] = players[il + i];
             rectangles[i] = {x + y - r, x + y + r, x - y - r, x - y + r};
-            if (r > y) N.emplace_back(x - (r - y), x + (r - y));
-            if (r > w - y) S.emplace_back(x - (r - (w - y)), x + (r - (w - y)));
-            if (r > L - x) E.emplace_back(y - (r - (L - x)), y + (r - (L - x)));
-            if (r > x) W.emplace_back(y - (r - x), y + (r - x));
+            if (r > y) dirs[0].emplace_back(x - (r - y), x + (r - y));
+            if (r > w - y) dirs[1].emplace_back(x - (r - (w - y)), x + (r - (w - y)));
+            if (r > L - x) dirs[2].emplace_back(y - (r - (L - x)), y + (r - (L - x)));
+            if (r > x) dirs[3].emplace_back(y - (r - x), y + (r - x));
         }
 
-        for (auto intervals : {N, S, E, W}) {
+        for (auto &intervals : dirs) {
             if (intervals.empty()) continue;
 
             sort(intervals.begin(), intervals.end());
@@ -348,9 +350,9 @@ int main() {
         return 2ULL * area_of_union_of_rectangles(rectangles) - extra;
     };
 
-    auto P = union_area({players.begin(), players.begin() + n}),
-         Q = union_area({players.begin() + n, players.end()}),
-         PQ = union_area(players);
+    auto P = union_area(0, n),
+         Q = union_area(n, 2 * n),
+         PQ = union_area(0, 2 * n);
 
     Fraction<__int128> f(P + Q - PQ, P);
     cout << (long long) f.numer() << "/" << (long long) f.denom();
