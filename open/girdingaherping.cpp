@@ -215,11 +215,11 @@ int main() {
         c += cross(polygon[i], polygon[j]);
     }
 
-    double dist = 1e30;
+    auto dist = 1e20;
     for (auto r : quadratic_roots(a / 2, b / 2, c / 4))
         if (fabs(r.imag()) < 1e-8 && sgn(r.real()) > 0) dist = min(dist, r.real());
 
-    if (dist == 1e30) {
+    if (dist == 1e20) {
         cout << "Omogulegt!";
         exit(0);
     }
