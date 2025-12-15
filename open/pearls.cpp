@@ -27,7 +27,7 @@ int main() {
     for (int d1 = 0; d1 < 4; d1++) {
         int d0 = d1;
         bool found = false;
-        auto backtrack = [&](auto &&self, int d1, int x, int y, int i = 0) {
+        auto dfs = [&](auto &&self, int d1, int x, int y, int i = 0) {
             if (i == k) {
                 if (x != r || y != c || d1 != d0 || white != 0) return;
                 found = true;
@@ -67,7 +67,7 @@ int main() {
             }
             visited[x][y] = false;
         };
-        backtrack(backtrack, d1, r, c);
+        dfs(dfs, d1, r, c);
     }
 
     if (path.empty()) cout << "impossible";
