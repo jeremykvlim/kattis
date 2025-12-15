@@ -254,7 +254,7 @@ int main() {
 
         vector<array<Point<long double>, 3>> prev;
         vector<Line<long double>> edges{{{0, 0}, {len, 0}}, {{len, 0}, {len, len}}, {{len, len}, {0, len}}, {{0, len}, {0, 0}}};
-        auto backtrack = [&](auto &&self, int mask = 0) -> bool {
+        auto dfs = [&](auto &&self, int mask = 0) -> bool {
             if (mask == 15) return true;
 
             int n = edges.size();
@@ -304,6 +304,6 @@ int main() {
             }
             return false;
         };
-        cout << backtrack(backtrack) << "\n";
+        cout << dfs(dfs) << "\n";
     }
 }
