@@ -1,26 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int t(int i, vector<int> &times, vector<pair<int, int>> &groups) {
-    if (!i) {
-        groups.emplace_back(times[0], 0);
-        return times[0];
-    } else if (i == 1) {
-        groups.emplace_back(times[0], times[1]);
-        return times[1];
-    } else if (i > 2 && 2 * times[1] < times[0] + times[i - 1]) {
-        groups.emplace_back(times[0], times[1]);
-        groups.emplace_back(times[0], 0);
-        groups.emplace_back(times[i - 1], times[i]);
-        groups.emplace_back(times[1], 0);
-        return times[0] + 2 * times[1] + times[i] + t(i - 2, times, groups);
-    } else {
-        groups.emplace_back(times[0], times[i]);
-        groups.emplace_back(times[0], 0);
-        return times[0] + times[i] + t(i - 1, times, groups);
-    }
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -32,10 +12,53 @@ int main() {
     for (int &t : times) cin >> t;
     sort(times.begin(), times.end());
 
-    vector<pair<int, int>> groups;
-    cout << t(n - 1, times, groups) << "\n";
-    for (auto [p1, p2] : groups) {
-        if (p2) cout << p1 << " " << p2 << "\n";
-        else cout << p1 << "\n";
+    int total = 0;
+    vector<vector<int>> moves;
+    auto add1 = [&](int x) {
+        moves.emplace_back();
+        moves.back().emplace_back(x);
+    };
+    auto add2 = [&](int x, int y) {
+        moves.emplace_back();
+        moves.back().emplace_back(x);
+        moves.back().emplace_back(y);
+    };
+
+    for (; n > 3; n -= 2) {
+        int t1 = times[0], t2 = times[1], t3 = times[n - 2], t4 = times[n - 1],
+            tl = t1 + 2 * t2 + t4, tr = t1 * 2 + t3 + t4;
+
+        if (tl <= tr) {
+            total += tl;
+            add2(t1, t2);
+            add1(t1);
+            add2(t3, t4);
+            add1(t2);
+        } else {
+            total += tr;
+            add2(t1, t4);
+            add1(t1);
+            add2(t1, t3);
+            add1(t1);
+        }
+    }
+
+    if (n == 1) {
+        total += times[0];
+        add1(times[0]);
+    } else if (n == 2) {
+        total += times[1];
+        add2(times[0], times[1]);
+    } else if (n == 3) {
+        total += times[0] + times[1] + times[2];
+        add2(times[0], times[1]);
+        add1(times[0]);
+        add2(times[0], times[2]);
+    }
+
+    cout << total << "\n";
+    for (auto &m : moves) {
+        for (int t : m) cout << t << " ";
+        cout << "\n";
     }
 }
