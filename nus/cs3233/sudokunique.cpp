@@ -1,95 +1,95 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-bool valid_digit(vector<vector<char>> &board, int r, int c) {
-    vector<bool> seen_r(10, false), seen_c(10, false);
-    for (int i = 0; i < 9; i++) {
-        if (board[i][c] != '0' && seen_r[board[i][c] - '0']) return false;
-        if (board[r][i] != '0' && seen_c[board[r][i] - '0']) return false;
-
-        seen_r[board[i][c] - '0'] = seen_c[board[r][i] - '0'] = true;
-    }
-
-    vector<bool> seen_block(10, false);
-    int i = r - r % 3, j = c - c % 3;
-    for (int k = 0; k < 3; k++)
-        for (int l = 0; l < 3; l++)
-            if (board[i + k][j + l] != '0' && seen_block[board[i + k][j + l] - '0']) return false;
-            else seen_block[board[i + k][j + l] - '0'] = true;
-
-    return true;
-}
-
-void backtrack(vector<vector<char>> &board, vector<vector<char>> &solution, bool &unique) {
-    auto solved = [&]() -> bool {
-        return !any_of(board.begin(), board.end(), [&](auto row) {
-            return any_of(row.begin(), row.end(), [&](char c) { return c == '0'; });
-        });
-    };
-
-    if (solved()) {
-        if (!solution.empty()) unique = false;
-        else solution = board;
-
-        return;
-    }
-
-    int r, c;
-    vector<char> possible(10);
-    for (int i = 0; i < 9; i++)
-        for (int j = 0; j < 9; j++) {
-            if (board[i][j] != '0') continue;
-
-            vector<char> p;
-            for (char d = '1'; d <= '9'; d++) {
-                board[i][j] = d;
-                if (valid_digit(board, i, j)) p.emplace_back(d);
-                board[i][j] = '0';
-            }
-
-            if (possible.size() > p.size()) {
-                r = i;
-                c = j;
-                possible = p;
-            }
-        }
-
-    for (char d : possible) {
-        board[r][c] = d;
-        backtrack(board, solution, unique);
-        if (!unique) return;
-        board[r][c] = '0';
-    }
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
+    vector<vector<int>> board(9, vector<int>(9));
     for (;;) {
-        vector<vector<char>> board(9, vector<char>(9));
         for (auto &row : board)
-            for (char &sq : row)
-                if (!(cin >> sq)) exit(0);
+            for (int &square : row) {
+                char c;
+                if (!(cin >> c)) exit(0);
 
-        auto valid = [&]() -> bool {
-            for (int i = 0; i < 9; i++)
-                for (int j = 0; j < 9; j++) {
-                    if (board[i][j] == '0') continue;
-                    if (!valid_digit(board, i, j)) return false;
+                square = c - '0';
+            }
+
+        bool valid = true;
+        int erased = 0;
+        vector<int> row_masks(9, 0), col_masks(9, 0), board_masks(9, 0);
+        for (int r = 0; r < 9; r++) {
+            for (int c = 0; c < 9; c++) {
+                int d = board[r][c];
+                if (!d) {
+                    erased++;
+                    continue;
                 }
 
-            return true;
-        };
+                int b = 1 << (d - 1), square = (r / 3) * 3 + (c / 3);
+                if ((row_masks[r] & b) || (col_masks[c] & b) || (board_masks[square] & b)) {
+                    valid = false;
+                    break;
+                }
+                row_masks[r] |= b;
+                col_masks[c] |= b;
+                board_masks[square] |= b;
+            }
+            if (!valid) break;
+        }
 
-        if (!valid()) {
+        if (!valid) {
             cout << "Find another job\n\n";
             continue;
         }
 
-        vector<vector<char>> solution;
         bool unique = true;
-        backtrack(board, solution, unique);
+        int all = (1 << 9) - 1;
+        vector<vector<int>> solution;
+        auto dfs = [&](auto &&self) -> void {
+            if (!unique) return;
+            if (!erased) {
+                if (!solution.empty()) unique = false;
+                else solution = board;
+                return;
+            }
+
+            int count = 10, row = -1, col = -1, mask = -1;
+            for (int r = 0; r < 9; r++)
+                for (int c = 0; c < 9; c++)
+                    if (!board[r][c]) {
+                        int m = all & ~(row_masks[r] | col_masks[c] | board_masks[(r / 3) * 3 + (c / 3)]), pc = popcount((unsigned) m);
+                        if (!pc) return;
+                        if (count > pc) {
+                            count = pc;
+                            row = r;
+                            col = c;
+                            mask = m;
+                        }
+                    }
+            int square = (row / 3) * 3 + (col / 3);
+            
+            for (int m = mask; m;) {
+                int lsb = m & -m, v = countr_zero((unsigned) lsb) + 1;
+
+                board[row][col] = v;
+                row_masks[row] ^= lsb;
+                col_masks[col] ^= lsb;
+                board_masks[square] ^= lsb;
+                erased--;
+                self(self);
+                erased++;
+                board_masks[square] ^= lsb;
+                col_masks[col] ^= lsb;
+                row_masks[row] ^= lsb;
+                board[row][col] = 0;
+
+                if (!unique) return;
+                m -= lsb;
+            }
+        };
+        dfs(dfs);
+
         if (solution.empty()) {
             cout << "Find another job\n\n";
             continue;
@@ -101,7 +101,7 @@ int main() {
         }
 
         for (auto &row : solution) {
-            for (char sq : row) cout << sq << " ";
+            for (int square : row) cout << (char) ('0' + square) << " ";
             cout << "\n";
         }
         cout << "\n";
