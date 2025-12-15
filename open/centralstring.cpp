@@ -1,38 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-void compare(vector<string> &strs, vector<unordered_set<int>> &diff, string &s, int i) {
-    for (int j = 0; j < diff.size(); j++)
-        s[i] != strs[j][i] ? (void) diff[j].emplace(i) : (void) diff[j].erase(i);
-}
-
-void backtrack(vector<string> &strs, vector<unordered_set<int>> &diff, string &s, int d, int depth) {
-    int j = 0;
-    while (j < diff.size() && diff[j].size() <= d) j++;
-
-    if (j == diff.size()) {
-        cout << s;
-        exit(0);
-    }
-
-    if (!depth) return;
-
-    vector<int> indices;
-    for (int i : diff[j]) {
-        indices.emplace_back(i);
-        if (indices.size() > d) break;
-    }
-
-    for (int i : indices) {
-        char temp = s[i];
-        s[i] = strs[j][i];
-        compare(strs, diff, s, i);
-        backtrack(strs, diff, s, d, depth - 1);
-        s[i] = temp;
-        compare(strs, diff, s, i);
-    }
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -44,8 +12,36 @@ int main() {
     for (auto &a : strs) cin >> a;
 
     vector<unordered_set<int>> diff(n);
-    for (int i = 0; i < l; i++) compare(strs, diff, strs[0], i);
+    auto check = [&](int i, string &s) {
+        for (int j = 0; j < diff.size(); j++) s[i] != strs[j][i] ? (void) diff[j].emplace(i) : (void) diff[j].erase(i);
+    };
+    for (int i = 0; i < l; i++) check(i, strs[0]);
 
-    backtrack(strs, diff, strs[0], d, d);
+    auto dfs = [&](auto &&self, string &s, int depth) {
+        int j = 0;
+        for (; j < diff.size() && diff[j].size() <= d; j++);
+
+        if (j == diff.size()) {
+            cout << s;
+            exit(0);
+        }
+        if (!depth) return;
+
+        vector<int> indices;
+        for (int i : diff[j]) {
+            indices.emplace_back(i);
+            if (indices.size() > d) break;
+        }
+
+        for (int i : indices) {
+            char temp = s[i];
+            s[i] = strs[j][i];
+            check(i, s);
+            self(self, s, depth - 1);
+            s[i] = temp;
+            check(i, s);
+        }
+    };
+    dfs(dfs, strs[0], d);
     cout << 0;
 }
