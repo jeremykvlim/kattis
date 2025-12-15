@@ -67,7 +67,7 @@ int main() {
 
         sort(jewels[s].rbegin(), jewels[s].rend());
         vector<long long> pref(steal + 1, 0);
-        for(int i = 0; i < steal; i++) pref[i + 1] = pref[i] + jewels[s][i];
+        for (int i = 0; i < steal; i++) pref[i + 1] = pref[i] + jewels[s][i];
 
         vector<long long> a(steal + 1);
         for (int i = 0; i <= steal; i++) a[i] = -pref[i];
