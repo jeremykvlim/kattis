@@ -20,7 +20,7 @@ struct FenwickTree {
         return pref_sum(r) - pref_sum(l);
     }
 
-    int kth(T k) {
+    int lower_bound(T k) {
         int i = 0;
         for (int m = bit_ceil(BIT.size()); m; m >>= 1)
             if (i + m < BIT.size() && BIT[i + m] < k) {
@@ -81,7 +81,7 @@ int main() {
 
     vector<pair<int, int>> edges;
     while (total) {
-        int d1 = fw.kth(1), b = remove(d1);
+        int d1 = fw.lower_bound(1), b = remove(d1);
         vector<pair<int, int>> undo;
         while (d1--) {
             if (!total) {
@@ -89,7 +89,7 @@ int main() {
                 exit(0);
             }
 
-            int d2 = fw.kth(total), a = remove(d2);
+            int d2 = fw.lower_bound(total), a = remove(d2);
             edges.emplace_back(a + 1, b + 1);
             undo.emplace_back(d2 - 1, a);
         }

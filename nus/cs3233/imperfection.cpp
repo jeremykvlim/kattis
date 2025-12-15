@@ -20,7 +20,7 @@ struct FenwickTree {
         return pref_sum(r) - pref_sum(l);
     }
 
-    int kth(T k) {
+    int lower_bound(T k) {
         int i = 0;
         for (int m = bit_ceil(BIT.size()); m; m >>= 1)
             if (i + m < BIT.size() && BIT[i + m] < k) {
@@ -71,7 +71,7 @@ int main() {
     for (int j = 0; j < m; j++) {
         auto extra = 0LL;
         if (pref_count + 1 > count[j]) {
-            int i = fw_c.kth(pref_count - count[j] + 1);
+            int i = fw_c.lower_bound(pref_count - count[j] + 1);
             extra = fw_s.pref_sum(i - 1) + (long long) i * (pref_count - count[j] + 1 - fw_c.pref_sum(i - 1));
         }
 
