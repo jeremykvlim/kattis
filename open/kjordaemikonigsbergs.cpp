@@ -20,7 +20,7 @@ struct FenwickTree {
         return pref_sum(r) - pref_sum(l);
     }
 
-    int kth(int k) {
+    int kth(T k) {
         int i = 0;
         for (int m = bit_ceil(BIT.size()); m; m >>= 1)
             if (i + m < BIT.size() && BIT[i + m] < k) {
