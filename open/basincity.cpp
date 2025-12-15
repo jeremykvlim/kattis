@@ -29,7 +29,7 @@ int main() {
     }
 
     vector<bool> visited(n + 1, false);
-    auto backtrack = [&](auto &&self, int k, int v = 1) -> bool {
+    auto dfs = [&](auto &&self, int k, int v = 1) -> bool {
         if (!k) return true;
         if (v > n) return false;
 
@@ -62,5 +62,5 @@ int main() {
             }
         return visited[v] = false;
     };
-    cout << (backtrack(backtrack, k) ? "possible" : "impossible");
+    cout << (dfs(dfs, k) ? "possible" : "impossible");
 }
