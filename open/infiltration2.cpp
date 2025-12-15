@@ -17,28 +17,26 @@ int main() {
         }
 
         vector<int> c;
-        __int128 m1 = ((__int128) 1 << n) - 1;
-        auto backtrack = [&](auto &&self, int k, int ci = 0) -> bool {
-            if (!k) {
+        auto m1 = ((__int128) 1 << n) - 1;
+        auto backtrack = [&](auto &&self, int m, int i = 0) -> bool {
+            if (!m) {
                 __int128 m2 = 0;
                 for (int ci : c) m2 |= cells[ci];
                 return !(m1 & ~m2);
             }
 
-            if (n - ci > k)
-                if (self(self, k, ci + 1)) return true;
+            if (m < n - i)
+                if (self(self, m, i + 1)) return true;
 
-            c.emplace_back(ci);
-            if (self(self, k - 1, ci)) return true;
+            c.emplace_back(i);
+            if (self(self, m - 1, i)) return true;
             c.pop_back();
             return false;
         };
 
         int m = 1;
-        while (!backtrack(backtrack, m)) {
-            c.clear();
-            m++;
-        }
+        for (; !backtrack(backtrack, m); m++) c.clear();
+        
         cout << "Case " << t << ": " << m << " ";
         for (int ci : c) cout << ci + 1 << " ";
         cout << "\n";
