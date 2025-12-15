@@ -18,7 +18,7 @@ int main() {
 
         vector<int> c;
         auto m1 = ((__int128) 1 << n) - 1;
-        auto backtrack = [&](auto &&self, int m, int i = 0) -> bool {
+        auto dfs = [&](auto &&self, int m, int i = 0) -> bool {
             if (!m) {
                 __int128 m2 = 0;
                 for (int ci : c) m2 |= cells[ci];
@@ -35,8 +35,8 @@ int main() {
         };
 
         int m = 1;
-        for (; !backtrack(backtrack, m); m++) c.clear();
-        
+        for (; !dfs(dfs, m); m++) c.clear();
+
         cout << "Case " << t << ": " << m << " ";
         for (int ci : c) cout << ci + 1 << " ";
         cout << "\n";
