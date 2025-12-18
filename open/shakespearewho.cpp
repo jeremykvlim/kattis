@@ -1,17 +1,52 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-vector<int> prefix_function(const string &s) {
-    vector<int> pi(s.size());
-    for (int i = 1; i < s.size(); i++) {
-        int j = pi[i - 1];
-        while (j && s[i] != s[j]) j = pi[j - 1];
-        if (s[i] == s[j]) j++;
-        pi[i] = j;
+struct Hash {
+    template <typename T>
+    static inline void combine(size_t &h, const T &v) {
+        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
     }
 
-    return pi;
-}
+    template <typename T>
+    size_t operator()(const T &v) const {
+        if constexpr (requires { tuple_size<T>::value; })
+            return apply([](const auto &...e) {
+                size_t h = 0;
+                (combine(h, e), ...);
+                return h;
+            }, v);
+        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
+            size_t h = 0;
+            for (const auto &e : v) combine(h, e);
+            return h;
+        } else return hash<T>{}(v);
+    }
+};
+
+template <unsigned long long B1 = 0x9e3779b97f4a7c15, unsigned long long B2 = 0xbf58476d1ce4e5b9>
+struct HashedString {
+    int n;
+    vector<unsigned long long> p1, p2, pref1, pref2;
+
+    HashedString() {};
+    HashedString(const string &s) : n(s.size()), p1(s.size() + 1), p2(s.size() + 1), pref1(s.size() + 1, 0), pref2(s.size() + 1, 0) {
+        p1[0] = p2[0] = 1;
+        for (int i = 0; i < n; i++) {
+            p1[i + 1] = p1[i] * B1;
+            p2[i + 1] = p2[i] * B2;
+        }
+
+        for (int i = 0; i < n; i++) {
+            pref1[i + 1] = pref1[i] * B1 + (unsigned char) s[i];
+            pref2[i + 1] = pref2[i] * B2 + (unsigned char) s[i];
+        }
+    }
+
+    pair<unsigned long long, unsigned long long> pref_hash(int l, int r) const {
+        auto h1 = pref1[r] - pref1[l] * p1[r - l], h2 = pref2[r] - pref2[l] * p2[r - l];
+        return {h1, h2};
+    }
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -20,42 +55,65 @@ int main() {
     int n;
     cin >> n;
 
+    int longest = 0;
+    vector<int> len(n);
     vector<string> words(n);
-    for (auto &w : words) cin >> w;
+    for (int i = 0; i < n; i++) {
+        cin >> words[i];
 
-    vector<vector<int>> adj_matrix(n, vector<int>(n, 0));
-    for (int i = 0; i < n; i++)
-        for (int j = i + 1; j < n; j++) {
-            adj_matrix[i][j] = prefix_function(words[i] + words[j]).back();
-            adj_matrix[j][i] = prefix_function(words[j] + words[i]).back();
-        }
+        longest = max(longest, len[i] = words[i].size());
+    }
 
-    vector<int> order;
-    vector<bool> visited(n);
-    auto dfs = [&](auto &&self, int v) -> void {
-        visited[v] = true;
-        for (int u = 0; u < n; u++)
-            if (u != v && !visited[u] && adj_matrix[v][u]) self(self, u);
-        order.emplace_back(v);
-    };
-    for (int i = 0; i < n; i++)
-        if (!visited[i]) dfs(dfs, i);
+    vector<int> order(n);
+    iota(order.begin(), order.end(), 0);
+    sort(order.begin(), order.end(), [&](int i, int j) { return len[i] < len[j]; });
 
-    reverse(order.begin(), order.end());
-    vector<int> indices(n);
-    for (int i = 0; i < n; i++) indices[order[i]] = i;
+    vector<HashedString<>> hs(n);
+    for (int i : order) hs[i] = words[i];
 
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++)
-            if (i != j && adj_matrix[i][j] && indices[i] > indices[j]) {
-                cout << "Shakespeare, who?";
-                exit(0);
+    vector<vector<pair<int, int>>> adj_list(n);
+    vector<int> degree(n, 0);
+    vector<vector<bool>> visited(n, vector<bool>(n, false));
+    for (int l = longest; l; l--) {
+        unordered_map<pair<unsigned long long, unsigned long long>, vector<int>, Hash> indices;
+
+        for (int i = 0; i < n; i++)
+            if (len[i] >= l) indices[hs[i].pref_hash(0, l)].emplace_back(i);
+
+        for (int i = 0; i < n; i++)
+            if (len[i] >= l) {
+                auto it = indices.find(hs[i].pref_hash(hs[i].n - l, hs[i].n));
+                if (it != indices.end())
+                    for (int j : it->second)
+                        if (i != j && !visited[i][j]) {
+                            visited[i][j] = true;
+                            adj_list[i].emplace_back(j, l);
+                            degree[j]++;
+                        }
             }
+    }
+
+    queue<int> q;
+    for (int i = 0; i < n; i++)
+        if (!degree[i]) q.emplace(i);
+
+    order.clear();
+    while (!q.empty()) {
+        int v = q.front();
+        q.pop();
+
+        order.emplace_back(v);
+        for (auto [u, w] : adj_list[v])
+            if (!--degree[u]) q.emplace(u);
+    }
+
+    if (order.size() < n) {
+        cout << "Shakespeare, who?";
+        exit(0);
+    }
 
     vector<int> dp(n, 0);
-    for (int i : order)
-        for (int j = 0; j < n; j++)
-            if (i != j && adj_matrix[i][j]) dp[j] = max(dp[j], dp[i] + adj_matrix[i][j]);
-
+    for (int v : order)
+        for (auto [u, w] : adj_list[v]) dp[u] = max(dp[u], dp[v] + w);
     cout << *max_element(dp.begin(), dp.end());
 }
