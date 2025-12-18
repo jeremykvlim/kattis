@@ -4,28 +4,19 @@ using namespace std;
 template <unsigned long long B1 = 0x9e3779b97f4a7c15, unsigned long long B2 = 0xbf58476d1ce4e5b9>
 struct HashedString {
     int n;
-    static const unsigned long long b1 = B1, b2 = B2;
-    static inline vector<unsigned long long> p1, p2;
-    vector<unsigned long long> pref1, pref2, suff1, suff2;
+    vector<unsigned long long> p1, p2, pref1, pref2;
 
     HashedString() {};
-    HashedString(const string &s) : n(s.size()), pref1(s.size() + 1, 0), pref2(s.size() + 1, 0),
-                                                 suff1(s.size() + 1, 0), suff2(s.size() + 1, 0) {
-        if (p1.size() != n + 1) {
-            p1.resize(n + 1);
-            p2.resize(n + 1);
-            p1[0] = p2[0] = 1;
-            for (int i = 0; i < n; i++) {
-                p1[i + 1] = p1[i] * b1;
-                p2[i + 1] = p2[i] * b2;
-            }
+    HashedString(const string &s) : n(s.size()), p1(s.size() + 1), p2(s.size() + 1), pref1(s.size() + 1, 0), pref2(s.size() + 1, 0) {
+        p1[0] = p2[0] = 1;
+        for (int i = 0; i < n; i++) {
+            p1[i + 1] = p1[i] * B1;
+            p2[i + 1] = p2[i] * B2;
         }
 
         for (int i = 0; i < n; i++) {
-            pref1[i + 1] = pref1[i] * b1 + (unsigned char) s[i];
-            pref2[i + 1] = pref2[i] * b2 + (unsigned char) s[i];
-            suff1[i + 1] = suff1[i] * b1 + (unsigned char) s[n - 1 - i];
-            suff2[i + 1] = suff2[i] * b2 + (unsigned char) s[n - 1 - i];
+            pref1[i + 1] = pref1[i] * B1 + (unsigned char) s[i];
+            pref2[i + 1] = pref2[i] * B2 + (unsigned char) s[i];
         }
     }
 
@@ -34,17 +25,10 @@ struct HashedString {
         return {h1, h2};
     }
 
-    pair<unsigned long long, unsigned long long> suff_hash(int l, int r) const {
-        auto h1 = suff1[n - l] - suff1[n - r] * p1[r - l], h2 = suff2[n - l] - suff2[n - r] * p2[r - l];
-        return {h1, h2};
-    }
-
     pair<unsigned long long, unsigned long long> split_pref_hash(int i) const {
         auto [ll, lr] = pref_hash(0, i);
         auto [rl, rr] = pref_hash(i + 1, n);
-
-        auto h1 = ll * p1[n - i - 1] + rl, h2 = lr * p2[n - i - 1] + rr;
-        return {h1, h2};
+        return {ll * p1[n - i - 1] + rl, lr * p2[n - i - 1] + rr};
     }
 };
 
