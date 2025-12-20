@@ -475,10 +475,7 @@ int main() {
 
         if (n < area(x)) {
             auto roots = quadratic_roots(1, -(l + 2), n);
-            int z = 0;
-            if (roots.size() == 1) z = roots[0].real();
-            if (roots.size() == 2) z = min(roots[0].real(), roots[1].real());
-            if (n < area(z)) x = min(x, z - 1);
+            x = min({x, roots[0].real(), roots[1].real()});
         }
         return self(self, n - area(x), x - 2, x - 1, y - (l + 2 - x)) + self(self, n, l, x - 1, y);
     };
