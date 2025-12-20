@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -436,6 +436,15 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
+template <typename T>
+vector<complex<T>> quadratic_roots(T a, T b, T c) {
+    if (fabs(a) < 1e-8 && fabs(b) < 1e-8) return {};
+    if (fabs(a) < 1e-8) return {(-c / b)};
+
+    complex<T> discriminant(b * b - 4 * a * c, 0);
+    return {(-b + sqrt(discriminant)) / (2 * a), (-b - sqrt(discriminant)) / (2 * a)};
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -444,15 +453,37 @@ int main() {
 
     int n, a, b;
     cin >> n >> a >> b;
+    if (a > b) swap(a, b);
 
-    vector<vector<modint>> dp(a + 1, vector<modint>(n + 1));
-    dp[0][0] = 1;
+    int len = min(a, (n + 1) / 2) + 1;
+    vector<vector<modint>> precomp(len, vector<modint>(n + 1, 0));
+    for (int l = 0; l < len; l++) {
+        precomp[l][0] = 1;
+        for (int i = 0; i <= n; i++)
+            if (precomp[l][i])
+                for (int j = 1; l + j < len && i + j * (l + 1) <= n; j++) precomp[l + j][i + j * (l + 1)] += precomp[l][i];
+    }
+
+    auto dp = [&](auto &&self, int n, int l, int x, int y) -> modint {
+        if (!n) return 1;
+        auto area = [&](int w) {
+            return w * (l + 2 - w);
+        };
+
+        if (!(min(area(x), area(y)) <= n && n <= x * y - (x + y - l - 2) * (x + y - l - 1) / 2)) return 0;
+        if (x == y && x == l + 1 && x < len) return precomp[x][n];
+
+        if (n < area(x)) {
+            auto roots = quadratic_roots(1, -(l + 2), n);
+            int z = 0;
+            if (roots.size() == 1) z = roots[0].real();
+            if (roots.size() == 2) z = min(roots[0].real(), roots[1].real());
+            if (n < area(z)) x = min(x, z - 1);
+        }
+        return self(self, n - area(x), x - 2, x - 1, y - (l + 2 - x)) + self(self, n, l, x - 1, y);
+    };
+
     modint ways = 0;
-    for (int i = 0; i < min(a, b); i++)
-        for (int j = 0; j < n; j++)
-            for (int k = i + 1, l = j + k; k <= a && l <= n; k++, l += i + 1) {
-                dp[k][l] += dp[i][j];
-                if (!((n - l) % k) && (n - l) / k + i + 1 <= b) ways += dp[i][j];
-            }
+    for (int l = 0; l < a + b - 1; l++) ways += dp(dp, n, l, min(a, l + 1), min(b, l + 1));
     cout << ways;
 }
