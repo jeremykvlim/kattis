@@ -116,34 +116,13 @@ struct Point {
 };
 
 template <typename T>
+T dot(const Point<T> &a, const Point<T> &b) {
+    return (a.x * b.x) + (a.y * b.y);
+}
+
+template <typename T>
 T cross(const Point<T> &a, const Point<T> &b) {
     return (a.x * b.y) - (a.y * b.x);
-}
-
-bool valid(int p1, int p2, vector<bool> visited, vector<vector<int>> between) {
-    if (p1 > p2) swap(p1, p2);
-    return !between[p1][p2] || visited[between[p1][p2]];
-}
-
-void unlock(int curr, int prev, vector<bool> visited, vector<vector<int>> &between, vector<Point<int>> &pos, vector<string> &patterns, string p = "") {
-    if (all_of(visited.begin(), visited.end(), [&](auto b) { return b; })) {
-        patterns.emplace_back(p);
-        return;
-    }
-
-    Point<int> prev_dir = pos[curr] - pos[prev], next_dir;
-    for (int next = 1; next <= 9; next++)
-        if (!visited[next] && valid(curr, next, visited, between)) {
-            next_dir = pos[next] - pos[curr];
-
-            int cross_product = cross(prev_dir, next_dir);
-            p += (cross_product < 0) ? 'R' : (cross_product > 0) ? 'L' : (prev_dir == next_dir) ? 'S' : 'A';
-
-            visited[next] = true;
-            unlock(next, curr, visited, between, pos, patterns, p);
-            visited[next] = false;
-            p.pop_back();
-        }
 }
 
 int main() {
@@ -153,26 +132,38 @@ int main() {
     string s;
     cin >> s;
 
-    vector<vector<int>> between(10, vector<int>(10, 0));
-    between[1][3] = 2;
-    between[1][7] = 4;
-    between[1][9] = between[2][8] = between[3][7] = between[4][6] = 5;
-    between[3][9] = 6;
-    between[7][9] = 8;
-
     vector<Point<int>> pos(10);
-    for (int i = 1; i <= 9; i++) pos[i] = {1 + (i - 1) / 3, 1 + (i - 1) % 3};
+    for (int i = 1; i <= 9; i++) pos[i] = {(i - 1) % 3, 2 - (i - 1) / 3};
 
-    vector<string> patterns;
-    for (int i = 1; i <= 9; i++)
-        for (int j = 1; j <= 9; j++) {
-            vector<bool> visited(10, false);
-            visited[0] = true;
-            if (i != j && valid(i, j, visited, between)) {
-                visited[i] = visited[j] = true;
-                unlock(i, j, visited, between, pos, patterns);
-            }
+    vector<vector<int>> between(10, vector<int>(10, 0));
+    between[1][3] = between[3][1] = 2;
+    between[1][7] = between[7][1] = 4;
+    between[1][9] = between[2][8] = between[3][7] = between[4][6] = between[6][4] = between[7][3] = between[8][2] = between[9][1] = 5;
+    between[3][9] = between[9][3] = 6;
+    between[7][9] = between[9][7] = 8;
+
+    vector<int> p(9);
+    iota(p.begin(), p.end(), 1);
+    int patterns = 0;
+    do {
+        vector<bool> visited(10, false);
+        visited[p[0]] = true;
+        for (int i = 0; i < 8; i++) {
+            if (between[p[i]][p[i + 1]] && !visited[between[p[i]][p[i + 1]]]) goto next;
+            visited[p[i + 1]] = true;
         }
 
-    cout << count_if(patterns.begin(), patterns.end(), [&](auto p) { return equal(s.begin(), s.end(), p.begin(), [](char c1, char s1) { return c1 == '?' || c1 == s1; }); });
+        for (int i = 1; i <= 7; i++) {
+            auto v = pos[p[i]] - pos[p[i - 1]], u = pos[p[i + 1]] - pos[p[i]];
+            int cp = cross(v, u);
+            char c;
+            if (!cp) c = dot(v, u) > 0 ? 'S' : 'A';
+            else c = cp > 0 ? 'L' : 'R';
+
+            if (s[i - 1] != '?' && s[i - 1] != c) goto next;
+        }
+        patterns++;
+        next:;
+    } while (next_permutation(p.begin(), p.end()));
+    cout << patterns;
 }
