@@ -1,6 +1,24 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+vector<int> sieve(int n) {
+    vector<int> spf(n + 1, 0), primes;
+    for (int i = 2; i <= n; i++) {
+        if (!spf[i]) {
+            spf[i] = i;
+            primes.emplace_back(i);
+        }
+
+        for (int p : primes) {
+            auto j = (long long) i * p;
+            if (j > n) break;
+            spf[j] = p;
+            if (p == spf[i]) break;
+        }
+    }
+    return spf;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -8,29 +26,25 @@ int main() {
     int n;
     cin >> n;
 
-    vector<bool> valid(n + 2, false);
-    vector<long long> squares(n + 2);
-    for (auto i = 0LL; i <= n + 1; i++) squares[i] = i * i;
-
-    int bound = ceil(sqrt(n)) + 1;
-    for (int a = 0; a <= bound; a++)
-        for (int b = a; b <= bound; b++) {
-            int sum = squares[a] + squares[b];
-            if (sum > n + 1) break;
-            valid[sum] = true;
+    auto spf = sieve(n + 1);
+    vector<int> pairs(n + 2, 0);
+    pairs[1] = 1;
+    for (int c = 2; c <= n + 1; c++) {
+        int p = 1;
+        for (int d = c; d > 1;) {
+            int pf = spf[d], pow = 0;
+            for (; !(d % pf); d /= pf, pow++);
+            if (pf % 4 == 1) p *= pow + 1;
+            else if (pf % 4 == 3 && pow & 1) goto next;
         }
+        pairs[c] = p;
+        next:;
+    }
 
-    int count = 0;
-    for (int c = 0; c <= n; c++)
-        if (valid[c] && valid[c + 1]) {
-            auto C = (long long) c * (c + 1);
-            bound = ceil(sqrtl(C / 2));
-            for (int a = 0; a <= bound; a++) {
-                auto B = C - squares[a];
-                int b = ceil(sqrtl(B));
-                if (squares[b] == B && a <= b && b <= c) count++;
-            }
-        }
-
+    int count = 1;
+    for (int c = 1; c <= n; c++) {
+        auto s = (long long) c * (c + 1) / 2;
+        count += (pairs[c] * pairs[c + 1] + (pow(sqrt(s), 2) == s)) / 2;
+    }
     cout << count;
 }
