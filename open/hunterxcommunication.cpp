@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -436,19 +436,12 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned long long MOD = 998244353;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
-static unsigned long long primitive_root() {
-    if (MOD == 9223372036737335297 || MOD == 2524775926340780033 || MOD == 998244353 || MOD == 167772161) return 3ULL;
-    if (MOD == 754974721) return 11ULL;
-}
-
 template <typename T>
-T parsevals_theorem(int n, const vector<T> &F1, const vector<T> &F2) {
-    T sum = 0;
-    for (int i = 0; i < n; i++) {
-        int j = (n - i) & (n - 1);
-        sum += F1[i] * F1[j] * F2[i] * F2[j];
-    }
-    return sum / n;
+T binomial_coefficient_mod_p(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
+    if (k < 0 || k > n) return 0;
+    if (n >= p || k >= p) return binomial_coefficient_mod_p(n / p, k / p, p, fact, fact_inv) *
+                                 binomial_coefficient_mod_p(n % p, k % p, p, fact, fact_inv);
+    return fact[n] * fact_inv[k] * fact_inv[n - k];
 }
 
 int main() {
@@ -465,17 +458,22 @@ int main() {
         exit(0);
     }
 
-    int pw = (n + 1) / 2, m = 9 * pw + 1, size = bit_ceil((unsigned) m + m - 1);
-    auto root = modint::pow(primitive_root(), (MOD - 1) / size);
-    vector<modint> roots(size, 1);
-    for (int k = 1; k < size; k++) roots[k] = roots[k - 1] * root;
+    vector<modint> fact(11 * n + 1, 1), fact_inv(11 * n + 1, 1);
+    auto prepare = [&]() {
+        auto inv = fact;
 
-    vector<modint> F1(size), F2(size);
-    for (int k = 0; k < size; k++) {
-        auto base = !k ? 10 : ((modint) 1 - modint::pow(roots[k], 10)) / ((modint) 1 - roots[k]),
-             v1 = modint::pow(base, pw - 1), v2 = v1 * base;
-        F1[k] = v2 - v1;
-        F2[k] = n & 1 ? v1 : v2;
-    }
-    cout << parsevals_theorem(size, F1, F2);
+        for (int i = 1; i <= 11 * n; i++) {
+            if (i > 1) inv[i] = (MOD - MOD / i) * inv[MOD % i];
+            fact[i] = i * fact[i - 1];
+            fact_inv[i] = inv[i] * fact_inv[i - 1];
+        }
+    };
+    prepare();
+
+    auto coeff = [&](int n, int m) -> modint {
+        modint c = 0;
+        for (int k = 0; k <= min(n, m / 10); k++) c += (k & 1 ? -1 : 1) * binomial_coefficient_mod_p(n, k, MOD, fact, fact_inv) * binomial_coefficient_mod_p(m - 10 * k + n - 1, n - 1, MOD, fact, fact_inv);
+        return c;
+    };
+    cout << coeff(2 * n, 9 * n) - coeff(2 * n - 1, 9 * n) - coeff(2 * n - 1, 9 * n - 9) + coeff(2 * n - 2, 9 * n - 9);
 }
