@@ -3,8 +3,7 @@ from decimal import Decimal, getcontext
 
 getcontext().Emax, getcontext().Emin = 2_000_000_001, -2_000_000_001
 
-x, y = Decimal(sys.stdin.readline()), Decimal(sys.stdin.readline())
-epsilon = Decimal("1e-9")
+x, y, epsilon = Decimal(sys.stdin.readline()), Decimal(sys.stdin.readline()), Decimal("1e-9")
 
 def sgn(v):
     return (v > 0) - (v < 0)
