@@ -656,7 +656,7 @@ int main() {
 
         range = h - l + 1;
     }
-    SegmentTree st(bit_ceil((unsigned) n), ranges);
+    SegmentTree st(n, ranges);
 
     while (T--) {
         int q;
