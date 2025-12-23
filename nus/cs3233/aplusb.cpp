@@ -508,22 +508,20 @@ template <typename T>
 vector<T> convolve(const vector<T> &a, const vector<T> &b) {
     int da = a.size(), db = b.size(), m = da + db - 1, n = bit_ceil((unsigned) m);
     if (n <= 64 || min(da, db) <= __lg(n)) {
-        vector<modint> p(da), q(db);
-        for (int i = 0; i < da; i++) p[i] = a[i];
-        for (int i = 0; i < db; i++) q[i] = b[i];
+        vector<modint> x(da), y(db);
+        for (int i = 0; i < da; i++) x[i] = a[i];
+        for (int i = 0; i < db; i++) y[i] = b[i];
         if (da > db) {
-            swap(p, q);
+            swap(x, y);
             swap(da, db);
         }
 
-        vector<T> r(m, 0);
-        for (int i = 0; i < db; i++) r[i] = q[i]();
+        vector<T> z(m);
         for (int i = m - 1; ~i; i--) {
-            modint v = 0;
-            for (int j = max(0, i - (db - 1)); j <= min(i, da - 1); j++) v += p[j] * r[i - j];
-            r[i] = v.recover();
+            int l = max(0, i - (db - 1)), r = min(i, da - 1) + 1;
+            z[i] = inner_product(x.begin() + l, x.begin() + r, make_reverse_iterator(y.begin() + (i - l + 1)), (modint) 0).recover();
         }
-        return r;
+        return z;
     }
 
     if (!modint::ntt_viable(n)) {
