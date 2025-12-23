@@ -517,7 +517,7 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
         }
 
         vector<T> z(m);
-        for (int i = m - 1; ~i; i--) {
+        for (int i = 0; i < m; i++) {
             int l = max(0, i - (db - 1)), r = min(i, da - 1) + 1;
             z[i] = inner_product(x.begin() + l, x.begin() + r, make_reverse_iterator(y.begin() + (i - l + 1)), (modint) 0).recover();
         }
