@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -436,25 +436,172 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
+template <typename T>
+pair<T, T> bezout(T a, T b) {
+    if (!a) return {0, 1};
+    auto [x, y] = bezout(b % a, a);
+    return {y - (b / a) * x, x};
+}
+
+template <typename T>
+pair<T, T> chinese_remainder_theorem(T a, T n, T b, T m) {
+    T g = __gcd(m, n);
+    if ((b - a) % g) return {0, -1};
+
+    T n0 = n / g, m0 = m / g, lcm = n0 * m;
+    auto [x, y] = bezout(n0, m0);
+    T r = ((__int128) n * (((__int128) ((b - a) / g) * x % m0 + m0) % m0) + a) % lcm;
+    if (r < 0) r += lcm;
+    return {r, lcm};
+}
+
+template <typename T, typename R>
+void cooley_tukey(int n, vector<T> &v, R root) {
+    static vector<int> rev;
+    static vector<T> twiddles;
+
+    if (rev.size() != n) {
+        rev.resize(n);
+        for (int i = 0; i < n; i++) rev[i] = (rev[i >> 1] | (i & 1) << __lg(n)) >> 1;
+    }
+
+    if (twiddles.size() < n) {
+        int m = max(2, (int) twiddles.size());
+        twiddles.resize(n, 1);
+
+        for (int k = m; k < n; k <<= 1) {
+            auto w = root(k);
+            for (int i = k; i < k << 1; i++) twiddles[i] = i & 1 ? twiddles[i >> 1] * w : twiddles[i >> 1];
+        }
+    }
+
+    for (int i = 0; i < n; i++)
+        if (i < rev[i]) swap(v[i], v[rev[i]]);
+
+    for (int k = 1; k < n; k <<= 1)
+        for (int i = 0; i < n; i += k << 1)
+            for (int j = 0; j < k; j++) {
+                auto t = v[i + j + k] * twiddles[j + k];
+                v[i + j + k] = v[i + j] - t;
+                v[i + j] += t;
+            }
+}
+
+template <typename M>
+vector<M> ntt(int n, const vector<M> &f) {
+    auto F = f;
+    cooley_tukey(n, F, [](int k) { return M::pow(M::primitive_root(), (M::mod() - 1) / (k << 1)); });
+    return F;
+}
+
+template <typename M>
+vector<M> intt(int n, const vector<M> &F) {
+    auto f = F;
+    cooley_tukey(n, f, [](int k) { return M::pow(M::primitive_root(), (M::mod() - 1) / (k << 1)); });
+    auto n_inv = M::inv(n);
+    for (auto &v : f) v *= n_inv;
+    reverse(f.begin() + 1, f.end());
+    return f;
+}
+
+template <typename T>
+vector<T> convolve(const vector<T> &a, const vector<T> &b) {
+    int da = a.size(), db = b.size(), m = da + db - 1, n = bit_ceil((unsigned) m);
+    if (n <= 256 || min(da, db) <= __lg(n)) {
+        vector<modint> x(da), y(db);
+        for (int i = 0; i < da; i++) x[i] = a[i];
+        for (int i = 0; i < db; i++) y[i] = b[i];
+        if (da > db) {
+            swap(x, y);
+            swap(da, db);
+        }
+
+        vector<T> z(m);
+        for (int i = 0; i < m; i++) {
+            int l = max(0, i - (db - 1)), r = min(i, da - 1) + 1;
+            z[i] = inner_product(x.begin() + l, x.begin() + r, make_reverse_iterator(y.begin() + (i - l + 1)), (modint) 0).recover();
+        }
+        return z;
+    }
+
+    if (!modint::ntt_viable(n)) {
+        constexpr unsigned long long ntt_mod1 = 39582418599937, ntt_mod2 = 79164837199873;
+        using ntt_modint1 = MontgomeryModInt<integral_constant<decay<decltype(ntt_mod1)>::type, ntt_mod1>>;
+        using ntt_modint2 = MontgomeryModInt<integral_constant<decay<decltype(ntt_mod2)>::type, ntt_mod2>>;
+
+        ntt_modint1::init();
+        ntt_modint2::init();
+
+        vector<ntt_modint1> f_a1(n), f_b1(n);
+        vector<ntt_modint2> f_a2(n), f_b2(n);
+        for (int i = 0; i < da; i++) {
+            f_a1[i] = a[i];
+            f_a2[i] = a[i];
+        }
+        for (int i = 0; i < db; i++) {
+            f_b1[i] = b[i];
+            f_b2[i] = b[i];
+        }
+
+        auto F_a1 = ntt(n, f_a1), F_b1 = ntt(n, f_b1);
+        auto F_a2 = ntt(n, f_a2), F_b2 = ntt(n, f_b2);
+
+        vector<ntt_modint1> F_c1(n);
+        vector<ntt_modint2> F_c2(n);
+        for (int i = 0; i < n; i++) {
+            F_c1[i] = F_a1[i] * F_b1[i];
+            F_c2[i] = F_a2[i] * F_b2[i];
+        }
+        auto f_c1 = intt(n, F_c1);
+        auto f_c2 = intt(n, F_c2);
+
+        vector<T> c(m);
+        for (int i = 0; i < m; i++) c[i] = modint{chinese_remainder_theorem<__int128>(f_c1[i](), ntt_mod1, f_c2[i](), ntt_mod2).first}.recover();
+        return c;
+    }
+
+    vector<modint> f_a(n);
+    for (int i = 0; i < da; i++) f_a[i] = a[i];
+
+    vector<modint> F_a = ntt(n, f_a), F_b;
+    if (a == b) F_b = F_a;
+    else {
+        vector<modint> f_b(n);
+        for (int i = 0; i < db; i++) f_b[i] = b[i];
+        F_b = ntt(n, f_b);
+    }
+
+    vector<modint> F_c(n);
+    for (int i = 0; i < n; i++) F_c[i] = F_a[i] * F_b[i];
+    auto f_c = intt(n, F_c);
+
+    vector<T> c(m);
+    for (int i = 0; i < m; i++) c[i] = f_c[i].recover();
+    return c;
+}
+
 struct SegmentTree {
     struct Segment {
-        array<modint, 101> poly;
+        vector<modint> poly;
 
-        Segment() : poly({1}) {}
+        Segment() : poly{1} {}
 
         auto & operator=(const int &v) {
-            poly[1] = v;
+            poly = {1, v};
             return *this;
         }
 
-        friend auto operator+(const Segment &sl, const Segment &sr) {
-            Segment seg;
-            for (int i = 0; i <= 100; i++)
-                for (int j = 0; i + j <= 100; j++) {
-                    if (!i && !j) continue;
-                    seg.poly[i + j] += sl.poly[i] * sr.poly[j];
-                }
-            return seg;
+        auto & operator+=(const Segment &seg) {
+            if (seg.poly.size() == 1) return *this;
+            if (poly.size() == 1) return *this = seg;
+
+            poly = convolve(poly, seg.poly);
+            if (poly.size() > 101) poly.resize(101);
+            return *this;
+        }
+
+        friend auto operator+(Segment sl, const Segment &sr) {
+            return sl += sr;
         }
     };
 
@@ -469,38 +616,18 @@ struct SegmentTree {
         for (int i = n - 1; i; i--) pull(i);
     }
 
-    int midpoint(int l, int r) {
-        int i = 1 << __lg(r - l);
-        return min(l + i, r - (i >> 1));
-    }
-
-    void modify(const int &pos, const int &v) {
-        modify(1, pos, v, 0, n);
-    }
-
-    void modify(int i, const int &pos, const int &v, int l, int r) {
-        if (l + 1 == r) {
-            ST[i] = v;
-            return;
-        }
-
-        int m = midpoint(l, r);
-        if (pos < m) modify(i << 1, pos, v, l, m);
-        else modify(i << 1 | 1, pos, v, m, r);
-
-        pull(i);
+    void assign(int i, const int &v) {
+        for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
     Segment range_query(int l, int r) {
-        return range_query(1, l, r, 0, n);
-    }
+        Segment seg;
+        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+            if (l & 1) seg += ST[l++];
+            if (r & 1) seg += ST[--r];
+        }
 
-    Segment range_query(int i, int ql, int qr, int l, int r) {
-        if (qr <= l || r <= ql) return {};
-        if (ql <= l && r <= qr) return ST[i];
-
-        int m = midpoint(l, r);
-        return range_query(i << 1, ql, qr, l, m) + range_query(i << 1 | 1, ql, qr, m, r);
+        return seg;
     }
 
     auto & operator[](int i) {
@@ -508,8 +635,7 @@ struct SegmentTree {
     }
 
     SegmentTree(int n, const vector<int> &a) : n(n), ST(2 * n) {
-        int m = bit_ceil((unsigned) n);
-        for (int i = 0; i < a.size(); i++) ST[(i + m) % n + n] = a[i];
+        for (int i = 0; i < a.size(); i++) ST[i + n] = a[i];
         build();
     }
 };
@@ -524,14 +650,14 @@ int main() {
     cin >> n >> c >> T;
 
     vector<int> ranges(n);
-    for (int i = 0; i < n; i++) {
+    for (int &range : ranges) {
         int l, h;
         cin >> l >> h;
 
-        ranges[i] = h - l + 1;
+        range = h - l + 1;
     }
+    SegmentTree st(bit_ceil((unsigned) n), ranges);
 
-    SegmentTree st(n, ranges);
     while (T--) {
         int q;
         cin >> q;
@@ -544,7 +670,7 @@ int main() {
             int p, s, t;
             cin >> p >> s >> t;
 
-            st.modify(p - 1, t - s + 1);
+            st.assign(p - 1, t - s + 1);
         }
     }
 }
