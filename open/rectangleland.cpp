@@ -38,6 +38,10 @@ struct SegmentTree {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
     }
 
+    void build() {
+        for (int i = n - 1; i; i--) pull(i);
+    }
+
     void apply(int i, const int &v) {
         ST[i] += v;
         if (i < n) lazy[i] += v;
@@ -52,10 +56,6 @@ struct SegmentTree {
                 lazy[j] = 0;
             }
         }
-    }
-
-    void assign(int i, const int &v) {
-        for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
     void modify(int l, int r, const int &v) {
@@ -86,7 +86,8 @@ struct SegmentTree {
     }
 
     SegmentTree(int n, const vector<int> &a) : n(n), h(__lg(n)), ST(2 * n), lazy(n, 0) {
-        for (int i = 0; i < a.size(); i++) assign(i, a[i]);
+        for (int i = 0; i < a.size(); i++) ST[i + n] = a[i];
+        build();
     }
 };
 

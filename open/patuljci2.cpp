@@ -41,8 +41,8 @@ struct SegmentTree {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
     }
 
-    void assign(int i, const int &v) {
-        for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
+    void build() {
+        for (int i = n - 1; i; i--) pull(i);
     }
 
     Segment range_query(int l, int r) {
@@ -60,7 +60,8 @@ struct SegmentTree {
     }
 
     SegmentTree(int n, const vector<int> &a) : n(n), ST(2 * n) {
-        for (int i = 0; i < a.size(); i++) assign(i, a[i]);
+        for (int i = 0; i < a.size(); i++) ST[i + n] = a[i];
+        build();
     }
 };
 
@@ -78,7 +79,7 @@ int main() {
         
         indices[colors[i]].emplace_back(i + 1);
     }
-    SegmentTree st(bit_ceil((unsigned) n), colors);
+    SegmentTree st(n, colors);
 
     int m;
     cin >> m;

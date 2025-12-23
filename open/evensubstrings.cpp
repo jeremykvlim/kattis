@@ -3,6 +3,7 @@ using namespace std;
 
 struct SegmentTree {
     static inline array<array<int, 64>, 64> sgn;
+
     struct Segment {
         vector<long long> F;
 
@@ -36,6 +37,10 @@ struct SegmentTree {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
     }
 
+    void build() {
+        for (int i = n - 1; i; i--) pull(i);
+    }
+
     void apply(int i, const int &v) {
         ST[i] += v;
         if (i < n) lazy[i] ^= v;
@@ -50,10 +55,6 @@ struct SegmentTree {
                 lazy[j] = 0;
             }
         }
-    }
-
-    void assign(int i, const int &v) {
-        for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
     void modify(int l, int r, const int &v) {
@@ -99,7 +100,8 @@ struct SegmentTree {
         for (int mask = 0; mask < 64; mask++)
             for (int i = 0; i < 64; i++) sgn[mask][i] = (popcount((unsigned) mask & i) & 1) ? -1 : 1;
 
-        for (int i = 0; i < a.size(); i++) assign(i, a[i]);
+        for (int i = 0; i < a.size(); i++) ST[i + n] = a[i];
+        build();
     }
 };
 
