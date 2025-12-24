@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -437,6 +437,17 @@ constexpr unsigned long long MOD = 1e10 + 3233;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 template <typename T>
+bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
+    return fabs(v1 - v2) <= epsilon;
+}
+
+template <typename T>
+int sgn(const T &v) {
+    if (!is_floating_point_v<T>) return (v > 0) - (v < 0);
+    return approximately_equal(v, (T) 0) ? 0 : (v > 0) - (v < 0);
+}
+
+template <typename T>
 struct Point {
     T x, y;
 
@@ -551,6 +562,11 @@ struct Point {
 };
 
 template <typename T>
+T dot(const Point<T> &a, const Point<T> &b) {
+    return (a.x * b.x) + (a.y * b.y);
+}
+
+template <typename T>
 T cross(Point<T> a, Point<T> b) {
     return (a.x * b.y) - (a.y * b.x);
 }
@@ -561,13 +577,25 @@ T cross(Point<T> a, Point<T> b, Point<T> c) {
 }
 
 template <typename T>
+pair<bool, bool> point_in_polygon(const vector<Point<T>> &polygon, const Point<T> &p) {
+    bool in = false;
+    for (int i = 0; i < polygon.size(); i++) {
+        auto a = polygon[i] - p, b = polygon[(i + 1) % polygon.size()] - p;
+        if (a.y > b.y) swap(a, b);
+        if (sgn(a.y) <= 0 && 0 < sgn(b.y) && sgn(cross(a, b)) < 0) in = !in;
+        if (!sgn(cross(a, b)) && sgn(dot(a, b)) <= 0) return {false, true};
+    }
+    return {in, false};
+}
+
+template <typename T>
 T area_of_parallelogram(Point<T> a, Point<T> b, Point<T> c) {
     Point<T> u = b - a, v = c - a;
     return abs(cross(u, v));
 }
 
 template <typename T>
-vector<Point<T>> minkowski(vector<Point<T>> &P, vector<Point<T>> &Q) {
+vector<Point<T>> minkowski_sum(vector<Point<T>> &P, vector<Point<T>> &Q) {
     auto reorder = [&](auto &polygon) {
         int i = min_element(polygon.begin(), polygon.end()) - polygon.begin();
         rotate(polygon.begin(), polygon.begin() + i, polygon.end());
@@ -575,36 +603,29 @@ vector<Point<T>> minkowski(vector<Point<T>> &P, vector<Point<T>> &Q) {
     reorder(P);
     reorder(Q);
 
-    vector<Point<T>> edges;
-    for (int i = 0; i < P.size(); i++) edges.emplace_back(P[(i + 1) % P.size()] - P[i]);
-    for (int i = 0; i < Q.size(); i++) edges.emplace_back(Q[(i + 1) % Q.size()] - Q[i]);
-    sort(edges.begin(), edges.end(), [&](auto a, auto b) {
-        auto quadrant = [](const auto &p) -> int {
-            if (p.x > 0) return 1;
-            if (!p.x && p.y > 0) return 2;
-            if (p.x < 0) return 3;
-            if (!p.x && p.y < 0) return 4;
-            return 0;
-        };
+    int n = P.size(), m = Q.size();
+    vector<Point<T>> R;
+    if (n == 1 || m == 1) {
+        for (auto p : P)
+            for (auto q : Q) R.emplace_back(p + q);
+        return R;
+    }
 
-        int qa = quadrant(a), qb = quadrant(b);
-        return qa != qb ? qa < qb : cross(a, b) > 0;
-    });
-
-    vector<Point<T>> m{P[0] + Q[0]};
-    for (int i = 0; i < edges.size() - 1; i++) m.emplace_back(m.back() + edges[i]);
-    return m;
-}
-
-template <typename T>
-T dist_between_convex_polygons(vector<Point<T>> P, vector<Point<T>> Q) {
-    for (auto &p : Q) p *= -1;
-
-    auto m = minkowski(P, Q);
-
-    T dist = 0;
-    for (int i = 0; i < m.size(); i++) dist += area_of_parallelogram({0, 0}, m[i], m[(i + 1) % m.size()]) - area_of_parallelogram(m[0], m[i], m[(i + 1) % m.size()]);
-    return dist;
+    P.emplace_back(P[0]);
+    P.emplace_back(P[1]);
+    Q.emplace_back(Q[0]);
+    Q.emplace_back(Q[1]);
+    for (int i = 0, j = 0; i < n || j < m;) {
+        R.emplace_back(P[i] + Q[j]);
+        auto cp = cross(P[i + 1] - P[i], Q[j + 1] - Q[j]);
+        if (cp >= 0) i++;
+        if (cp <= 0) j++;
+    }
+    P.pop_back();
+    P.pop_back();
+    Q.pop_back();
+    Q.pop_back();
+    return R;
 }
 
 template <typename T>
@@ -636,6 +657,19 @@ vector<Point<T>> monotone_chain(vector<Point<T>> points, bool collinear = false)
 
     convex_hull.pop_back();
     return convex_hull;
+}
+
+template <typename T>
+struct Line {
+    Point<T> a, b;
+
+    Line() {}
+    Line(Point<T> a, Point<T> b) : a(a), b(b) {}
+};
+
+template <typename T>
+bool point_on_line(const Point<T> &p, const Line<T> &l, bool include_endpoints = true) {
+    return !sgn(cross(l.b - l.a, p - l.a)) && (dot(l.a - p, l.b - p) < 0 || (include_endpoints && approximately_equal(dot(l.a - p, l.b - p), (T) 0)));
 }
 
 template <typename T>
@@ -714,7 +748,7 @@ int main() {
     int h, n;
     cin >> h >> n;
 
-    vector<long long> c(n);
+    vector<long long> c(n), yl(n), yr(n);
     vector<Point<long long>> o(n);
     vector<vector<Point<long long>>> convex_hulls(n);
     for (int i = 0; i < n; i++) {
@@ -727,6 +761,12 @@ int main() {
 
         c[i] /= 2;
         convex_hulls[i] = monotone_chain(v);
+
+        yl[i] = yr[i] = convex_hulls[i][0].y;
+        for (auto p : convex_hulls[i]) {
+            yl[i] = min(yl[i], p.y);
+            yr[i] = max(yr[i], p.y);
+        }
     }
 
     int m;
@@ -747,18 +787,12 @@ int main() {
 
     vector<vector<pair<int, int>>> time(m + 2);
     for (int i = 0; i < n; i++) {
-        auto search = [&](auto Y) {
+        auto search = [&](long long Y) {
             int l = 0, r = m + 1, mid;
             while (l + 1 < r) {
                 mid = l + (r - l) / 2;
 
-                bool less = false, more = false;
-                for (auto [x, y] : s(i, F[mid])) {
-                    if (y <= Y) less = true;
-                    if (y >= Y) more = true;
-                }
-
-                if (less && more) r = mid;
+                if (o[i].y + F[mid] * yl[i] <= Y && o[i].y + F[mid] * yr[i] >= Y) r = mid;
                 else l = mid;
             }
             return r;
@@ -767,11 +801,27 @@ int main() {
         time[search(h)].emplace_back(i, n + 1);
 
         for (int j = i + 1; j < n; j++) {
+            auto P = convex_hulls[i], Q = convex_hulls[j];
+            for (auto &p : Q) p *= -1;
+            auto diff = minkowski_sum(P, Q);
+
+            vector<Point<__int128>> polygon(diff.size());
+            Point<__int128> p = o[j] - o[i];
+
             int l = 0, r = m + 1, mid;
             while (l + 1 < r) {
                 mid = l + (r - l) / 2;
 
-                if (!dist_between_convex_polygons(s(i, F[mid]), s(j, F[mid]))) r = mid;
+                auto check = [&](__int128 f) -> bool {
+                    if (diff.size() == 1) return p == diff[0] * f;
+                    if (diff.size() == 2) return point_on_line(p, Line<__int128>{diff[0] * f, diff[1] * f});
+
+                    for (int k = 0; k < diff.size(); k++) polygon[k] = diff[k] * f;
+                    auto [in, on] = point_in_polygon(polygon, p);
+                    return in || on;
+                };
+
+                if (check(F[mid])) r = mid;
                 else l = mid;
             }
             time[r].emplace_back(i, j);
