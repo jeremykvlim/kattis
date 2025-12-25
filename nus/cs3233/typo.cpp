@@ -1,63 +1,56 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct Trie {
-    enum ascii {
-        LOWER = 97,
-        UPPER = 65,
-        NUM = 48,
-        SYM = 32,
-        NA = 0
-    };
+struct Hash {
+    template <typename T>
+    static inline void combine(size_t &h, const T &v) {
+        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
+    }
 
-    struct TrieNode {
-        vector<int> next;
-        int count;
+    template <typename T>
+    size_t operator()(const T &v) const {
+        if constexpr (requires { tuple_size<T>::value; })
+            return apply([](const auto &...e) {
+                size_t h = 0;
+                (combine(h, e), ...);
+                return h;
+            }, v);
+        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
+            size_t h = 0;
+            for (const auto &e : v) combine(h, e);
+            return h;
+        } else return hash<T>{}(v);
+    }
+};
 
-        TrieNode(int range = 26) : next(range, -1), count(0) {}
-    };
+template <unsigned long long B1 = 0x9e3779b97f4a7c15, unsigned long long B2 = 0xbf58476d1ce4e5b9>
+struct HashedString {
+    int n;
+    vector<unsigned long long> pref1, pref2;
+    static inline vector<unsigned long long> p1{1}, p2{1};
 
-    vector<TrieNode> T;
-    ascii a;
-    int r;
-
-    Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
-
-    void add(string &s) {
-        int node = 0;
-        for (char c : s) {
-            int pos = c - a;
-
-            if (T[node].next[pos] == -1) {
-                T[node].next[pos] = T.size();
-                T.emplace_back(TrieNode(r));
-            }
-            node = T[node].next[pos];
+    HashedString() : n(0), pref1(1, 0), pref2(1, 0) {}
+    HashedString(const string &s) : n(s.size()), pref1(s.size() + 1, 0), pref2(s.size() + 1, 0) {
+        while (p1.size() <= n || p2.size() <= n) {
+            p1.emplace_back(p1.back() * B1);
+            p2.emplace_back(p2.back() * B2);
         }
-        T[node].count++;
+
+        for (int i = 0; i < n; i++) {
+            pref1[i + 1] = pref1[i] * B1 + (unsigned char) s[i];
+            pref2[i + 1] = pref2[i] * B2 + (unsigned char) s[i];
+        }
     }
 
-    bool typo(string &s) {
-        int n = s.size();
-
-        auto dfs = [&](auto &&self, int node = 0, int i = 0, bool deleted = false) {
-            if (i == n) return deleted && T[node].count;
-
-            if (!deleted) {
-                if (self(self, node, i + 1, true)) return true;
-            }
-
-            char c = s[i];
-            int pos = c - a;
-
-            if (T[node].next[pos] == -1) return false;
-            return self(self, T[node].next[pos], i + 1, deleted);
-        };
-        return dfs(dfs);
+    pair<unsigned long long, unsigned long long> pref_hash(int l, int r) const {
+        auto h1 = pref1[r] - pref1[l] * p1[r - l], h2 = pref2[r] - pref2[l] * p2[r - l];
+        return {h1, h2};
     }
 
-    auto & operator[](int i) {
-        return T[i];
+    pair<unsigned long long, unsigned long long> split_pref_hash(int i) const {
+        auto [ll, lr] = pref_hash(0, i);
+        auto [rl, rr] = pref_hash(i + 1, n);
+        return {ll * p1[n - i - 1] + rl, lr * p2[n - i - 1] + rr};
     }
 };
 
@@ -68,19 +61,33 @@ int main() {
     int n;
     cin >> n;
 
-    Trie trie;
     vector<string> dict(n);
-    for (auto &word : dict) {
-        cin >> word;
+    for (auto &s : dict) cin >> s;
 
-        trie.add(word);
+    unordered_set<tuple<int, unsigned long long, unsigned long long>, Hash> hashes;
+    vector<HashedString<>> words(n);
+    for (int i = 0; i < n; i++) {
+        words[i] = dict[i];
+        auto [h1, h2] = words[i].pref_hash(0, dict[i].size());
+        hashes.emplace(dict[i].size(), h1, h2);
     }
 
-    vector<string> typos;
-    for (auto word : dict)
-        if (trie.typo(word)) typos.emplace_back(word);
+    vector<int> typos;
+    for (int i = 0; i < n; i++) {
+        int len = dict[i].size();
+        if (len == 1) continue;
 
-    if (typos.empty()) cout << "NO TYPOS" << "\n";
+        for (int k = 0; k < len; k++) {
+            auto [h1, h2] = words[i].split_pref_hash(k);
+
+            if (hashes.count({len - 1, h1, h2})) {
+                typos.emplace_back(i);
+                break;
+            }
+        }
+    }
+
+    if (typos.empty()) cout << "NO TYPOS";
     else
-        for (auto word : typos) cout << word << "\n";
+        for (int i : typos) cout << dict[i] << "\n";
 }
