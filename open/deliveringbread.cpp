@@ -20,10 +20,10 @@ int main() {
     }
 
     vector<vector<int>> pos(K);
-    for (int i = 0; i < K; i++) {
-        sort(indices[i].begin(), indices[i].end(), [&](int a, int b) { return d[a] < d[b]; });
-        pos[i].resize(indices[i].size());
-        for (int j = 0; j < indices[i].size(); j++) pos[i][j] = d[indices[i][j]];
+    for (int ki = 0; ki < K; ki++) {
+        sort(indices[ki].begin(), indices[ki].end(), [&](int i, int j) { return d[i] < d[j]; });
+        pos[ki].resize(indices[ki].size());
+        for (int j = 0; j < indices[ki].size(); j++) pos[ki][j] = d[indices[ki][j]];
     }
 
     vector<int> next(n);
@@ -42,15 +42,23 @@ int main() {
     }
 
     int blocks = ceil(sqrt(K));
-    vector<int> jump(n);
+    vector<int> block_count(n), jump(n);
     vector<long long> block_step(n);
-    for (int i = 0; i < n; i++) {
-        int j = i;
-        for (int _ = 0; _ < blocks; _++) {
-            block_step[i] += step[j];
-            j = next[j];
-        }
-        jump[i] = j;
+    for (int l = 0; l < K; l += blocks) {
+        int r = min(K, l + blocks);
+        for (int c = r - 1; c >= l; c--)
+            for (int i : indices[c]) {
+                int j = next[i];
+                if (c + 1 < r) {
+                    jump[i] = jump[j];
+                    block_step[i] = step[i] + block_step[j];
+                    block_count[i] = block_count[j] + 1;
+                } else {
+                    jump[i] = j;
+                    block_step[i] = step[i];
+                    block_count[i] = 1;
+                }
+            }
     }
 
     while (q--) {
@@ -75,8 +83,8 @@ int main() {
         }
 
         int m = nq - 1;
-        while (m >= blocks) {
-            m -= blocks;
+        while (m >= block_count[j]) {
+            m -= block_count[j];
             dist += block_step[j];
             j = jump[j];
         }
