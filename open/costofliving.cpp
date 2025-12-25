@@ -21,7 +21,7 @@ struct Matrix {
 };
 
 template <typename T>
-vector<T> rref(Matrix<T> &matrix) {
+void rref(Matrix<T> &matrix) {
     int n = matrix.r, m = matrix.c;
 
     int rank = 0;
@@ -44,16 +44,6 @@ vector<T> rref(Matrix<T> &matrix) {
 
         rank++;
     }
-
-    vector<T> solution(m - 1, -1);
-    for (int i = 0; i < n; i++) {
-        int l = find_if(matrix[i].begin(), matrix[i].end(), [](auto value) { return fabs(value) > 1e-9; }) - matrix[i].begin(),
-            r = find_if(matrix[i].rbegin() + 1, matrix[i].rend(), [](auto value) { return fabs(value) > 1e-9; }) - matrix[i].rbegin();
-
-        if (l + 1 == m - r) solution[l] = exp(matrix[i][m - 1]);
-    }
-
-    return solution;
 }
 
 int main() {
@@ -63,8 +53,8 @@ int main() {
     int y, c, q;
     cin >> y >> c >> q;
 
-    vector<double> r(y - 1);
-    for (auto &ri : r) cin >> ri;
+    vector<double> rates(y - 1);
+    for (auto &r : rates) cin >> r;
 
     vector<vector<double>> p(y, vector<double>(c));
     for (auto &row : p)
@@ -87,14 +77,21 @@ int main() {
         }
 
     for (int i = 0; i < y - 1; i++)
-        if (r[i] > 0) {
+        if (rates[i] > 0) {
             vector<double> row(y + (y + 1) * c + 1);
             row[i + (y + 1) * c] = 1;
-            row.back() = log(r[i]);
+            row.back() = log(rates[i]);
             A.add(row);
         }
 
-    auto price = rref(A);
+    rref(A);
+    vector<double> price(A.c - 1, -1);
+    for (int i = 0; i < A.r; i++) {
+        int l = find_if(A[i].begin(), A[i].end(), [](auto value) { return fabs(value) > 1e-9; }) - A[i].begin(),
+            r = find_if(A[i].rbegin() + 1, A[i].rend(), [](auto value) { return fabs(value) > 1e-9; }) - A[i].rbegin();
+
+        if (l + 1 == A.c - r) price[l] = exp(A[i][A.c - 1]);
+    }
     while (q--) {
         int a, b;
         cin >> a >> b;
