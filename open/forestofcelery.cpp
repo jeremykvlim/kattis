@@ -179,14 +179,21 @@ int main() {
     }
 
     int blocks = ceil(sqrt(n));
-    vector<int> block_step(n, 0), jump(n);
-    for (int i = 0; i < n; i++) {
-        int j = i;
-        for (int _ = 0; _ < blocks; _++) {
-            block_step[i] += step[j];
-            j = next[j];
+    vector<int> block_count(n), block_step(n), jump(n);
+    for (int l = 0; l < n; l += blocks) {
+        int r = min(n, l + blocks);
+        for (int i = r - 1; i >= l; i--) {
+            int j = next[i];
+            if (l <= j && j < r) {
+                jump[i] = jump[j];
+                block_step[i] = step[i] + block_step[j];
+                block_count[i] = block_count[j] + 1;
+            } else {
+                jump[i] = j;
+                block_step[i] = step[i];
+                block_count[i] = 1;
+            }
         }
-        jump[i] = j;
     }
 
     int count = n;
@@ -194,13 +201,13 @@ int main() {
         int j = i, remaining = n - 1, c = 1;
         while (remaining >= block_step[j]) {
             remaining -= block_step[j];
+            c += block_count[j];
             j = jump[j];
-            c += blocks;
         }
         while (remaining >= step[j]) {
             remaining -= step[j];
-            j = next[j];
             c++;
+            j = next[j];
         }
         count = min(count, c);
     }
