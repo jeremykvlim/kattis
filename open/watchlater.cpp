@@ -23,9 +23,9 @@ int main() {
     string s;
     cin >> n >> k >> s;
 
-    k = 0;
     vector<int> node(n), next(26, -1);
     vector<vector<int>> indices(k);
+    k = 0;
     for (int i = 0; i < n; i++) {
         int pos = s[i] - 'a';
         if (next[pos] == -1) next[pos] = k++;
