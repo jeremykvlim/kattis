@@ -443,6 +443,13 @@ void fast_subset_transform(int n, vector<T> &v, F &&f) {
             for (int j = 0; j < k; j++) v[i + j + k] = f(v[i + j + k], v[i + j]);
 }
 
+template <typename T>
+vector<T> fmt(int n, const vector<T> &F) {
+    auto f = F;
+    fast_subset_transform(n, f, [](auto x, auto y) { return x - y; });
+    return f;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -474,7 +481,7 @@ int main() {
             };
             dp1[mask] = dp(dp);
         }
-        fast_subset_transform(1 << 10, dp1, [](auto x, auto y) { return x - y; });
+        dp1 = fmt(1 << 10, dp1);
 
         fill(dp2.begin(), dp2.end(), 0);
         dp2[0] = 1;
