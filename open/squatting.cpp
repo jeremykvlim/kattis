@@ -4,14 +4,14 @@ using namespace std;
 template <unsigned long long B1 = 0x9e3779b97f4a7c15, unsigned long long B2 = 0xbf58476d1ce4e5b9>
 struct HashedString {
     int n;
-    vector<unsigned long long> p1, p2, pref1, pref2;
+    vector<unsigned long long> pref1, pref2;
+    static inline vector<unsigned long long> p1{1}, p2{1};
 
-    HashedString() {};
-    HashedString(const string &s) : n(s.size()), p1(s.size() + 1), p2(s.size() + 1), pref1(s.size() + 1, 0), pref2(s.size() + 1, 0) {
-        p1[0] = p2[0] = 1;
-        for (int i = 0; i < n; i++) {
-            p1[i + 1] = p1[i] * B1;
-            p2[i + 1] = p2[i] * B2;
+    HashedString() : n(0), pref1(1, 0), pref2(1, 0) {}
+    HashedString(const string &s) : n(s.size()), pref1(s.size() + 1, 0), pref2(s.size() + 1, 0) {
+        while (p1.size() <= n || p2.size() <= n) {
+            p1.emplace_back(p1.back() * B1);
+            p2.emplace_back(p2.back() * B2);
         }
 
         for (int i = 0; i < n; i++) {
