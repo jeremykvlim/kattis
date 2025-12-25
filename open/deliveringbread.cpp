@@ -51,7 +51,7 @@ int main() {
                 int j = next[i];
                 if (c + 1 < r) {
                     jump[i] = jump[j];
-                    block_step[i] = step[i] + block_step[j];
+                    block_step[i] = block_step[j] + step[i];
                     block_count[i] = block_count[j] + 1;
                 } else {
                     jump[i] = j;
