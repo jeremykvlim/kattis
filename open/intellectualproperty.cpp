@@ -12,20 +12,18 @@ struct SuffixAutomaton {
 
     struct State {
         int len, link;
-        bool end;
         vector<int> next;
 
-        State(int range = 26) : len(0), link(0), end(false), next(range, 0) {}
+        State(int range = 26) : len(0), link(0), next(range, 0) {}
     };
 
     vector<State> SAM;
     ascii a;
     int last, size;
 
-    SuffixAutomaton(string s, ascii alpha = LOWER, int range = 26) : SAM(2 * s.size(), State(range)), a(alpha), last(0), size(1) {
+    SuffixAutomaton(const string &s, ascii alpha = LOWER, int range = 26) : SAM(2 * s.size(), State(range)), a(alpha), last(0), size(1) {
         SAM[0].link = -1;
         for (char c : s) extend(c);
-        for (int p = last; p; p = SAM[p].link) SAM[p].end = true;
     }
 
     void extend(char c) {
