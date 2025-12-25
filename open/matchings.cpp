@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -433,7 +433,7 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned long long MOD = 2524775926340780033;
+constexpr unsigned long long MOD = 998244353;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 template <typename T>
@@ -589,36 +589,33 @@ int main() {
     int w1, h1;
     cin >> w1 >> h1;
 
-    vector<vector<int>> image1(h1, vector<int>(w1));
-    for (auto &row : image1)
-        for (int &color : row) cin >> color;
+    vector<int> robot(w1 * h1);
+    for (int i = 0; i < h1; i++)
+        for (int j = 0; j < w1; j++) cin >> robot[i * w1 + j];
 
     int w2, h2;
     cin >> w2 >> h2;
 
-    vector<vector<int>> image2(h2, vector<int>(w2));
-    for (auto &row : image2)
-        for (int &color : row) cin >> color;
+    vector<int> floor(w2 * h2);
+    for (int i = 0; i < h2; i++)
+        for (int j = 0; j < w2; j++) {
+            bool b;
+            cin >> b;
 
-    vector<int> pixels((h1 + h2) * w2 - 1);
-    for (int color = 0; color <= 1; color++) {
-        vector<int> a(h1 * w2), b(h2 * w2);
-        for (int y = 0; y < h1; y++)
-            for (int x = 0; x < w1; x++) a[y * w2 + x] = image1[y][x] == color;
-        reverse(a.begin(), a.end());
+            floor[i * w2 + j] = b ? 1 : -1;
+        }
 
-        for (int y = 0; y < h2; y++)
-            for (int x = 0; x < w2; x++) b[y * w2 + x] = image2[y][x] == color;
+    vector<int> temp(w2 * h1, 0);
+    for (int i = 0; i < h1; i++)
+        for (int j = 0; j < w1; j++) temp[(h1 - 1 - i) * w2 + w1 - 1 - j] = robot[i * w1 + j] ? 1 : -1;
+    robot = temp;
 
-        auto c = convolve(a, b);
-        for (int i = 0; i < c.size(); i++) pixels[i] += c[i];
-    }
-
-    auto most = INT_MIN;
+    auto pixels = convolve(robot, floor);
+    int most = -1;
     for (int y = 0; y <= h2 - h1; y++)
-        for (int x = 0; x <= w2 - w1; x++) most = max(most, pixels[(y + h1) * w2 + x - 1]);
+        for (int x = 0; x <= w2 - w1; x++) most = max(most, (pixels[(y + h1 - 1) * w2 + x + w1 - 1] + w1 * h1) / 2);
 
     for (int x = 0; x <= w2 - w1; x++)
         for (int y = 0; y <= h2 - h1; y++)
-            if (pixels[(y + h1) * w2 + x - 1] == most) cout << x << " " << y << "\n";
+            if (most == (pixels[(y + h1 - 1) * w2 + x + w1 - 1] + w1 * h1) / 2) cout << x << " " << y << "\n";
 }
