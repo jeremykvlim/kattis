@@ -10,29 +10,10 @@ struct Matrix {
     Matrix(int rows, int cols, int v = 0) : r(rows), c(cols), mat(rows, vector<T>(cols, v)) {}
     Matrix(const vector<vector<T>> &mat) : r(mat.size()), c(mat[0].size()), mat(mat) {}
 
-    friend auto operator*(const Matrix<T> &A, const Matrix<T> &B) {
-        int r1 = A.r, c1 = A.c, c2 = B.c;
-
-        Matrix<T> C(r1, c2);
-        for (int i = 0; i < r1; i++)
-            for (int k = 0; k < c1; k++)
-                if (A[i][k])
-                    for (int j = 0; j < c2; j++) C[i][j] += A[i][k] * B[k][j];
-        return C;
-    }
-
-    friend auto operator*=(Matrix<T> &A, Matrix<T> &B) {
-        return A = A * B;
-    }
-
     auto & operator[](int i) {
         return mat[i];
     }
-
-    auto & operator[](int i) const {
-        return mat[i];
-    }
-};
+};;
 
 template <typename T>
 void rref(Matrix<T> &matrix) {
