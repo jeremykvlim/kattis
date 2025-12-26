@@ -33,6 +33,7 @@ vector<int> rref(GaloisField2Matrix<S> &matrix) {
 
         rank++;
     }
+    
     return pivots;
 }
 
