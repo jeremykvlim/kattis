@@ -3,22 +3,32 @@ using namespace std;
 
 template <typename C>
 struct CartesianTree {
-    int root;
+    int n, root;
     vector<array<int, 3>> CT;
 
     template <typename T>
-    CartesianTree(const vector<T> &a) {
-        int n = a.size();
-        CT.resize(n, {0, 0, 0});
+    CartesianTree(const vector<T> &a) : n(a.size()), root(-1), CT(n, {-1, -1, -1}) {
+        deque<int> st{-1};
+        for (int i = 0; i <= n; i++) {
+            int j = -1;
+            while (st.size() > 1 && (i == n || !C()(a[st.back()], a[i]))) {
+                j = st.back();
+                st.pop_back();
+            }
 
-        for (int i = 1; i < n; i++) {
-            auto &[l, r, p] = CT[i];
-            p = i - 1;
-            while (C()(a[p], a[i])) p = CT[p][2];
-            l = CT[p][1];
-            CT[p][1] = CT[l][2] = i;
+            if (i == n) root = j;
+            else {
+                if (st.back() != -1) {
+                    CT[i][2] = st.back();
+                    CT[st.back()][1] = i;
+                }
+                if (j != -1) {
+                    CT[j][2] = i;
+                    CT[i][0] = j;
+                }
+                st.emplace_back(i);
+            }
         }
-        root = CT[0][1];
     }
 
     auto & operator[](int i) {
@@ -56,22 +66,22 @@ int main() {
         return v >> min(31, exponent);
     };
 
-    CartesianTree<less<>> ct1(b);
+    CartesianTree<greater_equal<>> ct1(b);
     vector<int> dp_up(n);
     auto calc_l = [&](auto &ct, int i) {
         auto [l, r, p] = ct[i];
-        if (!l) return 0;
+        if (!~l) return 0;
         return div_p2(dp_up[l], b[i] - b[l]);
     };
 
     auto calc_r = [&](auto &ct, int i) {
         auto [l, r, p] = ct[i];
-        if (!r) return 0;
+        if (!~r) return 0;
         return div_p2(dp_up[r], b[i] - b[r]);
     };
 
     auto dp1 = [&](auto &&self, auto &ct, int i) -> void {
-        if (!i) return;
+        if (!~i) return;
         auto [l, r, p] = ct[i];
         self(self, ct, l);
         self(self, ct, r);
@@ -81,7 +91,7 @@ int main() {
 
     vector<int> dp_down(n);
     auto dp2 = [&](auto &&self, auto &ct, int i) -> void {
-        if (!i) return;
+        if (!~i) return;
         auto [l, r, p] = ct[i];
         dp_down[i] = dp_down[p] + calc_l(ct, i) + 1;
         self(self, ct, l);
@@ -110,7 +120,7 @@ int main() {
         }
     }
 
-    CartesianTree<less_equal<>> ct2(b);
+    CartesianTree<greater<>> ct2(b);
     fill(dp_up.begin(), dp_up.end(), 0);
     dp1(dp1, ct2, ct2.root);
 
