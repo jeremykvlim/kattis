@@ -184,44 +184,35 @@ int main() {
     vector<int> radius0(n), radius1(n), radius2(n), s0(n), s1(n), s2(n);
     for (int i = 0; i < n; i++) {
         int bound = min(i, n - 1 - i);
-        auto matches = [&](int offset) -> int {
-            int l = 0, r = bound - offset + 2, m;
-            if (r <= 0) return 0;
-            while (l + 1 < r) {
-                m = l + (r - l) / 2;
-
-                if (sa.substring_lcp(2 * n - (i - offset), i + offset) >= m) l = m;
-                else r = m;
-            }
-            return l;
+        auto lce = [&](int offset) -> int {
+            return min(sa.substring_lcp(2 * n - (i - offset), i + offset), bound - offset + 1);
         };
-        int m0 = matches(1);
 
-        int m1 = m0;
+        int r0 = lce(1), r1 = r0;
         char mismatch1_l = '-', mismatch1_r = '-';
-        if (m0 < bound) {
-            mismatch1_l = t[i - m0 - 1];
-            mismatch1_r = t[i + m0 + 1];
-            m1 += matches(m0 + 2) + 1;
+        if (r0 < bound) {
+            mismatch1_l = t[i - r0 - 1];
+            mismatch1_r = t[i + r0 + 1];
+            r1 += lce(r0 + 2) + 1;
         }
 
-        int m2 = m1;
+        int r2 = r1;
         char mismatch2_l = '-', mismatch2_r = '-';
-        if (m1 < bound) {
-            mismatch2_l = t[i - m1 - 1];
-            mismatch2_r = t[i + m1 + 1];
-            m2 += matches(m1 + 2) + 1;
+        if (r1 < bound) {
+            mismatch2_l = t[i - r1 - 1];
+            mismatch2_r = t[i + r1 + 1];
+            r2 += lce(r1 + 2) + 1;
         }
 
-        radius0[i] = m0 + 1;
-        radius1[i] = m1 + 1;
-        radius2[i] = m2 + 1;
+        radius0[i] = r0 + 1;
+        radius1[i] = r1 + 1;
+        radius2[i] = r2 + 1;
 
         bool b0 = true, b1 = false, b2 = false;
-        if (m0 < bound)
+        if (r0 < bound)
             if (t[i] == mismatch1_l || t[i] == mismatch1_r) b1 = true;
 
-        if (m1 < bound)
+        if (r1 < bound)
             if ((mismatch1_l == mismatch2_l && mismatch1_r == mismatch2_r) || (mismatch1_l == mismatch2_r && mismatch1_r == mismatch2_l)) b2 = true;
 
         s0[i] = b0 - b1;
@@ -236,37 +227,44 @@ int main() {
         r = 2 * (r - 1) + 2;
     }
 
+    auto sum = [&](int l, int r) {
+        return (long long) (l + r) * (r - l + 1) / 2;
+    };
+
+    vector<array<long long, 5>> ql, qr;
+    for (int i = 0; i < Q; i++) {
+        auto [l, r] = queries[i];
+        int m = l + (r - l) / 2;
+
+        if (l <= m) ql.push_back({l, m, 1 - l, i, sum(l, m)});
+        if (m + 1 <= r) qr.push_back({m + 1, r, r + 1, i, -sum(m + 1, r)});
+    }
+
+    vector<int> indices_l(ql.size()), indices_r(qr.size());
+    iota(indices_l.begin(), indices_l.end(), 0);
+    sort(indices_l.begin(), indices_l.end(), [&](int i, int j) {
+        if (ql[i][2] != ql[j][2]) return ql[i][2] < ql[j][2];
+        return i < j;
+    });
+    iota(indices_r.begin(), indices_r.end(), 0);
+    sort(indices_r.begin(), indices_r.end(), [&](int i, int j) {
+        if (qr[i][2] != qr[j][2]) return qr[i][2] < qr[j][2];
+        return i < j;
+    });
+
     vector<long long> count(Q, 0);
+    vector<int> left(n), right(n), order(n);
     auto process = [&](const auto &active, int sgn) {
-        vector<int> left(n), right(n);
         for (int i = 0; i < n; i++) {
             left[i] = active[i] - i;
             right[i] = active[i] + i;
         }
 
-        auto sum = [&](int l, int r) {
-            return (long long) (l + r) * (r - l + 1) / 2;
-        };
-
-        vector<array<long long, 5>> ql, qr;
-        for (int i = 0; i < Q; i++) {
-            auto [l, r] = queries[i];
-            int m = l + (r - l) / 2;
-
-            if (l <= m) ql.push_back({l, m, 1 - l, i, sum(l, m)});
-            if (m + 1 <= r) qr.push_back({m + 1, r, r + 1, i, -sum(m + 1, r)});
-        }
-
-        auto sweep = [&](const auto &half, const auto &q) {
-            vector<pair<int, int>> order(n);
-            for (int i = 0; i < n; i++) order[i] = {half[i], i};
-            sort(order.begin(), order.end());
-
-            vector<int> indices(q.size());
-            iota(indices.begin(), indices.end(), 0);
-            sort(indices.begin(), indices.end(), [&](int i, int j) {
-                if (q[i][2] != q[j][2]) return q[i][2] < q[j][2];
-                return i < j;
+        auto sweep = [&](const auto &half, const auto &q, const auto &indices) {
+            iota(order.begin(), order.end(), 0);
+            sort(order.begin(), order.end(), [&](int a, int b) {
+                if (half[a] != half[b]) return half[a] < half[b];
+                return a < b;
             });
 
             FenwickTree<long long> fw_a(n + 1), fw_b(n + 1);
@@ -275,16 +273,16 @@ int main() {
             int j = 0;
             for (int k : indices) {
                 auto [l, r, c, i, base] = q[k];
-                for (; j < n && order[j].first <= c; j++) {
-                    int h = order[j].second;
+                for (; j < n && half[order[j]] <= c; j++) {
+                    int h = order[j];
                     fw_a.update(h + 1, half[h]);
                     fw_b.update(h + 1, -1);
                 }
                 count[i] += sgn * (fw_a.range_sum_query(l, r + 1) + c * (fw_b.range_sum_query(l, r + 1)) + base);
             }
         };
-        sweep(left, ql);
-        sweep(right, qr);
+        sweep(left, ql, indices_l);
+        sweep(right, qr, indices_r);
 
         vector<int> pref(n + 1);
         for (int i = 0; i < n; i++) pref[i + 1] = pref[i] + (!(i & 1) && active[i] > 0);
