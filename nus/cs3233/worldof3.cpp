@@ -77,12 +77,18 @@ int main() {
     for (int &s : spells) cin >> s;
     quests.insert(quests.begin(), 1);
 
-    vector<long long> dist(n + 1);
+    vector<int> indices(n + 1, -1);
+    for (int i = 0; i < k; i++) indices[quests[i + 1]] = i;
+
+    vector<long long> dist(n + 1, 1e18);
     priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<>> pq;
     vector<vector<long long>> d(k + 1, vector<long long>(k + 1, 1e18));
     for (int i = 0; i <= k; i++) {
         fill(dist.begin(), dist.end(), 1e18);
         dist[quests[i]] = 0;
+
+        int remaining = k + 1, found = 0;
+        while (!pq.empty()) pq.pop();
         pq.emplace(0, quests[i]);
         while (!pq.empty()) {
             auto [dv, v] = pq.top();
@@ -90,12 +96,19 @@ int main() {
 
             if (dist[v] != dv) continue;
 
+            int c = indices[v];
+            if (c != -1 && !((found >> c) & 1)) {
+                found |= 1 << c;
+                if (!--remaining) break;
+            }
+
             for (auto [u, w] : adj_list[v])
                 if (dist[u] > dv + w) {
                     dist[u] = dv + w;
                     pq.emplace(dv + w, u);
                 }
         }
+
         for (int j = 0; j <= k; j++) d[i][j] = dist[quests[j]];
     }
 
@@ -105,26 +118,24 @@ int main() {
         exit(0);
     }
 
-    vector<int> indices(n + 1);
-    for (int i = 0; i < k; i++) indices[quests[i + 1]] = i;
-
     int spell_mask = 0;
     for (int c : spells) spell_mask |= 1 << indices[c];
 
-    vector<int> popcount(1 << k, 0);
+    int all = 1 << k;
+    vector<int> popcount(all, 0);
     vector<vector<unsigned>> masks_by_pop(k + 1);
     masks_by_pop[0] = {0};
-    for (auto mask = 1U; mask < 1 << k; mask++) masks_by_pop[popcount[mask] = popcount[mask & (mask - 1)] + 1].emplace_back(mask);
+    for (auto mask = 1U; mask < all; mask++) masks_by_pop[popcount[mask] = popcount[mask & (mask - 1)] + 1].emplace_back(mask);
 
-    vector<long long> cost(1 << k), temp(1 << k);
-    vector<vector<long long>> dp1(k + 1, vector<long long>(1 << k, 1e18)), dp2(k + 1, vector<long long>(1 << k));
+    vector<long long> cost(all), temp(all);
+    vector<vector<long long>> dp1(k + 1, vector<long long>(all, 1e18)), dp2(k + 1, vector<long long>(all));
     dp1[0][0] = 0;
     for (int src = 0; src <= k; src++) {
         for (int p = 0; p <= k; p++)
-            for (auto mask = 0U; mask < 1 << k; mask++) cost[mask] = dp2[p][mask] = 1e18;
+            for (auto mask = 0U; mask < all; mask++) cost[mask] = dp2[p][mask] = 1e18;
 
         auto [tour, len, dp_tsp] = held_karp(k, d, src);
-        for (auto m1 = 1U; m1 < 1 << k; m1++) {
+        for (auto m1 = 1U; m1 < all; m1++) {
             auto m2 = m1 & spell_mask;
             if (m2) {
                 for (; m2; m2 &= m2 - 1) cost[m1] = min(cost[m1], dp_tsp[m1][countr_zero(m2)]);
@@ -135,24 +146,24 @@ int main() {
         for (int p = 1; p <= k; p++) {
             fill(temp.begin(), temp.end(), 1e18);
             for (auto mask : masks_by_pop[p]) temp[mask] = cost[mask];
-            fast_subset_transform(1 << k, temp, [](auto x, auto y) { return min(x, y); });
+            fast_subset_transform(all, temp, [](auto x, auto y) { return min(x, y); });
             for (int q = 1; q <= p; q++)
-                for (auto mask = 0U; mask < 1 << k; mask++) dp2[q][mask] = min(dp2[q][mask], temp[mask]);
+                for (auto mask = 0U; mask < all; mask++) dp2[q][mask] = min(dp2[q][mask], temp[mask]);
         }
 
         bool src_spell = src && (spell_mask >> (src - 1)) & 1;
         for (int p = 0; p <= k; p++)
             for (auto m1 : masks_by_pop[p])
                 if (dp1[src][m1] != 1e18) {
-                    auto m2 = m1 ^ ((1 << k) - 1);
+                    auto m2 = m1 ^ (all - 1);
 
                     for (auto m3 = m2; m3; m3 &= m3 - 1) {
                         int i = countr_zero(m3);
                         if (d[src][i + 1] != 1e18) dp1[i + 1][m1 | (1 << i)] = min(dp1[i + 1][m1 | (1 << i)], dp1[src][m1] + d[src][i + 1]);
                     }
 
-                    if (m1 == (1 << k) - 1)
-                        if (d[src][0] < 1e18) dp1[0][m1] = min(dp1[0][m1], dp1[src][m1] + d[src][0]);
+                    if (m1 == all - 1)
+                        if (d[src][0] != 1e18) dp1[0][m1] = min(dp1[0][m1], dp1[src][m1] + d[src][0]);
 
                     if (p == k) continue;
 
