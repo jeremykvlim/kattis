@@ -23,28 +23,41 @@ struct Hash {
     }
 };
 
-template <unsigned long long B1 = 0x9e3779b97f4a7c15, unsigned long long B2 = 0xbf58476d1ce4e5b9>
 struct HashedString {
+    static inline unsigned long long B1 = 0, B2 = 0;
+    static const unsigned long long MOD1 = 1e9 + 7, MOD2 = 1e9 + 9;
+
     int n;
     vector<unsigned long long> pref1, pref2;
     static inline vector<unsigned long long> p1{1}, p2{1};
 
     HashedString() : n(0), pref1(1, 0), pref2(1, 0) {}
-    HashedString(const string &s) : n(s.size()), pref1(s.size() + 1, 0), pref2(s.size() + 1, 0) {
-        while (p1.size() <= n || p2.size() <= n) {
-            p1.emplace_back(p1.back() * B1);
-            p2.emplace_back(p2.back() * B2);
+    HashedString(const string &s) : n((int)s.size()), pref1(n + 1, 0), pref2(n + 1, 0) {
+        if (!B1 && !B2) {
+            mt19937_64 rng{random_device{}()};
+            B1 = uniform_int_distribution(911382323ULL, MOD1 - 1)(rng);
+            B2 = uniform_int_distribution(972663749ULL, MOD2 - 1)(rng);
         }
-
+        while (p1.size() <= n || p2.size() <= n) {
+            p1.emplace_back((p1.back() * B1) % MOD1);
+            p2.emplace_back((p2.back() * B2) % MOD2);
+        }
         for (int i = 0; i < n; i++) {
-            pref1[i + 1] = pref1[i] * B1 + (unsigned char) s[i];
-            pref2[i + 1] = pref2[i] * B2 + (unsigned char) s[i];
+            unsigned long long v = (unsigned long long)(unsigned char)s[i] + 1ULL;
+            pref1[i + 1] = (pref1[i] * B1 + v) % MOD1;
+            pref2[i + 1] = (pref2[i] * B2 + v) % MOD2;
         }
     }
 
     pair<unsigned long long, unsigned long long> pref_hash(int l, int r) const {
-        auto h1 = pref1[r] - pref1[l] * p1[r - l], h2 = pref2[r] - pref2[l] * p2[r - l];
+        auto h1 = (pref1[r] + MOD1 - (pref1[l] * p1[r - l]) % MOD1) % MOD1, h2 = (pref2[r] + MOD2 - (pref2[l] * p2[r - l]) % MOD2) % MOD2;
         return {h1, h2};
+    }
+
+    pair<unsigned long long, unsigned long long> split_pref_hash(int i) const {
+        auto [ll, lr] = pref_hash(0, i);
+        auto [rl, rr] = pref_hash(i + 1, n);
+        return {(ll * p1[n - i - 1] + rl) % MOD1, (lr * p2[n - i - 1] + rr) % MOD2};
     }
 };
 
@@ -68,7 +81,7 @@ int main() {
     iota(order.begin(), order.end(), 0);
     sort(order.begin(), order.end(), [&](int i, int j) { return len[i] < len[j]; });
 
-    vector<HashedString<>> hs(n);
+    vector<HashedString> hs(n);
     for (int i : order) hs[i] = words[i];
 
     vector<vector<pair<int, int>>> adj_list(n);
