@@ -354,12 +354,14 @@ T kitamasa(const vector<T> &c, const vector<T> &a, long long k) {
     int n = a.size();
 
     auto mul = [&](const vector<T> &x, const vector<T> &y) {
-        vector<T> z(2 * n + 1);
+        vector<T> z(2 * n + 1, 0);
         for (int i = 0; i <= n; i++)
-            for (int j = 0; j <= n; j++) z[i + j] += x[i] * y[j];
-
+            if (x[i])
+                for (int j = 0; j <= n; j++) z[i + j] += x[i] * y[j];
+    
         for (int i = 2 * n; i > n; i--)
-            for (int j = 0; j < n; j++) z[i - j - 1] += z[i] * c[j];
+            if (z[i])
+                for (int j = 0; j < n; j++) z[i - j - 1] += z[i] * c[j];
 
         z.resize(n + 1);
         return z;
