@@ -2,7 +2,7 @@
 using namespace std;
 
 struct RURQSegmentTree {
-    static inline array<int, 5> identity;
+    static inline array<int, 5> base{0, 1, 2, 3, 4};
 
     struct Segment {
         array<int, 5> count;
@@ -47,10 +47,10 @@ struct RURQSegmentTree {
     }
 
     void push(int i) {
-        if (lazy[i] != identity) {
+        if (lazy[i] != base) {
             apply(i << 1, lazy[i]);
             apply(i << 1 | 1, lazy[i]);
-            lazy[i] = identity;
+            lazy[i] = base;
         }
     }
 
@@ -124,9 +124,7 @@ struct RURQSegmentTree {
         return walk(i << 1, l, m) + walk(i << 1 | 1, m, r);
     }
 
-    RURQSegmentTree(int n, const string &s) : n(n), ST(2 * n), lazy(n) {
-        iota(identity.begin(), identity.end(), 0);
-        fill(lazy.begin(), lazy.end(), identity);
+    RURQSegmentTree(int n, const string &s) : n(n), ST(2 * n), lazy(n, base) {
         int m = bit_ceil(s.size());
         for (int i = 0; i < s.size(); i++) ST[(i + m) % n + n] = s[i];
         build();
@@ -147,7 +145,7 @@ int main() {
         char ai, bi;
         cin >> p >> ai >> bi;
 
-        auto v = st.identity;
+        auto v = st.base;
         int a = ai - 'a', b = bi - 'a';
         v[a] = b;
         st.range_update(0, st.kth(p, a) + 1, v);
