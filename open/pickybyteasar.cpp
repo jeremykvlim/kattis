@@ -1,15 +1,13 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct SegmentTree {
+struct RURQSegmentTree {
     static inline array<int, 5> identity;
 
     struct Segment {
         array<int, 5> count;
 
-        Segment() {
-            fill(count.begin(), count.end(), 0);
-        }
+        Segment() : count{} {}
 
         auto & operator=(const char &c) {
             count[c - 'a'] = 1;
@@ -61,27 +59,25 @@ struct SegmentTree {
         return min(l + i, r - (i >> 1));
     }
 
-    int kth(int c, int k) {
-        return kth(1, c, k, 0, n);
+    int kth(int k, int c) {
+        return kth(1, k, c, 0, n);
     }
 
-    int kth(int i, int c, int k, int l, int r) {
+    int kth(int i, int k, int c, int l, int r) {
         if (l + 1 == r) return l;
 
         push(i);
 
         int m = midpoint(l, r), lc = ST[i << 1].count[c];
-        if (k <= lc) return kth(i << 1, c, k, l, m);
-        return kth(i << 1 | 1, c, k - lc, m, r);
+        if (k <= lc) return kth(i << 1, k, c, l, m);
+        return kth(i << 1 | 1, k - lc, c, m, r);
     }
 
-    void modify(int l, int r, int a, int b) {
-        auto v = identity;
-        v[a] = b;
-        modify(1, l, r, v, 0, n);
+    void range_update(int l, int r, const array<int, 5> &v) {
+        range_update(1, l, r, v, 0, n);
     }
 
-    void modify(int i, int ql, int qr, const array<int, 5> &v, int l, int r) {
+    void range_update(int i, int ql, int qr, const array<int, 5> &v, int l, int r) {
         if (qr <= l || r <= ql) return;
         if (ql <= l && r <= qr) {
             apply(i, v);
@@ -91,34 +87,44 @@ struct SegmentTree {
         push(i);
 
         int m = midpoint(l, r);
-        modify(i << 1, ql, qr, v, l, m);
-        modify(i << 1 | 1, ql, qr, v, m, r);
+        range_update(i << 1, ql, qr, v, l, m);
+        range_update(i << 1 | 1, ql, qr, v, m, r);
 
         pull(i);
     }
 
-    void query(string &s) {
-        return query(1, s, 0, n);
+    Segment range_query(int l, int r) {
+        return range_query(1, l, r, 0, n);
     }
 
-    void query(int i, string &s, int l, int r) {
+    Segment range_query(int i, int ql, int qr, int l, int r) {
+        if (qr <= l || r <= ql) return {};
+        if (ql <= l && r <= qr) return ST[i];
+
+        push(i);
+
+        int m = midpoint(l, r);
+        return range_query(i << 1, ql, qr, l, m) + range_query(i << 1 | 1, ql, qr, m, r);
+    }
+
+    string walk() {
+        return walk(1, 0, n);
+    }
+
+    string walk(int i, int l, int r) {
         if (l + 1 == r) {
             for (int c = 0; c < 5; c++)
-                if (ST[i].count[c]) {
-                    s[l] = 'a' + c;
-                    break;
-                }
-            return;
+                if (ST[i].count[c]) return string(1, 'a' + c);
+            return string(1, 'a');
         }
 
         push(i);
 
         int m = midpoint(l, r);
-        query(i << 1, s, l, m);
-        query(i << 1 | 1, s, m, r);
+        return walk(i << 1, l, m) + walk(i << 1 | 1, m, r);
     }
 
-    SegmentTree(int n, const string &s) : n(n), ST(2 * n), lazy(n) {
+    RURQSegmentTree(int n, const string &s) : n(n), ST(2 * n), lazy(n) {
         iota(identity.begin(), identity.end(), 0);
         fill(lazy.begin(), lazy.end(), identity);
         int m = bit_ceil(s.size());
@@ -135,17 +141,16 @@ int main() {
     string s;
     cin >> n >> m >> s;
 
-    SegmentTree st(n, s);
+    RURQSegmentTree st(n, s);
     while (m--) {
         int p;
         char ai, bi;
         cin >> p >> ai >> bi;
 
+        auto v = st.identity;
         int a = ai - 'a', b = bi - 'a';
-        st.modify(0, st.kth(a, p) + 1, a, b);
+        v[a] = b;
+        st.range_update(0, st.kth(p, a) + 1, v);
     }
-
-    string chain(n, 'a');
-    st.query(chain);
-    cout << chain;
+    cout << st.walk();
 }
