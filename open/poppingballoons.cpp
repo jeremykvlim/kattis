@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -581,18 +581,18 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
 }
 
 template <typename T>
-vector<T> inverse_binomial_transform(const vector<T> &a, const vector<T> &fact, const vector<T> &fact_inv) {
-    int n = a.size();
+vector<T> inverse_binomial_transform(const vector<T> &b, const vector<T> &fact, const vector<T> &fact_inv) {
+    int n = b.size();
     vector<T> x(n), y(n);
     for (int i = 0; i < n; i++) {
-        x[i] = a[i] * fact_inv[i];
+        x[i] = b[i] * fact_inv[i];
         y[i] = fact_inv[i];
     }
     auto c = convolve(x, y);
 
-    vector<T> b(n);
-    for (int k = 0; k < n; k++) b[k] = fact[k] * c[k];
-    return b;
+    vector<T> a(n);
+    for (int k = 0; k < n; k++) a[k] = fact[k] * c[k];
+    return a;
 }
 
 template <typename T>
