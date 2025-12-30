@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -493,7 +493,7 @@ struct SegmentTree {
         }
     }
 
-    void modify(int l, int r, const Segment &v) {
+    void range_update(int l, int r, const Segment &v) {
         push(l + n);
         push(r + n - 1);
         bool cl = false, cr = false;
@@ -560,7 +560,7 @@ int main() {
     iota(order.begin(), order.end(), 1);
     sort(order.begin(), order.end(), [&](int u, int v) { return labels[u] != labels[v] ? labels[u] < labels[v] : depth[u] < depth[v]; });
 
-    SegmentTree st(n + 1);
+    SegmentTree st(bit_ceil((unsigned) n + 1));
     int l = 0;
     modint m = 0;
     for (int v : order) {
@@ -571,7 +571,7 @@ int main() {
             l = len;
             m = f;
         } else if (l == len) m += f;
-        st.modify(in[v], out[v], SegmentTree::Segment(len, f));
+        st.range_update(in[v], out[v], {len, f});
     }
     cout << l << " " << m;
 }

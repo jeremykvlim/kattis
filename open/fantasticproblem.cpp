@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct SegmentTree {
+struct RURQSegmentTree {
     struct Segment {
         long long value, freq;
 
@@ -58,7 +58,7 @@ struct SegmentTree {
         }
     }
 
-    void modify(int l, int r, const long long &v) {
+    void range_update(int l, int r, const long long &v) {
         push(l + n);
         push(r + n - 1);
         bool cl = false, cr = false;
@@ -81,11 +81,23 @@ struct SegmentTree {
         }
     }
 
+    Segment range_query(int l, int r) {
+        push(l + n);
+        push(r + n - 1);
+        Segment sl, sr;
+        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+            if (l & 1) sl = sl + ST[l++];
+            if (r & 1) sr = ST[--r] + sr;
+        }
+
+        return sl + sr;
+    }
+
     auto & operator[](int i) {
         return ST[i];
     }
 
-    SegmentTree(int n, const vector<long long> &a) : n(n), h(__lg(n)), ST(2 * n), lazy(n, 0) {
+    RURQSegmentTree(int n, const vector<long long> &a) : n(n), h(__lg(n)), ST(2 * n), lazy(n, 0) {
         for (int i = 0; i < a.size(); i++) ST[i + n] = a[i];
         build();
     }
@@ -126,7 +138,7 @@ int main() {
 
     vector<long long> base(bit_ceil((unsigned) n - k + 1), 0);
     for (int i = 0; i <= n - k; i++) base[i] = 1;
-    SegmentTree st(base.size(), base);
+    RURQSegmentTree st(base.size(), base);
 
     auto spf = sieve(1e5);
     auto factorize = [&](int n) {
@@ -145,7 +157,7 @@ int main() {
 
     auto update = [&](int sl, int sr, int d) {
         int l = max(sr - k, 0), r = min(sl, n - k + 1);
-        if (l < r) st.modify(l, r, d);
+        if (l < r) st.range_update(l, r, d);
     };
 
     for (int p = 2; p <= 1e5; p++)

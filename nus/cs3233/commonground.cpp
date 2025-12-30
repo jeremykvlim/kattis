@@ -148,7 +148,7 @@ struct Fraction : array<T, 2> {
     }
 };
 
-struct SegmentTree {
+struct RURQSegmentTree {
     struct Segment {
         long long value, freq;
 
@@ -205,7 +205,7 @@ struct SegmentTree {
         }
     }
 
-    void modify(int l, int r, const long long &v) {
+    void range_update(int l, int r, const long long &v) {
         push(l + n);
         push(r + n - 1);
         bool cl = false, cr = false;
@@ -228,11 +228,23 @@ struct SegmentTree {
         }
     }
 
+    Segment range_query(int l, int r) {
+        push(l + n);
+        push(r + n - 1);
+        Segment sl, sr;
+        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+            if (l & 1) sl = sl + ST[l++];
+            if (r & 1) sr = ST[--r] + sr;
+        }
+
+        return sl + sr;
+    }
+
     auto & operator[](int i) {
         return ST[i];
     }
 
-    SegmentTree(int n, const vector<long long> &a) : n(n), h(__lg(n)), ST(2 * n), lazy(n, 0) {
+    RURQSegmentTree(int n, const vector<long long> &a) : n(n), h(__lg(n)), ST(2 * n), lazy(n, 0) {
         for (int i = 0; i < a.size(); i++) ST[i + n] = a[i];
         build();
     }
@@ -268,7 +280,7 @@ unsigned long long area_of_union_of_rectangles(vector<array<T, 4>> rectangles) {
     sort(sweep.begin(), sweep.end());
 
     auto a = 0ULL;
-    SegmentTree st(y_gaps.size(), y_gaps);
+    RURQSegmentTree st(bit_ceil(y_gaps.size()), y_gaps);
     T y_range = y.back().first - y.front().first, prev = sweep[0][0];
     for (auto [x, yd, yu, i] : sweep) {
         if (prev != x) {
@@ -279,7 +291,7 @@ unsigned long long area_of_union_of_rectangles(vector<array<T, 4>> rectangles) {
 
             prev = x;
         }
-        st.modify(yd, yu, i & 1 ? -1 : 1);
+        st.range_update(yd, yu, i & 1 ? -1 : 1);
     }
     return a;
 }

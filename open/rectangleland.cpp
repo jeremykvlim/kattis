@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct SegmentTree {
+struct RURQSegmentTree {
     struct Segment {
         long long value, freq;
 
@@ -58,7 +58,7 @@ struct SegmentTree {
         }
     }
 
-    void modify(int l, int r, const int &v) {
+    void range_update(int l, int r, const int &v) {
         push(l + n);
         push(r + n - 1);
         bool cl = false, cr = false;
@@ -81,11 +81,23 @@ struct SegmentTree {
         }
     }
 
+    Segment range_query(int l, int r) {
+        push(l + n);
+        push(r + n - 1);
+        Segment sl, sr;
+        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+            if (l & 1) sl = sl + ST[l++];
+            if (r & 1) sr = ST[--r] + sr;
+        }
+
+        return sl + sr;
+    }
+
     auto & operator[](int i) {
         return ST[i];
     }
 
-    SegmentTree(int n, const vector<int> &a) : n(n), h(__lg(n)), ST(2 * n), lazy(n, 0) {
+    RURQSegmentTree(int n, const vector<int> &a) : n(n), h(__lg(n)), ST(2 * n), lazy(n, 0) {
         for (int i = 0; i < a.size(); i++) ST[i + n] = a[i];
         build();
     }
@@ -126,7 +138,7 @@ int main() {
         vector<int> diff(bit_ceil(ys.size()), 0);
         for (int i = 0; i < ys.size() - 1; i++) diff[i] = ys[i + 1] - ys[i];
 
-        SegmentTree st(diff.size(), diff);
+        RURQSegmentTree st(diff.size(), diff);
         long long coverage = 0, area = 0;
         for (int i = 0; i < sweep.size();) {
             int x = sweep[i][0];
@@ -134,7 +146,8 @@ int main() {
             auto search = [&](int y) {
                 return lower_bound(ys.begin(), ys.end(), y) - ys.begin();
             };
-            for (; i < sweep.size() && sweep[i][0] == x; i++) st.modify(search(sweep[i][1]), search(sweep[i][2]), sweep[i][3]);
+            for (; i < sweep.size() && sweep[i][0] == x; i++)
+                st.range_update(search(sweep[i][1]), search(sweep[i][2]), sweep[i][3]);
 
             if (coverage < st[1].value) {
                 coverage = st[1].value;

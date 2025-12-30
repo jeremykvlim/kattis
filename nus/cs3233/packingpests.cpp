@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct SegmentTree {
+struct RURQSegmentTree {
     struct Segment {
         long long value;
         int i;
@@ -29,16 +29,16 @@ struct SegmentTree {
         }
     };
 
-    int n;
+    int n, h;
     vector<Segment> ST;
     vector<long long> lazy;
 
-    void build() {
-        for (int i = n - 1; i; i--) pull(i);
-    }
-
     void pull(int i) {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
+    }
+
+    void build() {
+        for (int i = n - 1; i; i--) pull(i);
     }
 
     void apply(int i, const long long &v) {
@@ -47,74 +47,57 @@ struct SegmentTree {
     }
 
     void push(int i) {
-        if (lazy[i]) {
-            apply(i << 1, lazy[i]);
-            apply(i << 1 | 1, lazy[i]);
-            lazy[i] = 0;
+        for (int k = h; k; k--) {
+            int j = i >> k;
+            if (lazy[j]) {
+                apply(j << 1, lazy[j]);
+                apply(j << 1 | 1, lazy[j]);
+                lazy[j] = 0;
+            }
         }
     }
 
-    int midpoint(int l, int r) {
-        int i = 1 << __lg(r - l);
-        return min(l + i, r - (i >> 1));
+    void point_update(int i, const long long &v) {
+        for (apply(i += n, v); i > 1; i >>= 1) pull(i >> 1);
     }
 
-    void modify(const int &pos, const long long &v) {
-        modify(1, pos, v, 0, n);
-    }
-
-    void modify(int i, const int &pos, const long long &v, int l, int r) {
-        if (l + 1 == r) {
-            apply(i, v);
-            return;
+    void range_update(int l, int r, const long long &v) {
+        push(l + n);
+        push(r + n - 1);
+        bool cl = false, cr = false;
+        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+            if (cl) pull(l - 1);
+            if (cr) pull(r);
+            if (l & 1) {
+                cl = true;
+                apply(l++, v);
+            }
+            if (r & 1) {
+                cr = true;
+                apply(--r, v);
+            }
         }
 
-        push(i);
-
-        int m = midpoint(l, r);
-        if (pos < m) modify(i << 1, pos, v, l, m);
-        else modify(i << 1 | 1, pos, v, m, r);
-
-        pull(i);
-    }
-
-    void modify(int l, int r, const long long &v) {
-        modify(1, l, r, v, 0, n);
-    }
-
-    void modify(int i, int ql, int qr, const long long &v, int l, int r) {
-        if (qr <= l || r <= ql) return;
-        if (ql <= l && r <= qr) {
-            apply(i, v);
-            return;
+        for (l--; r; l >>= 1, r >>= 1) {
+            if (cl) pull(l);
+            if (cr && (!cl || l < r)) pull(r);
         }
-
-        push(i);
-
-        int m = midpoint(l, r);
-        modify(i << 1, ql, qr, v, l, m);
-        modify(i << 1 | 1, ql, qr, v, m, r);
-
-        pull(i);
     }
 
     Segment range_query(int l, int r) {
-        return range_query(1, l, r, 0, n);
+        push(l + n);
+        push(r + n - 1);
+        Segment sl, sr;
+        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+            if (l & 1) sl = sl + ST[l++];
+            if (r & 1) sr = ST[--r] + sr;
+        }
+
+        return sl + sr;
     }
 
-    Segment range_query(int i, int ql, int qr, int l, int r) {
-        if (qr <= l || r <= ql) return {};
-        if (ql <= l && r <= qr) return ST[i];
-
-        push(i);
-
-        int m = midpoint(l, r);
-        return range_query(i << 1, ql, qr, l, m) + range_query(i << 1 | 1, ql, qr, m, r);
-    }
-
-    SegmentTree(int n, const vector<int> &a) : n(n), ST(2 * n), lazy(n) {
-        int m = bit_ceil(a.size());
-        for (int i = 0; i < a.size(); i++) ST[(i + m) % n + n] = a[i];
+    RURQSegmentTree(int n, const vector<int> &a) : n(n), h(__lg(n)), ST(2 * n), lazy(n, 0) {
+        for (int i = 0; i < a.size(); i++) ST[i + n] = a[i];
         build();
     }
 };
@@ -169,14 +152,14 @@ int main() {
 
     vector<int> p(n);
     iota(p.begin(), p.end(), 1);
-    SegmentTree st(n, p);
+    RURQSegmentTree st(bit_ceil((unsigned) n), p);
 
     vector<long long> dp(n + 2, 0), base(n + 1, 0);
     vector<int> r(n + 2, -1);
     for (int i = n; i; i--) {
         dp[i] = dp[i + 1];
-        for (int j : updates[i]) st.modify(j - 1, after[j] - 1, -v[j]);
-        st.modify(i - 1, after[i] - 1, v[i]);
+        for (int j : updates[i]) st.range_update(j - 1, after[j] - 1, -v[j]);
+        st.range_update(i - 1, after[i] - 1, v[i]);
 
         auto [value, k] = st.range_query(end[i] - 1, n);
         if (dp[i] < value) {
@@ -185,7 +168,7 @@ int main() {
         }
 
         if (i > 1) {
-            st.modify(i - 2, dp[i] - base[i - 1]);
+            st.point_update(i - 2, dp[i] - base[i - 1]);
             base[i - 1] = dp[i];
         }
     }

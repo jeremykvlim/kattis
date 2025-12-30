@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct SegmentTree {
+struct RURQSegmentTree {
     struct Segment {
         int value, freq;
 
@@ -59,7 +59,7 @@ struct SegmentTree {
         }
     }
 
-    void modify(int l, int r, const int &v) {
+    void range_update(int l, int r, const int &v) {
         push(l + n);
         push(r + n - 1);
         bool cl = false, cr = false;
@@ -85,20 +85,20 @@ struct SegmentTree {
     Segment range_query(int l, int r) {
         push(l + n);
         push(r + n - 1);
-        Segment seg;
+        Segment sl, sr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) seg = seg + ST[l++];
-            if (r & 1) seg = ST[--r] + seg;
+            if (l & 1) sl = sl + ST[l++];
+            if (r & 1) sr = ST[--r] + sr;
         }
 
-        return seg;
+        return sl + sr;
     }
 
     auto & operator[](int i) {
         return ST[i];
     }
 
-    SegmentTree(int n, const vector<int> &a) : n(n), h(__lg(n)), ST(2 * n), lazy(n, 0) {
+    RURQSegmentTree(int n, const vector<int> &a) : n(n), h(__lg(n)), ST(2 * n), lazy(n, 0) {
         for (int i = 0; i < a.size(); i++) ST[i + n] = a[i];
         build();
     }
@@ -124,7 +124,7 @@ int main() {
     mono_inc.emplace(0);
     mono_dec.emplace(0);
     vector<int> indices_both(c + 1, -1);
-    SegmentTree st(c + 1, vector<int>(c + 1, 0));
+    RURQSegmentTree st(bit_ceil((unsigned) c + 1), vector<int>(c + 1, 0));
     for (int i = 1, l = 0; i <= c; i++) {
         int b;
         cin >> b;
@@ -132,14 +132,14 @@ int main() {
         indices_both[i] = indices_d[b];
         if (indices_both[i] == -1) l = i;
 
-        st.modify(i, i + 1, i);
+        st.range_update(i, i + 1, i);
 
         while (mono_inc.size() > 1 && indices_both[mono_inc.top()] >= indices_both[i]) {
             int v = mono_inc.top();
             mono_inc.pop();
 
             int u = mono_inc.top();
-            st.modify(u + 1, v + 1, indices_both[v] - indices_both[i]);
+            st.range_update(u + 1, v + 1, indices_both[v] - indices_both[i]);
         }
         mono_inc.emplace(i);
 
@@ -148,7 +148,7 @@ int main() {
             mono_dec.pop();
 
             int u = mono_dec.top();
-            st.modify(u + 1, v + 1, indices_both[i] - indices_both[v]);
+            st.range_update(u + 1, v + 1, indices_both[i] - indices_both[v]);
         }
         mono_dec.emplace(i);
 
