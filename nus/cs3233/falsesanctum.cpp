@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct SegmentTree {
+struct PURQSegmentTree {
     struct Segment {
         long long density;
         char c_l, c_r;
@@ -37,7 +37,6 @@ struct SegmentTree {
         }
     };
 
-    string str;
     int n;
     vector<Segment> ST;
 
@@ -49,47 +48,26 @@ struct SegmentTree {
         for (int i = n - 1; i; i--) pull(i);
     }
 
-    int midpoint(int l, int r) {
-        int i = 1 << __lg(r - l);
-        return min(l + i, r - (i >> 1));
-    }
-
-    void modify(const int &pos) {
-        modify(1, pos, 0, n);
-    }
-
-    void modify(int i, const int &pos, int l, int r) {
-        if (l + 1 == r) {
-            ST[i] = str[l];
-            return;
-        }
-
-        int m = midpoint(l, r);
-        if (pos < m) modify(i << 1, pos, l, m);
-        else modify(i << 1 | 1, pos, m, r);
-
-        pull(i);
+    void point_update(int i, const char &v) {
+        for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
     Segment range_query(int l, int r) {
-        return range_query(1, l, r, 0, n);
-    }
+        Segment sl, sr;
+        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+            if (l & 1) sl = sl + ST[l++];
+            if (r & 1) sr = ST[--r] + sr;
+        }
 
-    Segment range_query(int i, int ql, int qr, int l, int r) {
-        if (qr <= l || r <= ql) return {true};
-        if (ql <= l && r <= qr) return ST[i];
-
-        int m = midpoint(l, r);
-        return range_query(i << 1, ql, qr, l, m) + range_query(i << 1 | 1, ql, qr, m, r);
+        return sl + sr;
     }
 
     auto & operator[](int i) {
         return ST[i];
     }
 
-    SegmentTree(int n, string str) : n(n), ST(2 * n), str(str) {
-        int m = bit_ceil((unsigned) n);
-        for (int i = 0; i < str.size(); i++) ST[(i + m) % n + n] = str[i];
+    PURQSegmentTree(int n, const string &s) : n(n), ST(2 * n) {
+        for (int i = 0; i < s.size(); i++) ST[i + n] = s[i];
         build();
     }
 };
@@ -102,7 +80,7 @@ int main() {
     string s;
     cin >> n >> Q >> s;
 
-    SegmentTree st(n, s);
+    PURQSegmentTree st(n, s);
     while (Q--) {
         int q;
         cin >> q;
@@ -112,14 +90,11 @@ int main() {
             char c;
             cin >> i >> c;
 
-            st.str[i - 1] = c;
-            st.modify(i - 1);
+            st.point_update(i - 1, c);
         } else if (q == 2) {
             int l, r;
             cin >> l >> r;
-
-            auto seg = st.range_query(l - 1, r);
-            cout << seg.density << "\n";
+            cout << st.range_query(l - 1, r).density << "\n";
         }
     }
 }

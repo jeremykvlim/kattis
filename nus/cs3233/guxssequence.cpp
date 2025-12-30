@@ -64,70 +64,6 @@ struct PersistentSegmentTree {
     }
 };
 
-struct SegmentTree {
-    struct Segment {
-        int x, p, i;
-        bool active;
-
-        Segment() : x(0), p(0), i(0), active(false) {}
-
-        auto & operator=(const array<int, 3> &v) {
-            x = v[0];
-            p = v[1];
-            i = v[2];
-            active = true;
-            return *this;
-        }
-    };
-
-    int n;
-    vector<Segment> ST;
-
-    int midpoint(int l, int r) {
-        int i = 1 << __lg(r - l);
-        return min(l + i, r - (i >> 1));
-    }
-
-    void push(int i) {
-        if (!ST[i].active) return;
-        ST[i << 1] = ST[i << 1 | 1] = ST[i];
-        ST[i].active = false;
-    }
-
-    void modify(int l, int r, const array<int, 3> &v) {
-        modify(1, l, r, v, 0, n);
-    }
-
-    void modify(int i, int ql, int qr, const array<int, 3> &v, int l, int r) {
-        if (qr <= l || r <= ql) return;
-        if (ql <= l && r <= qr) {
-            ST[i] = v;
-            return;
-        }
-
-        push(i);
-
-        int m = midpoint(l, r);
-        modify(i << 1, ql, qr, v, l, m);
-        modify(i << 1 | 1, ql, qr, v, m, r);
-    }
-
-    Segment query(int pos) {
-        return query(1, pos, 0, n);
-    }
-
-    Segment query(int i, int pos, int l, int r) {
-        if (ST[i].active) return ST[i];
-        if (l + 1 == r) return {};
-
-        int m = midpoint(l, r);
-        if (pos < m) return query(i << 1, pos, l, m);
-        else return query(i << 1 | 1, pos, m, r);
-    }
-
-    SegmentTree(int n) : n(n), ST(2 * n) {}
-};
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -148,7 +84,32 @@ int main() {
 
     vector<vector<int>> roots(m + 1, {0});
     PersistentSegmentTree pst(k_max + 2);
-    SegmentTree st(n);
+    map<int, tuple<int, int, int, bool>> intervals;
+    intervals[0] = intervals[n] = {0, 0, 0, false};
+
+    auto split = [&](int pos) {
+        if (pos <= 0) return intervals.begin();
+        if (pos >= n) return intervals.find(n);
+        auto it = prev(intervals.upper_bound(pos));
+        if (it->first == pos) return it;
+        return intervals.emplace(pos, it->second).first;
+    };
+
+    auto merge = [&](auto it) {
+        if (it == intervals.end() || it->first == n) return;
+
+        if (it != intervals.begin()) {
+            auto temp = prev(it);
+            if (temp->second == it->second) {
+                intervals.erase(it);
+                it = temp;
+            }
+        }
+
+        auto temp = next(it);
+        if (temp != intervals.end() && temp->first != n && it->second == temp->second) intervals.erase(temp);
+    };
+
     int last = 0;
     while (Q--) {
         int q;
@@ -159,13 +120,18 @@ int main() {
             cin >> xraw >> praw;
 
             int x = xraw ^ last, p = praw ^ last;
-            st.modify(p - 1, p - 1 + k[x], {x, p, (int) roots[x].size() - 1});
+
+            auto it_l = split(p - 1), it_r = split(p - 1 + k[x]);
+            intervals.erase(it_l, it_r);
+            auto it = intervals.emplace(p - 1, tuple{x, p, (int) roots[x].size() - 1, true}).first;
+            merge(it);
+            if (it != intervals.begin()) merge(prev(it));
         } else if (q == 2) {
             int praw;
             cin >> praw;
 
             int p = praw ^ last;
-            auto [x, p1, i, active] = st.query(p - 1);
+            auto [x, p1, i, active] = prev(intervals.upper_bound(p - 1))->second;
 
             last = 0;
             if (active) last = (seqs[x][p - p1] + pst.range_query(roots[x][i], 1, p - p1 + 2).sum) & 255;

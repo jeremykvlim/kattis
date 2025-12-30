@@ -33,7 +33,7 @@ struct FenwickTree {
     FenwickTree(int n) : BIT(n, 0) {}
 };
 
-struct SegmentTree {
+struct PURQSegmentTree {
     struct Segment {
         long long value, sum, pref, suff;
 
@@ -69,47 +69,26 @@ struct SegmentTree {
         for (int i = n - 1; i; i--) pull(i);
     }
 
-    int midpoint(int l, int r) {
-        int i = 1 << __lg(r - l);
-        return min(l + i, r - (i >> 1));
-    }
-
-    void modify(const int &pos, const long long &v) {
-        modify(1, pos, v, 0, n);
-    }
-
-    void modify(int i, const int &pos, const long long &v, int l, int r) {
-        if (l + 1 == r) {
-            ST[i] = v;
-            return;
-        }
-
-        int m = midpoint(l, r);
-        if (pos < m) modify(i << 1, pos, v, l, m);
-        else modify(i << 1 | 1, pos, v, m, r);
-
-        pull(i);
+    void point_update(int i, const long long &v) {
+        for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
     Segment range_query(int l, int r) {
-        return range_query(1, l, r, 0, n);
-    }
-
-    Segment range_query(int i, int ql, int qr, int l, int r) {
-        if (qr <= l || r <= ql) return {};
-        if (ql <= l && r <= qr) return ST[i];
-
-        int m = midpoint(l, r);
-        return range_query(i << 1, ql, qr, l, m) + range_query(i << 1 | 1, ql, qr, m, r);
+        Segment sl, sr;
+        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+            if (l & 1) sl = sl + ST[l++];
+            if (r & 1) sr = ST[--r] + sr;
+        }
+        
+        return sl + sr;
     }
 
     auto & operator[](int i) {
         return ST[i];
     }
 
-    SegmentTree(int n, const vector<long long> &a) : n(n), ST(2 * n) {
-        int m = bit_ceil((unsigned) n);
-        for (int i = 0; i < a.size(); i++) ST[(i + m) % n + n] = a[i];
+    PURQSegmentTree(int n, const vector<long long> &a) : n(n), ST(2 * n) {
+        for (int i = 0; i < a.size(); i++) ST[i + n] = a[i];
         build();
     }
 };
@@ -134,7 +113,7 @@ int main() {
     FenwickTree<long long> fw(n + 1);
     for (int i = 0; i < n; i++) fw.update(i + 1, h[i] + h[i + 1]);
 
-    SegmentTree st(n, f);
+    PURQSegmentTree st(n, f);
     while (q--) {
         int t;
         cin >> t;
@@ -147,11 +126,11 @@ int main() {
             auto d = v - h[i];
             h[i] = v;
             if (i) {
-                st.modify(i - 1, f[i - 1] = fun(i - 1));
+                st.point_update(i - 1, f[i - 1] = fun(i - 1));
                 fw.update(i, d);
             }
             if (i < n) {
-                st.modify(i, f[i] = fun(i));
+                st.point_update(i, f[i] = fun(i));
                 fw.update(i + 1, d);
             }
         } else {
