@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct SegmentTree {
+struct PURQSegmentTree {
     struct Segment {
         int count, r;
 
@@ -30,7 +30,7 @@ struct SegmentTree {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
     }
 
-    void assign(int i, const pair<int, int> &v) {
+    void point_update(int i, const pair<int, int> &v) {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
@@ -48,7 +48,7 @@ struct SegmentTree {
         return ST[i];
     }
 
-    SegmentTree(int n) : n(n), ST(2 * n) {}
+    PURQSegmentTree(int n) : n(n), ST(2 * n) {}
 };
 
 int main() {
@@ -64,16 +64,15 @@ int main() {
 
         a[i].second = i;
     }
-
     auto sorted = a;
     sort(sorted.begin(), sorted.end());
 
     int rounds = 0;
-    SegmentTree st(n + 1);
+    PURQSegmentTree st(n + 1);
     for (int i = 0, j = 0; i <= n; i++) {
-        st.assign(sorted[i].second, {1, sorted[i].second + !(sorted[i].second & 1)});
+        st.point_update(sorted[i].second, {1, sorted[i].second + !(sorted[i].second & 1)});
         if (i < n && sorted[i].first == sorted[i + 1].first) continue;
-        while (j <= n && a[j].first <= sorted[i].first) j++;
+        for (; j <= n && a[j].first <= sorted[i].first; j++);
         rounds = max(rounds, st.range_query(j, n + 1).r - j);
     }
     cout << rounds;

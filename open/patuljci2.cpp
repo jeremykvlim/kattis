@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct SegmentTree {
+struct PURQSegmentTree {
     struct Segment {
         int value, freq;
 
@@ -45,21 +45,25 @@ struct SegmentTree {
         for (int i = n - 1; i; i--) pull(i);
     }
 
+    void point_update(int i, const int &v) {
+        for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
+    }
+
     Segment range_query(int l, int r) {
-        Segment seg;
+        Segment sl, sr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) seg += ST[l++];
-            if (r & 1) seg += ST[--r];
+            if (l & 1) sl = sl + ST[l++];
+            if (r & 1) sr = ST[--r] + sr;
         }
 
-        return seg;
+        return sl + sr;
     }
 
     auto & operator[](int i) {
         return ST[i];
     }
 
-    SegmentTree(int n, const vector<int> &a) : n(n), ST(2 * n) {
+    PURQSegmentTree(int n, const vector<int> &a) : n(n), ST(2 * n) {
         for (int i = 0; i < a.size(); i++) ST[i + n] = a[i];
         build();
     }
@@ -76,10 +80,10 @@ int main() {
     vector<vector<int>> indices(c + 1);
     for (int i = 0; i < n; i++) {
         cin >> colors[i];
-        
+
         indices[colors[i]].emplace_back(i + 1);
     }
-    SegmentTree st(n, colors);
+    PURQSegmentTree st(n, colors);
 
     int m;
     cin >> m;

@@ -436,7 +436,7 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned int MOD = 11092019;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
-struct SegmentTree {
+struct RURQSegmentTree {
     struct Segment {
         long long value;
         modint freq;
@@ -516,12 +516,24 @@ struct SegmentTree {
         }
     }
 
+    Segment range_query(int l, int r) {
+        push(l + n);
+        push(r + n - 1);
+        Segment sl, sr;
+        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+            if (l & 1) sl = sl + ST[l++];
+            if (r & 1) sr = ST[--r] + sr;
+        }
+
+        return sl + sr;
+    }
+
     auto & operator[](int i) {
         push(i += n);
         return ST[i];
     }
 
-    SegmentTree(int n) : n(n), h(__lg(n)), ST(2 * n), lazy(n) {}
+    RURQSegmentTree(int n) : n(n), h(__lg(n)), ST(2 * n), lazy(n) {}
 };
 
 int main() {
@@ -560,7 +572,7 @@ int main() {
     iota(order.begin(), order.end(), 1);
     sort(order.begin(), order.end(), [&](int u, int v) { return labels[u] != labels[v] ? labels[u] < labels[v] : depth[u] < depth[v]; });
 
-    SegmentTree st(bit_ceil((unsigned) n + 1));
+    RURQSegmentTree st(bit_ceil((unsigned) n + 1));
     int l = 0;
     modint m = 0;
     for (int v : order) {

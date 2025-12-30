@@ -133,7 +133,7 @@ unsigned long long area_of_union_of_rectangles(vector<array<T, 4>> rectangles) {
     sort(sweep.begin(), sweep.end());
 
     auto a = 0ULL;
-    RURQSegmentTree st(y_gaps.size(), y_gaps);
+    RURQSegmentTree st(bit_ceil(y_gaps.size()), y_gaps);
     T y_range = y.back().first - y.front().first, prev = sweep[0][0];
     for (auto [x, yd, yu, i] : sweep) {
         if (prev != x) {

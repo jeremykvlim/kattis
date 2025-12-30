@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -436,7 +436,7 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
-struct SegmentTree {
+struct PURQSegmentTree {
     static inline vector<modint> p2;
 
     struct Segment {
@@ -472,7 +472,7 @@ struct SegmentTree {
         for (int i = n - 1; i; i--) pull(i);
     }
 
-    void assign(int i, const int &v) {
+    void point_update(int i, const int &v) {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
@@ -480,7 +480,17 @@ struct SegmentTree {
         return ST[i];
     }
 
-    SegmentTree(int n, int m) : n(n), ST(2 * n) {
+    Segment range_query(int l, int r) {
+        Segment sl, sr;
+        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+            if (l & 1) sl = sl + ST[l++];
+            if (r & 1) sr = ST[--r] + sr;
+        }
+
+        return sl + sr;
+    }
+
+    PURQSegmentTree(int n, int m) : n(n), ST(2 * n) {
         p2.resize(m + 1, 1);
         for (int i = 0; i < m; i++) p2[i + 1] = p2[i] * 2;
 
@@ -502,7 +512,7 @@ int main() {
     for (int &ai : a) cin >> ai;
     for (int &bi : b) cin >> bi;
 
-    SegmentTree st(bit_ceil((unsigned) n), n);
+    PURQSegmentTree st(bit_ceil((unsigned) n), n);
     modint sum = 0;
     vector<int> c(2 * n), indices(2 * n);
     for (int i = 0; i < n; i++) {
@@ -515,7 +525,7 @@ int main() {
 
     for (int i = 0; i < 2 * n; i++) {
         sum -= (st.p2[n] * n + st[1].product * n - st[1].pref - st[1].suff) * (c[indices[i]] - (!i ? 0 : c[indices[i - 1]]));
-        st.assign(indices[i] / 2, 1);
+        st.point_update(indices[i] / 2, 1);
     }
     cout << -sum;
 }

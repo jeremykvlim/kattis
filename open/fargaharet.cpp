@@ -1,47 +1,4 @@
-#include <bits/stdc++.h>
-using namespace std;
-
-template <typename T>
-struct Matrix {
-    int r, c;
-    vector<vector<T>> mat;
-
-    Matrix(int n = 0) : Matrix(n, n) {}
-    Matrix(int rows, int cols, int v = 0) : r(rows), c(cols), mat(rows, vector<T>(cols, v)) {}
-    Matrix(const vector<vector<T>> &mat) : r(mat.size()), c(mat[0].size()), mat(mat) {}
-
-    friend auto operator*(const Matrix<T> &A, const Matrix<T> &B) {
-        int r1 = A.r, c1 = A.c, c2 = B.c;
-
-        Matrix<T> C(r1, c2);
-        for (int i = 0; i < r1; i++)
-            for (int k = 0; k < c1; k++)
-                if (A[i][k])
-                    for (int j = 0; j < c2; j++) C[i][j] += A[i][k] * B[k][j];
-        return C;
-    }
-
-    friend auto operator*=(Matrix<T> &A, Matrix<T> &B) {
-        return A = A * B;
-    }
-
-    auto & operator[](int i) {
-        return mat[i];
-    }
-
-    auto & operator[](int i) const {
-        return mat[i];
-    }
-};
-
-template <typename T>
-Matrix<T> I(int r, int c) {
-    Matrix<T> I(r, c);
-    for (int i = 0; i < min(r, c); i++) I[i][i] = 1;
-    return I;
-}
-
-struct SegmentTree {
+struct PURQSegmentTree {
     static inline Matrix<unsigned long long> A;
     static inline vector<int> a;
     static inline int size;
@@ -94,50 +51,28 @@ struct SegmentTree {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
     }
 
-    void assign(int i, const int &v) {
+    void point_update(int i, const int &v) {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
+    }
+
+    Segment range_query(int l, int r) {
+        Segment sl, sr;
+        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+            if (l & 1) sl = sl + ST[l++];
+            if (r & 1) sr = ST[--r] + sr;
+        }
+
+        return sl + sr;
     }
 
     auto & operator[](int i) {
         return ST[i];
     }
 
-    SegmentTree(int n, int s, const vector<int> &arr) : n(n), ST(2 * n, I<unsigned long long>(11, 11)) {
+    PURQSegmentTree(int n, int s, const vector<int> &arr) : n(n), ST(2 * n, I<unsigned long long>(11, 11)) {
         size = s;
         a = arr;
         A = Matrix<unsigned long long>(10);
-        for (int i = 0; i < n; i++) assign(i, i);
+        for (int i = 0; i < n; i++) point_update(i, i);
     }
 };
-
-int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
-
-    int n, q;
-    cin >> n >> q;
-
-    vector<int> a(n + 1);
-    for (int i = 1; i <= n; i++) cin >> a[i];
-
-    int size = 1 << 7;
-    SegmentTree st(bit_ceil((unsigned) n / size), size, a);
-
-    auto plans = [&]() {
-        auto sum = 1ULL;
-        for (int r = 0; r < 10; r++) sum += st[1].M[r][10];
-        return sum;
-    };
-    cout << plans() << "\n";
-    while (q--) {
-        int i, v;
-        cin >> i >> v;
-
-        if (st.a[i] != v) {
-            st.a[i] = v;
-            int b = (i - 1) / size;
-            st.assign(b, b);
-        }
-        cout << plans() << "\n";
-    }
-}

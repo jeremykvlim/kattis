@@ -580,7 +580,7 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
     return c;
 }
 
-struct SegmentTree {
+struct PURQSegmentTree {
     struct Segment {
         vector<modint> poly;
 
@@ -616,25 +616,25 @@ struct SegmentTree {
         for (int i = n - 1; i; i--) pull(i);
     }
 
-    void assign(int i, const int &v) {
+    void point_update(int i, const int &v) {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
     Segment range_query(int l, int r) {
-        Segment seg;
+        Segment sl, sr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) seg += ST[l++];
-            if (r & 1) seg += ST[--r];
+            if (l & 1) sl = sl + ST[l++];
+            if (r & 1) sr = ST[--r] + sr;
         }
 
-        return seg;
+        return sl + sr;
     }
 
     auto & operator[](int i) {
         return ST[i];
     }
 
-    SegmentTree(int n, const vector<int> &a) : n(n), ST(2 * n) {
+    PURQSegmentTree(int n, const vector<int> &a) : n(n), ST(2 * n) {
         for (int i = 0; i < a.size(); i++) ST[i + n] = a[i];
         build();
     }
@@ -656,7 +656,7 @@ int main() {
 
         range = h - l + 1;
     }
-    SegmentTree st(n, ranges);
+    PURQSegmentTree st(n, ranges);
 
     while (T--) {
         int q;
@@ -670,7 +670,7 @@ int main() {
             int p, s, t;
             cin >> p >> s >> t;
 
-            st.assign(p - 1, t - s + 1);
+            st.point_update(p - 1, t - s + 1);
         }
     }
 }

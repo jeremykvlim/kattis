@@ -23,7 +23,7 @@ struct FenwickTree {
     FenwickTree(int n) : BIT(n, 0) {}
 };
 
-struct SegmentTree {
+struct PURQSegmentTree {
     struct Segment {
         int value;
 
@@ -51,25 +51,25 @@ struct SegmentTree {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
     }
 
-    void assign(int i, const int &v) {
+    void point_update(int i, const int &v) {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
     Segment range_query(int l, int r) {
-        Segment seg;
+        Segment sl, sr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) seg += ST[l++];
-            if (r & 1) seg += ST[--r];
+            if (l & 1) sl = sl + ST[l++];
+            if (r & 1) sr = ST[--r] + sr;
         }
 
-        return seg;
+        return sl + sr;
     }
 
     auto & operator[](int i) {
         return ST[i];
     }
 
-    SegmentTree(int n) : n(n), ST(2 * n) {}
+    PURQSegmentTree(int n) : n(n), ST(2 * n) {}
 };
 
 int main() {
@@ -90,7 +90,7 @@ int main() {
     vector<int> count(n + 1), l(n + 1), r(n + 1);
     vector<set<int>::iterator> it_l(n + 1), it_r(n + 1);
     FenwickTree<int> fw_l1(n + 1), fw_r1(n + 1), fw_l2(n + 1), fw_r2(n + 1);
-    SegmentTree st(n);
+    PURQSegmentTree st(n);
 
     auto calc = [&](int t) {
         count[t] = indices[t].size();
@@ -106,7 +106,7 @@ int main() {
             fw_r1.update(r[t], count[t] - 1);
             fw_l2.update(*it_l[t], 1);
             fw_r2.update(*it_r[t], 1);
-            st.assign(l[t] - 1, r[t]);
+            st.point_update(l[t] - 1, r[t]);
         } else {
             if (count[t] == 1) l[t] = r[t] = *indices[t].begin();
             else {
@@ -124,7 +124,7 @@ int main() {
             fw_r1.update(r[t], 1 - count[t]);
             fw_l2.update(*it_l[t], -1);
             fw_r2.update(*it_r[t], -1);
-            st.assign(l[t] - 1, 0);
+            st.point_update(l[t] - 1, 0);
         }
 
         calc(t);

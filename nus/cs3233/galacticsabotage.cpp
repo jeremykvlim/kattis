@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct SegmentTree {
+struct RURQSegmentTree {
     struct Segment {
         int value, freq;
 
@@ -59,7 +59,7 @@ struct SegmentTree {
         }
     }
 
-    void modify(int l, int r, const int &v) {
+    void range_update(int l, int r, const long long &v) {
         push(l + n);
         push(r + n - 1);
         bool cl = false, cr = false;
@@ -82,11 +82,23 @@ struct SegmentTree {
         }
     }
 
+    Segment range_query(int l, int r) {
+        push(l + n);
+        push(r + n - 1);
+        Segment sl, sr;
+        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+            if (l & 1) sl = sl + ST[l++];
+            if (r & 1) sr = ST[--r] + sr;
+        }
+
+        return sl + sr;
+    }
+
     auto & operator[](int i) {
         return ST[i];
     }
 
-    SegmentTree(int n, const vector<int> &a) : n(n), h(__lg(n)), ST(2 * n), lazy(n, 0) {
+    RURQSegmentTree(int n, const vector<int> &a) : n(n), h(__lg(n)), ST(2 * n), lazy(n, 0) {
         for (int i = 0; i < a.size(); i++) ST[i + n] = a[i];
         build();
     }
@@ -117,7 +129,7 @@ int main() {
         }
     }
 
-    SegmentTree st(n, count);
+    RURQSegmentTree st(n, count);
     cout << st[1].freq << "\n";
     while (m--) {
         int u, v;
@@ -126,7 +138,7 @@ int main() {
         v--;
 
         auto process = [&](int l, int r, int v) {
-            if (l < r) st.modify(l, r, v);
+            if (l < r) st.range_update(l, r, v);
         };
 
         process(u, a[v], 1);

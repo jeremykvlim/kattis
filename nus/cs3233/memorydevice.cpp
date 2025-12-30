@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct SegmentTree {
+struct PURQSegmentTree {
     struct Segment {
         int value;
 
@@ -29,25 +29,25 @@ struct SegmentTree {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
     }
 
-    void assign(int i, const int &v) {
+    void point_update(int i, const int &v) {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
     Segment range_query(int l, int r) {
-        Segment seg;
+        Segment sl, sr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) seg += ST[l++];
-            if (r & 1) seg += ST[--r];
+            if (l & 1) sl = sl + ST[l++];
+            if (r & 1) sr = ST[--r] + sr;
         }
 
-        return seg;
+        return sl + sr;
     }
 
     auto & operator[](int i) {
         return ST[i];
     }
 
-    SegmentTree(int n) : n(n), ST(2 * n) {}
+    PURQSegmentTree(int n) : n(n), ST(2 * n) {}
 };
 
 int main() {
@@ -57,18 +57,18 @@ int main() {
     int n, q;
     cin >> n >> q;
 
-    SegmentTree st(n + 1);
+    PURQSegmentTree st(n + 1);
     vector<set<int>> starts(n + 1);
     set<pair<int, int>> freed;
     auto add = [&](int i, int v) {
         starts[i - v].emplace(v);
-        st.assign(i - v, *starts[i - v].begin());
+        st.point_update(i - v, *starts[i - v].begin());
         freed.emplace(v, i);
     };
 
     auto remove = [&](int i, int v) {
         starts[i - v].erase(v);
-        st.assign(i - v, *starts[i - v].begin());
+        st.point_update(i - v, *starts[i - v].begin());
         freed.erase({v, i});
     };
 

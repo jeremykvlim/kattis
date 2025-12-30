@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct SegmentTree {
+struct PURQSegmentTree {
     struct Segment {
         vector<int> s;
 
@@ -37,21 +37,21 @@ struct SegmentTree {
         ST[p] = ST[p << 1] + ST[p << 1 | 1];
     }
 
-    void assign(int i, const vector<int> &v) {
+    void point_update(int i, const vector<int> &v) {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
     Segment range_query(int l, int r) {
-        Segment seg;
+        Segment sl, sr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) seg += ST[l++];
-            if (r & 1) seg += ST[--r];
+            if (l & 1) sl = sl + ST[l++];
+            if (r & 1) sr = ST[--r] + sr;
         }
 
-        return seg;
+        return sl + sr;
     }
 
-    SegmentTree(int n) : n(n), ST(2 * n) {}
+    PURQSegmentTree(int n) : n(n), ST(2 * n) {}
 };
 
 template <typename T>
@@ -187,7 +187,7 @@ int main() {
             subranges[l].emplace_back(r, compress[val1] + 1, compress[val2], i);
         }
 
-        vector<SegmentTree> sts(3, SegmentTree(n));
+        vector<PURQSegmentTree> sts(3, PURQSegmentTree(n));
         vector<vector<int>> appearances(compress.size());
         for (int l = n - 1; ~l; l--) {
             int i = compress[a[l]];
@@ -198,7 +198,7 @@ int main() {
                 for (int k = 0; k < wm.lg; k++)
                     if ((a[l] >> k) & 1) s[k] = appearances[i][appearances[i].size() - j - 1];
 
-                sts[j].assign(i, s);
+                sts[j].point_update(i, s);
             }
 
             for (auto [r, u, v, i] : subranges[l]) {
