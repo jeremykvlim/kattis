@@ -17,7 +17,7 @@ struct PURQSegmentTree {
             return *this;
         }
 
-        auto operator+=(const Segment &seg) {
+        auto & operator+=(const Segment &seg) {
             for (int m = 0; m < 64; m++) count[m] += seg.count[m ^ mask];
             count[mask]--;
             mask ^= seg.mask;

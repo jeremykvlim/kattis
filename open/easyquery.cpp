@@ -18,7 +18,7 @@ struct PURQSegmentTree {
             return s[i];
         }
 
-        auto operator+=(const Segment &seg) {
+        auto & operator+=(const Segment &seg) {
             if (s.empty()) s = seg.s;
             else if (!seg.s.empty())
                 for (int i = 0; i < s.size(); i++) s[i] = min(s[i], seg.s[i]);

@@ -12,12 +12,12 @@ struct RURQSegmentTree {
             return *this;
         }
 
-        auto operator+=(const long long &v) {
+        auto & operator+=(const long long &v) {
             value += v;
             return *this;
         }
 
-        auto operator+=(const Segment &seg) {
+        auto & operator+=(const Segment &seg) {
             if (value < seg.value) return *this;
             else if (value > seg.value) return seg;
             else freq += seg.freq;

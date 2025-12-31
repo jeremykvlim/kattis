@@ -44,7 +44,7 @@ struct PURQSegmentTree {
             return *this;
         }
 
-        auto operator+=(const Segment &seg) {
+        auto & operator+=(const Segment &seg) {
             Segment s;
             s.value = max(max(value, seg.value), suff + seg.pref);
             s.sum = sum + seg.sum;

@@ -13,13 +13,13 @@ struct RURQSegmentTree {
             return *this;
         }
 
-        auto operator+=(const long long &v) {
+        auto & operator+=(const long long &v) {
             value += v;
             if (v & 1) swap(even, odd);
             return *this;
         }
 
-        auto operator+=(const Segment &seg) {
+        auto & operator+=(const Segment &seg) {
             if (value < seg.value);
             else if (value > seg.value) {
                 value = seg.value;

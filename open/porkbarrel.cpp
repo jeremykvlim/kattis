@@ -7,7 +7,7 @@ struct PersistentSegmentTree {
 
         Segment(int s = 0) : sum(s) {}
 
-        auto operator+=(const Segment &seg) {
+        auto & operator+=(const Segment &seg) {
             sum += seg.sum;
             return *this;
         }

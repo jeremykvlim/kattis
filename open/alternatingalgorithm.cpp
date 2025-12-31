@@ -12,7 +12,7 @@ struct PURQSegmentTree {
             return *this;
         }
 
-        auto operator+=(const Segment &seg) {
+        auto & operator+=(const Segment &seg) {
             r = max(r + seg.count, seg.r - count);
             count += seg.count;
             return *this;

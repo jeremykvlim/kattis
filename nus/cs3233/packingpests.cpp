@@ -19,7 +19,7 @@ struct RURQSegmentTree {
             return *this;
         }
 
-        auto operator+=(const Segment &seg) {
+        auto & operator+=(const Segment &seg) {
             if (value <= seg.value) return seg;
             return *this;
         }

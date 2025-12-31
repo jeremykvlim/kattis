@@ -14,7 +14,7 @@ struct RURQSegmentTree {
             return *this;
         }
 
-        auto operator+=(const Segment &seg) {
+        auto & operator+=(const Segment &seg) {
             for (int c = 0; c < 5; c++) count[c] += seg.count[c];
             return *this;
         }

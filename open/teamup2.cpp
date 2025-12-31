@@ -34,7 +34,7 @@ struct PURQSegmentTree {
             return *this;
         }
 
-        auto operator+=(const Segment &seg) {
+        auto & operator+=(const Segment &seg) {
             value = max(value, seg.value);
             return *this;
         }

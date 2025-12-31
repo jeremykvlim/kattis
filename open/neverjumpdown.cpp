@@ -452,7 +452,7 @@ struct RURQSegmentTree {
             return value != seg.value || freq != seg.freq;
         }
 
-        auto operator+=(const int &v) {
+        auto & operator+=(const int &v) {
             value += v;
             return *this;
         }

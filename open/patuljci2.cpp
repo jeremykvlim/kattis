@@ -13,7 +13,7 @@ struct PURQSegmentTree {
             return *this;
         }
 
-        auto operator+=(const int &v) {
+        auto & operator+=(const int &v) {
             value += v;
             return *this;
         }

@@ -12,7 +12,7 @@ struct PURQSegmentTree {
             return *this;
         }
 
-        auto operator+=(const Segment &seg) {
+        auto & operator+=(const Segment &seg) {
             value = min(value, seg.value);
             return *this;
         }

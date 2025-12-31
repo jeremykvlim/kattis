@@ -138,7 +138,7 @@ struct KDTree {
         KDNode() {}
         KDNode(const Point<T> &p) : p(p), xl(p.x), xr(p.x), yl(p.y), yr(p.y), size(1) {}
 
-        auto operator+=(const KDNode &node) {
+        auto & operator+=(const KDNode &node) {
             xl = min(xl, node.xl);
             xr = max(xr, node.xr);
             yl = min(yl, node.yl);
