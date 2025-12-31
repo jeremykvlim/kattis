@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int main(){
+int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
@@ -23,7 +23,7 @@ int main(){
         vector<string> people{seen.begin(), seen.end()};
         sort(people.begin(), people.end());
 
-        vector<pair<string,string>> flagged;
+        vector<pair<string, string>> flagged;
         for (auto &person : people) {
             string first = person;
             bool p = false, h = false;
