@@ -446,7 +446,7 @@ int main() {
     cin >> n;
 
     vector<int> h(n + 1);
-    for (int i = 1; i <= n; ++i) cin >> h[i];
+    for (int i = 1; i <= n; i++) cin >> h[i];
 
     int count = 0;
     vector<int> l(n + 1, INT_MAX), r(n + 1, INT_MIN);
@@ -463,8 +463,8 @@ int main() {
 
     for (int hi = 1; hi <= n; hi++)
         if (seen[hi] && r[hi] - l[hi] > 2) {
-            cout << 0 << '\n';
-            return 0;
+            cout << 0;
+            exit(0);
         }
 
     auto valid = [&](int i, int j) {
