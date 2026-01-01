@@ -550,7 +550,7 @@ int main() {
     bool a = false;
     auto v = st.range_query(0, n).total[a];
     cout << v << "\n";
-    for (int q = 0; q < m; q++) {
+    while (q--) {
         char t;
         cin >> t;
 
