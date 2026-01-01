@@ -541,10 +541,10 @@ int main() {
         else op[i / 2] = s[i] == '*';
 
     PURQSegmentTree st(n, [&]{
-                           vector<pair<int, bool>> a(n);
-                           for (int i = 0; i < n; i++) a[i] = {d[i], op[i]};
-                           return a;
-                       }()
+                               vector<pair<int, bool>> a(n);
+                               for (int i = 0; i < n; i++) a[i] = {d[i], op[i]};
+                               return a;
+                           }()
     );
 
     bool a = false;
