@@ -8,8 +8,8 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<vector<pair<int, int>>> adj_list(n);
     vector<pair<int, int>> edges(2 * (n - 1));
+    vector<vector<pair<int, int>>> adj_list(n);
     for (int i = 0; i < n - 1; i++) {
         int u, v;
         cin >> u >> v;
@@ -47,14 +47,14 @@ int main() {
 
     vector<set<pair<int, int>>> st(n);
     vector<set<pair<int, int>>::iterator> it(2 * (n - 1));
-    auto add = [&](int e, int w) {
+    auto add = [&](int e, int w = 0) {
         it[e] = st[edges[e].first].emplace(w, e).first;
     };
 
     auto remove = [&](int e) {
         st[edges[e].first].erase(it[e]);
     };
-    for (int i = 0; i < 2 * (n - 1); i++) add(i, 0);
+    for (int i = 0; i < 2 * (n - 1); i++) add(i);
 
     vector<int> dp(n, 0);
     dp[a[m]] = 1e9;
