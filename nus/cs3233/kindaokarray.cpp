@@ -102,7 +102,7 @@ struct SuffixArray {
         return SA[i];
     }
 
-    SuffixArray(vector<int> a, int r = 128) : ascii(a.begin(), a.end()) {
+    SuffixArray(const vector<int> &a, int r = 128) : ascii(a.begin(), a.end()) {
         SA = sais(ascii, r);
     };
 };
