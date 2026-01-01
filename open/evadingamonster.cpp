@@ -8,16 +8,19 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<unordered_map<int, int>> adj_matrix(n);
-    vector<set<pair<int, int>>> adj_list(n);
+    vector<vector<pair<int, int>>> adj_list(n);
+    vector<pair<int, int>> edges(2 * (n - 1));
     for (int i = 0; i < n - 1; i++) {
         int u, v;
         cin >> u >> v;
-        u--; v--;
+        u--;
+        v--;
 
-        adj_matrix[u][v] = adj_matrix[v][u] = 0;
-        adj_list[u].emplace(0, v);
-        adj_list[v].emplace(0, u);
+        int e1 = 2 * i, e2 = 2 * i + 1;
+        edges[e1] = {u, v};
+        edges[e2] = {v, u};
+        adj_list[u].emplace_back(v, e1);
+        adj_list[v].emplace_back(u, e2);
     }
 
     vector<int> a(m + 1);
@@ -26,55 +29,80 @@ int main() {
         a[i]--;
     }
 
+    vector<int> parent(n, -1), parent_edge(n, -1);
+    parent[0] = 0;
+    queue<int> q;
+    q.emplace(0);
+    while (!q.empty()) {
+        int v = q.front();
+        q.pop();
+
+        for (auto [u, e] : adj_list[v])
+            if (parent[u] == -1) {
+                parent[u] = v;
+                parent_edge[u] = e ^ 1;
+                q.emplace(u);
+            }
+    }
+
+    vector<set<pair<int, int>>> st(n);
+    vector<set<pair<int, int>>::iterator> it(2 * (n - 1));
+    auto add = [&](int e, int w) {
+        it[e] = st[edges[e].first].emplace(w, e).first;
+    };
+
+    auto remove = [&](int e) {
+        st[edges[e].first].erase(it[e]);
+    };
+    for (int i = 0; i < 2 * (n - 1); i++) add(i, 0);
+
     vector<int> dp(n, 0);
     dp[a[m]] = 1e9;
-    for (int i = m - 1; i >= 0; i--) {
-        int t = -1, u = a[i], v = a[i + 1];
-        adj_list[u].erase({adj_matrix[u][v], v});
+    for (int i = m - 1; ~i; i--) {
+        int u = a[i], v = a[i + 1], e1 = parent[u] == v ? parent_edge[u] : parent_edge[v] ^ 1, e2 = e1 ^ 1;
 
-        int moves = 1e9;
-        while (!adj_list[u].empty()) {
-            auto it = prev(adj_list[u].end());
-            tie(moves, t) = *it;
+        remove(e1);
+        while (!st[u].empty()) {
+            auto [moves, e3] = *prev(st[u].end());
+
             if (moves <= dp[u] + 1) break;
-            adj_list[u].erase(it);
+            remove(e3);
 
+            int t = edges[e3].second;
             if (moves != dp[t]) {
-                adj_matrix[u][t] = dp[t];
-                adj_list[u].emplace(dp[t], t);
+                add(e3, dp[t]);
                 continue;
             }
 
-            adj_matrix[u][t] = dp[u] + 1;
-            adj_list[u].emplace(dp[u] + 1, t);
             dp[t] = dp[u] + 1;
-
-            adj_list[t].erase({adj_matrix[t][u], u});
-            adj_matrix[t][u] = 1e9;
-            adj_list[t].emplace(1e9, u);
-        }
-        adj_list[v].erase({adj_matrix[v][u], u});
-
-        dp[u] = moves = 1e9;
-        while (!adj_list[v].empty()) {
-            auto it = adj_list[v].begin();
-            tie(moves, t) = *it;
-            if (moves == dp[t]) break;
-            adj_list[v].erase(it);
-
-            adj_list[v].emplace(dp[t], t);
+            add(e3, dp[u] + 1);
+            remove(e3 ^ 1);
+            add(e3 ^ 1, 1e9);
         }
 
-        adj_matrix[u][v] = dp[v] = min(dp[v], moves + 1);
-        adj_list[u].emplace(dp[v], v);
+        remove(e2);
+        dp[u] = 1e9;
+        while (!st[v].empty()) {
+            auto [moves, e3] = *st[v].begin();
 
-        adj_matrix[v][u] = 1e9;
-        adj_list[v].emplace(1e9, u);
+            int t = edges[e3].second;
+            if (moves == dp[t]) {
+                dp[v] = min(dp[v], moves + 1);
+                break;
+            }
+
+            remove(e3);
+            add(e3, dp[t]);
+        }
+
+        add(e1, dp[v]);
+        add(e2, 1e9);
     }
 
     auto dfs = [&](auto &&self, int v = 1, int prev = -1) -> int {
-        for (auto [u, w] : adj_matrix[v])
+        for (auto [u, e] : adj_list[v]) {
             if (u && u != prev) dp[v] = min(dp[v], self(self, u, v) + 1);
+        }
         return dp[v];
     };
     dfs(dfs);
