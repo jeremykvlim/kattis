@@ -1,86 +1,110 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct SuffixAutomaton {
-    enum ascii {
-        LOWER = 97,
-        UPPER = 65,
-        NUM = 48,
-        SYM = 32,
-        NA = 0
-    };
+struct SuffixArray {
+    vector<int> SA, ascii, SA_inv;
 
-    struct State {
-        int len, link;
-        bool end;
-        vector<int> next;
+    vector<int> sais(vector<int> &ascii1, int range) {
+        int n = ascii1.size();
+        if (!n) return {};
+        if (n == 1) return {0};
+        if (n == 2) return ascii1[0] < ascii1[1] ? vector<int>{0, 1} : vector<int>{1, 0};
 
-        State(int range = 26) : len(0), link(0), end(false), next(range, 0) {}
-    };
-
-    vector<State> SAM;
-    ascii a;
-    int last, size;
-    vector<int> occ;
-    vector<long long> count;
-
-    SuffixAutomaton(const string &s, ascii alpha = LOWER, int range = 26) : SAM(2 * s.size(), State(range)), a(alpha), last(0), size(1),
-                                                                            occ(2 * s.size(), 0), count(2 * s.size(), 0) {
-        SAM[0].link = -1;
-        for (char c : s) extend(c);
-        for (int p = last; p; p = SAM[p].link) SAM[p].end = true;
-    }
-
-    void extend(char c) {
-        int v = size++;
-        SAM[v].len = SAM[last].len + 1;
-
-        int p = last;
-        while (p != -1 && !SAM[p].next[c - a]) {
-            SAM[p].next[c - a] = v;
-            p = SAM[p].link;
+        vector<int> sa(n, 0), sum_s(range + 1, 0), sum_l(range + 1, 0);
+        vector<bool> sl(n, false);
+        for (int i = n - 2; ~i; i--) sl[i] = (ascii1[i] == ascii1[i + 1]) ? sl[i + 1] : (ascii1[i] < ascii1[i + 1]);
+        for (int i = 0; i < n; i++) {
+            if (!sl[i]) sum_s[ascii1[i]]++;
+            else sum_l[ascii1[i] + 1]++;
         }
 
-        if (p == -1) SAM[v].link = 0;
-        else {
-            int q = SAM[p].next[c - a];
-            if (SAM[p].len + 1 == SAM[q].len) SAM[v].link = q;
-            else {
-                int clone = size++;
-                SAM[clone].len = SAM[p].len + 1;
-                SAM[clone].next = SAM[q].next;
-                SAM[clone].link = SAM[q].link;
-                while (p != -1 && SAM[p].next[c - a] == q) {
-                    SAM[p].next[c - a] = clone;
-                    p = SAM[p].link;
+        for (int i = 0; i <= range; i++) {
+            sum_s[i] += sum_l[i];
+            if (i < range) sum_l[i + 1] += sum_s[i];
+        }
+
+        auto induced_sort = [&](vector<int> &lms) {
+            fill(sa.begin(), sa.end(), -1);
+            vector<int> b(range + 1, 0);
+            copy(sum_s.begin(), sum_s.end(), b.begin());
+            for (int i : lms)
+                if (i < n) sa[b[ascii1[i]]++] = i;
+
+            copy(sum_l.begin(), sum_l.end(), b.begin());
+            sa[b[ascii1[n - 1]]++] = n - 1;
+            for (int j : sa)
+                if (j > 0 && !sl[j - 1]) sa[b[ascii1[j - 1]]++] = j - 1;
+
+            copy(sum_l.begin(), sum_l.end(), b.begin());
+            for (int i = n - 1, j = sa[i]; ~i; j = sa[--i])
+                if (j > 0 && sl[j - 1]) sa[--b[ascii1[j - 1] + 1]] = j - 1;
+        };
+
+        vector<int> lms_map(n + 1, -1), lms;
+        int m = 0;
+        for (int i = 1; i < n; i++)
+            if (!sl[i - 1] && sl[i]) {
+                lms_map[i] = m++;
+                lms.emplace_back(i);
+            }
+        induced_sort(lms);
+
+        if (m) {
+            vector<int> lms_sorted, ascii2(m);
+            for (int j : sa)
+                if (lms_map[j] != -1) lms_sorted.emplace_back(j);
+
+            int range2 = 0;
+            ascii2[lms_map[lms_sorted[0]]] = 0;
+            for (int i = 1; i < m; i++) {
+                int l = lms_sorted[i - 1], r = lms_sorted[i], l_end = (lms_map[l] + 1 < m) ? lms[lms_map[l] + 1] : n, r_end = (lms_map[r] + 1 < m) ? lms[lms_map[r] + 1] : n;
+                bool same = true;
+                if (l_end - l != r_end - r) same = false;
+                else {
+                    while (l < l_end && ascii1[l] == ascii1[r]) {
+                        l++;
+                        r++;
+                    }
+
+                    if (l == n || ascii1[l] != ascii1[r]) same = false;
                 }
-                SAM[q].link = SAM[v].link = clone;
+
+                if (!same) range2++;
+                ascii2[lms_map[lms_sorted[i]]] = range2;
             }
+
+            auto sa2 = sais(ascii2, range2);
+            for (int i = 0; i < m; i++) lms_sorted[i] = lms[sa2[i]];
+            induced_sort(lms_sorted);
         }
 
-        last = v;
+        return sa;
     }
 
-    void dfs_occurrences(int v = 0) {
-        occ[v] = SAM[v].end;
-        for (int u : SAM[v].next)
-            if (u) {
-                if (!occ[u]) dfs_occurrences(u);
-                occ[v] += occ[u];
-            }
+    vector<int> kasai() {
+        int n = ascii.size();
+        vector<int> lcp(n);
+        SA_inv.resize(n);
+        for (int i = 0; i < n; i++) SA_inv[SA[i]] = i;
+        for (int i = 0, k = 0; i < n; i++) {
+            if (k) k--;
+            if (!SA_inv[i]) continue;
+
+            int j = SA[SA_inv[i] - 1];
+            while (i + k < n && j + k < n && ascii[i + k] == ascii[j + k]) k++;
+            lcp[SA_inv[i] - 1] = k;
+        }
+        lcp.back() = n;
+        return lcp;
     }
 
-    void dfs_distinct(int v = 0) {
-        for (int u : SAM[v].next)
-            if (u) {
-                if (!count[u]) dfs_distinct(u);
-                count[v] += count[u] + 1;
-            }
+    int & operator[](int i) {
+        return SA[i];
     }
 
-    auto & operator[](int i) {
-        return SAM[i];
-    }
+    SuffixArray(string &s, int r = 128) : ascii(s.begin(), s.end()) {
+        SA = sais(ascii, r);
+    };
 };
 
 int main() {
@@ -90,24 +114,56 @@ int main() {
     string s;
     cin >> s;
 
-    int range = 'z' - 'A' + 1;
-    SuffixAutomaton sam(s, SuffixAutomaton::ascii::UPPER, range);
-    sam.dfs_occurrences();
-    sam.dfs_distinct();
+    int n = s.size();
+    s += '#';
+    SuffixArray sa(s);
+    auto lcp = sa.kasai();
 
-    vector<long long> chars('z' + 1, 0);
-    for (int i = 0; i < 2 * s.size(); i++) {
-        int l = !i ? 1 : sam[i].len - sam[sam[i].link].len;
-        for (int c = 0; c < range; c++)
-            if (sam[i].next[c]) chars[c + 'A'] += l * (sam.count[sam[i].next[c]] + 1);
-
-        int temp = !i ? 0 : sam.occ[i];
-        while (temp) {
-            chars[(temp % 10) + '0'] += l;
-            temp /= 10;
-        }
+    vector<long long> delta(n + 1, 0);
+    vector<int> count(n + 1, 0);
+    for (int i = 1; i <= n; i++) {
+        int l = sa[i], r = l + lcp[i - 1], v = n - r;
+        delta[l] += v;
+        delta[r] -= v;
+        count[r]++;
     }
 
-    for (int c = '0'; c <= 'z'; c++)
-        if (chars[c]) cout << (char) c << " " << chars[c] << "\n";
+    vector<long long> occurrences('z' + 1, 0);
+    for (auto sum1 = 0LL, sum2 = 0LL, i = 0LL; i < n; i++) {
+        sum1 += delta[i];
+        sum2 += count[i];
+        occurrences[s[i]] += sum1 + sum2 * (n - i);
+    }
+
+    lcp.insert(lcp.begin(), 0);
+    lcp[n + 1] = 0;
+    vector<int> l(n + 1, 0), r(n + 1, 0);
+    for (int i = 1; i <= n; i++) {
+        int j = i - 1;
+        for (; j && lcp[i] < lcp[j]; j = l[j]);
+        l[i] = j;
+    }
+    for (int i = n; i; i--) {
+        int j = i + 1;
+        for (; j <= n && lcp[i] <= lcp[j]; j = r[j]);
+        r[i] = j;
+    }
+
+    vector<long long> digit_occurrences(n + 1, 0);
+    auto total = (long long) n * (n + 1) / 2;
+    for (int i = 1; i <= n; i++) {
+        int c = lcp[i] - max(lcp[l[i]], lcp[r[i]]);
+        if (c > 0) {
+            digit_occurrences[r[i] - l[i]] += c;
+            total -= c * (r[i] - l[i]);
+        }
+    }
+    digit_occurrences[1] += total;
+
+    for (int i = 1; i <= n; i++)
+        if (digit_occurrences[i])
+            for (int temp = i; temp; temp /= 10) occurrences[temp % 10 + '0'] += digit_occurrences[i];
+
+    for (int i = '0'; i < occurrences.size(); i++)
+        if (occurrences[i]) cout << (char) i << " " << occurrences[i] << "\n";
 }
