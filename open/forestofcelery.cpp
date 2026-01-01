@@ -170,12 +170,12 @@ int main() {
 
     auto convex_hull = monotone_chain(celery, true);
     int s = convex_hull.size();
-    vector<int> step(n), next(n);
+    vector<int> next(n), step(n);
     for (int l = 0, r = 1, d = 0; l < n; l++) {
         for (; cross(alexa[l], convex_hull[d], convex_hull[(d + 1) % s]) < 0 || cross(alexa[l], convex_hull[d], convex_hull[(d + s - 1) % s]) < 0; ++d %= s);
         for (; cross(alexa[l], convex_hull[d], alexa[r]) < 0; ++r %= n);
-        step[l] = (r - l - 1 + n) % n;
         next[l] = (r - 1 + n) % n;
+        step[l] = (r - l - 1 + n) % n;
     }
 
     int blocks = ceil(sqrt(n));

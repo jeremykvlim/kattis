@@ -176,19 +176,19 @@ int main() {
                 }
 
                 int blocks = ceil(sqrt(size));
-                vector<int> jump(size), block_step(size);
+                vector<int> jump(size), block_count(size);
                 for (int i = size - 1; ~i; i--)
                     if (i == 2 * k) {
                         jump[i] = i;
-                        block_step[i] = 0;
+                        block_count[i] = 0;
                     } else {
                         int j = next[i];
                         if (i / blocks != j / blocks) {
                             jump[i] = j;
-                            block_step[i] = 1;
+                            block_count[i] = 1;
                         } else {
                             jump[i] = jump[j];
-                            block_step[i] = block_step[j] + 1;
+                            block_count[i] = block_count[j] + 1;
                         }
                     }
 
@@ -199,7 +199,7 @@ int main() {
 
                     int c = 0, j = i;
                     while (j < bound && jump[j] < bound) {
-                        c += block_step[j];
+                        c += block_count[j];
                         j = jump[j];
                     }
                     while (j < bound) {

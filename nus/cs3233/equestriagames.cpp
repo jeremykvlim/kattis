@@ -20,39 +20,39 @@ int main() {
     for (int i = n; i < 2 * n; i++) a[i] = a[i - n];
 
     int m = 2 * n;
-    vector<int> jump(m + 2, m + 1), freq(temp.size(), 0);
+    vector<int> next(m + 2, m + 1), freq(temp.size(), 0);
     for (int l = 1, r = 1, count = 0; l <= m; l++) {
         for (; r <= m && count < c; r++)
             if (!freq[a[r - 1]]++) count++;
 
-        if (count >= c) jump[l] = max(r, l + k);
-        else jump[l] = m + 1;
+        if (count >= c) next[l] = max(r, l + k);
+        else next[l] = m + 1;
 
         if (!--freq[a[l - 1]]) count--;
     }
 
-    vector<int> block(m + 2, 0), next(m + 2, m + 1), count(m + 2, 0);
+    vector<int> block(m + 2, 0), jump(m + 2, m + 1), count(m + 2, 0);
     for (int i = 1; i <= m + 1; i++) block[i] = (i - 1) / ceil(sqrt(m));
 
     for (int i = m; i; i--)
-        if (jump[i] >= m + 1 || block[i] != block[jump[i]]) {
-            next[i] = jump[i];
+        if (next[i] >= m + 1 || block[i] != block[next[i]]) {
+            jump[i] = next[i];
             count[i] = 1;
         } else {
-            next[i] = next[jump[i]];
-            count[i] = count[jump[i]] + 1;
+            jump[i] = jump[next[i]];
+            count[i] = count[next[i]] + 1;
         }
 
     int sold = 0;
     for (int l = 1; l <= n; l++) {
-        int curr = l, s = 0;
-        while (curr <= l + n)
-            if (next[curr] <= l + n) {
-                s += count[curr];
-                curr = next[curr];
-            } else if (jump[curr] <= l + n) {
+        int i = l, s = 0;
+        while (i <= l + n)
+            if (jump[i] <= l + n) {
+                s += count[i];
+                i = jump[i];
+            } else if (next[i] <= l + n) {
                 s++;
-                curr = jump[curr];
+                i = next[i];
             } else break;
         sold = max(sold, s);
     }
