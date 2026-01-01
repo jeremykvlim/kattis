@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -436,6 +436,94 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
+struct PURQSegmentTree {
+    struct Segment {
+        array<modint, 2> total, pref, suff;
+        array<bool, 2> mul;
+        bool op, active;
+
+        Segment() : total{0, 0}, pref{0, 0}, suff{0, 0}, mul{true, true}, op(false), active(0) {}
+
+        auto & operator=(const pair<int, bool> &p) {
+            int d = p.first;
+            op = p.second;
+            active = true;
+            total = pref = suff = {d, d};
+            mul = {true, true};
+            return *this;
+        }
+
+        auto & operator+=(const int &v) {
+            if (active)
+                for (int i = 0; i < 2; i++) {
+                    total[i] += v;
+                    pref[i] += v;
+                    suff[i] += v;
+                }
+            return *this;
+        }
+
+        auto & operator+=(const Segment &seg) {
+            if (!active) return *this = seg;
+            if (!seg.active) return *this;
+
+            active |= seg.active;
+            for (int i = 0; i < 2; i++)
+                if (!(op ^ i)) {
+                    total[i] += seg.total[i];
+                    suff[i] = seg.suff[i];
+                    mul[i] = false;
+                } else {
+                    total[i] += seg.total[i] - suff[i] - seg.pref[i] + suff[i] * seg.pref[i];
+                    if (mul[i]) pref[i] *= seg.pref[i];
+                    if (seg.mul[i]) suff[i] *= seg.suff[i];
+                    else suff[i] = seg.suff[i];
+                    mul[i] = mul[i] && seg.mul[i];
+                }
+            op = seg.op;
+            return *this;
+        }
+
+        friend auto operator+(Segment sl, const Segment &sr) {
+            return sl += sr;
+        }
+    };
+
+    int n;
+    vector<Segment> ST;
+
+    void pull(int i) {
+        ST[i] = ST[i << 1] + ST[i << 1 | 1];
+    }
+
+    void build() {
+        for (int i = n - 1; i; i--) pull(i);
+    }
+
+    void point_update(int i, const pair<int, bool> &v) {
+        for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
+    }
+
+    Segment range_query(int l, int r) {
+        Segment sl, sr;
+        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+            if (l & 1) sl = sl + ST[l++];
+            if (r & 1) sr = ST[--r] + sr;
+        }
+
+        return sl + sr;
+    }
+
+    auto & operator[](int i) {
+        return ST[i];
+    }
+
+    PURQSegmentTree(int n, const vector<pair<int, bool>> &a) : n(n), ST(2 * n) {
+        for (int i = 0; i < a.size(); i++) ST[i + n] = a[i];
+        build();
+    }
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -447,57 +535,26 @@ int main() {
     cin >> n >> m >> s;
 
     vector<int> d(n);
-    vector<bool> op(n - 1);
-    for (int i = 0; i < 2 * n - 1; i++) {
+    vector<bool> op(n, 0);
+    for (int i = 0; i < 2 * n - 1; i++)
         if (!(i & 1)) d[i / 2] = s[i] - '0';
-        else op[i / 2] = s[i] == '+';
-    }
+        else op[i / 2] = s[i] == '*';
 
-    int size = ceil(sqrt(n)), k = (n + size - 1) / size;
-    vector<array<pair<array<modint, 3>, bool>, 2>> blocks(k);
-    vector<int> bl(k), br(k);
-    for (int b = 0; b < k; b++) {
-        bl[b] = b * size;
-        br[b] = min(n, (b + 1) * size);
-    }
-
-    auto add = [&](const auto &block1, const auto &block2, bool a) -> pair<array<modint, 3>, bool> {
-        auto [total_l, pref_l, suff_l] = block1.first;
-        auto [total_r, pref_r, suff_r] = block2.first;
-
-        auto total = total_l + total_r;
-        if (a) return {{total, pref_l, suff_r}, false};
-        
-        if (block1.second) pref_l *= pref_r;
-        if (block2.second) suff_r *= suff_l;
-        return {{total - suff_l - pref_r + suff_l * pref_r, pref_l, suff_r}, block1.second && block2.second};
-    };
-
-    auto build = [&](int b) {
-        for (int f = 0; f < 2; f++) {
-            blocks[b][f] = {{d[bl[b]], d[bl[b]], d[bl[b]]}, true};
-            for (int i = bl[b] + 1; i < br[b]; i++) {
-                pair<array<modint, 3>, bool> block{{d[i], d[i], d[i]}, true};
-                blocks[b][f] = add(blocks[b][f], block, op[i - 1] ^ f);
-            }
-        }
-    };
-    for (int b = 0; b < k; b++) build(b);
+    PURQSegmentTree st(n, [&]{
+                           vector<pair<int, bool>> a(n);
+                           for (int i = 0; i < n; i++) a[i] = {d[i], op[i]};
+                           return a;
+                       }()
+    );
 
     bool a = false;
-    auto compute = [&]() {
-        auto sum = blocks[0][a];
-        for (int b = 1; b < k; b++) sum = add(sum, blocks[b][a], op[br[b - 1] - 1] ^ a);
-        return sum.first[0];
-    };
-    auto v = compute();
+    auto v = st.range_query(0, n).total[a];
     cout << v << "\n";
+    for (int q = 0; q < m; q++) {
+        char t;
+        cin >> t;
 
-    while (m--) {
-        char c;
-        cin >> c;
-
-        if (c == 's') {
+        if (t == 's') {
             int i, j;
             cin >> i >> j;
             i--;
@@ -509,18 +566,17 @@ int main() {
             }
 
             swap(d[i], d[j]);
-            int b1 = i / size, b2 = j / size;
-            build(b1);
-            if (b1 != b2) build(b2);
-        } else if (c == 'f') {
+            st.point_update(i, {d[i], op[i]});
+            st.point_update(j, {d[j], op[j]});
+        } else if (t == 'f') {
             int i;
             cin >> i;
             i--;
 
             op[i] = !op[i];
-            build(i / size);
-        } else a ^= 1;
+            st.point_update(i, {d[i], op[i]});
+        } else a = !a;
 
-        cout << (v = compute()) << "\n";
+        cout << (v = st.range_query(0, n).total[a]) << "\n";
     }
 }
