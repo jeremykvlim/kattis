@@ -1,5 +1,7 @@
 #include <bits/stdc++.h>
+#include <tr2/dynamic_bitset>
 using namespace std;
+using namespace tr2;
 
 struct BlockCutTree {
     int n;
@@ -297,42 +299,37 @@ int main() {
     auto deduped = T;
     dedupe(deduped);
     int s = deduped.size();
-    vector<int> indices(n + 1, -1);
-    for (int i = 0; i < s; i++) indices[deduped[i]] = i;
+    vector<int> indices(n + 1, 0);
+    for (int i = 1; i <= s; i++) indices[deduped[i - 1]] = i;
 
-    vector<vector<int>> T_components(s);
+    vector<vector<int>> T_components(s + 1);
     for (int state = 0; state < 2 * m; state++) {
         auto [i, dir] = decode(next[state]);
-        if (~indices[pipes[i][dir ^ 1]]) T_components[indices[pipes[i][dir ^ 1]]].emplace_back(component[base_nodes[state]]);
+        if (indices[pipes[i][dir ^ 1]]) T_components[indices[pipes[i][dir ^ 1]]].emplace_back(component[base_nodes[state]]);
     }
 
-    const int size = 1 << 11;
-    int k = (s + size - 1) / size;
-    vector<vector<int>> blocks(k);
-    vector<int> T_rev(Q);
-    for (int qi = 0; qi < Q; qi++) {
-        int t = indices[T[qi]];
-        if (t != -1) {
-            blocks[t / size].emplace_back(qi);
-            T_rev[qi] = t;
-        } else T_rev[qi] = -1;
+    int size = ceil(sqrt(s)), blocks = (s + size - 1) / size;
+    vector<vector<int>> block_queries(blocks);
+    for (int q = 0; q < Q; q++) {
+        int i = indices[T[q]];
+        if (i) block_queries[(i - 1) / size].emplace_back(q);
     }
 
     vector<bool> trapped(Q, false);
-    vector<bitset<size>> dp(sccs + 1);
-    for (int b = 0; b < k; b++) {
-        int tl = b * size, tr = min(s, tl + size);
+    vector<dynamic_bitset<>> dp(sccs + 1, dynamic_bitset<>(size));
+    for (int b = 0; b < blocks; b++) {
+        int b_l = b * size + 1, b_r = min(s, (b + 1) * size);
 
         for (int c = 1; c <= sccs; c++) dp[c].reset();
-        for (int t = tl; t < tr; t++)
-            for (int c : T_components[t]) dp[c][t - tl] = true;
+        for (int i = b_l; i <= b_r; i++)
+            for (int c : T_components[i]) dp[c][i - b_l] = true;
 
         for (int v : order)
             for (int u : dag[v]) dp[v] |= dp[u];
 
-        for (int q : blocks[b]) {
-            int c = Q_component[q];
-            if (~c && tl <= T_rev[q] && T_rev[q] < tr && dp[c][T_rev[q] - tl]) trapped[q] = true;
+        for (int q : block_queries[b]) {
+            int c = Q_component[q], i = indices[T[q]];
+            if (~c && b_l <= i && i <= b_r && dp[c][i - b_l]) trapped[q] = true;
         }
     }
 
