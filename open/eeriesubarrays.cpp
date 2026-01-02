@@ -8,37 +8,58 @@ int main() {
     int n;
     cin >> n;
 
-    vector<int> p(n);
-    for (int &pi : p) cin >> pi;
+    vector<int> indices(n + 1, 0);
+    for (int i = 1; i <= n; i++) {
+        int pi;
+        cin >> pi;
 
-    vector<int> indices(n);
-    iota(indices.begin(), indices.end(), 0);
-    sort(indices.begin(), indices.end(), [&](int i, int j) { return p[i] < p[j]; });
+        indices[pi] = i;
+    }
 
-    int size = ceil(sqrt(n));
-    vector<int> offset(n, n);
-    vector<vector<int>> blocks(size, vector<int>(2 * n + 1, 0));
-    for (int i = 0; i < n; i++) blocks[i / size][offset[i] -= i]++;
+    int size = ceil(sqrt(n)), blocks = (n + size - 1) / size;
+    vector<int> b_l(blocks), b_r(blocks);
+    for (int b = 0; b < blocks; b++) {
+        b_l[b] = b * size + 1;
+        b_r[b] = min(n, (b + 1) * size);
+    }
+
+    vector<int> a(n + 1, 0);
+    for (int i = 1; i <= n; i++) a[i] = -i;
+
+    vector<int> base(blocks, 0);
+    vector<vector<int>> freq(blocks, vector<int>(2 * size + 1, 0));
+    for (int b = 0; b < blocks; b++) {
+        base[b] = a[b_l[b]];
+        for (int i = b_l[b]; i <= b_r[b]; i++) freq[b][a[i] - base[b] + size]++;
+    }
 
     auto scary = 0LL;
-    vector<int> lazy(size, 0);
-    for (int i : indices) {
-        int b = i / size;
+    vector<int> diff(blocks, 0);
+    for (int pi = n; pi; pi--) {
+        int i = indices[pi], b = (i - 1) / size, temp = a[i];
+        if (i == b_l[b]) {
+            base[b] += 2;
+            for (int j = i; j <= b_r[b]; j++) {
+                if (a[j] == temp) scary++;
+                a[j] += 2;
+            }
+        } else
+            for (int j = i; j <= b_r[b]; j++) {
+                if (a[j] == temp) scary++;
 
-        for (int j = i; j < min(n, (b + 1) * size); j++) {
-            blocks[b][offset[j]]--;
-            blocks[b][offset[j] + 2]++;
-            offset[j] += 2;
+                int k = a[j] - base[b];
+                freq[b][k + size]--;
+                a[j] += 2;
+                freq[b][k + 2 + size]++;
+            }
+
+        for (int j = b + 1, sum = 0; j < blocks; j++) {
+            sum += diff[j];
+            int k = temp - sum - base[j] + size;
+            if (0 <= k && k < 2 * size + 1) scary += freq[j][k];
         }
 
-        int pref = offset[i] + lazy[b];
-        for (int block = b + 1; block <= (n - 1) / size; block++) {
-            lazy[block] += 2;
-            if (pref >= lazy[block]) scary += blocks[block][pref - lazy[block]];
-        }
-
-        for (int j = i; j < min(n, (b + 1) * size); j++)
-            if (offset[j] + lazy[b] == pref) scary++;
+        if (b + 1 < blocks) diff[b + 1] += 2;
     }
     cout << scary;
 }
