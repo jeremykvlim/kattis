@@ -165,13 +165,13 @@ int main() {
 
         cat += Point(dx[i], dy[i]);
         if (curr.empty()) {
-            for (int j = 0; j * j <= d; j++) {
-                Point<int> gap(j, ceil(sqrt(d - j * j)));
+            for (int x = 0; x * x <= d; x++) {
+                Point<int> gap(x, sqrt(d - x * x));
                 if (squared_dist(gap) == d) {
                     curr.emplace_back(cat + gap);
                     if (gap.x) curr.emplace_back(cat.x - gap.x, cat.y + gap.y);
                     if (gap.y) curr.emplace_back(cat.x + gap.x, cat.y - gap.y);
-                    if (gap.x && gap.y) curr.emplace_back(cat.x - gap.x, cat.y - gap.y);
+                    if (gap.x && gap.y) curr.emplace_back(cat - gap);
                 }
             }
         } else {
