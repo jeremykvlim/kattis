@@ -1,6 +1,15 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+vector<complex<T>> quadratic_roots(T a, T b, T c) {
+    if (fabs(a) < 1e-8 && fabs(b) < 1e-8) return {};
+    if (fabs(a) < 1e-8) return {(-c / b)};
+
+    complex<T> discriminant(b * b - 4 * a * c, 0);
+    return {(-b + sqrt(discriminant)) / (2 * a), (-b - sqrt(discriminant)) / (2 * a)};
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -17,7 +26,8 @@ int main() {
         if (!d) return c - b >= m;
         if (!b && !m) return n;
 
-        long long x = floor((-1 + sqrt(1 + 4 * (c * d / (b + m)))) / 2);
+        auto roots = quadratic_roots(1., 1., -c * d / (b + m));
+        long long x = floor(roots[0].real());
         if (x < d) return 0;
         if (x >= d + n - 1) return n;
         return x - d + 1;
@@ -50,7 +60,7 @@ int main() {
             if (!d) return x == 1 ? c - b : -b;
             return c * d / ((d + x - 1) * (d + x)) - b;
         };
-        
+
         priority_queue<pair<double, int>, vector<pair<double, int>>, greater<>> pq;
         for (int i = 0; i < k; i++)
             if (x[i]) {
