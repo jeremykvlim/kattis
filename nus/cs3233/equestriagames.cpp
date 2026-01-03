@@ -1,6 +1,52 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+struct JumpTable {
+    int lg;
+    vector<vector<int>> lift;
+    vector<vector<T>> sum;
+
+    JumpTable(int n, int m, const vector<int> &next, const vector<T> &w) {
+        lg = __lg(n) + 1;
+        lift.assign(lg, vector<int>(m));
+        lift[0] = next;
+        sum.assign(lg, vector<T>(m));
+        sum[0] = w;
+
+        for (int b = 1; b < lg; b++)
+            for (int i = 0; i < m; i++) {
+                int j = lift[b - 1][i];
+                lift[b][i] = lift[b - 1][j];
+                sum[b][i] = sum[b - 1][i] + sum[b - 1][j];
+            }
+    }
+
+    pair<T, int> jump_up(int v, int k) const {
+        T cost = 0;
+        int steps = 0;
+        for (int b = 0; b < lg; b++)
+            if ((k >> b) & 1) {
+                cost += sum[b][v];
+                steps += 1 << b;
+                v = lift[b][v];
+            }
+        return {cost, steps};
+    }
+
+    pair<T, int> jump_down(int v, T bound) const {
+        T cost = 0;
+        int steps = 0;
+        for (int b = lg - 1; ~b; b--)
+            if (lift[b][v] <= bound) {
+                cost += sum[b][v];
+                steps += 1 << b;
+                v = lift[b][v];
+            }
+        return {cost, steps};
+    }
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -16,45 +62,21 @@ int main() {
     temp.erase(unique(temp.begin(), temp.end()), temp.end());
     for (int &ai : a) ai = lower_bound(temp.begin(), temp.end(), ai) - temp.begin();
 
-    a.resize(2 * n);
-    for (int i = n; i < 2 * n; i++) a[i] = a[i - n];
-
     int m = 2 * n;
-    vector<int> next(m + 2, m + 1), freq(temp.size(), 0);
+    a.resize(m);
+    for (int i = n; i < m; i++) a[i] = a[i - n];
+
+    vector<int> freq(temp.size(), 0), next(m + 2, m + 1);
     for (int l = 1, r = 1, count = 0; l <= m; l++) {
         for (; r <= m && count < c; r++)
             if (!freq[a[r - 1]]++) count++;
 
-        if (count >= c) next[l] = max(r, l + k);
-        else next[l] = m + 1;
-
+        if (count >= c) next[l] = min(m + 1, max(r, l + k));
         if (!--freq[a[l - 1]]) count--;
     }
 
-    vector<int> block(m + 2, 0), jump(m + 2, m + 1), count(m + 2, 0);
-    for (int i = 1; i <= m + 1; i++) block[i] = (i - 1) / ceil(sqrt(m));
-
-    for (int i = m; i; i--)
-        if (next[i] >= m + 1 || block[i] != block[next[i]]) {
-            jump[i] = next[i];
-            count[i] = 1;
-        } else {
-            jump[i] = jump[next[i]];
-            count[i] = count[next[i]] + 1;
-        }
-
+    JumpTable<int> jt(n, m + 2, next, vector<int>(m + 2, 1));
     int sold = 0;
-    for (int l = 1; l <= n; l++) {
-        int i = l, s = 0;
-        while (i <= l + n)
-            if (jump[i] <= l + n) {
-                s += count[i];
-                i = jump[i];
-            } else if (next[i] <= l + n) {
-                s++;
-                i = next[i];
-            } else break;
-        sold = max(sold, s);
-    }
+    for (int l = 1; l <= n; l++) sold = max(sold, jt.jump_down(l, l + n).second);
     cout << sold;
 }

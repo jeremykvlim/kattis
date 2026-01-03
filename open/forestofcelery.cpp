@@ -151,6 +151,52 @@ vector<Point<T>> monotone_chain(vector<Point<T>> points, bool collinear = false)
     return convex_hull;
 }
 
+template <typename T>
+struct JumpTable {
+    int lg;
+    vector<vector<int>> lift;
+    vector<vector<T>> sum;
+
+    JumpTable(int n, int m, const vector<int> &next, const vector<T> &w) {
+        lg = __lg(n) + 1;
+        lift.assign(lg, vector<int>(m));
+        lift[0] = next;
+        sum.assign(lg, vector<T>(m));
+        sum[0] = w;
+
+        for (int b = 1; b < lg; b++)
+            for (int i = 0; i < m; i++) {
+                int j = lift[b - 1][i];
+                lift[b][i] = lift[b - 1][j];
+                sum[b][i] = sum[b - 1][i] + sum[b - 1][j];
+            }
+    }
+
+    pair<T, int> jump_up(int v, int k) const {
+        T cost = 0;
+        int steps = 0;
+        for (int b = 0; b < lg; b++)
+            if ((k >> b) & 1) {
+                cost += sum[b][v];
+                steps += 1 << b;
+                v = lift[b][v];
+            }
+        return {cost, steps};
+    }
+
+    pair<T, int> jump_down(int v, T bound) const {
+        T cost = 0;
+        int steps = 0;
+        for (int b = lg - 1; ~b; b--)
+            if (cost + sum[b][v] <= bound) {
+                cost += sum[b][v];
+                steps += 1 << b;
+                v = lift[b][v];
+            }
+        return {cost, steps};
+    }
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -170,46 +216,17 @@ int main() {
 
     auto convex_hull = monotone_chain(celery, true);
     int s = convex_hull.size();
-    vector<int> next(n), step(n);
+    vector<int> next(n);
+    vector<long long> w(n);
     for (int l = 0, r = 1, d = 0; l < n; l++) {
         for (; cross(alexa[l], convex_hull[d], convex_hull[(d + 1) % s]) < 0 || cross(alexa[l], convex_hull[d], convex_hull[(d + s - 1) % s]) < 0; ++d %= s);
         for (; cross(alexa[l], convex_hull[d], alexa[r]) < 0; ++r %= n);
         next[l] = (r - 1 + n) % n;
-        step[l] = (r - l - 1 + n) % n;
+        w[l] = (r - l - 1 + n) % n;
     }
 
-    int blocks = ceil(sqrt(n));
-    vector<int> block_count(n), block_step(n), jump(n);
-    for (int l = 0; l < n; l += blocks) {
-        int r = min(n, l + blocks);
-        for (int i = r - 1; i >= l; i--) {
-            int j = next[i];
-            if (l <= j && j < r) {
-                jump[i] = jump[j];
-                block_step[i] = block_step[j] + step[i];
-                block_count[i] = block_count[j] + 1;
-            } else {
-                jump[i] = j;
-                block_step[i] = step[i];
-                block_count[i] = 1;
-            }
-        }
-    }
-
+    JumpTable<long long> jt(n, n, next, w);
     int count = n;
-    for (int i = 0; i < n; i++) {
-        int j = i, remaining = n - 1, c = 1;
-        while (remaining >= block_step[j]) {
-            remaining -= block_step[j];
-            c += block_count[j];
-            j = jump[j];
-        }
-        while (remaining >= step[j]) {
-            remaining -= step[j];
-            c++;
-            j = next[j];
-        }
-        count = min(count, c);
-    }
+    for (int i = 0; i < n; i++) count = min(count, jt.jump_down(i, (long long) n - 1).second + 1);
     cout << count;
 }

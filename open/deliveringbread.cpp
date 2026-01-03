@@ -1,6 +1,52 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+struct JumpTable {
+    int lg;
+    vector<vector<int>> lift;
+    vector<vector<T>> sum;
+
+    JumpTable(int n, int m, const vector<int> &next, const vector<T> &w) {
+        lg = __lg(n) + 1;
+        lift.assign(lg, vector<int>(m));
+        lift[0] = next;
+        sum.assign(lg, vector<T>(m));
+        sum[0] = w;
+
+        for (int b = 1; b < lg; b++)
+            for (int i = 0; i < m; i++) {
+                int j = lift[b - 1][i];
+                lift[b][i] = lift[b - 1][j];
+                sum[b][i] = sum[b - 1][i] + sum[b - 1][j];
+            }
+    }
+
+    pair<T, int> jump_up(int v, int k) const {
+        T cost = 0;
+        int steps = 0;
+        for (int b = 0; b < lg; b++)
+            if ((k >> b) & 1) {
+                cost += sum[b][v];
+                steps += 1 << b;
+                v = lift[b][v];
+            }
+        return {cost, steps};
+    }
+
+    pair<T, int> jump_down(int v, T bound) const {
+        T cost = 0;
+        int steps = 0;
+        for (int b = lg - 1; ~b; b--)
+            if (lift[b][v] <= bound) {
+                cost += sum[b][v];
+                steps += 1 << b;
+                v = lift[b][v];
+            }
+        return {cost, steps};
+    }
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -27,40 +73,21 @@ int main() {
     }
 
     vector<int> next(n);
-    vector<long long> step(n);
+    vector<long long> w(n);
     for (int i = 0; i < n; i++) {
-        int j = (k[i] + 1) % K;
-        auto it = lower_bound(pos[j].begin(), pos[j].end(), d[i]);
-        if (it != pos[j].end()) {
-            int l = it - pos[j].begin();
-            next[i] = indices[j][l];
-            step[i] = *it - d[i];
+        int ki = (k[i] + 1) % K;
+        auto it = lower_bound(pos[ki].begin(), pos[ki].end(), d[i]);
+        if (it != pos[ki].end()) {
+            int l = it - pos[ki].begin();
+            next[i] = indices[ki][l];
+            w[i] = *it - d[i];
         } else {
-            next[i] = indices[j][0];
-            step[i] = (D - d[i]) + pos[j][0];
+            next[i] = indices[ki][0];
+            w[i] = (D - d[i]) + pos[ki][0];
         }
     }
 
-    int blocks = ceil(sqrt(K));
-    vector<int> block_count(n), jump(n);
-    vector<long long> block_step(n);
-    for (int l = 0; l < K; l += blocks) {
-        int r = min(K, l + blocks);
-        for (int c = r - 1; c >= l; c--)
-            for (int i : indices[c]) {
-                int j = next[i];
-                if (c + 1 < r) {
-                    jump[i] = jump[j];
-                    block_step[i] = block_step[j] + step[i];
-                    block_count[i] = block_count[j] + 1;
-                } else {
-                    jump[i] = j;
-                    block_step[i] = step[i];
-                    block_count[i] = 1;
-                }
-            }
-    }
-
+    JumpTable<long long> jt(K, n, next, w);
     while (q--) {
         int dq, kq, nq;
         cin >> dq >> kq >> nq;
@@ -81,18 +108,6 @@ int main() {
             j = indices[kq][0];
             dist = (D - dq) + pos[kq][0];
         }
-
-        int m = nq - 1;
-        while (m >= block_count[j]) {
-            m -= block_count[j];
-            dist += block_step[j];
-            j = jump[j];
-        }
-        while (m) {
-            m--;
-            dist += step[j];
-            j = next[j];
-        }
-        cout << dist << "\n";
+        cout << dist + jt.jump_up(j, nq - 1).first << "\n";
     }
 }
