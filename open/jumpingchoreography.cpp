@@ -8,15 +8,32 @@ int main() {
     int n, t;
     cin >> n >> t;
 
+    int max_pos = t;
     vector<int> p(n);
-    for (int &pi : p) cin >> pi;
+    for (int &pi : p) {
+        cin >> pi;
 
-    vector<int> lazy(1e6 + 1, 0), min_jumps(1e6 + 1, 0), total_jumps(1e6 + 1, 0);
+        max_pos = max(max_pos, pi);
+    }
+
+    int C;
+    cin >> C;
+
+    int ops = 0;
+    vector<pair<char, int>> queries(C);
+    for (auto &[c, a] : queries) {
+        cin >> c >> a;
+
+        max_pos = max(max_pos, a);
+        ops += c != 't';
+    }
+
+    vector<int> lazy(max_pos + 3, 0), min_jumps(max_pos + 1, 0), total_jumps(max_pos + 1, 0);
     auto update = [&](int p, int sign) {
         lazy[p + 1] += sign;
         lazy[p + 2] += sign * 3;
 
-        for (int r = p + 3, i = 1; r <= 1e6; r += ++i) lazy[r] += sign * ((i & 1) ? 1 : 3);
+        for (int r = p + 3, i = 1; r <= max_pos; r += ++i) lazy[r] += sign * ((i & 1) ? 1 : 3);
 
         lazy[0] += sign * min_jumps[p];
         if (p) {
@@ -28,7 +45,7 @@ int main() {
     };
 
     auto propagate = [&](vector<int> &v) {
-        for (int i = 0; i <= 1e6; i++) {
+        for (int i = 0; i <= max_pos; i++) {
             if (i > 1) lazy[i] += lazy[i - 2];
             v[i] += lazy[i];
         }
@@ -40,37 +57,26 @@ int main() {
     for (int pi : p) update(pi, 1);
     propagate(total_jumps);
 
-    int C;
-    cin >> C;
-
-    int size = ceil(sqrt(5e3)), sa = 0, sr = 0;
-    vector<int> add(size), remove(size);
-    auto push = [&]() {
-        for (int i = 0; i < sa; i++) update(add[i], 1);
-        add.clear();
-        sa = 0;
-
-        for (int i = 0; i < sr; i++) update(remove[i], -1);
-        remove.clear();
-        sr = 0;
-
-        propagate(total_jumps);
-    };
-
-    while (C--) {
-        char c;
-        int a;
-        cin >> c >> a;
-
+    int size = ceil(sqrt(ops + 1)), sa = 0, sr = 0;
+    vector<int> block_add(size), block_remove(size);
+    for (auto [c, a] : queries) {
         if (c == 't') t = a;
-        else if (c == '+') add[sa++] = a;
-        else remove[sr++] = a;
+        else if (c == '+') block_add[sa++] = a;
+        else block_remove[sr++] = a;
 
-        if (sa == size || sr == size) push();
+        if (sa == size || sr == size) {
+            for (int i = 0; i < sa; i++) update(block_add[i], 1);
+            sa = 0;
+
+            for (int i = 0; i < sr; i++) update(block_remove[i], -1);
+            sr = 0;
+
+            propagate(total_jumps);
+        }
 
         int jumps = total_jumps[t];
-        for (int i = 0; i < sa; i++) jumps += min_jumps[abs(add[i] - t)];
-        for (int i = 0; i < sr; i++) jumps -= min_jumps[abs(remove[i] - t)];
+        for (int i = 0; i < sa; i++) jumps += min_jumps[abs(block_add[i] - t)];
+        for (int i = 0; i < sr; i++) jumps -= min_jumps[abs(block_remove[i] - t)];
         cout << jumps << "\n";
     }
 }
