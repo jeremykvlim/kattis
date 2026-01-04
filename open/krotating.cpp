@@ -126,10 +126,10 @@ int main() {
     vector<array<int, 10>> p(m + 1);
     vector<array<int, 3>> queries(q);
     vector<vector<int>> weeks(n + 1);
-    for (auto &[c, t, x] : queries) {
-        cin >> c >> t >> x;
+    for (auto &[b, t, x] : queries) {
+        cin >> b >> t >> x;
 
-        if (!c) {
+        if (!b) {
             k[x] = t;
             for (int i = 0; i < t; i++) {
                 cin >> p[x][i];
@@ -166,8 +166,8 @@ int main() {
             lct.link(v, parent[v] = !j ? pi : id[pi][j - 1]);
         }
 
-    for (auto [c, t, x] : queries)
-        if (!c) {
+    for (auto [b, t, x] : queries)
+        if (!b) {
             for (int i = 0; i < k[x]; i++) {
                 int u = edges[x][(i + 1) % k[x]].first, v = edges[x][i].second;
                 if (parent[v]) lct.cut(v, parent[v]);
