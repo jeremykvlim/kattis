@@ -295,7 +295,7 @@ int main() {
         sort(distinct.begin(), distinct.end());
         int s1 = distinct.size(), s2 = 2 * s1;
 
-        vector<int> cycle(s2), freqCyc(s2);
+        vector<int> cycle(s2);
         for (int i = 0; i < s1; i++) {
             cycle[i] = distinct[i];
             cycle[i + s1] = distinct[i] + k;
