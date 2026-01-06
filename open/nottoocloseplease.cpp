@@ -519,7 +519,7 @@ int main() {
     auto prepare = [&]() {
         auto inv = fact;
 
-        for (int i = 1; i <= n + 2; i++) {
+        for (int i = 1; i < n + 3; i++) {
             if (i > 1) inv[i] = (MOD - MOD / i) * inv[MOD % i];
             fact[i] = i * fact[i - 1];
             fact_inv[i] = inv[i] * fact_inv[i - 1];
@@ -529,7 +529,7 @@ int main() {
 
     vector<modint> fib(n + 3, 0);
     fib[1] = 1;
-    for (int i = 2; i < fib.size(); i++) fib[i] = fib[i - 1] + fib[i - 2];
+    for (int i = 2; i < n + 3; i++) fib[i] = fib[i - 1] + fib[i - 2];
 
     vector<int> nodes;
     vector<vector<int>> vt(n + 1);
@@ -544,11 +544,8 @@ int main() {
             cin >> x >> y >> r;
 
             int a = lca(x, y), dist = depth[x] + depth[y] - 2 * depth[a];
-            if (dist < r - 1) cout << "0\n";
-            else {
-                if (dist < 2 * r - 2) cout << "0\n";
-                else cout << binomial_coefficient_mod_p(dist - r + 2, r, MOD, fact, fact_inv) << "\n";
-            }
+            if (dist < 2 * r - 2) cout << "0\n";
+            else cout << binomial_coefficient_mod_p(dist - r + 2, r, MOD, fact, fact_inv) << "\n";
         } else {
             int m;
             cin >> m;
