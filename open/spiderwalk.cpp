@@ -2,28 +2,30 @@
 using namespace std;
 
 template <typename T>
-struct SqrtDecomposition {
-    int size;
-    vector<T> arr, blocks;
+struct FenwickTree {
+    vector<T> BIT;
 
-    SqrtDecomposition(int n, const vector<T> &arr) : size(ceil(sqrt(n))), blocks(ceil(sqrt(n)), 0), arr(arr) {
-        for (int i = 0; i < arr.size(); i++) blocks[i / size] += arr[i];
+    void update(int i, T v) {
+        for (; i && i < BIT.size(); i += i & -i) BIT[i] += v;
     }
 
     void update(int l, int r, T v) {
-        int b_l = l / size, b_r = r / size;
-        if (b_l == b_r)
-            for (int i = l; i <= r; i++) arr[i] += v;
-        else {
-            for (int i = l; i < (b_l + 1) * size; i++) arr[i] += v;
-            for (int i = b_l + 1; i < b_r; i++) blocks[i] += v;
-            for (int i = b_r * size; i <= r; i++) arr[i] += v;
-        }
+        update(l, v);
+        update(r, -v);
     }
 
-    T query(int i) {
-        return arr[i] + blocks[i / size];
+    T pref_sum(int i) {
+        T sum = 0;
+        for (; i; i &= i - 1) sum += BIT[i];
+        return sum;
     }
+
+    T range_sum_query(int l, int r) {
+        if (l >= r) return 0;
+        return pref_sum(r) - pref_sum(l);
+    }
+
+    FenwickTree(int n) : BIT(n, 0) {}
 };
 
 int main() {
@@ -34,40 +36,39 @@ int main() {
     cin >> n >> m >> s;
 
     vector<pair<int, int>> edges(m);
-    for (auto &[d, t] : edges) {
-        cin >> d >> t;
-        t--;
-    }
+    for (auto &[d, t] : edges) cin >> d >> t;
     sort(edges.rbegin(), edges.rend());
 
-    SqrtDecomposition<int> sd(n, vector<int>(n, 0));
-    for (int i = 0; i < n; i++) sd.update(i, i, min(abs(i - s + 1), n - abs(i - s + 1)));
+    FenwickTree<int> fw(n + 2);
+    for (int i = 1; i <= n; i++) fw.update(i, i + 1, min(abs(i - s), n - abs(i - s)));
 
     for (auto [d, t1] : edges) {
-        auto index = [&](int i) { return (i + n) % n; };
+        auto index = [&](int i) {
+            return (i + n - 1) % n + 1;
+        };
 
-        int t2 = (t1 + 1) % n, dp1 = sd.query(t1), dp2 = sd.query(t2);
+        int t2 = index(t1 + 1), dp1 = fw.pref_sum(t1), dp2 = fw.pref_sum(t2);
         if (dp1 == dp2) continue;
 
         int dp = min(dp1, dp2), t = dp1 > dp2 ? t1 : t2, dir = dp1 > dp2 ? -1 : 1;
-        sd.update(t1, t1, dp1 > dp2 ? -1 : 1);
-        sd.update(t2, t2, dp1 > dp2 ? 1 : -1);
-        if (dp > sd.query(index(t - 2 * dir))) sd.update(index(t - dir), index(t - dir), -1);
+        fw.update(t1, t1 + 1, dir);
+        fw.update(t2, t2 + 1, -dir);
+        if (dp > fw.pref_sum(index(t - 2 * dir))) fw.update(index(t - dir), index(t - dir) + 1, -1);
 
         int l = 0, r = n, mid;
         while (l + 1 < r) {
             mid = l + (r - l) / 2;
 
-            if (sd.query(index(t + dir * mid)) > dp + mid) l = mid;
+            if (fw.pref_sum(index(t + dir * mid)) > dp + mid) l = mid;
             else r = mid;
         }
 
         if (l) {
             auto update = [&](int l, int r) {
-                if (l <= r) sd.update(l, r, -1);
+                if (l <= r) fw.update(l, r + 1, -1);
                 else {
-                    sd.update(0, r, -1);
-                    sd.update(l, n - 1, -1);
+                    fw.update(1, r + 1, -1);
+                    fw.update(l, n + 1, -1);
                 }
             };
 
@@ -75,5 +76,5 @@ int main() {
             else update(index(t - l), index(t - 1));
         }
     }
-    for (int i = 0; i < n; i++) cout << sd.query(i) << "\n";
+    for (int i = 1; i <= n; i++) cout << fw.pref_sum(i) << "\n";
 }
