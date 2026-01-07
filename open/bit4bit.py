@@ -8,12 +8,12 @@ class PersistentSegmentTree:
         self.children = [(0, 0)]
         self.size = [1]
 
-    def modify(self, i, v, pos):
-        self.roots.append(self.__modify(self.roots[i], v, pos, 1, self.size[i] + 1))
+    def point_update(self, i, v, pos):
+        self.roots.append(self.__point_update(self.roots[i], v, pos, 1, self.size[i] + 1))
         self.size.append(self.size[i])
         return len(self.roots) - 1
 
-    def __modify(self, i, v, pos, tl, tr):
+    def __point_update(self, i, v, pos, tl, tr):
         if tl + 1 == tr:
             self.children.append((0, 0))
             self.ST.append(v)
@@ -21,8 +21,8 @@ class PersistentSegmentTree:
 
         cl, cr = self.children[i]
         tm = tl + (tr - tl) // 2
-        if pos < tm: cl = self.__modify(cl, v, pos, tl, tm)
-        else: cr = self.__modify(cr, v, pos, tm, tr)
+        if pos < tm: cl = self.__point_update(cl, v, pos, tl, tm)
+        else: cr = self.__point_update(cr, v, pos, tm, tr)
 
         self.children.append((cl, cr))
         self.ST.append(self.ST[cl] + self.ST[cr])
@@ -66,7 +66,7 @@ for i in range(1, P + 1):
 
 pst = PersistentSegmentTree(max(songs) + 1)
 version = [0] * (P + 1)
-version[0] = pst.modify(0, m, 1)
+version[0] = pst.point_update(0, m, 1)
 
 for i in range(1, P + 1):
     if len(ops[i]) == 2:
@@ -74,7 +74,7 @@ for i in range(1, P + 1):
         version[i] = pst.meld(version[a], version[b])
     else:
         a, l, t = ops[i]
-        version[i] = pst.modify(version[a], t, l + 1)
+        version[i] = pst.point_update(version[a], t, l + 1)
 
 for _ in range(q):
     p, a, b = map(int, sys.stdin.readline().split())

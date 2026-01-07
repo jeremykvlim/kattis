@@ -28,12 +28,12 @@ struct PersistentSegmentTree {
 
     PersistentSegmentTree(int n) : n(n), roots{0}, ST(1), children{{0, 0}} {}
 
-    int modify(int i, const int &v, const int &pos) {
-        roots.emplace_back(modify(roots[i], v, pos, 1, n));
+    int point_update(int i, const int &v, const int &pos) {
+        roots.emplace_back(point_update(roots[i], v, pos, 1, n));
         return roots.size() - 1;
     }
 
-    int modify(int i, const int &v, const int &pos, int tl, int tr) {
+    int point_update(int i, const int &v, const int &pos, int tl, int tr) {
         if (tl + 1 == tr) {
             children.emplace_back(0, 0);
             ST.emplace_back(ST[i] + v);
@@ -42,8 +42,8 @@ struct PersistentSegmentTree {
 
         auto [cl, cr] = children[i];
         int tm = tl + (tr - tl) / 2;
-        if (pos < tm) cl = modify(cl, v, pos, tl, tm);
-        else cr = modify(cr, v, pos, tm, tr);
+        if (pos < tm) cl = point_update(cl, v, pos, tl, tm);
+        else cr = point_update(cr, v, pos, tm, tr);
 
         children.emplace_back(cl, cr);
         ST.emplace_back(ST[cl] + ST[cr]);
@@ -179,12 +179,12 @@ int main() {
         vector<int> version(m + 1, 0);
         for (int i = 1; i <= m; i++) {
             auto [xi, yi, wi] = edges[i];
-            version[i] = pst.modify(version[i - 1], wi, m - i + 1);
+            version[i] = pst.point_update(version[i - 1], wi, m - i + 1);
 
             int j = wdsu.unite(xi, yi, {wi, i});
             if (j != -1) {
                 auto [xj, yj, wj] = edges[j];
-                version[i] = pst.modify(version[i], -wj, m - j + 1);
+                version[i] = pst.point_update(version[i], -wj, m - j + 1);
             }
         }
 

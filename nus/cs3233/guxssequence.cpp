@@ -28,12 +28,12 @@ struct PersistentSegmentTree {
 
     PersistentSegmentTree(int n) : n(n), roots{0}, ST(1), children{{0, 0}} {}
 
-    int modify(int i, const int &v, const int &pos) {
-        roots.emplace_back(modify(roots[i], v, pos, 1, n));
+    int point_update(int i, const int &v, const int &pos) {
+        roots.emplace_back(point_update(roots[i], v, pos, 1, n));
         return roots.size() - 1;
     }
 
-    int modify(int i, const int &v, const int &pos, int tl, int tr) {
+    int point_update(int i, const int &v, const int &pos, int tl, int tr) {
         if (tl + 1 == tr) {
             children.emplace_back(0, 0);
             ST.emplace_back(ST[i] + v);
@@ -42,8 +42,8 @@ struct PersistentSegmentTree {
 
         auto [cl, cr] = children[i];
         int tm = tl + (tr - tl) / 2;
-        if (pos < tm) cl = modify(cl, v, pos, tl, tm);
-        else cr = modify(cr, v, pos, tm, tr);
+        if (pos < tm) cl = point_update(cl, v, pos, tl, tm);
+        else cr = point_update(cr, v, pos, tm, tr);
 
         children.emplace_back(cl, cr);
         ST.emplace_back(ST[cl] + ST[cr]);
@@ -141,7 +141,7 @@ int main() {
             cin >> xraw >> lraw >> rraw;
 
             int x = xraw ^ last, l = lraw ^ last, r = rraw ^ last;
-            roots[x].emplace_back(pst.modify(pst.modify(roots[x].back(), 1, l), -1, r + 1));
+            roots[x].emplace_back(pst.point_update(pst.point_update(roots[x].back(), 1, l), -1, r + 1));
         }
     }
 }
