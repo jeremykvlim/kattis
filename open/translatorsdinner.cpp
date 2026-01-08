@@ -6,7 +6,7 @@ struct PersistentDisjointSets {
     deque<pair<int, int>> history;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
+        return sets[v] == v ? v : find(sets[v]);
     }
 
     bool unite(int u, int v) {
