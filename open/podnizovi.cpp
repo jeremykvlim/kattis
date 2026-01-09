@@ -8,7 +8,7 @@ struct WaveletMatrix {
     vector<vector<int>> pref;
     vector<pair<T, int>> order;
 
-    WaveletMatrix(int n, vector<T> a) : lg(__lg(*max_element(a.begin(), a.end())) + 1), order(n) {
+    WaveletMatrix(int n, vector<T> a) : lg(__lg(*max_element(a.begin(), a.end()) + 1) + 1), order(n) {
         mid.resize(lg);
         pref.assign(lg, vector<int>(n + 1, 0));
 
