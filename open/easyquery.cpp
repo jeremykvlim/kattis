@@ -3,25 +3,26 @@ using namespace std;
 
 struct PURQSegmentTree {
     struct Segment {
-        vector<int> s;
+        array<int, 3> vals;
 
-        auto size() {
-            return s.size();
-        }
+        Segment() : vals{0, 0, 0} {}
 
-        auto & operator=(const vector<int> &v) {
-            s = v;
+        auto & operator=(const int &v) {
+            vals = {v, v, v};
             return *this;
         }
 
-        auto & operator[](int i) {
-            return s[i];
+        auto & operator+=(const int &v) {
+            vals[0] |= v;
+            vals[1] |= v;
+            vals[2] |= v;
+            return *this;
         }
 
         auto & operator+=(const Segment &seg) {
-            if (s.empty()) s = seg.s;
-            else if (!seg.s.empty())
-                for (int i = 0; i < s.size(); i++) s[i] = min(s[i], seg.s[i]);
+            vals[0] |= seg.vals[0];
+            vals[1] |= seg.vals[1];
+            vals[2] |= seg.vals[2];
             return *this;
         }
 
@@ -32,13 +33,35 @@ struct PURQSegmentTree {
 
     int n;
     vector<Segment> ST;
+    vector<bool> visited;
+    stack<int> undo;
 
-    void pull(int p) {
-        ST[p] = ST[p << 1] + ST[p << 1 | 1];
+    void pull(int i) {
+        ST[i] = ST[i << 1] + ST[i << 1 | 1];
     }
 
-    void point_update(int i, const vector<int> &v) {
-        for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
+    void build() {
+        for (int i = n - 1; i; i--) pull(i);
+    }
+
+    void visit(int i) {
+        if (!visited[i]) {
+            visited[i] = true;
+            undo.emplace(i);
+        }
+    }
+
+    void apply(int i, const int &v, int k) {
+        visit(i);
+        ST[i].vals[k] |= v;
+    }
+
+    void point_update(int i, const int &v, int k) {
+        for (apply(i += n, v, k); i > 1; i >>= 1) {
+            int p = i >> 1;
+            visit(p);
+            pull(p);
+        }
     }
 
     Segment range_query(int l, int r) {
@@ -47,11 +70,26 @@ struct PURQSegmentTree {
             if (l & 1) sl = sl + ST[l++];
             if (r & 1) sr = ST[--r] + sr;
         }
-
         return sl + sr;
     }
 
-    PURQSegmentTree(int n) : n(n), ST(2 * n) {}
+    auto & operator[](int i) {
+        return ST[i];
+    }
+
+    PURQSegmentTree(int n, const vector<int> &a) : n(n), ST(2 * n), visited(2 * n, false) {
+        for (int i = 0; i < a.size(); i++) ST[i + n] = a[i];
+        build();
+    }
+
+    void reset() {
+        while (!undo.empty()) {
+            int i = undo.top();
+            ST[i] = Segment();
+            visited[i] = false;
+            undo.pop();
+        }
+    }
 };
 
 template <typename T>
@@ -150,67 +188,72 @@ int main() {
         cin >> n >> q;
 
         vector<int> a(n);
-        map<int, int> compress;
-        for (int &ai : a) {
-            cin >> ai;
+        for (int &ai : a) cin >> ai;
 
-            compress[ai];
-        }
+        auto deduped = a;
+        sort(deduped.begin(), deduped.end());
+        deduped.erase(unique(deduped.begin(), deduped.end()), deduped.end());
+        for (int i = 0; i < n; i++) a[i] = lower_bound(deduped.begin(), deduped.end(), a[i]) - deduped.begin();
 
-        int count = 0;
-        for (auto &[ai, i] : compress) i = count++;
-
-        vector<tuple<int, int, int, int>> queries(q);
-        vector<array<int, 3>> k_order_statistics(2 * q);
+        WaveletMatrix<int> wm(n, a);
+        vector<array<int, 3>> OR(q, {0, 0, 0});
+        vector<array<int, 6>> sweep;
         for (int i = 0; i < q; i++) {
             int l, r, u, v;
             cin >> l >> r >> u >> v;
+            u--;
+            v--;
 
-            queries[i] = {l - 1, r, u, v};
-            k_order_statistics[2 * i] = {l - 1, r, u};
-            k_order_statistics[2 * i + 1] = {l - 1, r, v};
-        }
-
-        WaveletMatrix wm(n, a);
-        vector<vector<int>> OR(q, vector<int>(3));
-        vector<vector<tuple<int, int, int, int>>> subranges(n);
-        for (int i = 0; i < q; i++) {
-            auto [l, r, u, v] = queries[i];
-
-            auto [val1, o1, len1, pos1] = wm.quantile(l, r, u - 1);
-            auto [val2, o2, len2, pos2] = wm.quantile(l, r, v - 1);
-
-            int freq1 = len1 - o1, freq2 = o2 + 1;
-            for (int j = 0; j < min({3, freq1, v - u + 1}); j++) OR[i][j] |= val1;
-            for (int j = 0; j < min({3, freq2, v - u + 1}); j++) OR[i][j] |= val2;
-
-            subranges[l].emplace_back(r, compress[val1] + 1, compress[val2], i);
-        }
-
-        vector<PURQSegmentTree> sts(3, PURQSegmentTree(n));
-        vector<vector<int>> appearances(compress.size());
-        for (int l = n - 1; ~l; l--) {
-            int i = compress[a[l]];
-            appearances[i].emplace_back(l);
-
-            for (int j = 0; j < 3 && j < appearances[i].size(); j++) {
-                vector<int> s(wm.lg, INT_MAX);
-                for (int k = 0; k < wm.lg; k++)
-                    if ((a[l] >> k) & 1) s[k] = appearances[i][appearances[i].size() - j - 1];
-
-                sts[j].point_update(i, s);
+            auto [val1, o1, len1, pos1] = wm.quantile(l - 1, r, u);
+            auto [val2, o2, len2, pos2] = wm.quantile(l - 1, r, v);
+            if (val1 == val2) {
+                for (int j = 0; j < min(3, v - u + 1); j++) OR[i][j] |= deduped[val1];
+                continue;
             }
+            for (int j = 0; j < min(3, len1 - o1); j++) OR[i][j] |= deduped[val1];
+            for (int j = 0; j < min(3, o2 + 1); j++) OR[i][j] |= deduped[val2];
+            if (val1 + 1 < val2) sweep.push_back({l - 1, r - 1, val1 + 1, val2 - 1, -(i + 1)});
+        }
 
-            for (auto [r, u, v, i] : subranges[l]) {
-                if (u >= v) continue;
-                for (int j = 0; j < 3; j++) {
-                    auto s = sts[j].range_query(u, v);
-                    for (int k = 0; k < s.size(); k++)
-                        if (s[k] < r) OR[i][j] |= 1 << k;
+        int m = deduped.size();
+        vector<int> prev0(m, -1), prev1(m, -1), prev2(m, -1);
+        for (int i = 0; i < n; i++) {
+            int ai = a[i];
+            prev2[ai] = prev1[ai];
+            prev1[ai] = prev0[ai];
+            prev0[ai] = i;
+
+            sweep.push_back({i, i, ai, deduped[ai], 0});
+            if (~prev1[ai]) sweep.push_back({prev1[ai], i, ai, deduped[ai], 1});
+            if (~prev2[ai]) sweep.push_back({prev2[ai], i, ai, deduped[ai], 2});
+        }
+        sort(sweep.begin(), sweep.end(), [&](const auto &a1, const auto &a2) { return a1[0] != a2[0] ? a1[0] > a2[0] : (a1[1] != a2[1] ? a1[1] < a2[1] : a1[4] > a2[4]); });
+        for (int i = 0; i < sweep.size(); i++) sweep[i][5] = i;
+
+        PURQSegmentTree st(m, vector<int>(m));
+        auto dnc = [&](auto &&self, int l, int r) -> void {
+            if (l + 1 == r) return;
+
+            int mid = l + (r - l) / 2;
+            self(self, l, mid);
+            self(self, mid, r);
+
+            stable_sort(sweep.begin() + l, sweep.begin() + r, [&](const auto &a1, const auto &a2) { return a1[1] < a2[1]; });
+            for (int i = l; i < r; i++) {
+                auto [_, __, u, v, k, pos] = sweep[i];
+                if (k >= 0 && pos < mid) st.point_update(u, v, k);
+                else if (k < 0 && pos >= mid) {
+                    auto vals = st.range_query(u, v + 1).vals;
+                    OR[-(k + 1)][0] |= vals[0];
+                    OR[-(k + 1)][1] |= vals[1];
+                    OR[-(k + 1)][2] |= vals[2];
                 }
             }
-        }
 
-        for (auto f : OR) cout << (long long) f[0] + f[1] + f[2] << "\n";
+            st.reset();
+        };
+        dnc(dnc, 0, sweep.size());
+
+        for (auto [ft1, ft2, ft3] : OR) cout << (long long) ft1 + ft2 + ft3 << "\n";
     }
 }
