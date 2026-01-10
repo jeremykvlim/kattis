@@ -40,10 +40,6 @@ struct PURQSegmentTree {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
     }
 
-    void build() {
-        for (int i = n - 1; i; i--) pull(i);
-    }
-
     void visit(int i) {
         if (!visited[i]) {
             visited[i] = true;
@@ -77,10 +73,7 @@ struct PURQSegmentTree {
         return ST[i];
     }
 
-    PURQSegmentTree(int n, const vector<int> &a) : n(n), ST(2 * n), visited(2 * n, false) {
-        for (int i = 0; i < a.size(); i++) ST[i + n] = a[i];
-        build();
-    }
+    PURQSegmentTree(int n) : n(n), ST(2 * n), visited(2 * n, false) {}
 
     void reset() {
         while (!undo.empty()) {
@@ -230,7 +223,7 @@ int main() {
         sort(sweep.begin(), sweep.end(), [&](const auto &a1, const auto &a2) { return a1[0] != a2[0] ? a1[0] > a2[0] : (a1[1] != a2[1] ? a1[1] < a2[1] : a1[4] > a2[4]); });
         for (int i = 0; i < sweep.size(); i++) sweep[i][5] = i;
 
-        PURQSegmentTree st(m, vector<int>(m));
+        PURQSegmentTree st(m);
         auto dnc = [&](auto &&self, int l, int r) -> void {
             if (l + 1 == r) return;
 
