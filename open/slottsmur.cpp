@@ -178,7 +178,7 @@ int main() {
             cin >> l >> r;
 
             auto [_, pos_l, pos_r, h_max, __, ___] = st.range_query(l - 1, r);
-            cout << st.pref_sum(l, pos_r) + st.suff_sum(pos_l, r) - 1LL * (pos_r - pos_l + 1) * h_max - fw.range_sum_query(l - 1, r) << "\n";
+            cout << st.pref_sum(l, pos_r) + st.suff_sum(pos_l, r) - (pos_r - pos_l + 1) * h_max - fw.range_sum_query(l - 1, r) << "\n";
         } else {
             int i, w;
             cin >> i >> w;
