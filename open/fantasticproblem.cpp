@@ -155,8 +155,8 @@ int main() {
     for (int i = 1; i <= n; i++)
         for (int pf : factorize(v[i])) indices[pf].emplace(i);
 
-    auto update = [&](int ml, int mr, int d) {
-        int l = max(mr - k, 0), r = min(ml, n - k + 1);
+    auto update = [&](int sl, int sr, int d) {
+        int l = max(sr - k, 0), r = min(sl, n - k + 1);
         if (l < r) st.range_update(l, r, d);
     };
 

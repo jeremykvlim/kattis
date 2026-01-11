@@ -12,12 +12,12 @@ struct PersistentSegmentTree {
             return *this;
         }
 
-        friend auto operator+(Monoid sl, const Monoid &sr) {
-            return sl += sr;
+        friend auto operator+(Monoid ml, const Monoid &mr) {
+            return ml += mr;
         }
 
-        friend auto operator+(const Monoid &s, const int &v) {
-            return Monoid(s.sum + v);
+        friend auto operator+(const Monoid &monoid, const int &v) {
+            return Monoid(monoid.sum + v);
         }
     };
 

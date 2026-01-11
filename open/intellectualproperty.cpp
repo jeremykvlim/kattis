@@ -183,7 +183,7 @@ int main() {
         cout << "CASE " << n << "\n";
         for (int i = 0; i < segments.size() && i < k; i++) {
             auto [l, p] = segments[i];
-            cout << "INFRINGING Monoid " << i + 1 << " LENGTH " << l << " POSITION " << p << "\n" << jcn.substr(p, l) << "\n";
+            cout << "INFRINGING SEGMENT " << i + 1 << " LENGTH " << l << " POSITION " << p << "\n" << jcn.substr(p, l) << "\n";
         }
     }
 }

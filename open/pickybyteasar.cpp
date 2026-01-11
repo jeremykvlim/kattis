@@ -19,8 +19,8 @@ struct RURQSegmentTree {
             return *this;
         }
 
-        friend auto operator+(Monoid sl, const Monoid &sr) {
-            return sl += sr;
+        friend auto operator+(Monoid ml, const Monoid &mr) {
+            return ml += mr;
         }
     };
 
