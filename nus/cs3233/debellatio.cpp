@@ -12,8 +12,8 @@ struct PersistentDisjointSets {
     bool unite(int u, int v) {
         int u_set = find(u), v_set = find(v);
         if (u_set != v_set) {
+            history.emplace_back(v_set, sets[v_set]);
             sets[v_set] = u_set;
-            history.emplace_back(v_set, v_set);
             return true;
         }
         return false;
@@ -118,7 +118,7 @@ pair<int, vector<int>> gabow(int n, vector<pair<int, int>> edges) {
 
             base_x = pdsu.find(x), base_y = pdsu.find(y);
             for (int base : {base_x, base_y})
-                for (; base != lca; base = pdsu.sets[link[base].first]) {
+                for (; base != lca; base = pdsu.find(link[base].first)) {
                     int z = match[base];
                     make_outer(x, y, z, p_curr - potential[z]);
 
