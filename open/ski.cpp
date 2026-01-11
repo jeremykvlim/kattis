@@ -34,32 +34,32 @@ struct FenwickTree {
 };
 
 struct PURQSegmentTree {
-    struct Segment {
+    struct Monoid {
         long long value, sum, pref, suff;
 
-        Segment() : value(0), sum(0), pref(0), suff(0) {}
+        Monoid() : value(0), sum(0), pref(0), suff(0) {}
 
         auto & operator=(const long long &v) {
             value = sum = pref = suff = v;
             return *this;
         }
 
-        auto & operator+=(const Segment &seg) {
-            Segment s;
-            s.value = max(max(value, seg.value), suff + seg.pref);
-            s.sum = sum + seg.sum;
-            s.pref = max(pref, sum + seg.pref);
-            s.suff = max(seg.suff, seg.sum + suff);
+        auto & operator+=(const Monoid &monoid) {
+            Monoid s;
+            s.value = max(max(value, monoid.value), suff + monoid.pref);
+            s.sum = sum + monoid.sum;
+            s.pref = max(pref, sum + monoid.pref);
+            s.suff = max(monoid.suff, monoid.sum + suff);
             return s;
         }
 
-        friend auto operator+(Segment sl, const Segment &sr) {
-            return sl += sr;
+        friend auto operator+(Monoid ml, const Monoid &mr) {
+            return ml += mr;
         }
     };
 
     int n;
-    vector<Segment> ST;
+    vector<Monoid> ST;
 
     void pull(int i) {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
@@ -73,14 +73,14 @@ struct PURQSegmentTree {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
-    Segment range_query(int l, int r) {
-        Segment sl, sr;
+    Monoid range_query(int l, int r) {
+        Monoid ml, mr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) sl = sl + ST[l++];
-            if (r & 1) sr = ST[--r] + sr;
+            if (l & 1) ml = ml + ST[l++];
+            if (r & 1) mr = ST[--r] + mr;
         }
         
-        return sl + sr;
+        return ml + mr;
     }
 
     auto & operator[](int i) {

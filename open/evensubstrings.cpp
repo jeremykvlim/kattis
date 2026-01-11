@@ -2,11 +2,11 @@
 using namespace std;
 
 struct PURQSegmentTree {
-    struct Segment {
+    struct Monoid {
         array<int, 1 << 6> count;
         int mask;
 
-        Segment() : count{}, mask(0) {
+        Monoid() : count{}, mask(0) {
             count.fill(0);
             count[0] = 1;
         }
@@ -17,20 +17,20 @@ struct PURQSegmentTree {
             return *this;
         }
 
-        auto & operator+=(const Segment &seg) {
-            for (int m = 0; m < 64; m++) count[m] += seg.count[m ^ mask];
+        auto & operator+=(const Monoid &monoid) {
+            for (int m = 0; m < 64; m++) count[m] += monoid.count[m ^ mask];
             count[mask]--;
-            mask ^= seg.mask;
+            mask ^= monoid.mask;
             return *this;
         }
 
-        friend auto operator+(Segment sl, const Segment &sr) {
-            return sl += sr;
+        friend auto operator+(Monoid ml, const Monoid &mr) {
+            return ml += mr;
         }
     };
 
     int n;
-    vector<Segment> ST;
+    vector<Monoid> ST;
 
     void pull(int i) {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
@@ -44,14 +44,14 @@ struct PURQSegmentTree {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
-    Segment range_query(int l, int r) {
-        Segment sl, sr;
+    Monoid range_query(int l, int r) {
+        Monoid ml, mr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) sl = sl + ST[l++];
-            if (r & 1) sr = ST[--r] + sr;
+            if (l & 1) ml = ml + ST[l++];
+            if (r & 1) mr = ST[--r] + mr;
         }
 
-        return sl + sr;
+        return ml + mr;
     }
 
     auto & operator[](int i) {
@@ -81,9 +81,9 @@ int main() {
             int l, r;
             cin >> l >> r;
 
-            auto seg = st.range_query(l - 1, r);
+            auto monoid = st.range_query(l - 1, r);
             auto count = 0LL;
-            for (int mask = 0; mask < 1 << 6; mask++) count += ((long long) seg.count[mask] * (seg.count[mask] - 1)) / 2;
+            for (int mask = 0; mask < 1 << 6; mask++) count += ((long long) monoid.count[mask] * (monoid.count[mask] - 1)) / 2;
             cout << count << "\n";
         } else {
             int i;

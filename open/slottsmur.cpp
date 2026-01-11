@@ -25,11 +25,11 @@ struct FenwickTree {
 };
 
 struct PURQSegmentTree {
-    struct Segment {
+    struct Monoid {
         int len, pos_l, pos_r;
         long long h_max, pref_jump, suff_jump;
 
-        Segment() : len(0), pos_l(-1), pos_r(-1), h_max(-1), pref_jump(0), suff_jump(0) {}
+        Monoid() : len(0), pos_l(-1), pos_r(-1), h_max(-1), pref_jump(0), suff_jump(0) {}
 
         auto & operator=(const pair<int, int> &v) {
             len = 1;
@@ -38,26 +38,26 @@ struct PURQSegmentTree {
             return *this;
         }
 
-        auto & operator+=(const Segment &seg) {
-            if (!len) return *this = seg;
-            if (!seg.len) return *this;
+        auto & operator+=(const Monoid &monoid) {
+            if (!len) return *this = monoid;
+            if (!monoid.len) return *this;
 
-            len += seg.len;
-            if (h_max < seg.h_max) {
-                h_max = seg.h_max;
-                pos_l = seg.pos_l;
-                pos_r = seg.pos_r;
-            } else if (h_max == seg.h_max) pos_r = seg.pos_r;
+            len += monoid.len;
+            if (h_max < monoid.h_max) {
+                h_max = monoid.h_max;
+                pos_l = monoid.pos_l;
+                pos_r = monoid.pos_r;
+            } else if (h_max == monoid.h_max) pos_r = monoid.pos_r;
             return *this;
         }
 
-        friend auto operator+(Segment sl, const Segment &sr) {
-            return sl += sr;
+        friend auto operator+(Monoid ml, const Monoid &mr) {
+            return ml += mr;
         }
     };
 
     int n;
-    vector<Segment> ST;
+    vector<Monoid> ST;
 
     long long pref_eval(int i, long long h_bound) {
         if (h_bound >= ST[i].h_max) return h_bound * ST[i].len;
@@ -105,14 +105,14 @@ struct PURQSegmentTree {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
-    Segment range_query(int l, int r) {
-        Segment sl, sr;
+    Monoid range_query(int l, int r) {
+        Monoid ml, mr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) sl = sl + ST[l++];
-            if (r & 1) sr = ST[--r] + sr;
+            if (l & 1) ml = ml + ST[l++];
+            if (r & 1) mr = ST[--r] + mr;
         }
 
-        return sl + sr;
+        return ml + mr;
     }
 
     vector<int> walk(int l, int r) {

@@ -439,11 +439,11 @@ using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MO
 struct PURQSegmentTree {
     static inline vector<modint> p10;
 
-    struct Segment {
+    struct Monoid {
         modint sum, l, r;
         int p, sgn;
 
-        Segment() : sum(0), l(0), r(0), p(0), sgn(0) {}
+        Monoid() : sum(0), l(0), r(0), p(0), sgn(0) {}
 
         auto & operator=(const char &c) {
             sum = l = r = p = sgn = 0;
@@ -454,28 +454,28 @@ struct PURQSegmentTree {
             return *this;
         }
 
-        friend auto operator+(const Segment &sl, const Segment &sr) {
-            Segment seg;
-            if (!sl.sgn) {
-                seg = sr;
-                seg.p += sl.p;
-                seg.l = sr.l + p10[sr.p] * sl.l;
-            } else if (!sr.sgn) {
-                seg = sl;
-                seg.r = sr.l + p10[sr.p] * sl.r;
+        friend auto operator+(const Monoid &ml, const Monoid &mr) {
+            Monoid monoid;
+            if (!ml.sgn) {
+                monoid = mr;
+                monoid.p += ml.p;
+                monoid.l = mr.l + p10[mr.p] * ml.l;
+            } else if (!mr.sgn) {
+                monoid = ml;
+                monoid.r = mr.l + p10[mr.p] * ml.r;
             } else {
-                seg.l = sl.l;
-                seg.r = sr.r;
-                seg.p = sl.p;
-                seg.sgn = sr.sgn;
-                seg.sum = sl.sum + sr.sum + sl.sgn * (sr.l + p10[sr.p] * sl.r);
+                monoid.l = ml.l;
+                monoid.r = mr.r;
+                monoid.p = ml.p;
+                monoid.sgn = mr.sgn;
+                monoid.sum = ml.sum + mr.sum + ml.sgn * (mr.l + p10[mr.p] * ml.r);
             }
-            return seg;
+            return monoid;
         }
     };
 
     int n;
-    vector<Segment> ST;
+    vector<Monoid> ST;
 
     void pull(int i) {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
@@ -489,14 +489,14 @@ struct PURQSegmentTree {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
-    Segment range_query(int l, int r) {
-        Segment sl, sr;
+    Monoid range_query(int l, int r) {
+        Monoid ml, mr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) sl = sl + ST[l++];
-            if (r & 1) sr = ST[--r] + sr;
+            if (l & 1) ml = ml + ST[l++];
+            if (r & 1) mr = ST[--r] + mr;
         }
 
-        return sl + sr;
+        return ml + mr;
     }
 
     auto & operator[](int i) {
@@ -531,8 +531,8 @@ int main() {
             int l, r;
             cin >> l >> r;
 
-            auto seg = st.range_query(l - 1, r);
-            cout << seg.sum + seg.l + seg.sgn * seg.r << "\n";
+            auto monoid = st.range_query(l - 1, r);
+            cout << monoid.sum + monoid.l + monoid.sgn * monoid.r << "\n";
         } else {
             int i;
             char c;

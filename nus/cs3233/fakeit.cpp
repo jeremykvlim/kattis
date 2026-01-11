@@ -2,28 +2,28 @@
 using namespace std;
 
 struct PURQSegmentTree {
-    struct Segment {
+    struct Monoid {
         long long value;
 
-        Segment() : value(-1e18) {}
+        Monoid() : value(-1e18) {}
 
         auto & operator=(const long long &v) {
             value = v;
             return *this;
         }
 
-        auto & operator+=(const Segment &seg) {
-            value = max(value, seg.value);
+        auto & operator+=(const Monoid &monoid) {
+            value = max(value, monoid.value);
             return *this;
         }
 
-        friend auto operator+(Segment sl, const Segment &sr) {
-            return sl += sr;
+        friend auto operator+(Monoid ml, const Monoid &mr) {
+            return ml += mr;
         }
     };
 
     int n;
-    vector<Segment> ST;
+    vector<Monoid> ST;
 
     void pull(int i) {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
@@ -33,14 +33,14 @@ struct PURQSegmentTree {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
-    Segment range_query(int l, int r) {
-        Segment sl, sr;
+    Monoid range_query(int l, int r) {
+        Monoid ml, mr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) sl = sl + ST[l++];
-            if (r & 1) sr = ST[--r] + sr;
+            if (l & 1) ml = ml + ST[l++];
+            if (r & 1) mr = ST[--r] + mr;
         }
 
-        return sl + sr;
+        return ml + mr;
     }
 
     auto & operator[](int i) {

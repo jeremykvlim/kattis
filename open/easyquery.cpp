@@ -2,10 +2,10 @@
 using namespace std;
 
 struct PURQSegmentTree {
-    struct Segment {
+    struct Monoid {
         array<int, 3> vals;
 
-        Segment() : vals{0, 0, 0} {}
+        Monoid() : vals{0, 0, 0} {}
 
         auto & operator=(const int &v) {
             vals = {v, v, v};
@@ -19,20 +19,20 @@ struct PURQSegmentTree {
             return *this;
         }
 
-        auto & operator+=(const Segment &seg) {
-            vals[0] |= seg.vals[0];
-            vals[1] |= seg.vals[1];
-            vals[2] |= seg.vals[2];
+        auto & operator+=(const Monoid &monoid) {
+            vals[0] |= monoid.vals[0];
+            vals[1] |= monoid.vals[1];
+            vals[2] |= monoid.vals[2];
             return *this;
         }
 
-        friend auto operator+(Segment sl, const Segment &sr) {
-            return sl += sr;
+        friend auto operator+(Monoid ml, const Monoid &mr) {
+            return ml += mr;
         }
     };
 
     int n;
-    vector<Segment> ST;
+    vector<Monoid> ST;
     vector<bool> visited;
     stack<int> undo;
 
@@ -60,13 +60,13 @@ struct PURQSegmentTree {
         }
     }
 
-    Segment range_query(int l, int r) {
-        Segment sl, sr;
+    Monoid range_query(int l, int r) {
+        Monoid ml, mr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) sl = sl + ST[l++];
-            if (r & 1) sr = ST[--r] + sr;
+            if (l & 1) ml = ml + ST[l++];
+            if (r & 1) mr = ST[--r] + mr;
         }
-        return sl + sr;
+        return ml + mr;
     }
 
     auto & operator[](int i) {
@@ -78,7 +78,7 @@ struct PURQSegmentTree {
     void reset() {
         while (!undo.empty()) {
             int i = undo.top();
-            ST[i] = Segment();
+            ST[i] = Monoid();
             visited[i] = false;
             undo.pop();
         }

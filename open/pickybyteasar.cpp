@@ -4,28 +4,28 @@ using namespace std;
 struct RURQSegmentTree {
     static inline array<int, 5> base{0, 1, 2, 3, 4};
 
-    struct Segment {
+    struct Monoid {
         array<int, 5> count;
 
-        Segment() : count{} {}
+        Monoid() : count{} {}
 
         auto & operator=(const char &c) {
             count[c - 'a'] = 1;
             return *this;
         }
 
-        auto & operator+=(const Segment &seg) {
-            for (int c = 0; c < 5; c++) count[c] += seg.count[c];
+        auto & operator+=(const Monoid &monoid) {
+            for (int c = 0; c < 5; c++) count[c] += monoid.count[c];
             return *this;
         }
 
-        friend auto operator+(Segment sl, const Segment &sr) {
+        friend auto operator+(Monoid sl, const Monoid &sr) {
             return sl += sr;
         }
     };
 
     int n;
-    vector<Segment> ST;
+    vector<Monoid> ST;
     vector<array<int, 5>> lazy;
 
     void build() {
@@ -93,11 +93,11 @@ struct RURQSegmentTree {
         pull(i);
     }
 
-    Segment range_query(int l, int r) {
+    Monoid range_query(int l, int r) {
         return range_query(1, l, r, 0, n);
     }
 
-    Segment range_query(int i, int ql, int qr, int l, int r) {
+    Monoid range_query(int i, int ql, int qr, int l, int r) {
         if (qr <= l || r <= ql) return {};
         if (ql <= l && r <= qr) return ST[i];
 

@@ -437,19 +437,19 @@ constexpr unsigned int MOD = 11092019;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 struct RURQSegmentTree {
-    struct Segment {
+    struct Monoid {
         long long value;
         modint freq;
 
-        Segment(long long v = 0, modint f = 0) : value(v), freq(f) {}
+        Monoid(long long v = 0, modint f = 0) : value(v), freq(f) {}
 
         auto & operator=(const int &v) {
             freq = v;
             return *this;
         }
 
-        auto operator!=(const Segment &seg) {
-            return value != seg.value || freq != seg.freq;
+        auto operator!=(const Monoid &monoid) {
+            return value != monoid.value || freq != monoid.freq;
         }
 
         auto & operator+=(const int &v) {
@@ -457,27 +457,27 @@ struct RURQSegmentTree {
             return *this;
         }
 
-        auto & operator+=(const Segment &seg) {
-            if (value > seg.value) return *this;
-            else if (value < seg.value) return *this = seg;
-            else freq += seg.freq;
+        auto & operator+=(const Monoid &monoid) {
+            if (value > monoid.value) return *this;
+            else if (value < monoid.value) return *this = monoid;
+            else freq += monoid.freq;
 
             return *this;
         }
 
-        friend auto operator+(Segment sl, const Segment &sr) {
-            return sl += sr;
+        friend auto operator+(Monoid ml, const Monoid &mr) {
+            return ml += mr;
         }
     };
 
     int n, h;
-    vector<Segment> ST, lazy;
+    vector<Monoid> ST, lazy;
 
     void pull(int i) {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
     }
 
-    void apply(int i, const Segment &v) {
+    void apply(int i, const Monoid &v) {
         ST[i] += v;
         if (i < n) lazy[i] += v;
     }
@@ -485,15 +485,15 @@ struct RURQSegmentTree {
     void push(int i) {
         for (int k = h; k; k--) {
             int j = i >> k;
-            if (lazy[j] != Segment()) {
+            if (lazy[j] != Monoid()) {
                 apply(j << 1, lazy[j]);
                 apply(j << 1 | 1, lazy[j]);
-                lazy[j] = Segment();
+                lazy[j] = Monoid();
             }
         }
     }
 
-    void range_update(int l, int r, const Segment &v) {
+    void range_update(int l, int r, const Monoid &v) {
         push(l + n);
         push(r + n - 1);
         bool cl = false, cr = false;
@@ -516,16 +516,16 @@ struct RURQSegmentTree {
         }
     }
 
-    Segment range_query(int l, int r) {
+    Monoid range_query(int l, int r) {
         push(l + n);
         push(r + n - 1);
-        Segment sl, sr;
+        Monoid ml, mr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) sl = sl + ST[l++];
-            if (r & 1) sr = ST[--r] + sr;
+            if (l & 1) ml = ml + ST[l++];
+            if (r & 1) mr = ST[--r] + mr;
         }
 
-        return sl + sr;
+        return ml + mr;
     }
 
     auto & operator[](int i) {

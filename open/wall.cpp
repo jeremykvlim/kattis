@@ -439,30 +439,29 @@ using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MO
 struct PURQSegmentTree {
     static inline vector<modint> p2;
 
-    struct Segment {
+    struct Monoid {
         int size;
         modint pref, suff, product;
 
-        Segment() : size(0), pref(0), suff(0), product(0) {}
+        Monoid() : size(0), pref(0), suff(0), product(0) {}
 
         auto & operator=(const int &v) {
             pref = suff = (product += v);
             return *this;
         }
 
-        friend auto operator+(const Segment &sl, const Segment &sr) {
-            Segment seg;
-
-            seg.size = sl.size + sr.size;
-            seg.pref = sl.pref * p2[sr.size] + sr.pref * sl.product;
-            seg.suff = sl.suff * sr.product + sr.suff * p2[sl.size];
-            seg.product = sl.product * sr.product;
-            return seg;
+        friend auto operator+(const Monoid &ml, const Monoid &mr) {
+            Monoid monoid;
+            monoid.size = ml.size + mr.size;
+            monoid.pref = ml.pref * p2[mr.size] + mr.pref * ml.product;
+            monoid.suff = ml.suff * mr.product + mr.suff * p2[ml.size];
+            monoid.product = ml.product * mr.product;
+            return monoid;
         }
     };
 
     int n;
-    vector<Segment> ST;
+    vector<Monoid> ST;
 
     void pull(int i) {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
@@ -480,14 +479,14 @@ struct PURQSegmentTree {
         return ST[i];
     }
 
-    Segment range_query(int l, int r) {
-        Segment sl, sr;
+    Monoid range_query(int l, int r) {
+        Monoid ml, mr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) sl = sl + ST[l++];
-            if (r & 1) sr = ST[--r] + sr;
+            if (l & 1) ml = ml + ST[l++];
+            if (r & 1) mr = ST[--r] + mr;
         }
 
-        return sl + sr;
+        return ml + mr;
     }
 
     PURQSegmentTree(int n, int m) : n(n), ST(2 * n) {

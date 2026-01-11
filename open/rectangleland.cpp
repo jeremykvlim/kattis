@@ -2,10 +2,10 @@
 using namespace std;
 
 struct RURQSegmentTree {
-    struct Segment {
+    struct Monoid {
         long long value, freq;
 
-        Segment() : value(0), freq(0) {}
+        Monoid() : value(0), freq(0) {}
 
         auto & operator=(const int &v) {
             freq = v;
@@ -17,21 +17,21 @@ struct RURQSegmentTree {
             return *this;
         }
 
-        auto & operator+=(const Segment &seg) {
-            if (value > seg.value) return *this;
-            else if (value < seg.value) return seg;
-            else freq += seg.freq;
+        auto & operator+=(const Monoid &monoid) {
+            if (value > monoid.value) return *this;
+            else if (value < monoid.value) return monoid;
+            else freq += monoid.freq;
 
             return *this;
         }
 
-        friend auto operator+(Segment sl, const Segment &sr) {
-            return sl += sr;
+        friend auto operator+(Monoid ml, const Monoid &mr) {
+            return ml += mr;
         }
     };
 
     int n, h;
-    vector<Segment> ST;
+    vector<Monoid> ST;
     vector<int> lazy;
 
     void pull(int i) {
@@ -81,16 +81,16 @@ struct RURQSegmentTree {
         }
     }
 
-    Segment range_query(int l, int r) {
+    Monoid range_query(int l, int r) {
         push(l + n);
         push(r + n - 1);
-        Segment sl, sr;
+        Monoid ml, mr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) sl = sl + ST[l++];
-            if (r & 1) sr = ST[--r] + sr;
+            if (l & 1) ml = ml + ST[l++];
+            if (r & 1) mr = ST[--r] + mr;
         }
 
-        return sl + sr;
+        return ml + mr;
     }
 
     auto & operator[](int i) {

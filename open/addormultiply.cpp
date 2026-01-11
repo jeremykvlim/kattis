@@ -437,12 +437,12 @@ constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 struct PURQSegmentTree {
-    struct Segment {
+    struct Monoid {
         array<modint, 2> total, pref, suff;
         array<bool, 2> mul;
         bool op, active;
 
-        Segment() : total{0, 0}, pref{0, 0}, suff{0, 0}, mul{true, true}, op(false), active(0) {}
+        Monoid() : total{0, 0}, pref{0, 0}, suff{0, 0}, mul{true, true}, op(false), active(0) {}
 
         auto & operator=(const pair<int, bool> &p) {
             int d = p.first;
@@ -463,34 +463,34 @@ struct PURQSegmentTree {
             return *this;
         }
 
-        auto & operator+=(const Segment &seg) {
-            if (!active) return *this = seg;
-            if (!seg.active) return *this;
+        auto & operator+=(const Monoid &monoid) {
+            if (!active) return *this = monoid;
+            if (!monoid.active) return *this;
 
-            active |= seg.active;
+            active |= monoid.active;
             for (int i = 0; i < 2; i++)
                 if (!(op ^ i)) {
-                    total[i] += seg.total[i];
-                    suff[i] = seg.suff[i];
+                    total[i] += monoid.total[i];
+                    suff[i] = monoid.suff[i];
                     mul[i] = false;
                 } else {
-                    total[i] += seg.total[i] - suff[i] - seg.pref[i] + suff[i] * seg.pref[i];
-                    if (mul[i]) pref[i] *= seg.pref[i];
-                    if (seg.mul[i]) suff[i] *= seg.suff[i];
-                    else suff[i] = seg.suff[i];
-                    mul[i] = mul[i] && seg.mul[i];
+                    total[i] += monoid.total[i] - suff[i] - monoid.pref[i] + suff[i] * monoid.pref[i];
+                    if (mul[i]) pref[i] *= monoid.pref[i];
+                    if (monoid.mul[i]) suff[i] *= monoid.suff[i];
+                    else suff[i] = monoid.suff[i];
+                    mul[i] = mul[i] && monoid.mul[i];
                 }
-            op = seg.op;
+            op = monoid.op;
             return *this;
         }
 
-        friend auto operator+(Segment sl, const Segment &sr) {
-            return sl += sr;
+        friend auto operator+(Monoid ml, const Monoid &mr) {
+            return ml += mr;
         }
     };
 
     int n;
-    vector<Segment> ST;
+    vector<Monoid> ST;
 
     void pull(int i) {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
@@ -504,14 +504,14 @@ struct PURQSegmentTree {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
-    Segment range_query(int l, int r) {
-        Segment sl, sr;
+    Monoid range_query(int l, int r) {
+        Monoid ml, mr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) sl = sl + ST[l++];
-            if (r & 1) sr = ST[--r] + sr;
+            if (l & 1) ml = ml + ST[l++];
+            if (r & 1) mr = ST[--r] + mr;
         }
 
-        return sl + sr;
+        return ml + mr;
     }
 
     auto & operator[](int i) {

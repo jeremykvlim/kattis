@@ -2,12 +2,12 @@
 using namespace std;
 
 struct PURQSegmentTree {
-    struct Segment {
+    struct Monoid {
         long long density;
         char c_l, c_r;
         int len_l, len_r, len;
 
-        Segment(bool empty = false) : density(0), c_l('#'), c_r('#'), len_l(1), len_r(1), len(empty ? 0 : 1) {}
+        Monoid(bool empty = false) : density(0), c_l('#'), c_r('#'), len_l(1), len_r(1), len(empty ? 0 : 1) {}
 
         auto & operator=(const char &c) {
             density = len_l = len_r = 1;
@@ -15,30 +15,30 @@ struct PURQSegmentTree {
             return *this;
         }
 
-        friend auto operator+(const Segment &sl, const Segment &sr) {
-            if (!sl.len) return sr;
-            if (!sr.len) return sl;
+        friend auto operator+(const Monoid &ml, const Monoid &mr) {
+            if (!ml.len) return mr;
+            if (!mr.len) return ml;
 
-            Segment seg;
-            seg.density = sl.density + sr.density;
-            seg.c_l = sl.c_l;
-            seg.c_r = sr.c_r;
-            seg.len_l = sl.len_l;
-            seg.len_r = sr.len_r;
-            seg.len = sl.len + sr.len;
+            Monoid monoid;
+            monoid.density = ml.density + mr.density;
+            monoid.c_l = ml.c_l;
+            monoid.c_r = mr.c_r;
+            monoid.len_l = ml.len_l;
+            monoid.len_r = mr.len_r;
+            monoid.len = ml.len + mr.len;
 
-            if (sl.len_l == sl.len && sl.c_l == sr.c_l) seg.len_l += sr.len_l;
-            if (sr.len_r == sr.len && sr.c_r == sl.c_r) seg.len_r += sl.len_r;
-            if (sl.c_r == sr.c_l) {
-                seg.density += (long long) (sl.len_r + sr.len_l) * (sl.len_r + sr.len_l);
-                seg.density -= (long long) sl.len_r * sl.len_r + (long long) sr.len_l * sr.len_l;
+            if (ml.len_l == ml.len && ml.c_l == mr.c_l) monoid.len_l += mr.len_l;
+            if (mr.len_r == mr.len && mr.c_r == ml.c_r) monoid.len_r += ml.len_r;
+            if (ml.c_r == mr.c_l) {
+                monoid.density += (long long) (ml.len_r + mr.len_l) * (ml.len_r + mr.len_l);
+                monoid.density -= (long long) ml.len_r * ml.len_r + (long long) mr.len_l * mr.len_l;
             }
-            return seg;
+            return monoid;
         }
     };
 
     int n;
-    vector<Segment> ST;
+    vector<Monoid> ST;
 
     void pull(int i) {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
@@ -52,14 +52,14 @@ struct PURQSegmentTree {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
-    Segment range_query(int l, int r) {
-        Segment sl, sr;
+    Monoid range_query(int l, int r) {
+        Monoid ml, mr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) sl = sl + ST[l++];
-            if (r & 1) sr = ST[--r] + sr;
+            if (l & 1) ml = ml + ST[l++];
+            if (r & 1) mr = ST[--r] + mr;
         }
 
-        return sl + sr;
+        return ml + mr;
     }
 
     auto & operator[](int i) {

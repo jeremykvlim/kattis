@@ -2,32 +2,32 @@
 using namespace std;
 
 struct PURQSegmentTree {
-    struct Segment {
+    struct Monoid {
         int min1, min2, max1, max2;
 
-        Segment() : min1(INT_MAX), min2(INT_MAX), max1(INT_MIN), max2(INT_MIN) {}
+        Monoid() : min1(INT_MAX), min2(INT_MAX), max1(INT_MIN), max2(INT_MIN) {}
 
         auto & operator=(const int &v) {
             min1 = max1 = v;
             return *this;
         }
 
-        auto & operator+=(const Segment &seg) {
-            min2 = min({max(min1, seg.min1), min2, seg.min2});
-            min1 = min(min1, seg.min1);
-            max2 = max({min(max1, seg.max1), max2, seg.max2});
-            max1 = max(max1, seg.max1);
+        auto & operator+=(const Monoid &monoid) {
+            min2 = min({max(min1, monoid.min1), min2, monoid.min2});
+            min1 = min(min1, monoid.min1);
+            max2 = max({min(max1, monoid.max1), max2, monoid.max2});
+            max1 = max(max1, monoid.max1);
 
             return *this;
         }
 
-        friend auto operator+(Segment sl, const Segment &sr) {
-            return sl += sr;
+        friend auto operator+(Monoid ml, const Monoid &mr) {
+            return ml += mr;
         }
     };
 
     int n;
-    vector<Segment> ST;
+    vector<Monoid> ST;
 
     void pull(int i) {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
@@ -41,14 +41,14 @@ struct PURQSegmentTree {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
-    Segment range_query(int l, int r) {
-        Segment sl, sr;
+    Monoid range_query(int l, int r) {
+        Monoid ml, mr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) sl = sl + ST[l++];
-            if (r & 1) sr = ST[--r] + sr;
+            if (l & 1) ml = ml + ST[l++];
+            if (r & 1) mr = ST[--r] + mr;
         }
 
-        return sl + sr;
+        return ml + mr;
     }
 
     auto & operator[](int i) {

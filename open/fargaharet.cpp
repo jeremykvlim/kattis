@@ -45,13 +45,13 @@ struct PURQSegmentTree {
     static inline vector<int> a;
     static inline int size;
 
-    struct Segment {
+    struct Monoid {
         Matrix<unsigned long long> M;
 
-        Segment() : M(I<unsigned long long>(11, 11)) {}
+        Monoid() : M(I<unsigned long long>(11, 11)) {}
 
         auto & operator=(int b) {
-            *this = Segment();
+            *this = Monoid();
             int b_l = b * size + 1, b_r = min((int) a.size() - 1, (b + 1) * size);
             vector<unsigned long long> sum(11, 1);
             sum[10] = 0;
@@ -69,18 +69,18 @@ struct PURQSegmentTree {
             return *this;
         }
 
-        auto & operator+=(const Segment &seg) {
-            M = seg.M * M;
+        auto & operator+=(const Monoid &monoid) {
+            M = monoid.M * M;
             return *this;
         }
 
-        friend auto operator+(Segment sl, const Segment &sr) {
-            return sl += sr;
+        friend auto operator+(Monoid ml, const Monoid &mr) {
+            return ml += mr;
         }
     };
 
     int n;
-    vector<Segment> ST;
+    vector<Monoid> ST;
 
     void pull(int i) {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
@@ -94,14 +94,14 @@ struct PURQSegmentTree {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
-    Segment range_query(int l, int r) {
-        Segment sl, sr;
+    Monoid range_query(int l, int r) {
+        Monoid ml, mr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) sl = sl + ST[l++];
-            if (r & 1) sr = ST[--r] + sr;
+            if (l & 1) ml = ml + ST[l++];
+            if (r & 1) mr = ST[--r] + mr;
         }
 
-        return sl + sr;
+        return ml + mr;
     }
 
     auto & operator[](int i) {

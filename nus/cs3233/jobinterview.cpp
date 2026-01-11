@@ -26,12 +26,12 @@ struct KineticTournament {
         return r;
     }
 
-    struct Segment {
+    struct Monoid {
         int index, t;
 
-        Segment(int i = -1, int t = 1e9) : index(i), t(t) {}
+        Monoid(int i = -1, int t = 1e9) : index(i), t(t) {}
 
-        friend Segment operator+(const Segment &sl, const Segment &sr) {
+        friend Monoid operator+(const Monoid &sl, const Monoid &sr) {
             int l = sl.index, r = sr.index;
             if (eval(l) < eval(r)) swap(l, r);
             return {l, min({sl.t, sr.t, overtake(l, r)})};
@@ -39,7 +39,7 @@ struct KineticTournament {
     };
 
     int n;
-    vector<Segment> KT;
+    vector<Monoid> KT;
 
     KineticTournament(int n, const vector<long long> &a, int c) : n(n), KT(2 * n) {
         time = 0;

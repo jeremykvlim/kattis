@@ -2,28 +2,28 @@
 using namespace std;
 
 struct PersistentSegmentTree {
-    struct Segment {
+    struct Monoid {
         int sum;
 
-        Segment(int s = 0) : sum(s) {}
+        Monoid(int s = 0) : sum(s) {}
 
-        auto & operator+=(const Segment &seg) {
-            sum += seg.sum;
+        auto & operator+=(const Monoid &monoid) {
+            sum += monoid.sum;
             return *this;
         }
 
-        friend auto operator+(Segment sl, const Segment &sr) {
+        friend auto operator+(Monoid sl, const Monoid &sr) {
             return sl += sr;
         }
 
-        friend auto operator+(const Segment &s, const int &v) {
-            return Segment(s.sum + v);
+        friend auto operator+(const Monoid &s, const int &v) {
+            return Monoid(s.sum + v);
         }
     };
 
     int n;
     vector<int> roots;
-    vector<Segment> ST;
+    vector<Monoid> ST;
     vector<pair<int, int>> children;
 
     PersistentSegmentTree(int n) : n(n), roots{0}, ST(1), children{{0, 0}} {}
@@ -50,11 +50,11 @@ struct PersistentSegmentTree {
         return ST.size() - 1;
     }
 
-    Segment range_query(int i, int l, int r) {
+    Monoid range_query(int i, int l, int r) {
         return range_query(roots[i], l, r, 1, n);
     }
 
-    Segment range_query(int i, int l, int r, int tl, int tr) {
+    Monoid range_query(int i, int l, int r, int tl, int tr) {
         if (!i || r <= tl || tr <= l) return {};
         if (l <= tl && tr <= r) return ST[i];
 

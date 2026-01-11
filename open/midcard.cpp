@@ -581,32 +581,32 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
 }
 
 struct PURQSegmentTree {
-    struct Segment {
+    struct Monoid {
         vector<modint> poly;
 
-        Segment() : poly{1} {}
+        Monoid() : poly{1} {}
 
         auto & operator=(const int &v) {
             poly = {1, v};
             return *this;
         }
 
-        auto & operator+=(const Segment &seg) {
-            if (seg.poly.size() == 1) return *this;
-            if (poly.size() == 1) return *this = seg;
+        auto & operator+=(const Monoid &monoid) {
+            if (monoid.poly.size() == 1) return *this;
+            if (poly.size() == 1) return *this = monoid;
 
-            poly = convolve(poly, seg.poly);
+            poly = convolve(poly, monoid.poly);
             if (poly.size() > 101) poly.resize(101);
             return *this;
         }
 
-        friend auto operator+(Segment sl, const Segment &sr) {
-            return sl += sr;
+        friend auto operator+(Monoid ml, const Monoid &mr) {
+            return ml += mr;
         }
     };
 
     int n;
-    vector<Segment> ST;
+    vector<Monoid> ST;
 
     void pull(int i) {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
@@ -620,14 +620,14 @@ struct PURQSegmentTree {
         for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
     }
 
-    Segment range_query(int l, int r) {
-        Segment sl, sr;
+    Monoid range_query(int l, int r) {
+        Monoid ml, mr;
         for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) sl = sl + ST[l++];
-            if (r & 1) sr = ST[--r] + sr;
+            if (l & 1) ml = ml + ST[l++];
+            if (r & 1) mr = ST[--r] + mr;
         }
 
-        return sl + sr;
+        return ml + mr;
     }
 
     auto & operator[](int i) {

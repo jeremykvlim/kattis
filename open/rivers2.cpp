@@ -2,27 +2,27 @@
 using namespace std;
 
 struct SegmentTree {
-    struct Segment {
+    struct Monoid {
         array<long long, 7> sums;
 
-        Segment() : sums{} {}
+        Monoid() : sums{} {}
 
-        auto & operator+=(const Segment &seg) {
-            sums[0] += seg.sums[0];
-            sums[1] += seg.sums[1];
-            sums[2] += seg.sums[2];
-            sums[3] += seg.sums[3];
-            sums[6] += seg.sums[6];
+        auto & operator+=(const Monoid &monoid) {
+            sums[0] += monoid.sums[0];
+            sums[1] += monoid.sums[1];
+            sums[2] += monoid.sums[2];
+            sums[3] += monoid.sums[3];
+            sums[6] += monoid.sums[6];
             return *this;
         }
 
-        friend auto operator+(Segment sl, const Segment &sr) {
+        friend auto operator+(Monoid sl, const Monoid &sr) {
             return sl += sr;
         }
     };
 
     int n;
-    vector<Segment> ST;
+    vector<Monoid> ST;
     vector<array<long long, 4>> lazy;
 
     SegmentTree(int n) : n(n), ST(2 * n), lazy(2 * n, {0, 0, 0, 0}) {}
