@@ -45,12 +45,12 @@ struct PURQSegmentTree {
         }
 
         auto & operator+=(const Monoid &monoid) {
-            Monoid s;
-            s.value = max(max(value, monoid.value), suff + monoid.pref);
-            s.sum = sum + monoid.sum;
-            s.pref = max(pref, sum + monoid.pref);
-            s.suff = max(monoid.suff, monoid.sum + suff);
-            return s;
+            Monoid m;
+            m.value = max(max(value, monoid.value), suff + monoid.pref);
+            m.sum = sum + monoid.sum;
+            m.pref = max(pref, sum + monoid.pref);
+            m.suff = max(monoid.suff, monoid.sum + suff);
+            return m;
         }
 
         friend auto operator+(Monoid ml, const Monoid &mr) {

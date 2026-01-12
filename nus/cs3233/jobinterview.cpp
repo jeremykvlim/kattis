@@ -31,10 +31,10 @@ struct KineticTournament {
 
         Monoid(int i = -1, int t = 1e9) : index(i), t(t) {}
 
-        friend Monoid operator+(const Monoid &sl, const Monoid &sr) {
-            int l = sl.index, r = sr.index;
+        friend Monoid operator+(const Monoid &ml, const Monoid &mr) {
+            int l = ml.index, r = mr.index;
             if (eval(l) < eval(r)) swap(l, r);
-            return {l, min({sl.t, sr.t, overtake(l, r)})};
+            return {l, min({ml.t, mr.t, overtake(l, r)})};
         }
     };
 
