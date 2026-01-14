@@ -46,9 +46,9 @@ struct StaticTopTree {
     };
 
     struct Point {
-        long long light_sum, base;
+        long long sum, base;
 
-        Point(const long long light_sum = 0, const long long base = 0) : light_sum(light_sum), base(base) {}
+        Point(const long long sum = 0, const long long base = 0) : sum(sum), base(base) {}
     };
 
     int root, nodes;
