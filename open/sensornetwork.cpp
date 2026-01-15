@@ -50,8 +50,7 @@ struct WeightedDisjointSets {
         weights.erase(weights.find(w));
         while (sets[v] != v) {
             if (weight[v] == w) {
-                int u = v;
-                while (sets[u] != u) u = sets[u];
+                for (int u = v; u != sets[u]; u = sets[u]);
                 sets[v] = v;
                 weight[v] = INT_MAX;
                 return;
