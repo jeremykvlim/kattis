@@ -53,7 +53,7 @@ int main() {
             auto next = curr;
             next[6] += d.first;
             next[7] += d.second;
-            if (!(0 <= next[6] && next[6] < board.size() && 0 <= next[7] && next[7] < board[0].size())) continue;
+            if (!(0 <= next[6] && next[6] < m && 0 <= next[7] && next[7] < n)) continue;
 
             auto rotate = [&]() {
                 switch (c) {
