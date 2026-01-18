@@ -156,11 +156,6 @@ T dot(const Point3D<T> &a, const Point3D<T> &b) {
 }
 
 template <typename T>
-double norm(const Point3D<T> &p) {
-    return sqrt(dot(p, p));
-}
-
-template <typename T>
 Point3D<T> cross(const Point3D<T> &a, const Point3D<T> &b) {
     return {a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x};
 }
@@ -168,6 +163,11 @@ Point3D<T> cross(const Point3D<T> &a, const Point3D<T> &b) {
 template <typename T>
 Point3D<T> cross(const Point3D<T> &a, const Point3D<T> &b, const Point3D<T> &c) {
     return cross(b - a, c - a);
+}
+
+template <typename T>
+double euclidean_dist(const Point3D<T> &a, const Point3D<T> &b = {0, 0, 0}) {
+    return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y) + (double) (a.z - b.z) * (a.z - b.z));
 }
 
 template <typename T>
@@ -181,7 +181,7 @@ template <typename T>
 bool coplanar(const Point3D<T> &a, const Point3D<T> &b, const Point3D<T> &c, const Point3D<T> &d) {
     if (collinear(a, b, c)) return true;
     auto p = cross(a, b, c);
-    return sgn(abs(dot(p, d - a)) / norm(p) - max({norm(b - a), norm(c - a), norm(d - a)})) <= 0;
+    return sgn(abs(dot(p, d - a)) / euclidean_dist(p) - max({euclidean_dist(a, b), euclidean_dist(a, c), euclidean_dist(a, d)})) <= 0;
 }
 
 template <typename T>
@@ -274,10 +274,10 @@ int main() {
     }
 
     auto v = normalize(sentries[1] - sentries[0]);
-    if (n & 1 && adjacent_find(sentries.begin() + 1, sentries.end(), [&](const auto &a, const auto &b) {
-        auto u = normalize(b - a);
-        return u != v && u != -v;
-    }) == sentries.end()) {
+    if ((n & 1) && adjacent_find(sentries.begin() + 1, sentries.end(), [&](const auto &a, const auto &b) {
+                        auto u = normalize(b - a);
+                        return u != v && u != -v;
+                    }) == sentries.end()) {
         vector<int> order(n);
         iota(order.begin(), order.end(), 0);
         sort(order.begin(), order.end(), [&](int i, int j) {
@@ -337,7 +337,7 @@ int main() {
             for (int j = 0; j < n; j++)
                 if (j != i) {
                     auto u = normalize(sentries[j] - sentries[i]);
-                    if (!indices.count(u) || norm(sentries[i] - sentries[indices[u]]) > norm(sentries[i] - sentries[j])) indices[u] = j;
+                    if (!indices.count(u) || euclidean_dist(sentries[i], sentries[indices[u]]) > euclidean_dist(sentries[i], sentries[j])) indices[u] = j;
                 }
 
             for (auto [u, j] : indices) cost[i][j] = dirs[i] != u;
