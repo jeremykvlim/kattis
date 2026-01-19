@@ -164,7 +164,7 @@ struct WeightBalancedTree {
         recycled.emplace(i);
     }
 
-    void modify(int l, int r, int a, int b) {
+    void range_update(int l, int r, int a, int b) {
         auto [rl, rr] = virtual_split(root, r);
         auto [ll, lr] = virtual_split(rl, l - 1);
         destroy(lr);
@@ -196,7 +196,7 @@ int main() {
             int l, r, a, b;
             cin >> l >> r >> a >> b;
 
-            wbt.modify(l, r, a, b);
+            wbt.range_update(l, r, a, b);
         } else if (q == 2) {
             int l, r;
             cin >> l >> r;
