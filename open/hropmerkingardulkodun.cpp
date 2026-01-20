@@ -106,7 +106,7 @@ template <typename T>
 T brent(T n) {
     if (!(n & 1)) return 2;
 
-    mt19937_64 rng(random_device{}());
+    static mt19937_64 rng(random_device{}());
     for (;;) {
         T x = 2, y = 2, g = 1, q = 1, xs = 1, c = rng() % (n - 1) + 1;
         for (int i = 1; g == 1; i <<= 1, y = x) {
