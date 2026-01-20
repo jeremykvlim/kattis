@@ -518,8 +518,6 @@ int main() {
 
         auto c = berlekamp_massey(a);
         a.resize(c.size());
-        long long term = kitamasa(c, a, n)();
-        if (term > MOD / 2) term -= MOD;
-        cout << term << "\n";
+        cout << kitamasa(c, a, n).recover() << "\n";
     }
 }
