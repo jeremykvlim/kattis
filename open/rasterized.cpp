@@ -171,10 +171,8 @@ vector<T> divisors(T n) {
 
 template <typename T>
 T totient(T n) {
-    auto pfs = factorize(n);
-
     auto phi = n;
-    for (auto [pf, pow] : pfs) phi -= phi / pf;
+    for (auto [pf, pow] : factorize(n)) phi -= phi / pf;
     return phi;
 }
 
