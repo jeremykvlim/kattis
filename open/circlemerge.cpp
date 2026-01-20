@@ -223,7 +223,8 @@ int main() {
     sort(candidates.rbegin(), candidates.rend());
     for (int d : candidates) {
         auto q = total / d;
-        for (int i = 0; i < upper_bound(pref.begin(), pref.end(), q - 1) - pref.begin(); i++) {
+        int ub = upper_bound(pref.begin(), pref.end(), q - 1) - pref.begin();
+        for (int i = 0; i < ub; i++) {
             auto p = pref[i];
             for (int _ = 0; _ < d - 1; _++) {
                 p += q;
