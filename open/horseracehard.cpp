@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -624,24 +624,24 @@ int main() {
             b_rank.emplace_back(r);
         }
 
-    int k = ceil(5 * sqrt(n * __lg(n))), blocks = (n + k - 1) / k;
+    int size = ceil(sqrt(n * log(n))) * 4, blocks = (n + size - 1) / size;
     vector<long long> c(n, 0);
-    for (int block = 0; block < blocks; block++) {
-        int l = block * k, r = min(n, (block + 1) * k) - 1;
+    for (int b = 0; b < blocks; b++) {
+        int b_l = b * size, b_r = min(n, (b + 1) * size) - 1;
 
         vector<int> A(n, 0), B(n, 0);
-        for (int i = upper_bound(a_rank.begin(), a_rank.end(), b_rank[r]) - a_rank.begin(); i < n; i++) A[a_pos[a_rank[i]]] = 1;
-        for (int i = l; i <= r; i++) B[(n - b_pos[b_rank[i]]) % n] = 1;
+        for (int i = upper_bound(a_rank.begin(), a_rank.end(), b_rank[b_r]) - a_rank.begin(); i < n; i++) A[a_pos[a_rank[i]]] = 1;
+        for (int i = b_l; i <= b_r; i++) B[(n - b_pos[b_rank[i]]) % n] = 1;
 
         auto C = convolve(A, B);
         for (int i = 0; i < m - 1; i++) c[i % n] += C[i];
 
-        int al = upper_bound(a_rank.begin(), a_rank.end(), !l ? -1 : b_rank[l - 1]) - a_rank.begin(),
-            ar = upper_bound(a_rank.begin(), a_rank.end(), b_rank[r]) - a_rank.begin();
+        int al = upper_bound(a_rank.begin(), a_rank.end(), !b_l ? -1 : b_rank[b_l - 1]) - a_rank.begin(),
+            ar = upper_bound(a_rank.begin(), a_rank.end(), b_rank[b_r]) - a_rank.begin();
         for (int ai = al; ai < ar; ai++) {
-            int ub = upper_bound(b_rank.begin() + l, b_rank.begin() + r + 1, a_rank[ai] - 1) - (b_rank.begin() + l);
+            int ub = upper_bound(b_rank.begin() + b_l, b_rank.begin() + b_r + 1, a_rank[ai] - 1) - (b_rank.begin() + b_l);
             for (int i = 0; i < ub; i++) {
-                int s = a_pos[a_rank[ai]] - b_pos[b_rank[i + l]];
+                int s = a_pos[a_rank[ai]] - b_pos[b_rank[i + b_l]];
                 if (s < 0) s += n;
                 c[s]++;
             }
