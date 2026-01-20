@@ -437,54 +437,6 @@ constexpr unsigned long long MOD1 = 1e9 + 7, MOD2 = MOD1 * MOD1;
 using modint1 = MontgomeryModInt<integral_constant<decay<decltype(MOD1)>::type, MOD1>>;
 using modint2 = MontgomeryModInt<integral_constant<decay<decltype(MOD2)>::type, MOD2>>;
 
-template <typename T>
-T brent(T n) {
-    if (!(n & 1)) return 2;
-
-    static mt19937_64 rng(random_device{}());
-    for (;;) {
-        T x = 2, y = 2, g = 1, q = 1, xs = 1, c = rng() % (n - 1) + 1;
-        for (int i = 1; g == 1; i <<= 1, y = x) {
-            for (int j = 1; j < i; j++) x = mul(x, x, n) + c;
-            for (int j = 0; j < i && g == 1; j += 128) {
-                xs = x;
-                for (int k = 0; k < min(128, i - j); k++) {
-                    x = mul(x, x, n) + c;
-                    q = mul(q, max(x, y) - min(x, y), n);
-                }
-                g = __gcd(q, n);
-            }
-        }
-
-        if (g == n) g = 1;
-        while (g == 1) {
-            xs = mul(xs, xs, n) + c;
-            g = __gcd(max(xs, y) - min(xs, y), n);
-        }
-        if (g != n) return isprime(g) ? g : brent(g);
-    }
-}
-
-template <typename T>
-vector<pair<T, int>> factorize(T n) {
-    unordered_map<T, int> pfs;
-
-    auto dfs = [&](auto &&self, T m) -> void {
-        if (m < 2) return;
-        if (isprime(m)) {
-            pfs[m]++;
-            return;
-        }
-
-        T pf = brent(m);
-        pfs[pf]++;
-        self(self, m / pf);
-    };
-    dfs(dfs, n);
-
-    return {pfs.begin(), pfs.end()};
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
