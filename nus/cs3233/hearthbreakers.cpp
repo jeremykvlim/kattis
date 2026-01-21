@@ -8,8 +8,8 @@ int main() {
     int n;
     cin >> n;
 
-    vector<int> S(n);
     auto sum = 0LL;
+    vector<int> S(n);
     for (int &si : S) {
         cin >> si;
 
@@ -18,9 +18,8 @@ int main() {
     sort(S.begin(), S.end());
 
     vector<int> distinct, freq;
-    for (int i = 0, j; i < n; i = j) {
-        j = i + 1;
-        while (j < n && S[j] == S[i]) j++;
+    for (int i = 0, j = 1; i < n; i = j++) {
+        for (; j < n && S[i] == S[j]; j++);
         distinct.emplace_back(S[i]);
         freq.emplace_back(j - i);
     }
