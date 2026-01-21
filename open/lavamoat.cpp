@@ -382,14 +382,14 @@ int main() {
                 if (state[e]) continue;
 
                 auto [u, v] = contours[e].first;
-                int ru = treap.root(u + 1), rv = treap.root(v + 1);
-                if (ru == rv) {
-                    cycle_edge[ru] = e;
+                int cu = treap.root(u + 1), cv = treap.root(v + 1);
+                if (cu == cv) {
+                    cycle_edge[cu] = e;
                     state[e] = 2;
                 } else {
                     auto [a, b] = contours[e].second;
                     treap.point_update(u + 1, {a, b});
-                    treap.meld(ru, rv);
+                    treap.meld(cu, cv);
                     state[e] = 1;
                 }
             }
