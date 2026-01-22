@@ -3,7 +3,7 @@ using namespace std;
 
 struct PersistentDisjointSets {
     vector<int> sets, size;
-    deque<array<int, 4>> history;
+    vector<array<int, 2>> history;
 
     int find(int v) {
         return sets[v] == v ? v : find(sets[v]);
@@ -13,7 +13,7 @@ struct PersistentDisjointSets {
         int u_set = find(u), v_set = find(v);
         if (u_set != v_set) {
             if (size[u_set] < size[v_set]) swap(u_set, v_set);
-            history.push_back({v_set, sets[v_set], u_set, size[v_set]});
+            history.push_back({v_set, size[v_set]});
             sets[v_set] = u_set;
             size[u_set] += size[v_set];
             return true;
@@ -25,11 +25,13 @@ struct PersistentDisjointSets {
         return history.size();
     }
 
-    void restore(int version = 0) {
+    void restore(int version) {
         while (record() > version) {
-            sets[history.back()[0]] = history.back()[1];
-            size[history.back()[2]] -= history.back()[3];
+            auto [v_set, s] = history.back();
             history.pop_back();
+            int u_set = sets[v_set];
+            sets[v_set] = v_set;
+            size[u_set] -= s;
         }
     }
 
@@ -49,41 +51,47 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<pair<int, int>> roads(m);
-    for (auto &[u, v] : roads) cin >> u >> v;
-    roads.insert(roads.begin(), {0, 0});
+    int lg = __lg(m), mask = (1 << (lg + 1)) - 1;
+    vector<array<int, 2>> roads(mask + 1, {0, 0});
+    for (int i = 1; i <= m; i++) cin >> roads[i][0] >> roads[i][1];
 
     int q;
     cin >> q;
 
-    vector<pair<int, int>> junctions(q);
+    vector<array<int, 2>> junctions(q);
     for (auto &[s, t] : junctions) cin >> s >> t;
 
+    vector<int> order(q), cost(q);
+    iota(order.begin(), order.end(), 0);
+
     PersistentDisjointSets pdsu(n + 1);
-    vector<int> all(q), cost(q);
-    iota(all.begin(), all.end(), 0);
-    auto dfs = [&](auto &&self, int m1, int lg, vector<int> &days) {
-        if (!~lg) {
-            for (int d : days) cost[d] = m1;
+    auto dfs = [&](auto &&self, int l, int r, int m1, int b) -> void {
+        if (l >= r) return;
+        if (!~b) {
+            for (int i = l; i < r; i++) cost[order[i]] = m1;
             return;
         }
 
-        int m2 = m1 ^ (1 << lg), version = pdsu.record();
-        for (int mask = m2; mask; --mask &= m2) {
-            auto [u, v] = roads[mask];
+        int m2 = m1 ^ (1 << b), version = pdsu.record();
+        for (int m3 = m2; m3; --m3 &= m2) {
+            auto [u, v] = roads[m3];
             pdsu.unite(u, v);
         }
 
-        vector<int> same, diff;
-        for (int d : days) {
-            auto [s, t] = junctions[d];
-            (pdsu.find(s) == pdsu.find(t) ? same : diff).emplace_back(d);
+        int i = l, j = r;
+        while (i < j) {
+            auto [s, t] = junctions[order[i]];
+            if (pdsu.find(s) == pdsu.find(t)) i++;
+            else {
+                j--;
+                swap(order[i], order[j]);
+            }
         }
         pdsu.restore(version);
 
-        self(self, m2, lg - 1, same);
-        self(self, m1, lg - 1, diff);
+        self(self, l, i, m2, b - 1);
+        self(self, i, r, m1, b - 1);
     };
-    dfs(dfs, (1 << (__lg(m) + 1)) - 1, __lg(m), all);
+    dfs(dfs, 0, q, mask, lg);
     for (int c : cost) cout << c << "\n";
 }

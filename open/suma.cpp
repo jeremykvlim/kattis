@@ -3,7 +3,7 @@ using namespace std;
 
 struct PersistentDisjointSets {
     vector<int> sets, size;
-    deque<array<int, 4>> history;
+    vector<array<int, 2>> history;
 
     int find(int v) {
         return sets[v] == v ? v : find(sets[v]);
@@ -13,7 +13,7 @@ struct PersistentDisjointSets {
         int u_set = find(u), v_set = find(v);
         if (u_set != v_set) {
             if (size[u_set] < size[v_set]) swap(u_set, v_set);
-            history.push_back({v_set, sets[v_set], u_set, size[v_set]});
+            history.push_back({v_set, size[v_set]});
             sets[v_set] = u_set;
             size[u_set] += size[v_set];
             return true;
@@ -25,11 +25,13 @@ struct PersistentDisjointSets {
         return history.size();
     }
 
-    void restore(int version = 0) {
+    void restore(int version) {
         while (record() > version) {
-            sets[history.back()[0]] = history.back()[1];
-            size[history.back()[2]] -= history.back()[3];
+            auto [v_set, s] = history.back();
             history.pop_back();
+            int u_set = sets[v_set];
+            sets[v_set] = v_set;
+            size[u_set] -= s;
         }
     }
 

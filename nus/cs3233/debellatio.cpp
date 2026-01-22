@@ -2,8 +2,7 @@
 using namespace std;
 
 struct PersistentDisjointSets {
-    vector<int> sets;
-    deque<pair<int, int>> history;
+    vector<int> sets, history;
 
     int find(int v) {
         return sets[v] == v ? v : find(sets[v]);
@@ -12,7 +11,7 @@ struct PersistentDisjointSets {
     bool unite(int u, int v) {
         int u_set = find(u), v_set = find(v);
         if (u_set != v_set) {
-            history.emplace_back(v_set, sets[v_set]);
+            history.emplace_back(v_set);
             sets[v_set] = u_set;
             return true;
         }
@@ -25,7 +24,7 @@ struct PersistentDisjointSets {
 
     void restore(int version = 0) {
         while (record() > version) {
-            sets[history.back().first] = history.back().second;
+            sets[history.back()] = history.back();
             history.pop_back();
         }
     }
