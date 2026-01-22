@@ -364,50 +364,56 @@ int main() {
     modint z;
     cin >> z;
 
-    for (int i = 0; i < n; i++) z /= w[i];
+    vector<modint> pref(n + 1, 1), suff(n + 1, 1);
+    for (int i = 0; i < n; i++) pref[i + 1] = pref[i] * w[2 * i];
+    for (int i = n - 1; ~i; i--) suff[i] = suff[i + 1] * w[2 * i];
 
-    if (z == 1) {
-        for (int i = 0; i < n; i++) cout << 1;
-        for (int i = 0; i < n; i++) cout << 0;
-        exit(0);
-    }
+    mt19937_64 rng(random_device{}());
+    int k = min(17, n), remaining = n - k;
+    vector<int> indices{0, remaining / 2, remaining};
+    for (int _ = 0; _ < 2 && remaining; _++) indices.emplace_back(rng() % (remaining + 1));
+    sort(indices.begin(), indices.end());
+    indices.erase(unique(indices.begin(), indices.end()), indices.end());
 
-    string s(2 * n, '0');
-    for (int d = 1; d <= n; d++) {
-        vector<int> l, r;
-        unordered_map<unsigned int, vector<int>> left, right;
+    int mask = 1 << k;
+    vector<int> count(mask, 0);
+    for (int m = 1; m < mask; m++) count[m] = count[m & (m - 1)] + 1;
 
-        auto dfs = [&](auto &&self, int i, int j, vector<int> &indices, unordered_map<unsigned int, vector<int>> &half, int depth = 0, modint z = 1) {
-            if (half.size() >= 5e4) return;
+    vector<modint> p1(mask), q1(mask), p2(mask);
+    for (int j : indices) {
+        vector<modint> w1(k), w2(k);
+        for (int i = 0; i < k; i++) {
+            w1[i] = w[2 * j + i];
+            w2[i] = w[2 * j + k + i];
+        }
 
-            if (depth == d) {
-                half[z()] = indices;
-                return;
+        p1[0] = q1[0] = p2[0] = 1;
+        for (auto m = 1U; m < mask; m++) {
+            int i = countr_zero(m);
+            p1[m] = p1[m & (m - 1)] * w1[i];
+            q1[m] = q1[m & (m - 1)] / w1[i];
+            p2[m] = p2[m & (m - 1)] * w2[i];
+        }
+
+        vector<vector<pair<modint, int>>> buckets(k + 1);
+        for (int m = 0; m < mask; m++) buckets[count[m]].emplace_back(p2[m], m);
+        for (auto &bucket: buckets) sort(bucket.begin(), bucket.end());
+
+        auto Z = z / (pref[j] * suff[j + k]);
+        for (int m = 0; m < mask; m++) {
+            auto it = lower_bound(buckets[k - count[m]].begin(), buckets[k - count[m]].end(), make_pair(Z * q1[m], -1));
+            if (it == buckets[k - count[m]].end() || it->first != Z * q1[m]) continue;
+
+            string s(2 * n, '0');
+            for (int i = 0; i < n; i++)
+                if (!(j <= i && i < j + k)) s[2 * i] = '1';
+
+            for (int i = 0; i < k; i++) {
+                if ((m >> i) & 1) s[2 * j + i] = '1';
+                if ((it->second >> i) & 1) s[2 * j + k + i] = '1';
             }
-
-            if (i > j) return;
-
-            self(self, i + 1, j, indices, half, depth, z);
-            indices.emplace_back(i);
-
-            self(self, i + 1, j, indices, half, depth + 1, z * w[i - 1]);
-            indices.pop_back();
-        };
-
-        dfs(dfs, 1, n, l, left);
-        dfs(dfs, n + 1, 2 * n, r, right);
-
-        for (auto [zl, indices] : left) {
-            auto zr = z * zl;
-
-            if (right.count(zr())) {
-                for (int j = 0; j < n; j++) s[j] = '1';
-                for (int k : indices) s[k - 1] = '0';
-                for (int k : right[zr()]) s[k - 1] = '1';
-
-                cout << s;
-                exit(0);
-            }
+            cout << s;
+            exit(0);
         }
     }
 }
