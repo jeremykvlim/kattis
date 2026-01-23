@@ -262,10 +262,10 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int T;
-    cin >> T;
+    int t;
+    cin >> t;
 
-    while (T--) {
+    while (t--) {
         int W, L, n, m;
         cin >> W >> L >> n >> m;
 
