@@ -89,15 +89,15 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int t;
-    cin >> t;
+    int q;
+    cin >> q;
 
-    while (t--) {
+    while (q--) {
         int n;
         cin >> n;
 
         vector<int> perm(n);
-        for (int i = 0; i < n; i++) cin >> perm[i];
+        for (int &pi : perm) cin >> pi;
 
         vector<pair<int, int>> suff_max(n);
         pair<int, int> p{0, -1};
@@ -153,4 +153,3 @@ int main() {
         next:;
     }
 }
-
