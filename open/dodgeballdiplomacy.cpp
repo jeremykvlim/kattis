@@ -95,7 +95,7 @@ struct WeightedDisjointSets {
         return w.second;
     }
 
-    int comp_size(int v) {
+    int component_size(int v) {
         return size[find(v)];
     }
 };
@@ -184,7 +184,7 @@ int main() {
             edges[e] = {u, v, p};
             state[e] = 1;
 
-            int su = wdsu.comp_size(u), sv = wdsu.comp_size(v), i = wdsu.unite(u, v, {p, e});
+            int su = wdsu.component_size(u), sv = wdsu.component_size(v), i = wdsu.unite(u, v, {p, e});
             pq.emplace(p, e);
             if (i == -1) {
                 update(su, -1);
@@ -210,9 +210,9 @@ int main() {
             if (s != 2) continue;
 
             auto [u, v, p] = edges[i];
-            int temp = wdsu.comp_size(u);
+            int temp = wdsu.component_size(u);
             wdsu.cut(u, v, p);
-            int su = wdsu.comp_size(u), sv = wdsu.comp_size(v);
+            int su = wdsu.component_size(u), sv = wdsu.component_size(v);
             update(temp, -1);
             update(su, 1);
             update(sv, 1);
