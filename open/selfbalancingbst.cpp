@@ -109,6 +109,16 @@ struct Treap {
         }
     }
 
+    int insert(const int &key, const int &val) {
+        int i = find(key);
+        if (i) return i;
+
+        i = node(key, val);
+        auto [l, r] = split(root, key);
+        root = meld(meld(l, i), r);
+        return i;
+    }
+
     int erase(const int &i) {
         if (!i) return 0;
         return root = erase(root, T[i].key);
@@ -161,16 +171,6 @@ struct Treap {
         if (!root) return 0;
         int i = root;
         for (; T[i].r; i = T[i].r);
-        return i;
-    }
-
-    int insert(const int &key, const int &val) {
-        int i = find(key);
-        if (i) return i;
-
-        i = node(key, val);
-        auto [l, r] = split(root, key);
-        root = meld(meld(l, i), r);
         return i;
     }
 
