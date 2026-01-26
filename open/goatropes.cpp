@@ -125,7 +125,7 @@ pair<T, vector<T>> linear_program_solution(const vector<vector<T>> &A, const vec
     int m = b.size(), n = c.size();
 
     vector<vector<T>> tableau(m + 2, vector<T>(n + 2));
-    vector<T> basic(m), non_basic(n + 1);
+    vector<int> basic(m), non_basic(n + 1);
     for (int i = 0; i < m; i++) {
         for (int j = 0; j < n; j++) tableau[i][j] = A[i][j];
         basic[i] = n + i;
