@@ -48,16 +48,16 @@ struct Treap {
         }
     }
 
-    pair<int, int> split_by_order(int i, int k) {
+    pair<int, int> implicit_split(int i, int k) {
         if (!i) return {0, 0};
 
         int sl = size(T[i].l);
         if (k <= sl) {
-            auto [l, r] = split_by_order(T[i].l, k);
+            auto [l, r] = implicit_split(T[i].l, k);
             T[i].l = r;
             return {l, pull(i)};
         } else {
-            auto [l, r] = split_by_order(T[i].r, k - sl - 1);
+            auto [l, r] = implicit_split(T[i].r, k - sl - 1);
             T[i].r = l;
             return {pull(i), r};
         }
@@ -117,7 +117,7 @@ int main() {
             root[i] = treap.meld_by_key(root[i], root[j]);
             s.emplace(j);
         } else {
-            auto [l, r] = treap.split_by_order(root[i], j);
+            auto [l, r] = treap.implicit_split(root[i], j);
             root[i] = l;
             root[s.top()] = r;
             s.pop();
