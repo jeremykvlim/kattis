@@ -2,6 +2,11 @@
 using namespace std;
 
 template <typename T>
+T norm(vector<T> &v, int n) {
+    return sqrt(inner_product(v.begin(), v.begin() + n, v.begin(), (T) 0));
+}
+
+template <typename T>
 struct Matrix {
     int r, c;
     vector<vector<T>> mat;
@@ -48,11 +53,6 @@ struct Matrix {
         return mat_T;
     }
 };
-
-template <typename T>
-T norm(vector<T> &v, int n) {
-    return sqrt(inner_product(v.begin(), v.begin() + n, v.begin(), (T) 0));
-}
 
 template <typename T>
 Matrix<T> I(int n) {
