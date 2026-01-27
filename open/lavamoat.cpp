@@ -246,7 +246,7 @@ struct ImplicitTreap {
     }
 
     int rank(int i) {
-        int r = size(T[i].family[0]) + 1;
+        int r = size(T[i].family[0]);
         while (T[i].family[2]) {
             int p = T[i].family[2];
             if (T[p].family[1] == i) r += size(T[p].family[0]) + 1;
@@ -365,7 +365,7 @@ int main() {
                     int f = cycle_edge[component];
                     cycle_edge[component] = -1;
 
-                    auto [tl, tr] = treap.split(component, treap.rank(u1 + 1));
+                    auto [tl, tr] = treap.split(component, treap.rank(u1 + 1) + 1);
                     if (tl) cycle_edge[tl] = -1;
                     if (tr) cycle_edge[tr] = -1;
                     treap.point_update(u1 + 1, {0, 0});
