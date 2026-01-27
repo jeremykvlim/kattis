@@ -87,7 +87,6 @@ struct ImplicitTreap {
 
     pair<int, int> split(int i, int k) {
         if (!i) return {0, 0};
-
         push(i);
         auto [l, r, p] = T[i].family;
         int sl = size(l);
