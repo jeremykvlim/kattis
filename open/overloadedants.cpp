@@ -1,205 +1,218 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct SplayTree {
-    struct SplayNode {
+struct ImplicitTreap {
+    static inline mt19937_64 rng{random_device{}()};
+
+    struct TreapNode {
         array<int, 3> family;
+        unsigned long long prio;
         int size, count;
         bool alive, kill;
         long long s, sl, sr, lazy_x, lazy_y;
 
-        SplayNode(int w = 0) : family{0, 0, 0}, size(1), count(1),
+        TreapNode(int w = 0) : family{0, 0, 0}, prio(rng()), size(1), count(1),
                                alive(true), kill(false), s(w), sl(w), sr(w), lazy_x(0), lazy_y(0) {}
     };
 
-    vector<SplayNode> ST;
+    vector<TreapNode> T;
+    int root;
 
-    SplayTree(int n, const vector<int> &w) : ST(n + 1) {
-        for (int i = 1; i <= n; i++) ST[i] = w[i - 1];
-        for (int i = 1; i < n; i++) {
-            ST[i].family[1] = i + 1;
-            ST[i + 1].family[2] = i;
-            pull(i);
+    ImplicitTreap(int n, const vector<int> &w) : T(n + 1), root(0) {
+        for (int i = 1; i <= n; i++) T[i] = w[i - 1];
+
+        deque<int> st{0};
+        for (int i = 1; i <= n + 1; i++) {
+            int j = 0;
+            for (; st.size() > 1 && (i == n + 1 || T[st.back()].prio >= T[i].prio); ) {
+                j = st.back();
+                st.pop_back();
+            }
+
+            if (i == n + 1) root = j;
+            else {
+                if (st.back()) {
+                    T[i].family[2] = st.back();
+                    T[st.back()].family[1] = i;
+                }
+                if (j) {
+                    T[j].family[2] = i;
+                    T[i].family[0] = j;
+                }
+                st.emplace_back(i);
+            }
         }
-        pull(n);
-    }
 
-    auto & operator[](int i) {
-        return ST[i];
+        auto dfs = [&](auto &&self, int v) -> void {
+            if (!v) return;
+            auto [l, r, p] = T[v].family;
+            self(self, l);
+            self(self, r);
+            pull(v);
+        };
+        dfs(dfs, root);
     }
 
     int size(int i) {
-        return !i ? 0 : ST[i].size;
+        return !i ? 0 : T[i].size;
     }
 
     int count(int i) {
-        return !i ? 0 : ST[i].count;
+        return !i ? 0 : T[i].count;
     }
 
     long long sl(int i) {
-        return !i ? LLONG_MAX : ST[i].sl;
+        return !i ? LLONG_MAX : T[i].sl;
     }
 
     long long sr(int i) {
-        return !i ? LLONG_MIN : ST[i].sr;
+        return !i ? LLONG_MIN : T[i].sr;
     }
 
     void pull(int i) {
         if (!i) return;
-        auto [l, r, p] = ST[i].family;
-        ST[i].size = size(l) + size(r) + 1;
-        ST[i].count = count(l) + count(r) + ST[i].alive;
-        ST[i].sl = min({sl(l), sl(r), ST[i].alive ? ST[i].s : LLONG_MAX});
-        ST[i].sr = max({sr(l), sr(r), ST[i].alive ? ST[i].s : LLONG_MIN});
+
+        auto [l, r, p] = T[i].family;
+        T[i].size = size(l) + size(r) + 1;
+        T[i].count = count(l) + count(r) + T[i].alive;
+        T[i].sl = min({sl(l), sl(r), T[i].alive ? T[i].s : LLONG_MAX});
+        T[i].sr = max({sr(l), sr(r), T[i].alive ? T[i].s : LLONG_MIN});
     }
 
     void kill(int i) {
         if (!i) return;
-        ST[i].alive = false;
-        ST[i].kill = true;
-        ST[i].count = ST[i].lazy_x = ST[i].lazy_y = 0;
-        ST[i].sl = LLONG_MAX;
-        ST[i].sr = LLONG_MIN;
+
+        T[i].alive = false;
+        T[i].kill = true;
+        T[i].count = T[i].lazy_x = T[i].lazy_y = 0;
+        T[i].sl = LLONG_MAX;
+        T[i].sr = LLONG_MIN;
     }
 
     void apply(int i, long long x, long long y) {
-        if (!i || !ST[i].count) return;
-        ST[i].lazy_x += x;
-        ST[i].lazy_y += y;
-        ST[i].sl -= x + y * (size(i) - 1);
-        ST[i].sr -= x;
+        if (!i || !T[i].count) return;
+
+        T[i].lazy_x += x;
+        T[i].lazy_y += y;
+        T[i].sl -= x + y * (size(i) - 1);
+        T[i].sr -= x;
     }
 
     void push(int i) {
         if (!i) return;
 
-        if (ST[i].kill) {
-            auto [l, r, p] = ST[i].family;
+        if (T[i].kill) {
+            auto [l, r, p] = T[i].family;
             if (l) kill(l);
             if (r) kill(r);
-            ST[i].kill = false;
+            T[i].kill = false;
         }
 
-        if (ST[i].lazy_x || ST[i].lazy_y) {
-            auto [l, r, p] = ST[i].family;
-            if (l) apply(l, ST[i].lazy_x, ST[i].lazy_y);
-            if (ST[i].alive) ST[i].s -= ST[i].lazy_x + ST[i].lazy_y * size(l);
-            if (r) apply(r, ST[i].lazy_x + ST[i].lazy_y * (size(l) + 1), ST[i].lazy_y);
-            ST[i].lazy_x = ST[i].lazy_y = 0;
+        if (T[i].lazy_x || T[i].lazy_y) {
+            auto [l, r, p] = T[i].family;
+            if (l) apply(l, T[i].lazy_x, T[i].lazy_y);
+            if (T[i].alive) T[i].s -= T[i].lazy_x + T[i].lazy_y * size(l);
+            if (r) apply(r, T[i].lazy_x + T[i].lazy_y * (size(l) + 1), T[i].lazy_y);
+            T[i].lazy_x = T[i].lazy_y = 0;
         }
     }
 
-    void splay(int i) {
-        auto root = [&](int i) {
-            auto [l, r, p] = ST[ST[i].family[2]].family;
-            return !i || l != i && r != i;
-        };
-
-        auto child = [&](int i, int parent) { return ST[parent].family[1] == i; };
-
-        auto rotate = [&](int i) {
-            int j = ST[i].family[2], k = ST[j].family[2];
-            if (!root(j)) ST[k].family[child(j, k)] = i;
-
-            int c = child(i, j), s = ST[j].family[c] = ST[i].family[c ^ 1];
-            if (s) ST[s].family[2] = j;
-
-            ST[i].family[c ^ 1] = j;
-            ST[i].family[2] = k;
-            ST[j].family[2] = i;
-            pull(j);
-        };
-
-        auto propagate = [&](auto &&self, int i) -> void {
-            if (!root(i)) self(self, ST[i].family[2]);
-            push(i);
-        };
-
-        propagate(propagate, i);
-        while (!root(i)) {
-            int j = ST[i].family[2], k = ST[j].family[2];
-            if (!root(j)) rotate(child(i, j) != child(j, k) ? i : j);
-            rotate(i);
-        }
+    void attach(int i, int c, int j) {
+        T[i].family[c] = j;
+        if (j) T[j].family[2] = i;
         pull(i);
     }
 
     pair<int, int> split(int i, int k) {
         if (!i) return {0, 0};
-        for (;;) {
-            push(i);
-            auto [l, r, p] = ST[i].family;
-            int sl = size(l);
-            if (k <= sl) {
-                if (!l) {
-                    splay(i);
-                    return {0, i};
-                }
-                i = l;
-            } else if (k == sl + 1) {
-                splay(i);
-                r = ST[i].family[1];
-                ST[i].family[1] = 0;
-                pull(i);
-                if (r) ST[r].family[2] = 0;
-                return {i, r};
-            } else {
-                k -= sl + 1;
-                if (!r) {
-                    splay(i);
-                    return {i, 0};
-                }
-                i = r;
-            }
-        }
-    }
 
-    int subtree_max(int i) {
-        while (ST[i].family[1]) {
-            push(i);
-            i = ST[i].family[1];
-        }
         push(i);
-        return i;
+        auto [l, r, p] = T[i].family;
+        int sl = size(l);
+        if (k <= sl) {
+            auto [ll, lr] = split(l, k);
+            attach(i, 0, lr);
+            if (ll) T[ll].family[2] = 0;
+            T[i].family[2] = 0;
+            return {ll, i};
+        } else {
+            auto [rl, rr] = split(r, k - sl - 1);
+            attach(i, 1, rl);
+            if (rr) T[rr].family[2] = 0;
+            T[i].family[2] = 0;
+            return {i, rr};
+        }
     }
 
     int meld(int i, int j) {
-        if (!i || !j) return i ^ j;
-        i = subtree_max(i);
-        splay(i);
-        ST[i].family[1] = j;
-        ST[j].family[2] = i;
-        pull(i);
-        return i;
+        if (!i || !j) {
+            int k = i ^ j;
+            if (k) T[k].family[2] = 0;
+            return k;
+        }
+
+        if (T[i].prio < T[j].prio) {
+            push(i);
+            attach(i, 1, meld(T[i].family[1], j));
+            T[i].family[2] = 0;
+            return i;
+        } else {
+            push(j);
+            attach(j, 0, meld(i, T[j].family[0]));
+            T[j].family[2] = 0;
+            return j;
+        }
+    }
+
+    void rotate(int l, int r, int x) {
+        if (!x) return;
+
+        auto [ll, lr] = split(root, l - 1);
+        auto [rl, rr] = split(lr, r - l + 1);
+        auto [ml, mr] = split(rl, x);
+        rl = meld(mr, ml);
+        root = meld(ll, meld(rl, rr));
+    }
+
+    long long carry(int l, int r, int x, int y) {
+        auto [ll, lr] = split(root, l - 1);
+        auto [rl, rr] = split(lr, r - l + 1);
+        auto c = query(rl, x, y);
+        root = meld(ll, meld(rl, rr));
+        return c;
     }
 
     long long query(int i, long long x, long long y) {
-        if (!i || !ST[i].count) return 0;
+        if (!i || !T[i].count) return 0;
 
-        if (ST[i].sl >= x + y * (size(i) - 1)) {
+        if (T[i].sl >= x + y * (size(i) - 1)) {
             apply(i, x, y);
             return 0;
         }
 
-        if (ST[i].sr < x) {
-            int c = ST[i].count;
+        if (T[i].sr < x) {
+            int c = T[i].count;
             kill(i);
             return c;
         }
 
         push(i);
-        auto [l, r, p] = ST[i].family;
+        auto [l, r, p] = T[i].family;
         auto c = query(l, x, y);
-        if (ST[i].alive) {
-            ST[i].s -= x + y * size(l);
-            if (ST[i].s < 0) {
-                ST[i].alive = false;
+        if (T[i].alive) {
+            T[i].s -= x + y * size(l);
+            if (T[i].s < 0) {
+                T[i].alive = false;
                 c++;
             }
         }
         c += query(r, x + y * (size(l) + 1), y);
         pull(i);
         return c;
+    }
+
+    auto & operator[](int i) {
+        return T[i];
     }
 };
 
@@ -213,8 +226,7 @@ int main() {
     vector<int> w(n);
     for (int &wi : w) cin >> wi;
 
-    SplayTree st(n, w);
-    int root = 1;
+    ImplicitTreap treap(n, w);
     while (m--) {
         int q, l, r, x;
         cin >> q >> l >> r >> x;
@@ -226,21 +238,11 @@ int main() {
 
             x %= len;
             if (x < 0) x += len;
-            if (!x) continue;
-
-            auto [ll, lr] = st.split(root, l - 1);
-            auto [rl, rr] = st.split(lr, len);
-            auto [ml, mr] = st.split(rl, x);
-            rl = st.meld(mr, ml);
-            root = st.meld(ll, st.meld(rl, rr));
+            treap.rotate(l, r, x);
         } else {
             int y;
             cin >> y;
-
-            auto [ll, lr] = st.split(root, l - 1);
-            auto [rl, rr] = st.split(lr, len);
-            cout << st.query(rl, x, y) << "\n";
-            root = st.meld(ll, st.meld(rl, rr));
+            cout << treap.carry(l, r, x, y) << "\n";
         }
     }
 }
