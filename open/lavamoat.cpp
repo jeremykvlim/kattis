@@ -245,10 +245,13 @@ struct ImplicitTreap {
         for (T[i] = v; i; i = T[i].family[2]) pull(i);
     }
 
-    int pos(int i) {
+    int rank(int i) {
         int r = size(T[i].family[0]) + 1;
-        for (; T[i].family[2]; i = T[i].family[2])
-            if (T[T[i].family[2]].family[1] == i) r += size(T[T[i].family[2]].family[0]) + 1;
+        while (T[i].family[2]) {
+            int p = T[i].family[2];
+            if (T[p].family[1] == i) r += size(T[p].family[0]) + 1;
+            i = p;
+        }
         return r;
     }
 
@@ -362,7 +365,7 @@ int main() {
                     int f = cycle_edge[component];
                     cycle_edge[component] = -1;
 
-                    auto [tl, tr] = treap.split(component, treap.pos(u1 + 1));
+                    auto [tl, tr] = treap.split(component, treap.rank(u1 + 1));
                     if (tl) cycle_edge[tl] = -1;
                     if (tr) cycle_edge[tr] = -1;
                     treap.point_update(u1 + 1, {0, 0});
