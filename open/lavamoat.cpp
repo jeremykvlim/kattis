@@ -194,11 +194,6 @@ struct ImplicitTreap {
         T[i].aggregate_B = aggregate_B(l) + aggregate_B(r) + base_B(i);
     }
 
-    int root(int i) {
-        for (; T[i].family[2]; i = T[i].family[2]);
-        return i;
-    }
-
     void attach(int i, int c, int j) {
         T[i].family[c] = j;
         if (j) T[j].family[2] = i;
@@ -241,8 +236,9 @@ struct ImplicitTreap {
         }
     }
 
-    void point_update(int i, const pair<double, double> &v) {
-        for (T[i] = v; i; i = T[i].family[2]) pull(i);
+    int node_root(int i) {
+        for (; T[i].family[2]; i = T[i].family[2]);
+        return i;
     }
 
     int rank(int i) {
@@ -253,6 +249,10 @@ struct ImplicitTreap {
             i = p;
         }
         return r;
+    }
+
+    void point_update(int i, const pair<double, double> &v) {
+        for (T[i] = v; i; i = T[i].family[2]) pull(i);
     }
 
     auto & operator[](int i) {
@@ -357,7 +357,7 @@ int main() {
                 if (!state[e]) continue;
 
                 auto [u1, v1] = contours[e].first;
-                int component = treap.root(u1 + 1);
+                int component = treap.node_root(u1 + 1);
                 if (state[e] == 2) {
                     if (cycle_edge[component] == e) cycle_edge[component] = -1;
                     state[e] = 0;
@@ -384,7 +384,7 @@ int main() {
                 if (state[e]) continue;
 
                 auto [u, v] = contours[e].first;
-                int cu = treap.root(u + 1), cv = treap.root(v + 1);
+                int cu = treap.node_root(u + 1), cv = treap.node_root(v + 1);
                 if (cu == cv) {
                     cycle_edge[cu] = e;
                     state[e] = 2;
@@ -399,9 +399,9 @@ int main() {
             int i = order[l];
             double west_len = (i == SW || i == NW) ? 0 : 1e20, east_len = (i == SE || i == NE) ? 0 : 1e20,
                    west_base = -1, east_base = -1;
-            int west = treap.root(west_border + 1), east = treap.root(east_border + 1);
+            int west = treap.node_root(west_border + 1), east = treap.node_root(east_border + 1);
             for (auto [e, d] : edge_lengths[i]) {
-                int component = treap.root(e + 1);
+                int component = treap.node_root(e + 1);
                 auto relax = [&](auto &length, auto &base, int border) {
                     if (e == border) {
                         length = min(length, d);
