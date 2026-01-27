@@ -36,7 +36,6 @@ struct Treap {
 
     pair<int, int> split(int i, const int &key) {
         if (!i) return {0, 0};
-
         if (T[i].key <= key) {
             auto [l, r] = split(T[i].r, key);
             T[i].r = l;
@@ -50,7 +49,6 @@ struct Treap {
 
     pair<int, int> implicit_split(int i, int k) {
         if (!i) return {0, 0};
-
         int sl = size(T[i].l);
         if (k <= sl) {
             auto [l, r] = implicit_split(T[i].l, k);
@@ -65,7 +63,6 @@ struct Treap {
 
     int meld_by_key(int i, int j) {
         if (!i || !j) return i ^ j;
-
         if (T[i].prio > T[j].prio) {
             auto [jl, jr] = split(j, T[i].key);
             T[i].l = meld_by_key(T[i].l, jl);

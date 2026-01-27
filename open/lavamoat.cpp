@@ -188,7 +188,6 @@ struct ImplicitTreap {
 
     void pull(int i) {
         if (!i) return;
-        
         auto [l, r, p] = T[i].family;
         T[i].size = size(l) + size(r) + 1;
         T[i].aggregate_A = aggregate_A(l) + aggregate_A(r) + base_A(i);
@@ -208,7 +207,6 @@ struct ImplicitTreap {
 
     pair<int, int> split(int i, int k) {
         if (!i) return {0, 0};
-        
         auto [l, r, p] = T[i].family;
         int sl = size(l);
         if (k <= sl) {
@@ -232,7 +230,6 @@ struct ImplicitTreap {
             if (k) T[k].family[2] = 0;
             return k;
         }
-
         if (T[i].prio < T[j].prio) {
             attach(i, 1, meld(T[i].family[1], j));
             T[i].family[2] = 0;

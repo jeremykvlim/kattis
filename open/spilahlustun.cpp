@@ -57,7 +57,6 @@ struct ImplicitTreap {
 
     void pull(int i) {
         if (!i) return;
-
         auto [l, r, p] = T[i].family;
         T[i].size = size(l) + size(r) + 1;
     }
@@ -113,7 +112,6 @@ struct ImplicitTreap {
             if (k) T[k].family[2] = 0;
             return k;
         }
-
         if (T[i].prio < T[j].prio) {
             push(i);
             attach(i, 1, meld(T[i].family[1], j));

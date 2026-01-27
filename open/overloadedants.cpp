@@ -71,7 +71,6 @@ struct ImplicitTreap {
 
     void pull(int i) {
         if (!i) return;
-
         auto [l, r, p] = T[i].family;
         T[i].size = size(l) + size(r) + 1;
         T[i].count = count(l) + count(r) + T[i].alive;
@@ -81,7 +80,6 @@ struct ImplicitTreap {
 
     void kill(int i) {
         if (!i) return;
-
         T[i].alive = false;
         T[i].kill = true;
         T[i].count = T[i].lazy_x = T[i].lazy_y = 0;
@@ -91,7 +89,6 @@ struct ImplicitTreap {
 
     void apply(int i, long long x, long long y) {
         if (!i || !T[i].count) return;
-
         T[i].lazy_x += x;
         T[i].lazy_y += y;
         T[i].sl -= x + y * (size(i) - 1);
@@ -100,7 +97,6 @@ struct ImplicitTreap {
 
     void push(int i) {
         if (!i) return;
-
         if (T[i].kill) {
             auto [l, r, p] = T[i].family;
             if (l) kill(l);
@@ -125,7 +121,6 @@ struct ImplicitTreap {
 
     pair<int, int> split(int i, int k) {
         if (!i) return {0, 0};
-
         push(i);
         auto [l, r, p] = T[i].family;
         int sl = size(l);
@@ -150,7 +145,6 @@ struct ImplicitTreap {
             if (k) T[k].family[2] = 0;
             return k;
         }
-
         if (T[i].prio < T[j].prio) {
             push(i);
             attach(i, 1, meld(T[i].family[1], j));
@@ -166,7 +160,6 @@ struct ImplicitTreap {
 
     void rotate(int l, int r, int x) {
         if (!x) return;
-
         auto [ll, lr] = split(root, l - 1);
         auto [rl, rr] = split(lr, r - l + 1);
         auto [ml, mr] = split(rl, x);

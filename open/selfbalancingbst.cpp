@@ -56,14 +56,12 @@ struct Treap {
 
     int pull(int i) {
         if (!i) return 0;
-
         T[i].size = size(T[i].l) + size(T[i].r) + 1;
         return i;
     }
 
     void apply(int i, const int &key, const int &val) {
         if (!i) return;
-
         T[i].key += key;
         T[i].val += val;
         lazy_key[i] += key;
@@ -72,7 +70,6 @@ struct Treap {
 
     void push(int i) {
         if (!i) return;
-
         if (lazy_key[i] || lazy_val[i]) {
             apply(T[i].l, lazy_key[i], lazy_val[i]);
             apply(T[i].r, lazy_key[i], lazy_val[i]);
@@ -82,7 +79,6 @@ struct Treap {
 
     pair<int, int> split(int i, const int &key) {
         if (!i) return {0, 0};
-
         push(i);
         if (T[i].key <= key) {
             auto [l, r] = split(T[i].r, key);
@@ -97,7 +93,6 @@ struct Treap {
 
     int meld(int i, int j) {
         if (!i || !j) return i ^ j;
-
         if (T[i].prio > T[j].prio) {
             push(i);
             T[i].r = meld(T[i].r, j);
@@ -205,7 +200,6 @@ struct Treap {
 
     int predecessor(const int &i) const {
         if (!i) return 0;
-
         int p = 0;
         for (int j = root; j;)
             if (T[j].key < T[i].key) {
@@ -217,7 +211,6 @@ struct Treap {
 
     int successor(const int &i) const {
         if (!i) return 0;
-
         int s = 0;
         for (int j = root; j;)
             if (T[j].key > T[i].key) {

@@ -36,7 +36,6 @@ struct Treap {
 
     int pull(int i) {
         if (!i) return 0;
-
         int l = T[i].l, r = T[i].r;
         T[i].size = size(l) + size(r) + 1;
         T[i].subtree_sum = subtree_sum(l) + subtree_sum(r) + T[i].key.first;
@@ -48,7 +47,6 @@ struct Treap {
 
     pair<int, int> split(int i, const pair<long long, int> &key) {
         if (!i) return {0, 0};
-
         if (T[i].key <= key) {
             auto [l, r] = split(T[i].r, key);
             T[i].r = l;
@@ -62,7 +60,6 @@ struct Treap {
 
     int meld(int i, int j) {
         if (!i || !j) return i ^ j;
-
         if (T[i].prio > T[j].prio) {
             T[i].r = meld(T[i].r, j);
             return pull(i);

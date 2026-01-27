@@ -31,7 +31,6 @@ struct Treap {
 
     void apply(int i, const long long &key, const long long &val) {
         if (!i) return;
-
         T[i].key.first += key;
         T[i].val += val;
         lazy_key[i] += key;
@@ -40,7 +39,6 @@ struct Treap {
 
     void push(int i) {
         if (!i) return;
-
         if (lazy_key[i] || lazy_val[i]) {
             apply(T[i].l, lazy_key[i], lazy_val[i]);
             apply(T[i].r, lazy_key[i], lazy_val[i]);
@@ -50,7 +48,6 @@ struct Treap {
 
     pair<int, int> split(int i, const pair<long long, int> &key) {
         if (!i) return {0, 0};
-
         push(i);
         if (T[i].key <= key) {
             auto [l, r] = split(T[i].r, key);
@@ -65,7 +62,6 @@ struct Treap {
 
     int meld(int i, int j) {
         if (!i || !j) return i ^ j;
-
         if (T[i].prio > T[j].prio) {
             push(i);
             T[i].r = meld(T[i].r, j);
@@ -79,7 +75,6 @@ struct Treap {
 
     int meld_by_key(int i, int j) {
         if (!i || !j) return i ^ j;
-
         if (T[i].prio > T[j].prio) {
             push(i);
             auto [l, r] = split(j, T[i].key);
