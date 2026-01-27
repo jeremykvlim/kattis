@@ -24,7 +24,7 @@ struct ImplicitTreap {
         deque<int> st{0};
         for (int i = 1; i <= n + 1; i++) {
             int j = 0;
-            for (; st.size() > 1 && (i == n + 1 || T[st.back()].prio >= T[i].prio); ) {
+            for (; st.size() > 1 && (i == n + 1 || T[st.back()].prio >= T[i].prio);) {
                 j = st.back();
                 st.pop_back();
             }
