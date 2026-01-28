@@ -96,7 +96,6 @@ struct ImplicitTreap {
     void pull(int i) {
         if (!i) return;
         auto [l, r, p] = T[i].family;
-
         T[i].len = len(l) + len(r) + base(i);
         T[i].count = count(l) + count(r) + base(i) - 1;
         T[i].c_l = l ? T[l].c_l : T[i].c;
