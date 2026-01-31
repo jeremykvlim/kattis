@@ -19,6 +19,19 @@ struct Treap {
 
     Treap() : root(0), nodes(1), T(1) {}
 
+    int node(const int &key, const int &val) {
+        int i;
+        if (!recycled.empty()) {
+            i = recycled.top();
+            recycled.pop();
+        } else {
+            T.emplace_back();
+            i = T.size() - 1;
+        }
+        T[i] = {key, val};
+        return i;
+    }
+
     int get(int i) const {
         return T[i].val;
     }
@@ -33,19 +46,6 @@ struct Treap {
 
     int size(int i) const {
         return !i ? 0 : T[i].size;
-    }
-
-    int node(const int &key, const int &val) {
-        int i;
-        if (!recycled.empty()) {
-            i = recycled.top();
-            recycled.pop();
-        } else {
-            T.emplace_back();
-            i = T.size() - 1;
-        }
-        T[i] = {key, val};
-        return i;
     }
 
     int pull(int i) {
