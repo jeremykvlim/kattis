@@ -204,6 +204,10 @@ struct ImplicitTreap {
     long long range_query(int l, int r) {
         return pref_sum(r) - pref_sum(l - 1);
     }
+
+    auto & operator[](int i) {
+        return T[i];
+    }
 };
 
 int main() {
