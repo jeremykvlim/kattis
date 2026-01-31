@@ -135,7 +135,7 @@ struct Treap {
         auto [l, r, p] = T[i].family;
         if (T[i].key == key) {
             int m = meld(l, r);
-            if (m) T[m].family[2] = 0;
+            T[m].family[2] = 0;
             T[i] = {};
             lazy_key[i] = lazy_val[i] = 0;
             recycled.emplace(i);
