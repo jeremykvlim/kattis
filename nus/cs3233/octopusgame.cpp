@@ -87,12 +87,14 @@ struct Treap {
         T[i] = key;
 
         auto [l, r] = split(root, key);
-        return root = meld(meld(l, i), r);
+        root = meld(meld(l, i), r);
+        T[root].family[2] = 0;
+        return i;
     }
 
     int erase(const pair<long long, int> &key) {
         root = erase(root, key);
-        if (root) T[root].family[2] = 0;
+        T[root].family[2] = 0;
         return root;
     }
 
@@ -122,7 +124,6 @@ int main() {
     int Q, k;
     cin >> Q >> k;
 
-    int root = 0;
     Treap treap(Q, k);
     vector<long long> skill(1e6 + 1);
     while (Q--) {
@@ -133,14 +134,14 @@ int main() {
             int i, s;
             cin >> i >> s;
 
-            root = treap.insert({skill[i] = s, i});
+            treap.insert({skill[i] = s, i});
         } else {
             int i;
             cin >> i;
 
-            root = treap.erase({skill[i], i});
+            treap.erase({skill[i], i});
             skill[i] = 0;
         }
-        cout << treap[root].subtree_sum - treap[root].sums[0] << "\n" << flush;
+        cout << treap[treap.root].subtree_sum - treap[treap.root].sums[0] << "\n" << flush;
     }
 }

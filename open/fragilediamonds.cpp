@@ -88,12 +88,13 @@ struct Treap {
 
         auto [l, r] = split(root, key);
         root = meld(meld(l, i), r);
+        T[root].family[2] = 0;
         return i;
     }
 
     int erase(const pair<long long, int> &key) {
         root = erase(root, key);
-        if (root) T[root].family[2] = 0;
+        T[root].family[2] = 0;
         return root;
     }
 
