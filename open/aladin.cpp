@@ -40,11 +40,11 @@ struct ImplicitTreap {
                                                                                                base(base), len(base), a(a), mod(mod), rem(rem), base_sum(base_sum), sum(base_sum) {}
     };
 
+    int root;
     vector<TreapNode> T;
     stack<int> recycled;
-    int root;
 
-    ImplicitTreap(int n) : T(1), root(0) {
+    ImplicitTreap(int n) : root(0), T(1) {
         root = node(n, 0, 1, 0, progression_sum(n, 0, 1, 0));
     }
 

@@ -15,10 +15,10 @@ struct ImplicitTreap {
                                alive(true), kill(false), s(w), sl(w), sr(w), lazy_x(0), lazy_y(0) {}
     };
 
-    vector<TreapNode> T;
     int root;
+    vector<TreapNode> T;
 
-    ImplicitTreap(int n, const vector<int> &w) : T(n + 1), root(0) {
+    ImplicitTreap(int n, const vector<int> &w) : root(0), T(n + 1) {
         for (int i = 1; i <= n; i++) T[i] = w[i - 1];
 
         deque<int> st{0};

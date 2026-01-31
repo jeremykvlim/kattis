@@ -13,10 +13,10 @@ struct ImplicitTreap {
         TreapNode(int i = 0) : family{0, 0, 0}, prio(rng()), flip(false), dir(false), id(i), size(1) {}
     };
 
-    vector<TreapNode> T;
     int root;
+    vector<TreapNode> T;
 
-    ImplicitTreap(int n) : T(n + 1), root(0) {
+    ImplicitTreap(int n) : root(0), T(n + 1) {
         iota(T.begin(), T.end(), 0);
 
         deque<int> st{0};

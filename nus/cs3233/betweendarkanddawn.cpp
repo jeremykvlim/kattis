@@ -21,11 +21,11 @@ struct ImplicitTreap {
         }
     };
 
+    int root;
     vector<TreapNode> T;
     stack<int> recycled;
-    int root;
 
-    ImplicitTreap(int n, const vector<pair<char, int>> &runs) : T(n + 1), root(0) {
+    ImplicitTreap(int n, const vector<pair<char, int>> &runs) : root(0), T(n + 1) {
         for (int i = 1; i <= n; i++) T[i] = {runs[i - 1].first, runs[i - 1].second};
 
         deque<int> st{0};
