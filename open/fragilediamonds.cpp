@@ -20,10 +20,24 @@ struct Treap {
         }
     };
 
-    int root, nodes;
+    int root;
     vector<TreapNode> T;
+    stack<int> recycled;
 
-    Treap(int n) : root(0), nodes(1), T(n + 1) {}
+    Treap() : root(0), T(1) {}
+
+    int node(const pair<long long, int> &key, long long y) {
+        int i;
+        if (!recycled.empty()) {
+            i = recycled.top();
+            recycled.pop();
+        } else {
+            T.emplace_back();
+            i = T.size() - 1;
+        }
+        T[i] = {key, y};
+        return i;
+    }
 
     long long max_plus(int i) const {
         return !i ? LLONG_MIN : T[i].x_max_plus;
@@ -83,9 +97,7 @@ struct Treap {
     }
 
     int insert(const pair<long long, int> &key, long long y) {
-        int i = nodes++;
-        T[i] = {key, y};
-
+        int i = node(key, y);
         auto [l, r] = split(root, key);
         root = meld(meld(l, i), r);
         T[root].family[2] = 0;
@@ -104,6 +116,8 @@ struct Treap {
         if (T[i].key == key) {
             int m = meld(l, r);
             if (m) T[m].family[2] = 0;
+            T[i] = TreapNode();
+            recycled.emplace(i);
             return m;
         }
 
@@ -125,10 +139,11 @@ struct Treap {
             attach(i, 1, rr);
             return {pull(i), j};
         }
-        int j = erase(i, T[i].key);
+
+        int k = T[i].key.second, j = erase(i, T[i].key);
         if (j) T[j].family[2] = 0;
         T[i].family[2] = 0;
-        return {j, i};
+        return {j, k};
     }
 
     pair<int, int> erase_by_x_minus(int i, long long x) {
@@ -144,10 +159,11 @@ struct Treap {
             attach(i, 1, rr);
             return {pull(i), j};
         }
-        int j = erase(i, T[i].key);
+
+        int k = T[i].key.second, j = erase(i, T[i].key);
         if (j) T[j].family[2] = 0;
         T[i].family[2] = 0;
-        return {j, i};
+        return {j, k};
     }
 
     vector<int> query(long long x, long long y, int i) {
@@ -159,12 +175,12 @@ struct Treap {
         while (rll && max_plus(rll) > x) {
             auto [ll, j] = erase_by_x_plus(rll, x);
             rll = ll;
-            v.emplace_back(T[j].key.second);
+            v.emplace_back(j);
         }
         while (rlr && max_minus(rlr) > -x) {
             auto [lr, j] = erase_by_x_minus(rlr, -x);
             rlr = lr;
-            v.emplace_back(T[j].key.second);
+            v.emplace_back(j);
         }
 
         root = meld(l, meld(rll, meld(rlr, rr)));
@@ -180,7 +196,7 @@ int main() {
     int n;
     cin >> n;
 
-    Treap treap(n);
+    Treap treap;
     for (int i = 1; i <= n; i++) {
         long long x, y;
         cin >> x >> y;

@@ -15,9 +15,20 @@ struct Treap {
 
     int root, nodes;
     vector<TreapNode> T;
+    stack<int> recycled;
     vector<long long> lazy_key, lazy_val;
 
     Treap(int n) : root(0), nodes(1), T(n + 1), lazy_key(n + 1, 0), lazy_val(n + 1, 0) {}
+
+    int node(const pair<long long, int> &key) {
+        int i;
+        if (!recycled.empty()) {
+            i = recycled.top();
+            recycled.pop();
+        } else i = nodes++;
+        T[i] = key;
+        return i;
+    }
 
     int pull(int i) {
         return i;
@@ -106,9 +117,7 @@ struct Treap {
     }
 
     int insert(const pair<long long, int> &key) {
-        int i = nodes++;
-        T[i] = key;
-
+        int i = node(key);
         auto [l, r] = split(root, key);
         root = meld(meld(l, i), r);
         T[root].family[2] = 0;
@@ -127,6 +136,9 @@ struct Treap {
         if (T[i].key == key) {
             int m = meld(l, r);
             if (m) T[m].family[2] = 0;
+            T[i] = {};
+            lazy_key[i] = lazy_val[i] = 0;
+            recycled.emplace(i);
             return m;
         }
 
@@ -145,7 +157,6 @@ struct Treap {
         vector<long long> order(n);
         auto dfs = [&](auto &&self, int i) {
             if (!i) return;
-
             push(i);
             self(self, T[i].family[0]);
             order[T[i].key.second] = T[i].val;

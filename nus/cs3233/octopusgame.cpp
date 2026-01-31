@@ -17,10 +17,24 @@ struct Treap {
         }
     };
 
-    int root, nodes, K;
+    int root, K;
     vector<TreapNode> T;
+    stack<int> recycled;
 
-    Treap(int n, int k) : root(0), nodes(1), K(1 << k), T(n + 1) {}
+    Treap(int k) : root(0), K(1 << k), T(1) {}
+
+    int node(const pair<long long, int> &key) {
+        int i;
+        if (!recycled.empty()) {
+            i = recycled.top();
+            recycled.pop();
+        } else {
+            T.emplace_back();
+            i = T.size() - 1;
+        }
+        T[i] = key;
+        return i;
+    }
 
     int size(int i) {
         return !i ? 0 : T[i].size;
@@ -83,9 +97,7 @@ struct Treap {
     }
 
     int insert(const pair<long long, int> &key) {
-        int i = nodes++;
-        T[i] = key;
-
+        int i = node(key);
         auto [l, r] = split(root, key);
         root = meld(meld(l, i), r);
         T[root].family[2] = 0;
@@ -104,6 +116,8 @@ struct Treap {
         if (T[i].key == key) {
             int m = meld(l, r);
             if (m) T[m].family[2] = 0;
+            T[i] = {};
+            recycled.emplace(i);
             return m;
         }
 
@@ -124,7 +138,7 @@ int main() {
     int Q, k;
     cin >> Q >> k;
 
-    Treap treap(Q, k);
+    Treap treap(k);
     vector<long long> skill(1e6 + 1);
     while (Q--) {
         int q;

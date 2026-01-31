@@ -15,9 +15,9 @@ struct Treap {
 
     int root, nodes;
     vector<TreapNode> T;
+    stack<int> recycled;
 
     Treap() : root(0), nodes(1), T(1) {}
-    Treap(int n) : root(0), nodes(1), T(n + 1) {}
 
     int get(int i) const {
         return T[i].val;
@@ -36,8 +36,14 @@ struct Treap {
     }
 
     int node(const int &key, const int &val) {
-        int i = nodes++;
-        if (nodes >= T.size()) T.resize(nodes << 1);
+        int i;
+        if (!recycled.empty()) {
+            i = recycled.top();
+            recycled.pop();
+        } else {
+            T.emplace_back();
+            i = T.size() - 1;
+        }
         T[i] = {key, val};
         return i;
     }
@@ -120,6 +126,8 @@ struct Treap {
         if (T[i].key == key) {
             int m = meld(l, r);
             if (m) T[m].family[2] = 0;
+            T[i] = {};
+            recycled.emplace(i);
             return m;
         }
 
