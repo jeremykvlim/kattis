@@ -90,6 +90,12 @@ struct Treap {
         }
     }
 
+    int find(const int &key) const {
+        for (int i = root; i; i = key < T[i].key ? T[i].family[0] : T[i].family[1])
+            if (key == T[i].key) return i;
+        return 0;
+    }
+
     int insert(const int &key, const int &val) {
         int i = find(key);
         if (i) return i;
@@ -120,12 +126,6 @@ struct Treap {
         if (T[i].key > key) attach(i, 0, erase(l, key));
         else attach(i, 1, erase(r, key));
         return i;
-    }
-
-    int find(const int &key) const {
-        for (int i = root; i; i = key < T[i].key ? T[i].family[0] : T[i].family[1])
-            if (key == T[i].key) return i;
-        return 0;
     }
 
     int lower_bound(const int &key) const {
