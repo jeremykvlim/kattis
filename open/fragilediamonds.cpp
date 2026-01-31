@@ -5,15 +5,14 @@ struct Treap {
     static inline mt19937_64 rng{random_device{}()};
 
     struct TreapNode {
-        int l, r;
+        array<int, 3> family;
         unsigned long long prio;
         pair<long long, int> key;
         long long x_plus, x_minus, x_max_plus, x_max_minus;
 
-        TreapNode() : l(0), r(0), prio(0), key{0, 0}, x_plus(0), x_minus(0), x_max_plus(LLONG_MIN), x_max_minus(LLONG_MIN) {}
+        TreapNode() : family{0, 0, 0}, prio(rng()), key{0, 0}, x_plus(0), x_minus(0), x_max_plus(LLONG_MIN), x_max_minus(LLONG_MIN) {}
 
         auto & operator=(const pair<pair<long long, int>, long long> &k) {
-            prio = rng();
             key = k.first;
             x_plus = x_max_plus = k.first.first + 2 * k.second;
             x_minus = x_max_minus = -k.first.first + 2 * k.second;
@@ -36,33 +35,50 @@ struct Treap {
 
     int pull(int i) {
         if (!i) return 0;
-        int l = T[i].l, r = T[i].r;
+        auto [l, r, p] = T[i].family;
         T[i].x_max_plus = max({T[i].x_plus, max_plus(l), max_plus(r)});
         T[i].x_max_minus = max({T[i].x_minus, max_minus(l), max_minus(r)});
         return i;
     }
 
+    void attach(int i, int c, int j) {
+        T[i].family[c] = j;
+        if (j) T[j].family[2] = i;
+        pull(i);
+    }
+
     pair<int, int> split(int i, const pair<long long, int> &key) {
         if (!i) return {0, 0};
-        if (T[i].key <= key) {
-            auto [l, r] = split(T[i].r, key);
-            T[i].r = l;
-            return {pull(i), r};
+        auto [l, r, p] = T[i].family;
+        if (T[i].key > key) {
+            auto [ll, lr] = split(l, key);
+            attach(i, 0, lr);
+            if (ll) T[ll].family[2] = 0;
+            T[i].family[2] = 0;
+            return {ll, i};
         } else {
-            auto [l, r] = split(T[i].l, key);
-            T[i].l = r;
-            return {l, pull(i)};
+            auto [rl, rr] = split(r, key);
+            attach(i, 1, rl);
+            if (rr) T[rr].family[2] = 0;
+            T[i].family[2] = 0;
+            return {i, rr};
         }
     }
 
     int meld(int i, int j) {
-        if (!i || !j) return i ^ j;
-        if (T[i].prio > T[j].prio) {
-            T[i].r = meld(T[i].r, j);
-            return pull(i);
+        if (!i || !j) {
+            int k = i ^ j;
+            if (k) T[k].family[2] = 0;
+            return k;
+        }
+        if (T[i].prio < T[j].prio) {
+            attach(i, 1, meld(T[i].family[1], j));
+            T[i].family[2] = 0;
+            return i;
         } else {
-            T[j].l = meld(i, T[j].l);
-            return pull(j);
+            attach(j, 0, meld(i, T[j].family[0]));
+            T[j].family[2] = 0;
+            return j;
         }
     }
 
@@ -75,46 +91,62 @@ struct Treap {
         return i;
     }
 
+    int erase(const pair<long long, int> &key) {
+        root = erase(root, key);
+        if (root) T[root].family[2] = 0;
+        return root;
+    }
+
     int erase(int i, const pair<long long, int> &key) {
         if (!i) return 0;
-        if (T[i].key == key) return meld(T[i].l, T[i].r);
+        auto [l, r, p] = T[i].family;
+        if (T[i].key == key) {
+            int m = meld(l, r);
+            if (m) T[m].family[2] = 0;
+            return m;
+        }
 
-        if (T[i].key > key) T[i].l = erase(T[i].l, key);
-        else T[i].r = erase(T[i].r, key);
-
-        return pull(i);
+        if (T[i].key > key) attach(i, 0, erase(l, key));
+        else attach(i, 1, erase(r, key));
+        return i;
     }
 
     pair<int, int> erase_by_x_plus(int i, long long x) {
         if (!i || max_plus(i) <= x) return {i, 0};
 
-        int l = T[i].l, r = T[i].r;
+        auto [l, r, p] = T[i].family;
         if (l && max_plus(l) > x) {
             auto [ll, j] = erase_by_x_plus(l, x);
-            T[i].l = ll;
+            attach(i, 0, ll);
             return {pull(i), j};
         } else if (T[i].x_plus <= x) {
             auto [rr, j] = erase_by_x_plus(r, x);
-            T[i].r = rr;
+            attach(i, 1, rr);
             return {pull(i), j};
         }
-        return {erase(i, T[i].key), i};
+        int j = erase(i, T[i].key);
+        if (j) T[j].family[2] = 0;
+        T[i].family[2] = 0;
+        return {j, i};
     }
 
     pair<int, int> erase_by_x_minus(int i, long long x) {
         if (!i || max_minus(i) <= x) return {i, 0};
 
-        int l = T[i].l, r = T[i].r;
+        auto [l, r, p] = T[i].family;
         if (l && max_minus(l) > x) {
             auto [ll, j] = erase_by_x_minus(l, x);
-            T[i].l = ll;
+            attach(i, 0, ll);
             return {pull(i), j};
         } else if (T[i].x_minus <= x) {
             auto [rr, j] = erase_by_x_minus(r, x);
-            T[i].r = rr;
+            attach(i, 1, rr);
             return {pull(i), j};
         }
-        return {erase(i, T[i].key), i};
+        int j = erase(i, T[i].key);
+        if (j) T[j].family[2] = 0;
+        T[i].family[2] = 0;
+        return {j, i};
     }
 
     vector<int> query(long long x, long long y, int i) {

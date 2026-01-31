@@ -5,17 +5,12 @@ struct Treap {
     static inline mt19937_64 rng{random_device{}()};
 
     struct TreapNode {
-        int l, r, size;
+        array<int, 3> family;
+        int size;
         unsigned long long prio;
         int key;
 
-        TreapNode() : l(0), r(0), size(1), prio(0), key(0) {}
-
-        auto & operator=(const int &k) {
-            prio = rng();
-            key = k;
-            return *this;
-        }
+        TreapNode(int k = 0) : family{0, 0, 0}, size(1), prio(rng()), key(k) {}
     };
 
     vector<TreapNode> T;
@@ -30,60 +25,83 @@ struct Treap {
 
     int pull(int i) {
         if (!i) return 0;
-        T[i].size = size(T[i].l) + size(T[i].r) + 1;
+        auto [l, r, p] = T[i].family;
+        T[i].size = size(l) + size(r) + 1;
         return i;
+    }
+
+    void attach(int i, int c, int j) {
+        T[i].family[c] = j;
+        if (j) T[j].family[2] = i;
+        pull(i);
     }
 
     pair<int, int> split(int i, const int &key) {
         if (!i) return {0, 0};
-        if (T[i].key <= key) {
-            auto [l, r] = split(T[i].r, key);
-            T[i].r = l;
-            return {pull(i), r};
+        auto [l, r, p] = T[i].family;
+        if (T[i].key > key) {
+            auto [ll, lr] = split(l, key);
+            attach(i, 0, lr);
+            if (ll) T[ll].family[2] = 0;
+            T[i].family[2] = 0;
+            return {ll, i};
         } else {
-            auto [l, r] = split(T[i].l, key);
-            T[i].l = r;
-            return {l, pull(i)};
+            auto [rl, rr] = split(r, key);
+            attach(i, 1, rl);
+            if (rr) T[rr].family[2] = 0;
+            T[i].family[2] = 0;
+            return {i, rr};
         }
     }
 
     pair<int, int> implicit_split(int i, int k) {
         if (!i) return {0, 0};
-        int sl = size(T[i].l);
+        auto [l, r, p] = T[i].family;
+        int sl = size(l);
         if (k <= sl) {
-            auto [l, r] = implicit_split(T[i].l, k);
-            T[i].l = r;
-            return {l, pull(i)};
+            auto [ll, lr] = implicit_split(l, k);
+            attach(i, 0, lr);
+            if (ll) T[ll].family[2] = 0;
+            T[i].family[2] = 0;
+            return {ll, i};
         } else {
-            auto [l, r] = implicit_split(T[i].r, k - sl - 1);
-            T[i].r = l;
-            return {pull(i), r};
+            auto [rl, rr] = implicit_split(r, k - sl - 1);
+            attach(i, 1, rl);
+            if (rr) T[rr].family[2] = 0;
+            T[i].family[2] = 0;
+            return {i, rr};
         }
     }
 
     int meld_by_key(int i, int j) {
-        if (!i || !j) return i ^ j;
-        if (T[i].prio > T[j].prio) {
+        if (!i || !j) {
+            int k = i ^ j;
+            if (k) T[k].family[2] = 0;
+            return k;
+        }
+        if (T[i].prio < T[j].prio) {
             auto [jl, jr] = split(j, T[i].key);
-            T[i].l = meld_by_key(T[i].l, jl);
-            T[i].r = meld_by_key(T[i].r, jr);
-            return pull(i);
+            attach(i, 0, meld_by_key(T[i].family[0], jl));
+            attach(i, 1, meld_by_key(T[i].family[1], jr));
+            T[i].family[2] = 0;
+            return i;
         } else {
             auto [il, ir] = split(i, T[j].key);
-            T[j].l = meld_by_key(T[j].l, il);
-            T[j].r = meld_by_key(T[j].r, ir);
-            return pull(j);
+            attach(j, 0, meld_by_key(T[j].family[0], il));
+            attach(j, 1, meld_by_key(T[j].family[1], ir));
+            T[j].family[2] = 0;
+            return j;
         }
     }
 
     int find_by_order(int i, int k) const {
         for (; i;) {
-            int sl = size(T[i].l);
-            if (k < sl) i = T[i].l;
+            int sl = size(T[i].family[0]);
+            if (k < sl) i = T[i].family[0];
             else if (k == sl) return i;
             else {
                 k -= sl + 1;
-                i = T[i].r;
+                i = T[i].family[1];
             }
         }
         return 0;

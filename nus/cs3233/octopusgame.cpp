@@ -5,19 +5,15 @@ struct Treap {
     static inline mt19937_64 rng{random_device{}()};
 
     struct TreapNode {
-        int l, r, size;
+        array<int, 3> family;
+        int size;
         unsigned long long prio;
         pair<long long, int> key;
         long long subtree_sum;
         array<long long, 16> sums;
 
-        TreapNode() : l(0), r(0), size(1), prio(0), key{-1, -1}, subtree_sum(0), sums{} {}
-
-        auto & operator=(const pair<long long, int> &k) {
-            prio = rng();
-            key = k;
-            subtree_sum = sums[0] = k.first;
-            return *this;
+        TreapNode(const pair<long long, int> &k = {0, 0}) : family{0, 0, 0}, size(1), prio(rng()), key(k), subtree_sum(k.first), sums{} {
+            sums[0] = k.first;
         }
     };
 
@@ -36,7 +32,7 @@ struct Treap {
 
     int pull(int i) {
         if (!i) return 0;
-        int l = T[i].l, r = T[i].r;
+        auto [l, r, p] = T[i].family;
         T[i].size = size(l) + size(r) + 1;
         T[i].subtree_sum = subtree_sum(l) + subtree_sum(r) + T[i].key.first;
 
@@ -45,27 +41,44 @@ struct Treap {
         return i;
     }
 
+    void attach(int i, int c, int j) {
+        T[i].family[c] = j;
+        if (j) T[j].family[2] = i;
+        pull(i);
+    }
+
     pair<int, int> split(int i, const pair<long long, int> &key) {
         if (!i) return {0, 0};
-        if (T[i].key <= key) {
-            auto [l, r] = split(T[i].r, key);
-            T[i].r = l;
-            return {pull(i), r};
+        auto [l, r, p] = T[i].family;
+        if (T[i].key > key) {
+            auto [ll, lr] = split(l, key);
+            attach(i, 0, lr);
+            if (ll) T[ll].family[2] = 0;
+            T[i].family[2] = 0;
+            return {ll, i};
         } else {
-            auto [l, r] = split(T[i].l, key);
-            T[i].l = r;
-            return {l, pull(i)};
+            auto [rl, rr] = split(r, key);
+            attach(i, 1, rl);
+            if (rr) T[rr].family[2] = 0;
+            T[i].family[2] = 0;
+            return {i, rr};
         }
     }
 
     int meld(int i, int j) {
-        if (!i || !j) return i ^ j;
-        if (T[i].prio > T[j].prio) {
-            T[i].r = meld(T[i].r, j);
-            return pull(i);
+        if (!i || !j) {
+            int k = i ^ j;
+            if (k) T[k].family[2] = 0;
+            return k;
+        }
+        if (T[i].prio < T[j].prio) {
+            attach(i, 1, meld(T[i].family[1], j));
+            T[i].family[2] = 0;
+            return i;
         } else {
-            T[j].l = meld(i, T[j].l);
-            return pull(j);
+            attach(j, 0, meld(i, T[j].family[0]));
+            T[j].family[2] = 0;
+            return j;
         }
     }
 
@@ -78,17 +91,23 @@ struct Treap {
     }
 
     int erase(const pair<long long, int> &key) {
-        return root = erase(root, key);
+        root = erase(root, key);
+        if (root) T[root].family[2] = 0;
+        return root;
     }
 
     int erase(int i, const pair<long long, int> &key) {
         if (!i) return 0;
-        if (T[i].key == key) return meld(T[i].l, T[i].r);
+        auto [l, r, p] = T[i].family;
+        if (T[i].key == key) {
+            int m = meld(l, r);
+            if (m) T[m].family[2] = 0;
+            return m;
+        }
 
-        if (T[i].key > key) T[i].l = erase(T[i].l, key);
-        else T[i].r = erase(T[i].r, key);
-
-        return pull(i);
+        if (T[i].key > key) attach(i, 0, erase(l, key));
+        else attach(i, 1, erase(r, key));
+        return i;
     }
 
     auto & operator[](int i) {

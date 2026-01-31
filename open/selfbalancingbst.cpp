@@ -5,26 +5,19 @@ struct Treap {
     static inline mt19937_64 rng{random_device{}()};
 
     struct TreapNode {
-        int l, r, size;
+        array<int, 3> family;
+        int size;
         unsigned long long prio;
         int key, val;
 
-        TreapNode() : l(0), r(0), size(1), prio(0), key(0), val(0) {}
-
-        auto & operator=(const pair<int, int> &kv) {
-            prio = rng();
-            key = kv.first;
-            val = kv.second;
-            return *this;
-        }
+        TreapNode(int k = 0, int v = 0) : family{0, 0, 0}, size(1), prio(rng()), key(k), val(v) {}
     };
 
     int root, nodes;
     vector<TreapNode> T;
-    vector<int> lazy_key, lazy_val;
 
-    Treap() : root(0), nodes(1), T(1), lazy_key(1, 0), lazy_val(1, 0) {}
-    Treap(int n) : root(0), nodes(1), T(n + 1), lazy_key(n + 1, 0), lazy_val(n + 1, 0) {}
+    Treap() : root(0), nodes(1), T(1) {}
+    Treap(int n) : root(0), nodes(1), T(n + 1) {}
 
     int get(int i) const {
         return T[i].val;
@@ -44,63 +37,56 @@ struct Treap {
 
     int node(const int &key, const int &val) {
         int i = nodes++;
-        if (nodes >= T.size()) {
-            int s = nodes << 1;
-            T.resize(s);
-            lazy_key.resize(s);
-            lazy_val.resize(s);
-        }
+        if (nodes >= T.size()) T.resize(nodes << 1);
         T[i] = {key, val};
         return i;
     }
 
     int pull(int i) {
         if (!i) return 0;
-        T[i].size = size(T[i].l) + size(T[i].r) + 1;
+        auto [l, r, p] = T[i].family;
+        T[i].size = size(l) + size(r) + 1;
         return i;
     }
 
-    void apply(int i, const int &key, const int &val) {
-        if (!i) return;
-        T[i].key += key;
-        T[i].val += val;
-        lazy_key[i] += key;
-        lazy_val[i] += val;
-    }
-
-    void push(int i) {
-        if (!i) return;
-        if (lazy_key[i] || lazy_val[i]) {
-            apply(T[i].l, lazy_key[i], lazy_val[i]);
-            apply(T[i].r, lazy_key[i], lazy_val[i]);
-            lazy_key[i] = lazy_val[i] = 0;
-        }
+    void attach(int i, int c, int j) {
+        T[i].family[c] = j;
+        if (j) T[j].family[2] = i;
+        pull(i);
     }
 
     pair<int, int> split(int i, const int &key) {
         if (!i) return {0, 0};
-        push(i);
-        if (T[i].key <= key) {
-            auto [l, r] = split(T[i].r, key);
-            T[i].r = l;
-            return {pull(i), r};
+        auto [l, r, p] = T[i].family;
+        if (T[i].key > key) {
+            auto [ll, lr] = split(l, key);
+            attach(i, 0, lr);
+            if (ll) T[ll].family[2] = 0;
+            T[i].family[2] = 0;
+            return {ll, i};
         } else {
-            auto [l, r] = split(T[i].l, key);
-            T[i].l = r;
-            return {l, pull(i)};
+            auto [rl, rr] = split(r, key);
+            attach(i, 1, rl);
+            if (rr) T[rr].family[2] = 0;
+            T[i].family[2] = 0;
+            return {i, rr};
         }
     }
 
     int meld(int i, int j) {
-        if (!i || !j) return i ^ j;
-        if (T[i].prio > T[j].prio) {
-            push(i);
-            T[i].r = meld(T[i].r, j);
-            return pull(i);
+        if (!i || !j) {
+            int k = i ^ j;
+            if (k) T[k].family[2] = 0;
+            return k;
+        }
+        if (T[i].prio < T[j].prio) {
+            attach(i, 1, meld(T[i].family[1], j));
+            T[i].family[2] = 0;
+            return i;
         } else {
-            push(j);
-            T[j].l = meld(i, T[j].l);
-            return pull(j);
+            attach(j, 0, meld(i, T[j].family[0]));
+            T[j].family[2] = 0;
+            return j;
         }
     }
 
@@ -111,26 +97,33 @@ struct Treap {
         i = node(key, val);
         auto [l, r] = split(root, key);
         root = meld(meld(l, i), r);
+        if (root) T[root].family[2] = 0;
         return i;
     }
 
     int erase(const int &i) {
         if (!i) return 0;
-        return root = erase(root, T[i].key);
+        root = erase(root, T[i].key);
+        if (root) T[root].family[2] = 0;
+        return root;
     }
 
     int erase(int i, const int &key) {
         if (!i) return 0;
-        if (T[i].key == key) return meld(T[i].l, T[i].r);
+        auto [l, r, p] = T[i].family;
+        if (T[i].key == key) {
+            int m = meld(l, r);
+            if (m) T[m].family[2] = 0;
+            return m;
+        }
 
-        if (T[i].key > key) T[i].l = erase(T[i].l, key);
-        else T[i].r = erase(T[i].r, key);
-
-        return pull(i);
+        if (T[i].key > key) attach(i, 0, erase(l, key));
+        else attach(i, 1, erase(r, key));
+        return i;
     }
 
     int find(const int &key) const {
-        for (int i = root; i; i = key < T[i].key ? T[i].l : T[i].r)
+        for (int i = root; i; i = key < T[i].key ? T[i].family[0] : T[i].family[1])
             if (key == T[i].key) return i;
         return 0;
     }
@@ -140,8 +133,8 @@ struct Treap {
         for (int i = root; i;)
             if (T[i].key >= key) {
                 k = i;
-                i = T[i].l;
-            } else i = T[i].r;
+                i = T[i].family[0];
+            } else i = T[i].family[1];
         return k;
     }
 
@@ -150,22 +143,22 @@ struct Treap {
         for (int i = root; i;)
             if (T[i].key > key) {
                 k = i;
-                i = T[i].l;
-            } else i = T[i].r;
+                i = T[i].family[0];
+            } else i = T[i].family[1];
         return k;
     }
 
     int front() const {
         if (!root) return 0;
         int i = root;
-        for (; T[i].l; i = T[i].l);
+        for (; T[i].family[0]; i = T[i].family[0]);
         return i;
     }
 
     int back() const {
         if (!root) return 0;
         int i = root;
-        for (; T[i].r; i = T[i].r);
+        for (; T[i].family[1]; i = T[i].family[1]);
         return i;
     }
 
@@ -177,47 +170,47 @@ struct Treap {
     int order_of_key(const int &key) const {
         int rank = 0;
         for (int i = root; i;)
-            if (key <= T[i].key) i = T[i].l;
+            if (key <= T[i].key) i = T[i].family[0];
             else {
-                rank += size(T[i].l) + 1;
-                i = T[i].r;
+                rank += size(T[i].family[0]) + 1;
+                i = T[i].family[1];
             }
         return rank;
     }
 
     int find_by_order(int k) const {
         for (int i = root; i;) {
-            int sl = size(T[i].l);
-            if (k < sl) i = T[i].l;
+            int sl = size(T[i].family[0]);
+            if (k < sl) i = T[i].family[0];
             else if (k == sl) return i;
             else {
                 k -= sl + 1;
-                i = T[i].r;
+                i = T[i].family[1];
             }
         }
         return 0;
     }
 
-    int predecessor(const int &i) const {
+    int predecessor(int i) const {
         if (!i) return 0;
-        int p = 0;
-        for (int j = root; j;)
-            if (T[j].key < T[i].key) {
-                p = j;
-                j = T[j].r;
-            } else j = T[j].l;
+        if (T[i].family[0]) {
+            for (i = T[i].family[0]; T[i].family[1]; i = T[i].family[1]);
+            return i;
+        }
+        int p = T[i].family[2];
+        for (; p && T[p].family[0] == i; i = p, p = T[p].family[2]);
         return p;
     }
 
-    int successor(const int &i) const {
+    int successor(int i) const {
         if (!i) return 0;
-        int s = 0;
-        for (int j = root; j;)
-            if (T[j].key > T[i].key) {
-                s = j;
-                j = T[j].l;
-            } else j = T[j].r;
-        return s;
+        if (T[i].family[1]) {
+            for (i = T[i].family[1]; T[i].family[0]; i = T[i].family[0]);
+            return i;
+        }
+        int p = T[i].family[2];
+        for (; p && T[p].family[1] == i; i = p, p = T[p].family[2]);
+        return p;
     }
 
     auto & operator[](int i) {
