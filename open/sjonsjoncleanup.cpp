@@ -81,15 +81,14 @@ int main() {
         dist[u] = dist[v] + 1;
     }
 
-    for (int v = 0; v < V; v++)
-        if (dist[v] >= s) {
-            cout << "impossible";
-            exit(0);
-        }
+    if (any_of(dist.begin(), dist.end(), [&](int d) { return d >= s; })) {
+        cout << "impossible";
+        exit(0);
+    }
 
     vector<int> degree(V, 0);
-    for (int v = 0; v < V; v++)
-        if (next[v] != -1) degree[next[v]]++;
+    for (int u : next)
+        if (~u) degree[u]++;
 
     for (int v = 0; v < V; v++)
         if (!degree[v]) q2.emplace(v);
