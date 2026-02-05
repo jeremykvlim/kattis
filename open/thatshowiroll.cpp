@@ -21,7 +21,7 @@ int main() {
         cin >> l;
 
         vector<bool> root(26, false);
-        vector<int> adj_mask(26, 0);
+        vector<int> adj_masks(26, 0);
         while (l--) {
             string s;
             cin >> s;
@@ -30,7 +30,7 @@ int main() {
             root[r] = true;
             if (s.size() > 1) {
                 int c = s[1] - 'a';
-                adj_mask[r] |= 1 << c;
+                adj_masks[r] |= 1 << c;
             }
         }
 
@@ -42,7 +42,7 @@ int main() {
 
             double root_sum = 0;
             for (int r : rolls)
-                if (root[r]) root_sum += max(1., (2. * popcount((unsigned) (adj_mask[r] & m))) / 6);
+                if (root[r]) root_sum += max(1., (2. * popcount((unsigned) (adj_masks[r] & m))) / 6);
 
             auto curr = root_sum / 6;
             if (score + 1e-6 < curr) {
