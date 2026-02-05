@@ -72,7 +72,7 @@ struct ForwardStar {
     }
 };
 
-pair<int, vector<int>> gabow(int n, vector<pair<int, int>> edges) {
+pair<int, vector<int>> gabow(int n, const vector<pair<int, int>> &edges) {
     vector<pair<int, int>> adj_list(2 * edges.size());
     vector<int> degree(n + 2, 0);
     for (auto [u, v] : edges) {
