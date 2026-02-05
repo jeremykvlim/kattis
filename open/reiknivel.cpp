@@ -40,8 +40,8 @@ int main() {
 
     vector<int> dist(1e8, 1e9);
     dist[0] = 0;
-    array<deque<int>, 4> buckets;
-    buckets[0].emplace_back(0);
+    array<queue<int>, 4> buckets;
+    buckets[0].emplace(0);
     for (int d = 0;;) {
         while (buckets[0].empty()) {
             if (all_of(buckets.begin(), buckets.end(), [&](const auto &b) { return b.empty(); })) {
@@ -53,7 +53,7 @@ int main() {
         }
 
         int v = buckets[0].front();
-        buckets[0].pop_front();
+        buckets[0].pop();
 
         if (d != dist[v]) continue;
 
@@ -76,7 +76,7 @@ int main() {
 
             if (dist[u] > d + c) {
                 dist[u] = d + c;
-                buckets[c].emplace_back(u);
+                buckets[c].emplace(u);
             }
         }
     }
