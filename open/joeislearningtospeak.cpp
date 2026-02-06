@@ -27,7 +27,7 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    for (int c = 1, n; cin >> n; c++) {
+    for (int n, c = 1; cin >> n; c++) {
         cout << "Learning case " << c << "\n";
 
         vector<bool> known;
