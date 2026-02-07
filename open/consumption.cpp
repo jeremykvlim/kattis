@@ -92,21 +92,21 @@ int main() {
 
             auto W = 100 * p + 1;
             for (int rem = 0; rem < w0; rem++) {
-                auto candies = [&](long long quo) {
+                auto weight = [&](long long quo) -> long long {
                     return w0 * quo + rem;
                 };
 
                 long long l = 0, r = 2, mid;
-                for (; boxes(candies(r)) < p; l = r, r <<= 1)
-                    if (candies(l + 1) >= W) goto next;
-                
+                for (; boxes(weight(r)) < p; l = r, r <<= 1)
+                    if (weight(l + 1) >= W) goto next;
+
                 while (l + 1 < r) {
                     mid = (l + r) / 2;
 
-                    if (boxes(candies(mid)) >= p) r = mid;
+                    if (boxes(weight(mid)) >= p) r = mid;
                     else l = mid;
                 }
-                W = min(W, candies(r));
+                W = min(W, weight(r));
                 next:;
             }
             if (W == 100 * p + 1) cout << "no candy for you\n";
