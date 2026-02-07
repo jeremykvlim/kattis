@@ -3,7 +3,7 @@ using namespace std;
 
 struct PersistentDisjointSets {
     vector<int> sets, size;
-    vector<array<int, 2>> history;
+    vector<pair<int, int>> history;
 
     int find(int v) {
         return sets[v] == v ? v : find(sets[v]);
