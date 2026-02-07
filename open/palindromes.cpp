@@ -123,6 +123,7 @@ int main() {
                 fw1.update(i, 1);
                 fw2.update(i, radius[i - 1] + i - 1);
             }
+            
             for (int qi : indices_r[r]) {
                 int mid = (sum[qi] + parity) / 2;
                 if (mid <= r - 1) count[qi] += pref[r] - pref[mid] - fw2.range_sum_query(mid, r) + fw1.range_sum_query(mid, r) * r;
