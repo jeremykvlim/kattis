@@ -1,34 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T>
-struct SparseTable {
-    vector<vector<T>> ST;
-    function<T(T, T)> f;
-
-    SparseTable() {}
-    SparseTable(vector<T> v, function<T(T, T)> func) : f(move(func)) {
-        if (v.empty()) return;
-        int n = __lg(v.size()) + 1;
-        ST.resize(n);
-        ST.front() = v;
-        for (int i = 1; i < n; i++) {
-            ST[i].resize(v.size() - (1 << i) + 1);
-            for (int j = 0; j <= v.size() - (1 << i); j++)
-                ST[i][j] = f(ST[i - 1][j], ST[i - 1][j + (1 << (i - 1))]);
-        }
-    }
-
-    T range_query(int l, int r) {
-        int i = __lg(r - l);
-        return f(ST[i][l], ST[i][r - (1 << i)]);
-    }
-};
-
 struct SuffixArray {
-    string s;
-    vector<int> SA, ascii, SA_inv, lcp;
-    SparseTable<int> st;
+    vector<int> SA, ascii, SA_inv;
 
     vector<int> sais(vector<int> &ascii1, int range) {
         int n = ascii1.size();
@@ -107,9 +81,9 @@ struct SuffixArray {
         return sa;
     }
 
-    void kasai() {
+    vector<int> kasai() {
         int n = ascii.size();
-        lcp.resize(n);
+        vector<int> lcp(n);
         SA_inv.resize(n);
         for (int i = 0; i < n; i++) SA_inv[SA[i]] = i;
         for (int i = 0, k = 0; i < n; i++) {
@@ -121,24 +95,16 @@ struct SuffixArray {
             lcp[SA_inv[i] - 1] = k;
         }
         lcp.back() = n;
-    }
-
-    int substring_lcp(int i, int j) {
-        if (i == j) return s.size() - i;
-
-        auto [l, r] = minmax(SA_inv[i], SA_inv[j]);
-        return st.range_query(l, r);
+        return lcp;
     }
 
     int & operator[](int i) {
         return SA[i];
     }
 
-    SuffixArray(string &s, int r = 128) : s(s), ascii(s.begin(), s.end()) {
+    SuffixArray(string &s, int r = 128) : ascii(s.begin(), s.end()) {
         SA = sais(ascii, r);
-        kasai();
-        st = SparseTable<int>(lcp, [](int x, int y) { return min(x, y); });
-    }
+    };
 };
 
 int main() {
@@ -148,55 +114,67 @@ int main() {
     int n;
     while (cin >> n && n) {
         string S;
-        vector<string> dna(n);
         vector<int> id;
         for (int i = 0; i < n; i++) {
-            cin >> dna[i];
+            string dna;
+            cin >> dna;
 
-            S += dna[i] + '{';
-            id.insert(id.end(), dna[i].size(), i);
+            S += dna + (char) (128 - n + i);
+            id.insert(id.end(), dna.size(), i);
             id.emplace_back(-1);
         }
-        int m = S.size();
 
-        vector<int> sublen(m, 1);
-        for (int i = m - 1; ~i; i--)
-            if (S[i] == '{') sublen[i] = 0;
-            else if (S[i + 1] != '{') sublen[i] += sublen[i + 1];
+        if (n == 1) {
+            cout << S[0] << "\n\n";
+            continue;
+        }
 
+        int m = S.size(), t = -1;
         SuffixArray sa(S);
-        vector<int> indices_sublen(m), indices_id(m);
-        for (int i = 0; i < m; i++) {
-            indices_sublen[i] = sublen[sa[i]];
-            indices_id[i] = id[sa[i]];
-        }
-
-        SparseTable<int> st(indices_sublen, [](int x, int y) { return min(x, y); });
-        vector<int> freq(n, 0);
+        auto lcp = sa.kasai();
+        vector<int> visited(n, -1);
         vector<string> shared;
-        int len = 0;
-        for (int l = 0, r = 0, count = 0; r < m; r++) {
-            if (indices_id[r] != -1)
-                if (!freq[indices_id[r]]++) count++;
+        auto find = [&](int len) {
+            auto valid = [&](int l, int r) {
+                t++;
+                int count = 0;
+                for (int i = l; i <= r; i++)
+                    if (~id[sa[i]] && visited[id[sa[i]]] != t) {
+                        visited[id[sa[i]]] = t;
+                        if (++count > n / 2) return true;
+                    }
+                return false;
+            };
 
-            while (count > n / 2 && l <= r) {
-                int i = l == r ? indices_sublen[l] : min(sa.st.range_query(l, r), st.range_query(l, r + 1));
-                if (i) shared.emplace_back(S.substr(sa[l], i));
-                len = max(len, i);
-                if (indices_id[l] != -1)
-                    if (!--freq[indices_id[l]]) count--;
-                l++;
+            shared.clear();
+            int l = -1;
+            for (int i = 0; i < m - 1; i++) {
+                if (lcp[i] >= len) {
+                    if (!~l) l = i;
+                } else if (~l) {
+                    if (valid(l, i)) shared.emplace_back(S.substr(sa[l], len));
+                    l = -1;
+                }
             }
+            if (~l && valid(l, m - 1)) shared.emplace_back(S.substr(sa[l], len));
+        };
+
+        int l = 0, r = 1007, mid;
+        while (l + 1 < r) {
+            mid = l + (r - l) / 2;
+
+            find(mid);
+
+            if (!shared.empty()) l = mid;
+            else r = mid;
         }
 
-        if (shared.empty()) cout << "?\n";
+        if (!l) cout << "?\n";
         else {
-            vector<string> longest;
-            for (auto s : shared)
-                if (s.size() == len) longest.emplace_back(s);
-            sort(longest.begin(), longest.end());
-            longest.erase(unique(longest.begin(), longest.end()), longest.end());
-            for (auto s : longest) cout << s << "\n";
+            find(l);
+            sort(shared.begin(), shared.end());
+            shared.erase(unique(shared.begin(), shared.end()), shared.end());
+            for (auto s : shared) cout << s << "\n";
         }
         cout << "\n";
     }
