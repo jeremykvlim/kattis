@@ -32,7 +32,7 @@ struct HashedString {
     static inline vector<unsigned long long> p1{1}, p2{1};
 
     HashedString() : n(0), pref1(1, 0), pref2(1, 0) {}
-    HashedString(const string &s) : n((int)s.size()), pref1(n + 1, 0), pref2(n + 1, 0) {
+    HashedString(const string &s) : n(s.size()), pref1(n + 1, 0), pref2(n + 1, 0) {
         if (!B1 && !B2) {
             mt19937_64 rng{random_device{}()};
             B1 = uniform_int_distribution(911382323ULL, MOD1 - 1)(rng);
@@ -43,7 +43,7 @@ struct HashedString {
             p2.emplace_back((p2.back() * B2) % MOD2);
         }
         for (int i = 0; i < n; i++) {
-            unsigned long long v = (unsigned long long)(unsigned char)s[i] + 1ULL;
+            auto v = (unsigned char) s[i] + 1;
             pref1[i + 1] = (pref1[i] * B1 + v) % MOD1;
             pref2[i + 1] = (pref2[i] * B2 + v) % MOD2;
         }
