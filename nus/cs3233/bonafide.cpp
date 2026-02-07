@@ -1,143 +1,41 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T>
-struct SparseTable {
-    vector<vector<T>> ST;
-    function<T(T, T)> f;
+struct HashedString {
+    static inline unsigned long long B1 = 0, B2 = 0;
+    static const unsigned long long MOD1 = 1e9 + 7, MOD2 = 1e9 + 9;
 
-    SparseTable() {}
-    SparseTable(vector<T> v, function<T(T, T)> func) : f(move(func)) {
-        if (v.empty()) return;
-        int n = __lg(v.size()) + 1;
-        ST.resize(n);
-        ST.front() = v;
-        for (int i = 1; i < n; i++) {
-            ST[i].resize(v.size() - (1 << i) + 1);
-            for (int j = 0; j <= v.size() - (1 << i); j++)
-                ST[i][j] = f(ST[i - 1][j], ST[i - 1][j + (1 << (i - 1))]);
+    int n;
+    vector<unsigned long long> pref1, pref2;
+    static inline vector<unsigned long long> p1{1}, p2{1};
+
+    HashedString() : n(0), pref1(1, 0), pref2(1, 0) {}
+    HashedString(const string &s) : n(s.size()), pref1(n + 1, 0), pref2(n + 1, 0) {
+        if (!B1 && !B2) {
+            mt19937_64 rng{random_device{}()};
+            B1 = uniform_int_distribution(911382323ULL, MOD1 - 1)(rng);
+            B2 = uniform_int_distribution(972663749ULL, MOD2 - 1)(rng);
         }
-    }
-
-    T range_query(int l, int r) {
-        int i = __lg(r - l);
-        return f(ST[i][l], ST[i][r - (1 << i)]);
-    }
-};
-
-struct SuffixArray {
-    string s;
-    vector<int> SA, ascii, SA_inv, lcp;
-    SparseTable<int> st;
-
-    vector<int> sais(vector<int> &ascii1, int range) {
-        int n = ascii1.size();
-        if (!n) return {};
-        if (n == 1) return {0};
-        if (n == 2) return ascii1[0] < ascii1[1] ? vector<int>{0, 1} : vector<int>{1, 0};
-
-        vector<int> sa(n, 0), sum_s(range + 1, 0), sum_l(range + 1, 0);
-        vector<bool> sl(n, false);
-        for (int i = n - 2; ~i; i--) sl[i] = (ascii1[i] == ascii1[i + 1]) ? sl[i + 1] : (ascii1[i] < ascii1[i + 1]);
+        while (p1.size() <= n || p2.size() <= n) {
+            p1.emplace_back((p1.back() * B1) % MOD1);
+            p2.emplace_back((p2.back() * B2) % MOD2);
+        }
         for (int i = 0; i < n; i++) {
-            if (!sl[i]) sum_s[ascii1[i]]++;
-            else sum_l[ascii1[i] + 1]++;
+            auto v = (unsigned char) s[i] + 1;
+            pref1[i + 1] = (pref1[i] * B1 + v) % MOD1;
+            pref2[i + 1] = (pref2[i] * B2 + v) % MOD2;
         }
-
-        for (int i = 0; i <= range; i++) {
-            sum_s[i] += sum_l[i];
-            if (i < range) sum_l[i + 1] += sum_s[i];
-        }
-
-        auto induced_sort = [&](vector<int> &lms) {
-            fill(sa.begin(), sa.end(), -1);
-            vector<int> b(range + 1, 0);
-            copy(sum_s.begin(), sum_s.end(), b.begin());
-            for (int i : lms)
-                if (i < n) sa[b[ascii1[i]]++] = i;
-
-            copy(sum_l.begin(), sum_l.end(), b.begin());
-            sa[b[ascii1[n - 1]]++] = n - 1;
-            for (int j : sa)
-                if (j > 0 && !sl[j - 1]) sa[b[ascii1[j - 1]]++] = j - 1;
-
-            copy(sum_l.begin(), sum_l.end(), b.begin());
-            for (int i = n - 1, j = sa[i]; ~i; j = sa[--i])
-                if (j > 0 && sl[j - 1]) sa[--b[ascii1[j - 1] + 1]] = j - 1;
-        };
-
-        vector<int> lms_map(n + 1, -1), lms;
-        int m = 0;
-        for (int i = 1; i < n; i++)
-            if (!sl[i - 1] && sl[i]) {
-                lms_map[i] = m++;
-                lms.emplace_back(i);
-            }
-        induced_sort(lms);
-
-        if (m) {
-            vector<int> lms_sorted, ascii2(m);
-            for (int j : sa)
-                if (lms_map[j] != -1) lms_sorted.emplace_back(j);
-
-            int range2 = 0;
-            ascii2[lms_map[lms_sorted[0]]] = 0;
-            for (int i = 1; i < m; i++) {
-                int l = lms_sorted[i - 1], r = lms_sorted[i], l_end = (lms_map[l] + 1 < m) ? lms[lms_map[l] + 1] : n, r_end = (lms_map[r] + 1 < m) ? lms[lms_map[r] + 1] : n;
-                bool same = true;
-                if (l_end - l != r_end - r) same = false;
-                else {
-                    while (l < l_end && ascii1[l] == ascii1[r]) {
-                        l++;
-                        r++;
-                    }
-
-                    if (l == n || ascii1[l] != ascii1[r]) same = false;
-                }
-
-                if (!same) range2++;
-                ascii2[lms_map[lms_sorted[i]]] = range2;
-            }
-
-            auto sa2 = sais(ascii2, range2);
-            for (int i = 0; i < m; i++) lms_sorted[i] = lms[sa2[i]];
-            induced_sort(lms_sorted);
-        }
-
-        return sa;
     }
 
-    void kasai() {
-        int n = ascii.size();
-        lcp.resize(n);
-        SA_inv.resize(n);
-        for (int i = 0; i < n; i++) SA_inv[SA[i]] = i;
-        for (int i = 0, k = 0; i < n; i++) {
-            if (k) k--;
-            if (!SA_inv[i]) continue;
-
-            int j = SA[SA_inv[i] - 1];
-            while (i + k < n && j + k < n && ascii[i + k] == ascii[j + k]) k++;
-            lcp[SA_inv[i] - 1] = k;
-        }
-        lcp.back() = n;
+    pair<unsigned long long, unsigned long long> pref_hash(int l, int r) const {
+        auto h1 = (pref1[r] + MOD1 - (pref1[l] * p1[r - l]) % MOD1) % MOD1, h2 = (pref2[r] + MOD2 - (pref2[l] * p2[r - l]) % MOD2) % MOD2;
+        return {h1, h2};
     }
 
-    int substring_lcp(int i, int j) {
-        if (i == j) return s.size() - i;
-
-        auto [l, r] = minmax(SA_inv[i], SA_inv[j]);
-        return st.range_query(l, r);
-    }
-
-    int & operator[](int i) {
-        return SA[i];
-    }
-
-    SuffixArray(string &s, int r = 128) : s(s), ascii(s.begin(), s.end()) {
-        SA = sais(ascii, r);
-        kasai();
-        st = SparseTable<int>(lcp, [](int x, int y) { return min(x, y); });
+    pair<unsigned long long, unsigned long long> split_pref_hash(int i) const {
+        auto [ll, lr] = pref_hash(0, i);
+        auto [rl, rr] = pref_hash(i + 1, n);
+        return {(ll * p1[n - i - 1] + rl) % MOD1, (lr * p2[n - i - 1] + rr) % MOD2};
     }
 };
 
@@ -179,13 +77,20 @@ int main() {
     auto rev = t;
     reverse(rev.begin(), rev.end());
     auto both = t + '_' + rev;
-    SuffixArray sa(both);
+    HashedString hs(both);
 
     vector<int> radius0(n), radius1(n), radius2(n), s0(n), s1(n), s2(n);
     for (int i = 0; i < n; i++) {
         int bound = min(i, n - 1 - i);
         auto lce = [&](int offset) -> int {
-            return min(sa.substring_lcp(2 * n - (i - offset), i + offset), bound - offset + 1);
+            int l = 0, r = bound - offset + 2, m;
+            while (l + 1 < r) {
+                m = l + (r - l) / 2;
+
+                if (hs.pref_hash(2 * n - (i - offset), 2 * n - (i - offset) + m) == hs.pref_hash(i + offset, i + offset + m)) l = m;
+                else r = m;
+            }
+            return l;
         };
 
         int r0 = lce(1), r1 = r0;
