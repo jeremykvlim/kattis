@@ -50,7 +50,7 @@ int main() {
 
     int count = 0;
     vector<pair<int, int>> prev(n + 1, {-1, -1});
-    vector<int> depth(n + 1, 0), in(n + 1), out(n + 1);
+    vector<int> in(n + 1), out(n + 1), depth(n + 1, 0);
     auto dfs = [&](auto &&self, int v = 1) -> void {
         in[v] = count++;
         for (auto [u, w] : adj_list[v])
