@@ -33,7 +33,6 @@ int main() {
         
         vector<int> in(n), out(n), prev(n, -1);
         vector<long long> dist(n);
-
         int count = 0;
         auto dfs = [&](auto &&self, int v) -> void {
             in[v] = count++;
