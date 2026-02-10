@@ -22,7 +22,7 @@ struct DisjointSets {
     }
 };
 
-template<typename T>
+template <typename T>
 pair<T, vector<int>> edmonds_dense(int n, vector<vector<pair<int, T>>> adj_list_transpose, int root = 0) {
     for (auto &neighbors : adj_list_transpose) sort(neighbors.begin(), neighbors.end(), [&](const auto &p1, const auto &p2) { return p1.second > p2.second; });
 

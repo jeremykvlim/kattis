@@ -627,7 +627,7 @@ vector<T> polyln(const vector<T> &a, int n) {
     return ln_a;
 }
 
-template<typename T>
+template <typename T>
 vector<T> polyexp(const vector<T> &a, int n) {
     vector<T> E{(T) 1};
     while (E.size() < n) {
