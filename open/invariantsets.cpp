@@ -23,15 +23,20 @@ struct DisjointSets {
 };
 
 ostream & operator<<(ostream &stream, const __int128 &v) {
-    if (abs(v) <= LLONG_MAX) return stream << (long long) v;
+    if (!v) return stream << 0;
+    if (v == numeric_limits<__int128>::min()) return stream << "-170141183460469231731687303715884105728";
+
+    auto temp = v;
+    if (v < 0) {
+        stream << '-';
+        temp = -temp;
+    }
 
     string s;
-    auto temp = v;
     while (temp) {
         s += '0' + (temp % 10);
         temp /= 10;
     }
-    if (v < 0) s += '-';
     reverse(s.begin(), s.end());
     return stream << s;
 }
