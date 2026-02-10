@@ -556,7 +556,7 @@ int main() {
         adj_list[p].emplace_back(v);
     }
 
-    vector<int> in(n + 1), out(n + 1), depth(n + 1);
+    vector<int> in(n + 1), out(n + 1), depth(n + 1, 0);
     int count = 0;
     auto dfs = [&](auto &&self, int v = 1) -> void {
         in[v] = count++;
