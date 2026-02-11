@@ -1,75 +1,87 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct Trie {
-    enum ascii {
-        LOWER = 97,
-        UPPER = 65,
-        NUM = 48,
-        SYM = 32,
-        NA = 0
-    };
+template <typename T>
+struct WaveletMatrix {
+    int lg;
+    vector<int> mid;
+    vector<vector<int>> pref;
+    vector<pair<T, int>> order;
 
-    struct TrieNode {
-        vector<int> next;
-        array<int, 3> queries;
+    WaveletMatrix(int n, vector<T> a) : lg(__lg(*max_element(a.begin(), a.end()) + 1) + 1), order(n) {
+        mid.resize(lg);
+        pref.assign(lg, vector<int>(n + 1, 0));
 
-        TrieNode(int range = 26) : next(range, -1), queries({0, 0, 0}) {}
-    };
+        vector<pair<T, int>> temp(n);
+        for (int i = 0; i < n; i++) order[i] = {a[i], i};
+        for (int b = lg - 1; ~b; b--) {
+            for (int i = 0; i < n; i++) pref[b][i + 1] = pref[b][i] + ((order[i].first >> b) & 1);
 
-    vector<TrieNode> T;
-    ascii a;
-    int r;
-    vector<int> order;
-
-    Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
-
-    int add(string &s, int q) {
-        int node = 0;
-        if (!q) {
-            for (int i = 0; i < s.size(); i++) {
-                int pos = s[i] - a;
-
-                if (T[node].next[pos] == -1) {
-                    T[node].next[pos] = T.size();
-                    T.emplace_back(TrieNode(r));
-                }
-                node = T[node].next[pos];
-                if (i & 1) T[node].queries[q]++;
-            }
-        } else {
-            for (char c : s) {
-                int pos = c - a;
-
-                if (T[node].next[pos] == -1) {
-                    T[node].next[pos] = T.size();
-                    T.emplace_back(TrieNode(r));
-                }
-                node = T[node].next[pos];
-                T[node].queries[q]++;
-            }
+            int zeroes = 0, ones = mid[b] = n - pref[b][n];
+            for (int i = 0; i < n; i++) temp[((order[i].first >> b) & 1) ? ones++ : zeroes++] = order[i];
+            order.swap(temp);
         }
-
-        return node;
     }
 
-    int query(string &s, int q) {
-        int node = 0;
-        for (char c : s) {
-            int pos = c - a;
-
-            if (T[node].next[pos] == -1) {
-                T[node].next[pos] = T.size();
-                T.emplace_back(TrieNode(r));
+    tuple<T, int, int, int> quantile(int l, int r, int k) {
+        T v = 0;
+        for (int b = lg - 1; ~b; b--) {
+            int zeroes = (r - pref[b][r]) - (l - pref[b][l]);
+            if (k >= zeroes) {
+                k -= zeroes;
+                v |= ((T) 1) << b;
+                l = pref[b][l] + mid[b];
+                r = pref[b][r] + mid[b];
+            } else {
+                l -= pref[b][l];
+                r -= pref[b][r];
             }
-            node = T[node].next[pos];
         }
-
-        return T[node].queries[q];
+        return {v, k, r - l, order[l + k].second};
     }
 
-    auto & operator[](int i) {
-        return T[i];
+    int freq_less(int l, int r, T x) {
+        int f = 0;
+        for (int b = lg - 1; ~b; b--) {
+            if ((x >> b) & 1) {
+                f += (r - pref[b][r]) - (l - pref[b][l]);
+                l = pref[b][l] + mid[b];
+                r = pref[b][r] + mid[b];
+            } else {
+                l -= pref[b][l];
+                r -= pref[b][r];
+            }
+        }
+        return f;
+    }
+
+    int freq(int l, int r, T x) {
+        if ((((T) 1) << lg) <= x) return 0;
+        for (int b = lg - 1; ~b; b--) {
+            if ((x >> b) & 1) {
+                l = pref[b][l] + mid[b];
+                r = pref[b][r] + mid[b];
+            } else {
+                l -= pref[b][l];
+                r -= pref[b][r];
+            }
+        }
+        return r - l;
+    }
+
+    T lower_bound(int l, int r, T x) {
+        int f = freq_less(l, r, x);
+        return f == r - l ? -1 : get<0>(quantile(l, r, f));
+    }
+
+    T predecessor(int l, int r, T x) {
+        int f = freq_less(l, r, x);
+        return !f ? -1 : get<0>(quantile(l, r, f - 1));
+    }
+
+    T successor(int l, int r, T x) {
+        int f = freq_less(l, r, x) + freq(l, r, x);
+        return f == r - l ? -1 : get<0>(quantile(l, r, f));
     }
 };
 
@@ -80,24 +92,32 @@ int main() {
     int n, q;
     cin >> n >> q;
 
-    Trie trie;
-    while (n--) {
+    vector<pair<string, int>> words(n), words_rev(n);
+    for (int i = 0; i < n; i++) {
         string w;
         cin >> w;
 
-        auto rev = w;
-        reverse(rev.begin(), rev.end());
-
-        string both(2 * w.size(), '#');
-        for (int i = 0; i < w.size(); i++) {
-            both[2 * i] = w[i];
-            both[2 * i + 1] = rev[i];
-        }
-        
-        trie.add(both, 0);
-        trie.add(w, 1);
-        trie.add(rev, 2);
+        words[i] = {w, i};
+        reverse(w.begin(), w.end());
+        words_rev[i] = {w, i};
     }
+    sort(words.begin(), words.end());
+    sort(words_rev.begin(), words_rev.end());
+
+    vector<int> rank(n), rank_rev(n);
+    for (int i = 0; i < n; i++) {
+        rank[words[i].second] = i;
+        rank_rev[words_rev[i].second] = i;
+    }
+
+    vector<int> a(n);
+    for (int i = 0; i < n; i++) a[i] = rank_rev[words[i].second];
+    WaveletMatrix<int> wm(n, a);
+
+    auto count_AND = [&](int l1, int r1, int l2, int r2) {
+        if (l1 == r1 || l2 == r2) return 0;
+        return wm.freq_less(l1, r1, r2) - wm.freq_less(l1, r1, l2);
+    };
 
     while (q--) {
         string o, p, s;
@@ -106,13 +126,17 @@ int main() {
         auto rev = s;
         reverse(rev.begin(), rev.end());
 
-        string both(2 * p.size(), '#');
-        for (int i = 0; i < p.size(); i++) {
-            both[2 * i] = p[i];
-            both[2 * i + 1] = rev[i];
-        }
+        int l1 = lower_bound(words.begin(), words.end(), make_pair(p, -1)) - words.begin(), 
+            l2 = lower_bound(words_rev.begin(), words_rev.end(), make_pair(rev, -1)) - words_rev.begin();
+        
+        p.back()++;
+        rev.back()++;
+        
+        int r1 = lower_bound(words.begin(), words.end(), make_pair(p, -1)) - words.begin(),
+            r2 = lower_bound(words_rev.begin(), words_rev.end(), make_pair(rev, -1)) - words_rev.begin();
 
-        if (o == "AND") cout << trie.query(both, 0) << "\n";
-        else cout << trie.query(p, 1) + trie.query(rev, 2) - (o == "OR" ? 1 : 2) * trie.query(both, 0) << "\n";
+        if (o == "AND") cout << count_AND(l1, r1, l2, r2) << "\n";
+        else if (o == "OR") cout << r1 - l1 + r2 - l2 - count_AND(l1, r1, l2, r2) << "\n";
+        else cout << r1 - l1 + r2 - l2 - 2 * count_AND(l1, r1, l2, r2) << "\n";
     }
 }
