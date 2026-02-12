@@ -218,10 +218,9 @@ int main() {
     visited[g - 1] = true;
     auto dfs = [&](auto &&self, int v, int prev) -> void {
         visited[v] = true;
-        if (!cutpoint[v]) {
+        if (!cutpoint[v])
             for (int u : adj_list[v])
                 if (u != prev && !visited[u]) self(self, u, v);
-        }
     };
     for (int v : adj_list[g - 1])
         if (!visited[v]) dfs(dfs, v, g - 1);
