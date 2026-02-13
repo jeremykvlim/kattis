@@ -116,8 +116,8 @@ struct Point {
 };
 
 template <typename T>
-T squared_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
-    return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
+double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
+    return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
 template <typename T>
@@ -129,12 +129,13 @@ struct Circle {
     Circle() {}
     Circle(const Point<T> &o, const T &r, const int &i) : origin(o), radius(r), i(i) {}
 
-    bool operator<(const Circle &c) {
+    bool operator<(const Circle &c) const {
         return radius != c.radius ? radius < c.radius : origin < c.origin;
     }
 
     bool encloses(const Circle &c) const {
-        return radius > c.radius && squared_dist(origin, c.origin) < radius * radius;
+        if (radius < c.radius) return false;
+        return euclidean_dist(origin, c.origin) <= radius - c.radius;
     }
 };
 
