@@ -2,6 +2,17 @@
 using namespace std;
 
 template <typename T>
+bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
+    return fabs(v1 - v2) <= epsilon;
+}
+
+template <typename T>
+int sgn(const T &v) {
+    if (!is_floating_point_v<T>) return (v > 0) - (v < 0);
+    return approximately_equal(v, (T) 0) ? 0 : (v > 0) - (v < 0);
+}
+
+template <typename T>
 struct Point {
     T x, y;
 
@@ -136,8 +147,16 @@ struct Circle {
         return origin == c.origin && radius == c.radius;
     }
 
+    bool contains(const Circle &c) const {
+        return sgn(euclidean_dist(origin, c.origin) - radius + c.radius) < 0;
+    }
+
+    bool borders(const Circle &c) const {
+        return !sgn(euclidean_dist(origin, c.origin) - radius + c.radius);
+    }
+
     bool encloses(const Circle &c) const {
-        return euclidean_dist(origin, c.origin) <= radius - c.radius;
+        return contains(c) || borders(c);
     }
 };
 
