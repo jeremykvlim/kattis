@@ -51,7 +51,7 @@ int main() {
     for (int n, i = 1; cin >> n && n;) {
         cout << "Set " << i++ << "\n";
 
-        int g = 1;
+        int g = 0;
         vector<int> w(n);
         for (int &wi : w) {
             cin >> wi;
@@ -90,7 +90,7 @@ int main() {
             long long p;
             cin >> p;
 
-            auto W = 100 * p + 1;
+            auto W = (100 * p + 1) / g;
             for (int rem = 0; rem < w0; rem++) {
                 auto weight = [&](long long quo) -> long long {
                     return w0 * quo + rem;
@@ -109,8 +109,8 @@ int main() {
                 W = min(W, weight(r));
                 next:;
             }
-            if (W == 100 * p + 1) cout << "no candy for you\n";
-            else cout << W << "\n";
+            if (W == (100 * p + 1) / g) cout << "no candy for you\n";
+            else cout << W * g << "\n";
         }
     }
 }
