@@ -153,7 +153,6 @@ struct Circle {
     Circle(const Point<T> &o, const T &r) : origin(o), radius(r) {}
 
     bool operator==(const Circle &c) const {
-        if constexpr (is_floating_point_v<T>) return origin == c.origin && !sgn(radius - c.radius);
         return origin == c.origin && radius == c.radius;
     }
 };
