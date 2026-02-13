@@ -147,14 +147,6 @@ struct Circle {
     bool contains(const Circle &c) const {
         return sgn(euclidean_dist(origin, c.origin) - radius + c.radius) < 0;
     }
-
-    bool borders(const Circle &c) const {
-        return !sgn(euclidean_dist(origin, c.origin) - radius + c.radius);
-    }
-
-    bool encloses(const Circle &c) const {
-        return contains(c) || borders(c);
-    }
 };
 
 int main() {
@@ -180,7 +172,7 @@ int main() {
     vector<pair<int, int>> peak(n + 1, {0, 0});
     for (int i = n - 2; ~i; i--)
         for (int j = i + 1; j < n; j++)
-            if (circles[j].encloses(circles[i])) {
+            if (circles[j].contains(circles[i])) {
                 int c1 = circles[i].i, c2 = circles[j].i;
                 parent[c1] = c2;
                 depth[c1] = depth[c2] + 1;
