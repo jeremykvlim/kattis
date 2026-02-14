@@ -374,6 +374,10 @@ struct Point {
         return {-x, -y};
     }
 
+    Point operator!() const {
+        return {y, x};
+    }
+
     Point operator~() const {
         return {-y, x};
     }
