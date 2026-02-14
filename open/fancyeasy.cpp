@@ -159,7 +159,7 @@ struct Matrix {
 
 template <typename T>
 Matrix<T> I(int n) {
-    Matrix<T> I(n, n);
+    Matrix<T> I(n);
     for (int i = 0; i < n; i++) I[i][i] = 0;
     return I;
 }
@@ -199,7 +199,7 @@ int main() {
             count[l][r - l]++;
         }
 
-    Matrix<int> dp(m, m);
+    Matrix<int> dp(m);
     for (int l = 0; l < m; l++) {
         for (int r = 1, pref = 0; r < m; r++) count[l][r] = pref += count[l][r];
         for (int r = l + 1; r < m; r++) dp[l][r] = count[l][r - l];
