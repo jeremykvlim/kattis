@@ -12,7 +12,7 @@ struct Matrix {
     vector<vector<T>> mat;
 
     Matrix(int n = 0) : Matrix(n, n) {}
-    Matrix(int rows, int cols, int v = 0) : r(rows), c(cols), mat(rows, vector<T>(cols, v)) {}
+    Matrix(int rows, int cols, T v = 0) : r(rows), c(cols), mat(rows, vector<T>(cols, v)) {}
     Matrix(const vector<vector<T>> &mat) : r(mat.size()), c(mat[0].size()), mat(mat) {}
 
     friend auto operator*(const Matrix<T> &A, const Matrix<T> &B) {
