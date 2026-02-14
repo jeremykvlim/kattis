@@ -138,33 +138,42 @@ T squared_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
 template <typename T>
 struct KDTree {
     struct KDNode {
+        int l, r;
         Point<T> p;
         bool dir;
+        T xl, xr, yl, yr;
 
         KDNode() {}
-        KDNode(const Point<T> &p, bool dir = false) : p(p), dir(dir) {}
+        KDNode(const Point<T> &p, bool dir, T xl, T xr, T yl, T yr) : p(p), dir(dir), xl(xl), xr(xr), yl(yl), yr(yr) {}
     };
 
     vector<Point<T>> points;
     vector<KDNode> KDT;
-    vector<pair<int, int>> children;
 
-    KDTree(int n, const vector<Point<T>> &p) : points(p), KDT(n), children(n, {-1, -1}) {
+    KDTree(int n, const vector<Point<T>> &p) : points(p), KDT(n) {
         int i = 0;
         build(i, 0, n);
     }
 
-    int build(int &i, int l, int r, bool dir = false) {
+    int build(int &i, int l, int r) {
         if (l >= r) return -1;
 
-        int m = l + (r - l) / 2;
-        nth_element(points.begin() + l, points.begin() + m, points.begin() + r, [dir](const auto &a, const auto &b) { return !dir ? a.x < b.x : a.y < b.y; });
-
         int j = i++;
-        KDT[j] = {points[m], dir};
-        auto &[cl, cr] = children[j];
-        cl = build(i, l, m, !dir);
-        cr = build(i, m + 1, r, !dir);
+        T xl = points[l].x, xr = points[l].x, yl = points[l].y, yr = points[l].y;
+        for (int k = l + 1; k < r; k++) {
+            xl = min(xl, points[k].x);
+            xr = max(xr, points[k].x);
+            yl = min(yl, points[k].y);
+            yr = max(yr, points[k].y);
+        }
+
+        bool dir = (xr - xl) < (yr - yl);
+        int m = l + (r - l) / 2;
+        nth_element(points.begin() + l, points.begin() + m, points.begin() + r, [dir](const auto &a, const auto &b) { return !dir ? a < b : !a < !b; });
+
+        KDT[j] = {points[m], dir, xl, xr, yl, yr};
+        KDT[j].l = build(i, l, m);
+        KDT[j].r = build(i, m + 1, r);
         return j;
     }
 
@@ -172,14 +181,14 @@ struct KDTree {
         return nearest_neighbor_dist(0, p);
     }
 
-    T nearest_neighbor_dist(int i, const Point<T> &p) {
-        if (i == -1) return numeric_limits<T>::max();
+    T nearest_neighbor_dist(int i, const Point<T> &p, T dist = numeric_limits<T>::max()) {
+        if (!~i || squared_dist(p, {min(KDT[i].xr, max(KDT[i].xl, p.x)), min(KDT[i].yr, max(KDT[i].yl, p.y))}) >= dist) return dist;
 
-        T dist = squared_dist(p, KDT[i].p), diff = !KDT[i].dir ? (p - KDT[i].p).x : (p - KDT[i].p).y;
+        dist = min(dist, squared_dist(p, KDT[i].p));
+        T diff = !KDT[i].dir ? (p - KDT[i].p).x : (p - KDT[i].p).y;
 
-        auto [cl, cr] = children[i];
-        dist = min(dist, nearest_neighbor_dist(diff <= 0 ? cl : cr, p));
-        if (diff * diff < dist) dist = min(dist, nearest_neighbor_dist(diff <= 0 ? cr : cl, p));
+        dist = nearest_neighbor_dist(diff <= 0 ? KDT[i].l : KDT[i].r, p, dist);
+        if (diff * diff < dist) dist = nearest_neighbor_dist(diff <= 0 ? KDT[i].r : KDT[i].l, p, dist);
         return dist;
     }
 };
