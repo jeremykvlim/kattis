@@ -110,18 +110,14 @@ int main() {
     int n = 1e5, total = 0;
     vector<int> e(T);
     vector<pair<double, int>> diffs;
-    for (int i = 0; i < T; i++) {
-        auto E = (solution[i] / sum) * n;
-        total += e[i] = floor(E);
-        diffs.emplace_back(e[i] - E, i);
+    for (int t = 0; t < T; t++) {
+        auto E = (solution[t] / sum) * n;
+        total += e[t] = floor(E);
+        diffs.emplace_back(e[t] - E, t);
     }
     sort(diffs.begin(), diffs.end());
     for (int i = 0; i < n - total; i++) e[diffs[i].second]++;
 
-    vector<int> moves;
-    for (int i = 0; i < T; i++)
-        for (int j = 0; j < e[i]; j++) moves.emplace_back(i);
-
-    shuffle(moves.begin(), moves.end(), mt19937(random_device{}()));
-    for (int t : moves) cout << t + 1 << " ";
+    for (int t = 0; t < T; t++)
+        while (e[t]--) cout << t + 1 << " ";
 }
