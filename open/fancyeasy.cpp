@@ -120,77 +120,62 @@ struct Point {
 };
 
 template <typename T>
-T cross(const Point<T> &a, const Point<T> &b) {
-    return (a.x * b.y) - (a.y * b.x);
+T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
+    return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
 template <typename T>
-struct Line {
-    Point<T> a, b;
+struct Matrix {
+    int r, c;
+    vector<vector<T>> mat;
 
-    Line() {}
-    Line(Point<T> a, Point<T> b) : a(a), b(b) {}
+    Matrix(int n = 0) : Matrix(n, n) {}
+    Matrix(int rows, int cols, T v = numeric_limits<T>::max() / 4) : r(rows), c(cols), mat(rows, vector<T>(cols, v)) {}
+    Matrix(const vector<vector<T>> &mat) : r(mat.size()), c(mat[0].size()), mat(mat) {}
+
+    friend auto operator*(const Matrix<T> &A, const Matrix<T> &B) {
+        int r1 = A.r, c1 = A.c, c2 = B.c;
+
+        Matrix<T> C(r1, c2);
+        for (int i = 0; i < r1; i++)
+            for (int k = 0; k < c1; k++)
+                if (A[i][k] != numeric_limits<T>::max() / 4)
+                    for (int j = 0; j < c2; j++) C[i][j] = min(C[i][j], A[i][k] + B[k][j]);
+        return C;
+    }
+
+    friend auto operator*=(Matrix<T> &A, Matrix<T> &B) {
+        return A = A * B;
+    }
+
+    auto & operator[](int i) {
+        return mat[i];
+    }
+
+    auto & operator[](int i) const {
+        return mat[i];
+    }
 };
 
 template <typename T>
-struct KDTree {
-    struct KDNode {
-        Point<T> p;
-        T xl, xr, yl, yr;
-        int size;
+Matrix<T> I(int n) {
+    Matrix<T> I(n, n);
+    for (int i = 0; i < n; i++) I[i][i] = 0;
+    return I;
+}
 
-        KDNode() {}
-        KDNode(const Point<T> &p) : p(p), xl(p.x), xr(p.x), yl(p.y), yr(p.y), size(1) {}
+template <typename T, typename U>
+Matrix<T> matpow(Matrix<T> A, U exponent) {
+    int n = A.r;
+    auto B = I<T>(n);
 
-        auto & operator+=(const KDNode &node) {
-            xl = min(xl, node.xl);
-            xr = max(xr, node.xr);
-            yl = min(yl, node.yl);
-            yr = max(yr, node.yr);
-            size += node.size;
-        }
-    };
-
-    vector<Point<T>> points;
-    vector<KDNode> KDT;
-    vector<pair<int, int>> children;
-
-    KDTree(int n, const vector<Point<T>> &p) : points(p), KDT(n), children(n, {-1, -1}) {
-        int i = 0;
-        build(i, 0, n);
+    while (exponent) {
+        if (exponent & 1) B = A * B;
+        A = A * A;
+        exponent >>= 1;
     }
-
-    int build(int &i, int l, int r, bool dir = false) {
-        if (l >= r) return -1;
-
-        int m = l + (r - l) / 2;
-        nth_element(points.begin() + l, points.begin() + m, points.begin() + r, [dir](const auto &a, const auto &b) { return !dir ? a.x < b.x : a.y < b.y; });
-
-        int j = i++;
-        KDT[j] = points[m];
-        auto &[cl, cr] = children[j];
-        cl = build(i, l, m, !dir);
-        cr = build(i, m + 1, r, !dir);
-        if (~cl) KDT[j] += KDT[cl];
-        if (~cr) KDT[j] += KDT[cr];
-        return j;
-    }
-
-    int points_in_half_plane(const Line<T> &l) {
-        return points_in_half_plane(0, l.a - l.b, cross(l.a, l.b));
-    }
-
-    int points_in_half_plane(int i, const Point<T> &v, const T &c) {
-        if (i == -1) return 0;
-
-        T cll = cross({KDT[i].xl, KDT[i].yl}, v), clr = cross({KDT[i].xl, KDT[i].yr}, v), crl = cross({KDT[i].xr, KDT[i].yl}, v), crr = cross({KDT[i].xr, KDT[i].yr}, v);
-        if (c + min({cll, clr, crl, crr}) > 0) return 0;
-        if (c + max({cll, clr, crl, crr}) <= 0) return KDT[i].size;
-
-        auto [cl, cr] = children[i];
-        return points_in_half_plane(cl, v, c) + points_in_half_plane(cr, v, c) + (c + cross(KDT[i].p, v) <= 0);
-    }
-};
+    return B;
+}
 
 int main() {
     ios::sync_with_stdio(false);
@@ -198,31 +183,32 @@ int main() {
 
     int n, m, k;
     cin >> n >> m >> k;
-    k = min(m, k);
+    k = min(k, m);
 
     vector<Point<long long>> onions(n), polygon(m);
     for (auto &[x, y] : onions) cin >> x >> y;
     for (auto &[x, y] : polygon) cin >> x >> y;
-    reverse(polygon.begin(), polygon.end());
 
-    KDTree<long long> kdt(n, onions);
-    vector<vector<int>> outside(m, vector<int>(m, 0));
-    for (int i = 0; i < m; i++)
-        for (int j = 0; j < m; j++)
-            if (i != j) outside[i][j] = kdt.points_in_half_plane({polygon[i], polygon[j]});
+    polygon.resize(2 * m);
+    for (int i = 0; i < m; i++) polygon[i + m] = polygon[i];
 
-    vector<vector<vector<int>>> memo(m, vector<vector<int>>(m, vector<int>(k + 1, -1)));
-    auto dp = [&](auto &&self, int i, int l, int k) {
-        if (!~k || i - l > m) return n;
-        if (i - l == m) return 0;
+    vector<vector<int>> count(m, vector<int>(m, 0));
+    for (auto p : onions)
+        for (int l = 0, r = 2; l < m; l++) {
+            for (r = max(r, l + 2); r < l + m - 1 && cross(p, polygon[l], polygon[r]) < 0; r++);
+            count[l][r - l]++;
+        }
 
-        if (~memo[i % m][l][k]) return memo[i % m][l][k];
-        int stolen = n;
-        for (int j = i + 1; j < i + m; j++) stolen = min(stolen, outside[i % m][j % m] + self(self, j, l, k - 1));
-        return memo[i % m][l][k] = stolen;
-    };
+    Matrix<int> dp(m, m);
+    for (int l = 0; l < m; l++) {
+        for (int r = 1, pref = 0; r < m; r++) count[l][r] = pref += count[l][r];
+        for (int r = l + 1; r < m; r++) dp[l][r] = count[l][r - l];
+    }
+    dp = matpow(dp, k - 1);
 
     int stolen = n;
-    for (int i = 0; i < m / k; i++) stolen = min(stolen, dp(dp, i, i, k));
+    for (int i = 0; i < m; i++)
+        for (int j = i + 1; j < m; j++)
+            if (dp[i][j] < n) stolen = min(stolen, dp[i][j] + count[j][m - (j - i)]);
     cout << n - stolen;
 }
