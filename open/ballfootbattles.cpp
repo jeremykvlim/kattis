@@ -480,15 +480,9 @@ int main() {
     g.insert(g.begin(), vector<int>(t, 0));
     modint ways = 1;
     for (int i = 1; i <= N; i++) {
-        long long n = 0;
+        auto n = 0LL;
         vector<long long> ks(t);
-        for (int j = 0; j < t; j++) {
-            n += ks[j] = g[i][j] - g[i - 1][j];
-            if (ks[j] < 0) {
-                cout << 0;
-                exit(0);
-            }
-        }
+        for (int j = 0; j < t; j++) n += ks[j] = g[i][j] - g[i - 1][j];
         ways *= multinomial_coefficient_mod_p(n, ks, MOD, fact, fact_inv);
     }
     cout << ways;
