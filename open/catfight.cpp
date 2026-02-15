@@ -2,6 +2,17 @@
 using namespace std;
 
 template <typename T>
+bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
+    return fabs(v1 - v2) <= epsilon;
+}
+
+template <typename T>
+int sgn(const T &v) {
+    if (!is_floating_point_v<T>) return (v > 0) - (v < 0);
+    return approximately_equal(v, (T) 0) ? 0 : (v > 0) - (v < 0);
+}
+
+template <typename T>
 struct Point {
     T x, y;
 
@@ -120,6 +131,11 @@ struct Point {
 };
 
 template <typename T>
+double angle(const Point<T> &p) {
+    return atan2(p.y, p.x);
+}
+
+template <typename T>
 double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
@@ -174,19 +190,72 @@ struct Circle {
 
     Circle() {}
     Circle(const Point<T> &o, const T &r) : origin(o), radius(r) {}
+
+    bool contains(const Circle &c) const {
+        return sgn(euclidean_dist(origin, c.origin) - radius + c.radius) < 0;
+    }
+
+    bool borders(const Circle &c) const {
+        return !sgn(euclidean_dist(origin, c.origin) - radius + c.radius);
+    }
+
+    bool encloses(const Circle &c) const {
+        return contains(c) || borders(c);
+    }
 };
 
 template <typename T>
-T area_of_circle_circle_intersection(const Circle<T> &c1, const Circle<T> &c2) {
-    T d = euclidean_dist(c1.origin, c2.origin);
+T area_of_circle_circle_intersections(const vector<Circle<T>> &circles) {
+    int n = circles.size();
 
-    if (d >= c1.radius + c2.radius) return 0;
+    T area = 0;
+    for (int i = 0; i < n; i++) {
+        vector<pair<T, T>> intervals{{0, 2 * M_PI}};
+        for (int j = 0; j < n; j++)
+            if (i != j) {
+                auto v = circles[j].origin - circles[i].origin;
+                T d = euclidean_dist(v);
+                if (!sgn(d)) {
+                    if (circles[j].encloses(circles[i])) continue;
+                    intervals.clear();
+                    break;
+                }
 
-    auto [rmin, rmax] = minmax(c1.radius, c2.radius);
-    if (d <= rmax - rmin) return M_PI * rmin * rmin;
+                T bound = (circles[i].radius * circles[i].radius + d * d - circles[j].radius * circles[j].radius) / (2 * circles[i].radius * d);
+                if (bound <= -1) continue;
+                if (bound >= 1) {
+                    intervals.clear();
+                    break;
+                }
 
-    T r1_sq = c1.radius * c1.radius, r2_sq = c2.radius * c2.radius, alpha = acos((d * d + r1_sq - r2_sq) / (2 * d * c1.radius)) * 2, beta = acos((d * d + r2_sq - r1_sq) / (2 * d * c2.radius)) * 2;
-    return 0.5 * (r1_sq * (alpha - sin(alpha)) + r2_sq * (beta - sin(beta)));
+                auto add = [&](const pair<T, T> &interval) {
+                    vector<pair<T, T>> merged;
+                    for (auto [l, r] : intervals) {
+                        T x = max(l, interval.first), y = min(r, interval.second);
+                        if (x < y) merged.emplace_back(x, y);
+                    }
+                    return merged;
+                };
+
+                T a = angle(v), theta = acos(bound),
+                  l = fmod(fmod(a - theta, 2 * M_PI) + 2 * M_PI, 2 * M_PI), r = fmod(fmod(a + theta, 2 * M_PI) + 2 * M_PI, 2 * M_PI);
+
+                if (l <= r) intervals = add({l, r});
+                else {
+                    auto temp = add({l, 2 * M_PI});
+                    intervals = add({0, r});
+                    intervals.insert(intervals.end(), temp.begin(), temp.end());
+                }
+                if (intervals.empty()) break;
+            }
+
+        for (auto [l, r] : intervals)
+            if (l < r) {
+                auto [p, R] = circles[i];
+                area += 0.5 * (R * p.x * (sin(r) - sin(l)) + R * p.y * (cos(l) - cos(r)) + R * R * (r - l));
+            }
+    }
+    return area;
 }
 
 template <typename T>
@@ -270,13 +339,13 @@ int main() {
         auto [pair, d] = closest_pair(male);
         auto [a, b] = pair;
         Circle c1(male[a], rm), c2(male[b], rm);
-        overlap = max(overlap, area_of_circle_circle_intersection(c1, c2));
+        overlap = max(overlap, area_of_circle_circle_intersections(vector{c1, c2}));
     }
     if (female.size() >= 2) {
         auto [pair, d] = closest_pair(female);
         auto [a, b] = pair;
         Circle c1(female[a], rf), c2(female[b], rf);
-        overlap = max(overlap, area_of_circle_circle_intersection(c1, c2));
+        overlap = max(overlap, area_of_circle_circle_intersections(vector{c1, c2}));
     }
     if (!female.empty() && !male.empty()) {
         auto g1 = male, g2 = female;
@@ -286,7 +355,7 @@ int main() {
         auto d = 1e20;
         for (auto p : g2) d = min(d, kdt.nearest_neighbor_dist(p));
         Circle c1({0, 0}, rf), c2({sqrt(d), 0}, rm);
-        overlap = max(overlap, area_of_circle_circle_intersection(c1, c2));
+        overlap = max(overlap, area_of_circle_circle_intersections(vector{c1, c2}));
     }
     cout << fixed << setprecision(5) << overlap;
 }
