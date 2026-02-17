@@ -2,7 +2,7 @@
 using namespace std;
 
 template <typename T>
-pair<vector<int>, T> jonker_volgenant(const vector<vector<T>> &C) {
+pair<T, vector<int>> jonker_volgenant(const vector<vector<T>> &C) {
     int n = C.size(), m = C[0].size();
 
     vector<T> dist(m), potential(m);
@@ -59,7 +59,7 @@ pair<vector<int>, T> jonker_volgenant(const vector<vector<T>> &C) {
 
     T cost = 0;
     for (int i = 0; i < n; i++) cost += C[i][row_match[i]];
-    return {row_match, cost};
+    return {cost, row_match};
 }
 
 int main() {
@@ -103,12 +103,12 @@ int main() {
             auto dist = [&](auto &a1, auto &a2) {
                 return max({abs(a1[0] - a2[0]), abs(a1[1] - a2[1]), abs(a1[2] - a2[2])});
             };
-            
+
             vector<vector<int>> C(s, vector<int>(s));
             for (int i = 0; i < s; i++)
                 for (int j = 0; j < s; j++) C[i][j] = val[i] * dist(checkers[i], targets[k][j]);
 
-            score = min(score, jonker_volgenant(C).second);
+            score = min(score, jonker_volgenant(C).first);
         }
 
         cout << "Case #" << X << ": " << score << "\n";

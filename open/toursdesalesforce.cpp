@@ -155,7 +155,7 @@ T held_karp(int n, const vector<vector<T>> &dist, int src = 0) {
 }
 
 template <typename T>
-pair<vector<int>, T> jonker_volgenant(const vector<vector<T>> &C) {
+pair<T, vector<int>> jonker_volgenant(const vector<vector<T>> &C) {
     int n = C.size(), m = C[0].size();
 
     vector<T> dist(m), potential(m);
@@ -212,7 +212,7 @@ pair<vector<int>, T> jonker_volgenant(const vector<vector<T>> &C) {
 
     T cost = 0;
     for (int i = 0; i < n; i++) cost += C[i][row_match[i]];
-    return {row_match, cost};
+    return {cost, row_match};
 }
 
 int main() {
@@ -254,5 +254,5 @@ int main() {
             for (auto &p : districts[l[j]]) points.emplace_back(p);
             cost[i][j] = len(points);
         }
-    cout << fixed << setprecision(2) << prior << " " << jonker_volgenant(cost).second;
+    cout << fixed << setprecision(2) << prior << " " << jonker_volgenant(cost).first;
 }

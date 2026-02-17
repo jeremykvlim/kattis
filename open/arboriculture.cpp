@@ -2,7 +2,7 @@
 using namespace std;
 
 template <typename T>
-pair<vector<int>, T> jonker_volgenant(const vector<vector<T>> &C) {
+pair<T, vector<int>> jonker_volgenant(const vector<vector<T>> &C) {
     int n = C.size(), m = C[0].size();
 
     vector<T> dist(m), potential(m);
@@ -59,7 +59,7 @@ pair<vector<int>, T> jonker_volgenant(const vector<vector<T>> &C) {
 
     T cost = 0;
     for (int i = 0; i < n; i++) cost += C[i][row_match[i]];
-    return {row_match, cost};
+    return {cost, row_match};
 }
 
 int main() {
@@ -121,7 +121,7 @@ int main() {
                 vector<vector<int>> c(s2, vector<int>(s1, 1e6));
                 for (int i = 0; i < s2; i++)
                     for (int j = 0; j < s1; j++) c[i][j] = memo[t2[a][j]][t1[b][i]];
-                memo[a][b] = jonker_volgenant(c).second + s1 - s2;
+                memo[a][b] = jonker_volgenant(c).first + s1 - s2;
             }
 
         return memo[0][0];
@@ -130,5 +130,5 @@ int main() {
     vector<vector<int>> cost(n, vector<int>(m, 1e6));
     for (int i = 0; i < n; i++)
         for (int j = 0; j < m; j++) cost[i][j] = dp(need[i], have[j]);
-    cout << jonker_volgenant(cost).second;
+    cout << jonker_volgenant(cost).first;
 }

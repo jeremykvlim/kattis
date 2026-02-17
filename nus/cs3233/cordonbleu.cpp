@@ -125,7 +125,7 @@ T manhattan_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
 }
 
 template <typename T>
-pair<vector<int>, T> jonker_volgenant(const vector<vector<T>> &C) {
+pair<T, vector<int>> jonker_volgenant(const vector<vector<T>> &C) {
     int n = C.size(), m = C[0].size();
 
     vector<T> dist(m), potential(m);
@@ -182,7 +182,7 @@ pair<vector<int>, T> jonker_volgenant(const vector<vector<T>> &C) {
 
     T cost = 0;
     for (int i = 0; i < n; i++) cost += C[i][row_match[i]];
-    return {row_match, cost};
+    return {cost, row_match};
 }
 
 int main() {
@@ -204,7 +204,7 @@ int main() {
         for (int j = m; j < n + m - 1; j++) C[i][j] = manhattan_dist(b[i], r);
     }
 
-    auto cost = jonker_volgenant(C).second;
+    auto cost = jonker_volgenant(C).first;
     for (int i = 0; i < n; i++) cost += manhattan_dist(b[i], r);
     cout << cost;
 }

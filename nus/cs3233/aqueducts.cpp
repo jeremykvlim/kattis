@@ -123,7 +123,7 @@ double euclidean_dist(const Point3D<T> &a, const Point3D<T> &b = {0, 0, 0}) {
 }
 
 template <typename T>
-pair<vector<int>, T> jonker_volgenant(const vector<vector<T>> &C) {
+pair<T, vector<int>> jonker_volgenant(const vector<vector<T>> &C) {
     int n = C.size(), m = C[0].size();
 
     vector<T> dist(m), potential(m);
@@ -180,7 +180,7 @@ pair<vector<int>, T> jonker_volgenant(const vector<vector<T>> &C) {
 
     T cost = 0;
     for (int i = 0; i < n; i++) cost += C[i][row_match[i]];
-    return {row_match, cost};
+    return {cost, row_match};
 }
 
 int main() {
@@ -210,7 +210,7 @@ int main() {
     for (int i = 0; i < t; i++)
         for (int j = 0; j < s; j++) C[i][j] = dist[town[i] - 1][spring[j] - 1];
 
-    auto cost = jonker_volgenant(C).second;
+    auto cost = jonker_volgenant(C).first;
     if (cost < 1e9) cout << fixed << setprecision(6) << cost;
     else cout << "IMPOSSIBLE";
 }

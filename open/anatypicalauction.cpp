@@ -2,7 +2,7 @@
 using namespace std;
 
 template <typename T>
-pair<vector<int>, T> jonker_volgenant(const vector<vector<T>> &C) {
+pair<T, vector<int>> jonker_volgenant(const vector<vector<T>> &C) {
     int n = C.size(), m = C[0].size();
 
     vector<T> dist(m), potential(m);
@@ -59,7 +59,7 @@ pair<vector<int>, T> jonker_volgenant(const vector<vector<T>> &C) {
 
     T cost = 0;
     for (int i = 0; i < n; i++) cost += C[i][row_match[i]];
-    return {row_match, cost};
+    return {cost, row_match};
 }
 
 int main() {
@@ -82,10 +82,9 @@ int main() {
     for (int i = 0; i < n; i++)
         for (int j = 0; j < m; j++) cost[i][j] = c_max - c[i][j];
 
-    auto [assignment, _] = jonker_volgenant(cost);
-
+    auto match = jonker_volgenant(cost).second;
     int income = 0;
-    for (int i = 0; i < n; i++) income += c[i][assignment[i]];
+    for (int i = 0; i < n; i++) income += c[i][match[i]];
 
     vector<bool> used(m, false);
     for (int i = 0; i < n; i++) {
@@ -106,7 +105,7 @@ int main() {
     for (int i = 0; i < n; i++)
         for (int j = 0; j < n; j++)
             if (i != j)
-                if (c[i][assignment[j]] > c[i][assignment[i]]) {
+                if (c[i][match[j]] > c[i][match[i]]) {
                     adj_list[j].emplace_back(i);
                     degree[i]++;
                 }
