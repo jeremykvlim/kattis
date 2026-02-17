@@ -80,7 +80,7 @@ struct FlowNetwork {
 
         T flow = max_flow(s, t);
 
-        vector<U> phi(n, 0), excess(n, 0);
+        vector<U> potential(n, 0), excess(n, 0);
         vector<int> count(n, 0);
         deque<int> active_stack;
 
@@ -96,9 +96,9 @@ struct FlowNetwork {
         };
 
         auto relabel = [&](int v, U delta) {
-            if (delta < inf) phi[v] -= delta + epsilon;
+            if (delta < inf) potential[v] -= delta + epsilon;
             else {
-                phi[v] -= epsilon;
+                potential[v] -= epsilon;
                 count[v]--;
             }
         };
@@ -107,7 +107,7 @@ struct FlowNetwork {
             int diff = count[v] - count[a.u];
             if (diff > 0) return inf;
             if (diff < 0) return -inf;
-            return a.cost + phi[v] - phi[a.u];
+            return a.cost + potential[v] - potential[a.u];
         };
 
         auto check = [&](int v) {
