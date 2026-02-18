@@ -39,23 +39,23 @@ int main() {
     };
     dfs1(dfs1, t);
 
-    vector<vector<int>> farthest(n + 1);
+    vector<vector<int>> furthest(n + 1);
     for (int i = 1; i <= n; i++) {
         if (adj_list[i].size() < 2) continue;
 
         if (i != t) {
             auto d = *max_element(dist[i].begin() + 1, dist[i].end());
             for (int j = 1; j <= n; j++)
-                if (d == dist[i][j]) farthest[i].emplace_back(j);
+                if (d == dist[i][j]) furthest[i].emplace_back(j);
         } else {
             auto d = 0LL;
             for (int j = 1; j <= n; j++)
                 if (visited[j]) {
-                    if (d == dist[i][j]) farthest[i].emplace_back(j);
+                    if (d == dist[i][j]) furthest[i].emplace_back(j);
                     else if (d < dist[i][j]) {
                         d = dist[i][j];
-                        farthest[i].clear();
-                        farthest[i].emplace_back(j);
+                        furthest[i].clear();
+                        furthest[i].emplace_back(j);
                     }
                 }
         }
@@ -69,7 +69,7 @@ int main() {
 
         state[v] = 1;
         auto longest = 0LL;
-        for (int u : farthest[v])
+        for (int u : furthest[v])
             if (!state[u]) {
                 auto l = self(self, u);
                 if (l == 1e18) {
@@ -85,7 +85,7 @@ int main() {
         state[v] = 2;
         return dp[v] = longest;
     };
-    for (int i : farthest[t]) d = max(d, dfs2(dfs2, i) + dist[p][t] + dist[t][i]);
+    for (int i : furthest[t]) d = max(d, dfs2(dfs2, i) + dist[p][t] + dist[t][i]);
 
     if (d >= 1e18) cout << "impossible";
     else cout << d;
