@@ -2,7 +2,7 @@
 using namespace std;
 
 vector<pair<int, int>> tarjan(int n, vector<vector<int>> &adj_list) {
-    vector<int> order(n + 1, 0), low(n + 1,0);
+    vector<int> order(n + 1, 0), low(n + 1, 0);
     vector<pair<int, int>> non_bridges;
     int count = 0;
     
@@ -46,8 +46,6 @@ int main() {
         adj_list[y].emplace_back(x);
     }
 
-    auto roads = tarjan(n, adj_list);
-
     cout << "YES\n";
-    for (auto [x, y] : roads) cout << x << " " << y << "\n";
+    for (auto [x, y] : tarjan(n, adj_list)) cout << x << " " << y << "\n";
 }
