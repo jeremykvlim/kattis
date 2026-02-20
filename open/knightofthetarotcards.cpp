@@ -30,16 +30,23 @@ tuple<T, T, T> extended_gcd(const T &a, const T &b) {
     if (b == (T) 0) return {a, (T) 1, (T) 0};
 
     auto divmod = [&](const T &x, const T &y) -> pair<T, T> {
-        auto div = [&](const T &x, const T &y) {
-            auto numer = x * conj(y);
-            auto denom = norm(y);
-            auto round_div = [&](auto part) {
-                return (part >= 0) ? (part + denom / 2) / denom : (part - denom / 2) / denom;
+        if constexpr (requires(T z) { z.real(); z.imag(); }) {
+            auto div = [&](const T &x, const T &y) -> T {
+                auto numer = x * conj(y);
+                auto denom = norm(y);
+                auto round_div = [&](auto part) {
+                    return (part >= 0) ? (part + denom / 2) / denom : (part - denom / 2) / denom;
+                };
+                return (T) {round_div(numer.real()), round_div(numer.imag())};
             };
-            return (T) {round_div(numer.real()), round_div(numer.imag())};
-        };
-        auto q = div(x, y), r = x - q * y;
-        return {q, r};
+            auto q = div(x, y);
+            auto r = x - q * y;
+            return {q, r};
+        } else {
+            auto q = x / y;
+            auto r = x - q * y;
+            return {q, r};
+        }
     };
 
     auto [q, r] = divmod(a, b);
