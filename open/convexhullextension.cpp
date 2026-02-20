@@ -125,7 +125,7 @@ T cross(const Point<T> &a, const Point<T> &b) {
 }
 
 template <typename T>
-tuple<T, T, T> extended_gcd(const T &a, const T &b) {
+array<T, 3> extended_gcd(const T &a, const T &b) {
     if (b == (T) 0) return {a, (T) 1, (T) 0};
 
     auto divmod = [&](const T &x, const T &y) -> pair<T, T> {
@@ -187,7 +187,7 @@ int main() {
     for (int i = 0; i < n; i++) {
         auto u = convex_hull[(i + 1) % n] - convex_hull[i], v = convex_hull[(i + 3) % n] - convex_hull[(i + 2) % n];
         auto cp = cross(u, v);
-        if (cp < 0 || !cp && abs(cross(u, convex_hull[(i + 3) % n] - convex_hull[i])) != abs(get<0>(extended_gcd(u.x, u.y)))) {
+        if (cp < 0 || !cp && abs(cross(u, convex_hull[(i + 3) % n] - convex_hull[i])) != abs(extended_gcd(u.x, u.y)[0])) {
             cout << "infinitely many";
             exit(0);
         }

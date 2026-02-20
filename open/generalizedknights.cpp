@@ -209,7 +209,7 @@ Point<T> non_collinear_intersection(const Line<T> &l1, const Line<T> &l2) {
 }
 
 template <typename T>
-tuple<T, T, T> extended_gcd(const T &a, const T &b) {
+array<T, 3> extended_gcd(const T &a, const T &b) {
     if (b == (T) 0) return {a, (T) 1, (T) 0};
 
     auto divmod = [&](const T &x, const T &y) -> pair<T, T> {
