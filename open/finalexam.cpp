@@ -1,6 +1,24 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+vector<int> sieve(int n) {
+    vector<int> spf(n + 1, 0), primes;
+    for (int i = 2; i <= n; i++) {
+        if (!spf[i]) {
+            spf[i] = i;
+            primes.emplace_back(i);
+        }
+
+        for (int p : primes) {
+            auto j = (long long) i * p;
+            if (j > n) break;
+            spf[j] = p;
+            if (p == spf[i]) break;
+        }
+    }
+    return spf;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -8,45 +26,52 @@ int main() {
     int na, nb, nc;
     cin >> na >> nb >> nc;
 
-    vector<int> A(3e7 + 1, 0), B(3e7 + 1, 0), C(3e7 + 1, 0);
-    int biggest = -1;
-    while (na--) {
-        int a;
-        cin >> a;
+    auto read = [&](int n, auto &pile, auto &count) {
+        while (n--) {
+            int len;
+            cin >> len;
 
-        A[a]++;
-        biggest = max(a, biggest);
-    }
-
-    while (nb--) {
-        int b;
-        cin >> b;
-
-        B[b]++;
-        biggest = max(b, biggest);
-    }
-
-    while (nc--) {
-        int c;
-        cin >> c;
-
-        C[c]++;
-        biggest = max(c, biggest);
-    }
-
-    vector<vector<int>> g(sqrt(biggest) + 1, vector<int>(sqrt(biggest) + 1, 0));
-    for (int i = 1; i < g.size(); i++)
-        for (int j = 1; j < i; j++) g[i][j] = i % j ? g[j][i % j] : j;
-
-    auto triplets = 0LL;
-    for (int m = 1; m * m <= biggest; m++)
-        for (int n = 1; n < m && m * m + n * n <= biggest; n++) {
-            if (g[m][n] > 1 || (m & 1) == (n & 1)) continue;
-            
-            int a = m * m - n * n, b = 2 * m * n, c = m * m + n * n;
-            for (int ka = a, kb = b, kc = c; kc <= biggest; ka += a, kb += b, kc += c)
-                if (C[kc]) triplets += (long long) (A[ka] * B[kb] + B[ka] * A[kb]) * C[kc];
+            pile[len] = true;
+            count[len]++;
         }
+    };
+
+    const int max_len = 3e7 + 1;
+    bitset<max_len> A, B, C;
+    vector<int> count_a(max_len, 0), count_b(max_len, 0), count_c(max_len, 0);
+    read(na, A, count_a);
+    read(nb, B, count_b);
+    read(nc, C, count_c);
+
+    int s = sqrt(max_len);
+    auto spf = sieve(s);
+    auto triplets = 0LL;
+    for (int m = 2; m < s; m++) {
+        vector<int> pfs;
+        for (int i = m; i > 1;) {
+            int p = spf[i];
+            for (; !(i % p); i /= p);
+            pfs.emplace_back(p);
+        }
+
+        for (int n = (m & 1) + 1; n < m; n += 2) {
+            if (any_of(pfs.begin(), pfs.end(), [&](int pf) { return !(n % pf); })) continue;
+
+            int a = m * m - n * n, b = 2 * m * n, c = m * m + n * n;
+            for (int k = 1; k * c < max_len; k++) {
+                int kc = k * c;
+                if (!C[kc]) continue;
+
+                int ka = k * a, kb = k * b;
+                bool ab = A[ka] && B[kb], ba = A[kb] && B[ka];
+                if (ab || ba) {
+                    long long cc = count_c[kc];
+                    if (ab) triplets += cc * count_a[ka] * count_b[kb];
+                    if (ba) triplets += cc * count_a[kb] * count_b[ka];
+                }
+            }
+        }
+    }
 
     cout << triplets;
 }
