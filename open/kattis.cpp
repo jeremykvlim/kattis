@@ -124,6 +124,20 @@ T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
     return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
+template <typename T>
+struct Line {
+    Point<T> a, b;
+
+    Line() {}
+    Line(Point<T> a, Point<T> b) : a(a), b(b) {}
+};
+
+template <typename T>
+T x_intercept(const Line<T> &l) {
+    auto &[a, b] = l;
+    return a.x - a.y * (b.x - a.x) / (b.y - a.y);
+}
+
 template <typename T, int sign = -1, bool collinear = false>
 struct MonotonicHull : deque<Point<T>> {
     bool violates(const auto &a, const auto &b, const auto &c) {
@@ -140,16 +154,13 @@ struct MonotonicHull : deque<Point<T>> {
 
 int kattis(int n, int h, int x[], int y[], int z[]) {
     vector<pair<double, double>> intervals;
-    auto x_intercept = [&](double X1, double Y1, double X2, double Y2) -> double {
-        return X1 - Y1 * (X2 - X1) / (Y2 - Y1);
-    };
-    
+
     MonotonicHull<long long, 1, true> lower;
     for (int i = 0; i < n; i++) {
         lower.add(Point<long long>(x[i], y[i]));
         if (z[i]) {
             double l = 0, r = x[n - 1];
-            if (lower.size() > 1 && lower[1].y > lower[0].y) l = max(l, x_intercept(lower[1].x, lower[1].y - h, lower[0].x, lower[0].y - h));
+            if (lower.size() > 1 && lower[1].y > lower[0].y) l = max(l, x_intercept(Line<double>({lower[1].x, lower[1].y - h}, {lower[0].x, lower[0].y - h})));
             intervals.emplace_back(l, r);
         }
     }
@@ -158,7 +169,7 @@ int kattis(int n, int h, int x[], int y[], int z[]) {
     for (int i = n - 1, j = intervals.size() - 1; ~i && ~j; i--) {
         upper.add(Point<long long>(x[i], y[i]));
         if (z[i]) {
-            if (upper.size() > 1 && upper[1].y > upper[0].y) intervals[j].second = min(intervals[j].second, x_intercept(upper[1].x, upper[1].y - h, upper[0].x, upper[0].y - h));
+            if (upper.size() > 1 && upper[1].y > upper[0].y) intervals[j].second = min(intervals[j].second, x_intercept(Line<double>({upper[1].x, upper[1].y - h}, {upper[0].x, upper[0].y - h})));
             j--;
         }
     }

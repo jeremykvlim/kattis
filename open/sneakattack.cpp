@@ -140,6 +140,19 @@ double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
+template <typename T>
+struct Line {
+    Point<T> a, b;
+
+    Line() {}
+    Line(Point<T> a, Point<T> b) : a(a), b(b) {}
+};
+
+template <typename T>
+T y_intercept(const Line<T> &l) {
+    return l.a.y - l.a.x * (l.b.y - l.a.y) / (l.b.x - l.a.x);
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -156,16 +169,15 @@ int main() {
 
         int sgn1 = sgn(s.x);
         auto xl = min(m1.x, m2.x), xr = max(m1.x, m2.x);
-        double l, r;
         if (sgn1 == 1) {
-            l = max(xl, 0.);
-            r = min(xr, s.x);
+            xl = max(xl, 0.);
+            xr = min(xr, s.x);
         } else {
-            l = max(xl, s.x);
-            r = min(xr, 0.);
+            xl = max(xl, s.x);
+            xr = min(xr, 0.);
         }
 
-        if (l + 1e-8 >= r) {
+        if (xl + 1e-8 >= xr) {
             cout << "can't hit the wall\n";
             continue;
         }
@@ -183,32 +195,24 @@ int main() {
                 }
             }
 
-            auto y_intercept = [&](double X1, double Y1, double X2, double Y2) -> double {
-                return Y1 - X1 * (Y2 - Y1) / (X2 - X1);
-            };
-            auto yl = min(m1.y, m2.y), yr = max(m1.y, m2.y), y1 = y_intercept(s.x, s.y, m1.x, yl), y2 = y_intercept(s.x, s.y, m1.x, yr);
+            auto yl = min(m1.y, m2.y), yr = max(m1.y, m2.y), y1 = y_intercept(Line(s, {m1.x, yl})), y2 = y_intercept(Line(s, {m1.x, yr}));
             cout << fixed << setprecision(4) << min(y1, y2) << " " << max(y1, y2) << "\n";
             continue;
         }
 
         auto slope = dir.y / dir.x;
-        auto y_intercept = [&](double X1, double Y1, double X2, double Y2) -> double {
-            return Y1 - X1 * ((Y2 - Y1) + slope * (X2 - m1.x)) / (X2 - X1);
-        };
-
         auto v3 = s - m1;
-        auto offset = slope * v3.x - v3.y;
-        int sgn2 = sgn(offset);
+        int sgn2 = sgn(slope * v3.x - v3.y);
         double y1, y2;
         if (sgn1 == 1) {
-            y1 = y_intercept(s.x, s.y, l, m1.y);
-            if (approximately_equal(r, s.x)) y2 = sgn2 * numeric_limits<double>::infinity();
-            else y2 = y_intercept(s.x, s.y, r, m1.y);
+            y1 = y_intercept(Line(s, {xl, m1.y + slope * (xl - m1.x)}));
+            if (approximately_equal(xr, s.x)) y2 = sgn2 * numeric_limits<double>::infinity();
+            else y2 = y_intercept(Line(s, {xr, m1.y + slope * (xr - m1.x)}));
             if (sgn2 == -1) swap(y1, y2);
         } else {
-            y2 = y_intercept(s.x, s.y, r, m1.y);
-            if (approximately_equal(l, s.x)) y1 = sgn2 * numeric_limits<double>::infinity();
-            else y1 = y_intercept(s.x, s.y, l, m1.y);
+            y2 = y_intercept(Line(s, {xr, m1.y + slope * (xr - m1.x)}));
+            if (approximately_equal(xl, s.x)) y1 = sgn2 * numeric_limits<double>::infinity();
+            else y1 = y_intercept(Line(s, {xl, m1.y + slope * (xl - m1.x)}));
             if (sgn2 == 1) swap(y1, y2);
         }
 
