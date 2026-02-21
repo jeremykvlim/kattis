@@ -546,11 +546,10 @@ int main() {
     vector<int> prev1(m, -1), prev2(m, -1);
     for (int l = 0; l < n; l++) {
         sort(indices[l].begin(), indices[l].end(), [&](int i, int j) { return intersections[i] < intersections[j]; });
-        for (int k = 0; k < indices[l].size(); k++) {
+        for (int k = 1; k < indices[l].size(); k++) {
             int i = indices[l][k];
             auto [l1, l2] = intersections[i].second;
-            if (l1 == l) prev1[i] = k ? indices[l][k - 1] : -1;
-            else prev2[i] = k ? indices[l][k - 1] : -1;
+            (l1 == l ? prev1[i] : prev2[i]) = indices[l][k - 1];
         }
     }
 
