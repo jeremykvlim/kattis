@@ -50,17 +50,16 @@ int main() {
                 while (!mono_dec.empty() && mono_dec.back() < i) mono_dec.pop_back();
                 mono_dec.emplace_back(i);
             } else {
-                reverse(mono_dec.begin(), mono_dec.end());
                 head[i] = prev[i] = -1;
                 if (!mono_dec.empty()) {
-                    head[i] = prev[i] = mono_dec.back();
+                    head[i] = prev[i] = mono_dec.front();
                     tail[prev[i]] = next[prev[i]] = -1;
-                    mono_dec.pop_back();
-
+                    mono_dec.pop_front();
+                
                     while (!mono_dec.empty()) {
-                        int j = mono_dec.back();
-                        mono_dec.pop_back();
-
+                        int j = mono_dec.front();
+                        mono_dec.pop_front();
+                
                         if (dp[j] < dp[head[i]]) {
                             next[j] = head[i];
                             head[i] = j;
