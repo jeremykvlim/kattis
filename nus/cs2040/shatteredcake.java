@@ -1,14 +1,14 @@
-import java.util.*;
+import java.io.*;
 
-public class shatteredcake {
-    public static void main(String[] args) {
-        var sc = new Scanner(System.in);
-        
-        int W = sc.nextInt(), n = sc.nextInt(), area = 0;
+public class Main {
+    public static void main(String[] args) throws IOException {
+        var br = new BufferedReader(new InputStreamReader(System.in));
+
+        int W = Integer.parseInt(br.readLine()), n = Integer.parseInt(br.readLine()), area = 0;
         while (n-- > 0) {
-            int w = sc.nextInt(), l = sc.nextInt();
-            area += w*l;
+            var line = br.readLine().split(" ");
+            area += Integer.parseInt(line[0]) * Integer.parseInt(line[1]);
         }
-        System.out.println(area/W);
+        System.out.println(area / W);
     }
 }
