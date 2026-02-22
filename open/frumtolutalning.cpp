@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -100,6 +100,23 @@ bool isprime(unsigned long long n) {
     return lucas_pseudoprime();
 }
 
+vector<int> sieve(int n) {
+    if (n < 2) return {};
+
+    int r = sqrt(n);
+    vector<int> primes{2};
+    vector<bool> composite(n / 2 + 1, false);
+    for (int o = 3; o <= r; o += 2)
+        if (!composite[o / 2]) {
+            for (auto m = (long long) o * o; m <= n; m += 2 * o) composite[m / 2] = true;
+            primes.emplace_back(o);
+        }
+
+    for (int o = (r + 1) | 1; o <= n; o += 2)
+        if (!composite[o / 2]) primes.emplace_back(o);
+    return primes;
+}
+
 long long pi(long long n) {
     if (n <= 1) return 0;
     if (n == 2) return 1;
@@ -116,7 +133,7 @@ long long pi(long long n) {
     auto div = [](double n, long long d) -> int {
         return n / d;
     };
-    
+
     auto half = [](int n) {
         return (n - 1) / 2;
     };
@@ -172,9 +189,23 @@ int main() {
     long long a, b;
     cin >> a >> b;
 
-    if (b > 1e11) {
-        int count = 0;
+    if (b - a <= 1e5) {
+        int count = a < 3;
         for (auto c = a + !(a & 1); c <= b; c += 2) count += isprime(c);
         cout << count;
+    } else if (b - a <= 1e7) {
+        auto c = a + !(a & 1);
+        auto primes = sieve(sqrtl(b));
+        primes.erase(primes.begin());
+        vector<bool> prime((b - c) / 2 + 1, true);
+        prime[0] = c != 1;
+        for (int p : primes) {
+            auto pp = (long long) p * p;
+            if (pp > b) break;
+            if (pp < a) pp = a + ((p - (a % p)) % p);
+            if (!(pp & 1)) pp += p;
+            for (; pp <= b; pp += 2 * p) prime[(pp - c) / 2] = false;
+        }
+        cout << (a < 3) + count(prime.begin(), prime.end(), true);
     } else cout << pi(b) - pi(a - 1);
 }
