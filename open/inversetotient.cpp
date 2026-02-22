@@ -1,6 +1,28 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+struct Hash {
+    template <typename T>
+    static inline void combine(size_t &h, const T &v) {
+        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
+    }
+
+    template <typename T>
+    size_t operator()(const T &v) const {
+        if constexpr (requires { tuple_size<T>::value; })
+            return apply([](const auto &...e) {
+                size_t h = 0;
+                (combine(h, e), ...);
+                return h;
+            }, v);
+        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
+            size_t h = 0;
+            for (const auto &e : v) combine(h, e);
+            return h;
+        } else return hash<T>{}(v);
+    }
+};
+
 template <typename T, typename U, typename V>
 T mul(U x, V y, T mod) {
     return (unsigned __int128) x * y % mod;
@@ -34,7 +56,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -100,42 +122,119 @@ bool isprime(unsigned long long n) {
     return lucas_pseudoprime();
 }
 
-long long phi_inv(long long totient) {
-    vector<long long> primes;
-    for (int i = 1; i <= sqrt(totient); i++)
-        if (!(totient % i)) {
-            if (isprime(i + 1)) primes.emplace_back(i + 1);
-            if (totient / i != i && isprime(totient / i + 1)) primes.emplace_back(totient / i + 1);
+template <typename T>
+T brent(T n) {
+    if (!(n & 1)) return 2;
+
+    static mt19937_64 rng(random_device{}());
+    for (;;) {
+        T x = 2, y = 2, g = 1, q = 1, xs = 1, c = rng() % (n - 1) + 1;
+        for (int i = 1; g == 1; i <<= 1, y = x) {
+            for (int j = 1; j < i; j++) x = mul(x, x, n) + c;
+            for (int j = 0; j < i && g == 1; j += 128) {
+                xs = x;
+                for (int k = 0; k < min(128, i - j); k++) {
+                    x = mul(x, x, n) + c;
+                    q = mul(q, max(x, y) - min(x, y), n);
+                }
+                g = __gcd(q, n);
+            }
         }
-    sort(primes.begin(), primes.end());
 
-    auto dfs = [&](auto &&self, int i, auto n, auto m, long long phi) {
-        if (phi == 1) return min(n, m);
-        if (!~i) return n;
+        if (g == n) g = 1;
+        while (g == 1) {
+            xs = mul(xs, xs, n) + c;
+            g = __gcd(max(xs, y) - min(xs, y), n);
+        }
+        if (g != n) return isprime(g) ? g : brent(g);
+    }
+}
 
-        n = self(self, i - 1, n, m, phi);
-        if (!(phi % (primes[i] - 1))) {
-            phi /= primes[i] - 1;
-            while (!(phi % primes[i])) phi /= primes[i];
-            n = self(self, i - 1, n, m / (primes[i] - 1) * primes[i], phi);
+template <typename T>
+vector<pair<T, int>> factorize(T n) {
+    unordered_map<T, int> pfs;
+
+    auto dfs = [&](auto &&self, T m) -> void {
+        if (m < 2) return;
+        if (isprime(m)) {
+            pfs[m]++;
+            return;
         }
 
-        return n;
+        T pf = brent(m);
+        pfs[pf]++;
+        self(self, m / pf);
     };
-    return dfs(dfs, primes.size() - 1, LLONG_MAX, totient, totient);
+    dfs(dfs, n);
+
+    return {pfs.begin(), pfs.end()};
+}
+
+template <typename T>
+vector<T> divisors(T n) {
+    auto pfs = factorize(n);
+    vector<T> divs{1};
+
+    auto dfs = [&](auto &&self, T d = 1, int i = 0) {
+        if (i == pfs.size()) return;
+
+        self(self, d, i + 1);
+        auto [pf, pow] = pfs[i];
+        while (pow--) {
+            d *= pf;
+            divs.emplace_back(d);
+            self(self, d, i + 1);
+        }
+    };
+    dfs(dfs);
+
+    return divs;
 }
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    long long totient;
-    cin >> totient;
+    long long phi;
+    cin >> phi;
 
-    if (totient == 1) cout << 1;
-    else if (totient & 1) cout << -1;
-    else {
-        auto n = phi_inv(totient);
-        cout << (n == LLONG_MAX ? -1 : n);
+    if (phi == 1) {
+        cout << 1;
+        exit(0);
     }
+
+    if (phi & 1) {
+        cout << -1;
+        exit(0);
+    }
+
+    vector<long long> divs = divisors(phi), primes;
+    sort(divs.begin(), divs.end());
+    for (auto d : divs)
+        if (isprime(d + 1)) primes.emplace_back(d + 1);
+
+    vector<long long> dp(divs.size(), 1e18);
+    int s = lower_bound(divs.begin(), divs.end(), phi) - divs.begin();
+    dp[s] = 1;
+    vector<int> indices{s};
+    for (auto p : primes) {
+        auto p_minus_1 = p - 1;
+
+        int size = indices.size();
+        for (int k = 0; k < size; k++) {
+            int i = indices[k];
+            if (dp[i] >= dp[0] || divs[i] % p_minus_1) continue;
+
+            auto q = divs[i] / p_minus_1, pp = p;
+            for (; !(q % p); q /= p, pp *= p);
+
+            auto n = dp[i] * pp;
+            int j = lower_bound(divs.begin(), divs.end(), q) - divs.begin();
+            if (dp[j] > n) {
+                dp[j] = n;
+                if (!count(indices.begin(), indices.end(), j)) indices.emplace_back(j);
+            }
+        }
+    }
+    cout << (dp[0] == 1e18 ? -1 : dp[0]);
 }
