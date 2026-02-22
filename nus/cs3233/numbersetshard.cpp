@@ -23,20 +23,19 @@ struct DisjointSets {
 };
 
 vector<int> sieve(int n) {
-    vector<int> spf(n + 1, 0), primes;
-    for (int i = 2; i <= n; i++) {
-        if (!spf[i]) {
-            spf[i] = i;
-            primes.emplace_back(i);
+    if (n < 2) return {};
+
+    int r = sqrt(n);
+    vector<int> primes{2};
+    vector<bool> composite(n / 2 + 1, false);
+    for (int o = 3; o <= r; o += 2)
+        if (!composite[o / 2]) {
+            for (auto m = (long long) o * o; m <= n; m += 2 * o) composite[m / 2] = true;
+            primes.emplace_back(o);
         }
 
-        for (int p : primes) {
-            auto j = (long long) i * p;
-            if (j > n) break;
-            spf[j] = p;
-            if (p == spf[i]) break;
-        }
-    }
+    for (int o = (r + 1) | 1; o <= n; o += 2)
+        if (!composite[o / 2]) primes.emplace_back(o);
     return primes;
 }
 
