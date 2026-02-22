@@ -233,7 +233,7 @@ vector<pair<T, T>> two_square_sums(T n) {
             return {pow({1, 1}, exponent)};
         }
 
-        auto [a, b] = cornacchia(1LL, p);
+        auto [a, b] = cornacchia((T) 1, p);
         complex<T> Z(a, b);
         vector<complex<T>> pZ(exponent + 1, {1, 0}), forms(exponent + 1);
         for (int i = 1; i <= exponent; i++) pZ[i] = pZ[i - 1] * Z;
