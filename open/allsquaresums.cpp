@@ -190,30 +190,23 @@ T tonelli_shanks(T n, T p) {
 
 template <typename T>
 pair<T, T> cornacchia(T d, T m) {
-    T a = tonelli_shanks(m - d % m, m);
-
-    T r0 = m, r1 = a;
-    long long sqrt_m = sqrtl(m);
-    while (r1 > sqrt_m) {
-        auto r2 = r0 % r1;
-        r0 = r1;
-        r1 = r2;
-    }
+    T r0 = m, r1 = tonelli_shanks(m - d % m, m);
+    for (; r1 > sqrt(m); r0 = exchange(r1, r0 % r1));
 
     T x = r1;
     if (!d) return {x, 0};
 
-    T y = sqrtl((m - d * x * x) / d);
+    T y = sqrt((m - d * x * x) / d);
     return {x, y};
 }
 
 template <typename T>
-vector<pair<T, T>> two_square_sums(T n) {
+vector<pair<T, T>> sum_of_two_squares(T n) {
     if (!n) return {{0, 0}};
 
     auto pfs = factorize(n);
 
-    auto gaussian_int_forms = [&](T p, int exponent) -> vector<complex<T>> {
+    auto gaussian_integer_factors = [&](T p, int exponent) -> vector<complex<T>> {
         if (p % 4 == 3) {
             T value = 1;
             for (int i = 0; i < exponent / 2; i++) value *= p;
@@ -244,7 +237,7 @@ vector<pair<T, T>> two_square_sums(T n) {
     vector<complex<T>> pairs{{1, 0}};
     for (auto [pf, pow] : pfs) {
         if (pf % 4 == 3 && pow & 1) return {};
-        vector<complex<T>> temp, forms = gaussian_int_forms(pf, pow);
+        vector<complex<T>> temp, forms = gaussian_integer_factors(pf, pow);
         for (auto Z1 : pairs)
             for (auto Z2 : forms) temp.emplace_back(Z1 * Z2);
         pairs = temp;
@@ -276,7 +269,7 @@ int main() {
     }
 
     unordered_set<string> ways;
-    for (auto [x, y] : two_square_sums(n)) {
+    for (auto [x, y] : sum_of_two_squares(n)) {
         ways.emplace(to_string(x) + "^2 + " + to_string(y) + "^2 = " + to_string(n));
         ways.emplace(to_string(y) + "^2 + " + to_string(x) + "^2 = " + to_string(n));
 

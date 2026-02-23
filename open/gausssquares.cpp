@@ -59,20 +59,13 @@ T tonelli_shanks(T n, T p) {
 
 template <typename T>
 pair<T, T> cornacchia(T d, T m) {
-    T a = tonelli_shanks(m - d % m, m);
-
-    T r0 = m, r1 = a;
-    long long sqrt_m = sqrtl(m);
-    while (r1 > sqrt_m) {
-        auto r2 = r0 % r1;
-        r0 = r1;
-        r1 = r2;
-    }
+    T r0 = m, r1 = tonelli_shanks(m - d % m, m);
+    for (; r1 > sqrt(m); r0 = exchange(r1, r0 % r1));
 
     T x = r1;
     if (!d) return {x, 0};
 
-    T y = sqrtl((m - d * x * x) / d);
+    T y = sqrt((m - d * x * x) / d);
     return {x, y};
 }
 
