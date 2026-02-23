@@ -188,7 +188,6 @@ int main() {
     cin.tie(nullptr);
 
     vector<int> A235702{24, 120, 600, 3000, 15000, 75000, 375000, 1875000, 9375000};
-
     int fixed_point = A235702.back();
     vector<int> memo(fixed_point, 0), cache(fixed_point + 1, 0);
     memo[1] = 1;
