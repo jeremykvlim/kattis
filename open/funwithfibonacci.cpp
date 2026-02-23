@@ -34,7 +34,7 @@ bool isprime(unsigned long long n) {
         return false;
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
-    
+
     auto lucas_pseudoprime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
@@ -183,96 +183,95 @@ pair<T, T> fib(U n, T mod = 1) {
     }
 }
 
-int pisano_period(int p, unordered_map<int, int> &cache) {
-    if (cache[p]) return cache[p];
-
-    auto pfs = factorize(p);
-
-    auto prime_period = [&](int p) -> int {
-        if (p == 2) return 3;
-        if (p == 5) return 20;
-
-        auto divs = divisors((p % 10 == 1 || p % 10 == 9) ? p - 1 : 2 * (p + 1));
-        sort(divs.begin(), divs.end());
-        for (int d : divs)
-            if (fib(d, p) == make_pair(0, 1)) return d;
-    };
-
-    int pisano = 1;
-    for (auto [pf, pow] : pfs) {
-        int temp = 1;
-        while (pow-- > 1) temp *= pf;
-        pisano = lcm(pisano, prime_period(pf) * temp);
-    }
-
-    return cache[p] = pisano;
-}
-
-const int fixed_point = 9375000;
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    vector<int> memo(fixed_point, 0);
+    vector<int> A235702{24, 120, 600, 3000, 15000, 75000, 375000, 1875000, 9375000};
+
+    int fixed_point = A235702.back();
+    vector<int> memo(fixed_point, 0), cache(fixed_point + 1, 0);
     memo[1] = 1;
     for (int i = 2; i < fixed_point; i++) memo[i] = (memo[i - 1] + memo[i - 2]) % fixed_point;
+
+    vector<vector<int>> pos(9), visited(9);
+    vector<vector<array<int, 3>>> cycles(9);
+    for (int i = 0; i < 9; i++) {
+        int p = A235702[i];
+        pos[i].assign(p, -1);
+        visited[i].assign(p, -1);
+    }
 
     int t;
     cin >> t;
 
-    unordered_map<int, int> cache, seq_indices, visited;
-    unordered_map<int, unordered_map<long long, pair<int, int>>> cycle_members;
-    unordered_map<int, vector<vector<long long>>> cycles;
     while (t--) {
         long long n, k;
         int p;
         cin >> n >> k >> p;
 
-        auto g = [&](auto &&self, auto n, auto k, int p) -> long long {
-            auto F = [&](int n) -> long long {
-                return (n >= fixed_point || fixed_point % p) ? fib(n, p).first : memo[n] % p;
+        auto g = [&](auto &&self, long long k, long long n, int p) -> int {
+            if (p == 1) return 0;
+            if (k == 1) return fib(n, p).first;
+
+            auto pisano_period = [&]() {
+                if (cache[p]) return cache[p];
+
+                int pisano = 1;
+                for (auto [pf, pow] : factorize(p)) {
+                    int temp = 1;
+                    while (pow-- > 1) temp *= pf;
+
+                    auto prime_period = [&]() -> int {
+                        if (pf == 2) return 3;
+                        if (pf == 5) return 20;
+                        if (pf % 10 == 1 || pf % 10 == 9) return pf - 1;
+                        return 2 * (pf + 1);
+                    };
+                    pisano = lcm(pisano, prime_period() * temp);
+                }
+                return cache[p] = pisano;
             };
+            int pisano = pisano_period();
+            if (pisano != p) return fib(self(self, k - 1, n, pisano), p).first;
 
-            if (k == 1) return F(n);
+            int temp = n %= p, p5 = 0;
+            for (pisano /= 24; !(pisano % 5); pisano /= 5, p5++);
 
-            int pisano = pisano_period(p, cache);
-            if (p != pisano) return F(self(self, n, k - 1, pisano));
+            int f = -1, j = 0, s = cycles[p5].size();
+            for (; !~visited[p5][n]; j++) {
+                pos[p5][n] = j + s;
+                visited[p5][n] = t;
+                n = memo[n] % p;
+                if (!--k) f = n;
+            }
+            int r = j + s;
 
-            n %= p;
-            vector<long long> seq{n};
-            seq_indices[n] = 0;
-            visited[n] = t;
-            for (auto i = 1LL; i <= k; i++) {
-                n = F(n);
-
-                if (cycle_members[p].find(n) != cycle_members[p].end()) {
-                    auto [cycle_index, n_index] = cycle_members[p][n];
-                    int len = cycles[p][cycle_index].size();
-                    i += (k - i) / len * len;
-                    return cycles[p][cycle_index][(k - i + n_index) % len];
+            cycles[p5].resize(r);
+            int l = pos[p5][n];
+            if (visited[p5][n] == t) {
+                j -= r - l;
+                for (int i = l; i < r; i++) {
+                    cycles[p5][i] = {(int) n, l | (1 << 30), r - l};
+                    n = memo[n] % p;
                 }
-
-                if (visited[n] == t) {
-                    int len = i - seq_indices[n];
-                    vector<long long> cycle(len);
-                    for (int j = 0; j < len; j++) {
-                        cycle[j] = seq[j + seq_indices[n]];
-                        cycle_members[p][seq[j + seq_indices[n]]] = {cycles[p].size(), j};
-                    }
-                    cycles[p].emplace_back(cycle);
-                    i += (k - i) / len * len;
-                    return seq[k - i + seq_indices[n]];
-                }
-
-                seq.emplace_back(n);
-                seq_indices[n] = i;
-                visited[n] = t;
             }
 
-            return n;
-        };
+            n = temp;
+            for (int i = 0; i < j; i++) {
+                cycles[p5][i + s] = {(int) n, l, j - 1 - i};
+                n = memo[n] % p;
+            }
+            if (k <= 0) return f;
 
-        cout << g(g, n, k, p) << "\n";
+            for (; !((cycles[p5][l][1] >> 30) & 1); l = cycles[p5][l][1]) {
+                int len = cycles[p5][l][2];
+                if (k <= len) return cycles[p5][l + k][0];
+                k -= len + 1;
+            }
+            int i = cycles[p5][l][1] & ((1 << 30) - 1);
+            return cycles[p5][i + ((l - i + k) % cycles[p5][l][2])][0];
+        };
+        cout << g(g, k, n, p) << "\n";
     }
 }
