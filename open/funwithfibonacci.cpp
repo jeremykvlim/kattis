@@ -195,10 +195,10 @@ int main() {
 
     vector<vector<int>> pos(9), visited(9);
     vector<vector<array<int, 3>>> cycles(9);
-    for (int i = 0; i < 9; i++) {
-        int p = A235702[i];
-        pos[i].assign(p, -1);
-        visited[i].assign(p, -1);
+    for (int p5 = 0; p5 < 9; p5++) {
+        int p = A235702[p5];
+        pos[p5].assign(p, -1);
+        visited[p5].assign(p, -1);
     }
 
     int t;
