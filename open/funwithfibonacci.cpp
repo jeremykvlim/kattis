@@ -218,8 +218,8 @@ int main() {
 
                 int pisano = 1;
                 for (auto [pf, pow] : factorize(p)) {
-                    int temp = 1;
-                    while (pow-- > 1) temp *= pf;
+                    int pp = 1;
+                    while (pow-- > 1) pp *= pf;
 
                     auto prime_period = [&]() -> int {
                         if (pf == 2) return 3;
@@ -227,7 +227,7 @@ int main() {
                         if (pf % 10 == 1 || pf % 10 == 9) return pf - 1;
                         return 2 * (pf + 1);
                     };
-                    pisano = lcm(pisano, prime_period() * temp);
+                    pisano = lcm(pisano, prime_period() * pp);
                 }
                 return cache[p] = pisano;
             };
