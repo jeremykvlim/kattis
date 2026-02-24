@@ -436,14 +436,12 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
-vector<bool> sieve(int n) {
+pair<vector<int>, vector<int>> sieve(int n) {
     vector<int> spf(n + 1, 0), primes;
-    vector<bool> prime(n + 1, false);
     for (int i = 2; i <= n; i++) {
         if (!spf[i]) {
             spf[i] = i;
             primes.emplace_back(i);
-            prime[i] = true;
         }
 
         for (int p : primes) {
@@ -453,7 +451,7 @@ vector<bool> sieve(int n) {
             if (p == spf[i]) break;
         }
     }
-    return prime;
+    return {spf, primes};
 }
 
 int main() {
@@ -465,27 +463,21 @@ int main() {
     int n;
     cin >> n;
 
+    int a_max = 0;
     vector<int> a(n);
-    for (int &ai : a) cin >> ai;
+    for (int &ai : a) {
+        cin >> ai;
 
-    auto prime = sieve(*max_element(a.begin(), a.end()) + 1);
-    unordered_map<int, int> pfs;
-    for (int ai : a) {
-        if (ai == 1) continue;
-
-        if (prime[ai]) pfs[ai]++;
-        else {
-            for (int p = 2; p <= sqrt(ai); p == 2 ? p++ : p += 2)
-                while (!(ai % p)) {
-                    pfs[p]++;
-                    ai /= p;
-                }
-
-            if (ai > 1) pfs[ai]++;
-        }
+        a_max = max(a_max, ai);
     }
 
+    auto [spf, primes] = sieve(a_max);
+    vector<int> count(a_max + 1, 0);
+    for (int ai : a)
+        while (ai > 1)
+            for (int p = spf[ai]; !(ai % p); ai /= p) count[p]++;
+    
     modint d = 1;
-    for (auto [pf, pow] : pfs) d *= pow + 1;
+    for (int p : primes) d *= count[p] + 1;
     cout << d;
 }
