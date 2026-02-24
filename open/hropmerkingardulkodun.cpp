@@ -460,7 +460,7 @@ int main() {
     gp_hash_table<long long, int> pos;
     pos[1] = 0;
     modint fact = 1;
-    for (int i = 1; i <= 5e6; i++) {
+    for (int i = 1; i <= 1e6; i++) {
         fact *= i;
         if (pos.find(fact()) == pos.end()) pos[fact()] = i;
     }
