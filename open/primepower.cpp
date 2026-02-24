@@ -437,22 +437,20 @@ constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 vector<bool> sieve(int n) {
-    vector<int> spf(n + 1, 0), primes;
+    if (n < 2) return vector<bool>(n + 1, false);
+
+    int r = sqrt(n);
     vector<bool> prime(n + 1, false);
-    for (int i = 2; i <= n; i++) {
-        if (!spf[i]) {
-            spf[i] = i;
-            primes.emplace_back(i);
-            prime[i] = true;
+    prime[2] = true;
+    vector<bool> composite(n / 2 + 1, false);
+    for (int o = 3; o <= r; o += 2)
+        if (!composite[o / 2]) {
+            for (auto m = (long long) o * o; m <= n; m += 2 * o) composite[m / 2] = true;
+            prime[o] = true;
         }
 
-        for (int p : primes) {
-            auto j = (long long) i * p;
-            if (j > n) break;
-            spf[j] = p;
-            if (p == spf[i]) break;
-        }
-    }
+    for (int o = (r + 1) | 1; o <= n; o += 2)
+        if (!composite[o / 2]) prime[o] = true;
     return prime;
 }
 
