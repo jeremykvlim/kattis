@@ -38,7 +38,7 @@ int main() {
 
     const int max_len = 3e7 + 1;
     bitset<max_len> A, B, C;
-    vector<int> count_a(max_len, 0), count_b(max_len, 0), count_c(max_len, 0);
+    vector<short> count_a(max_len, 0), count_b(max_len, 0), count_c(max_len, 0);
     read(na, A, count_a);
     read(nb, B, count_b);
     read(nc, C, count_c);
