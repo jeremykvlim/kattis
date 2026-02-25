@@ -131,9 +131,6 @@ int main() {
     merge(s);
 
     cout << t.size() << " " << s.size() << "\n";
-    auto write = [&](auto &intervals) {
-        for (auto &[li, ri] : intervals) cout << fixed << setprecision(1) << (double) li / 2 << " " << (double) ri / 2 << "\n";
-    };
-    write(t);
-    write(s);
+    for (auto &[li, ri] : t) cout << li / 2 << (li & 1 ? ".5" : ".0") << " " << ri / 2 << (ri & 1 ? ".5\n" : ".0\n");
+    for (auto &[li, ri] : s) cout << li / 2 << (li & 1 ? ".5" : ".0") << " " << ri / 2 << (ri & 1 ? ".5\n" : ".0\n");
 }
