@@ -13,49 +13,45 @@ int main() {
         exit(0);
     }
 
-    int c_max = 0;
-    vector<vector<int>> charge(4, vector<int>(10, 1e9));
-    unordered_map<char, int> ctoi{{'+', 0}, {'-', 1}, {'*', 2}, {'/', 3}};
-    unordered_map<int, char> itoc{{0, '+'}, {1, '-'}, {2, '*'}, {3, '/'}};
+    vector<vector<char>> charge(4, vector<char>(10, 4));
     while (a--) {
-        char t;
+        char op;
         int y, c;
-        cin >> t >> y >> c;
+        cin >> op >> y >> c;
 
-        if (!(((t == '+' || t == '-') && !y) || ((t == '*' || t == '/') && y == 1))) charge[ctoi[t]][y] = min(charge[ctoi[t]][y], c);
+        int t = (op == '/') ? 0 : ((op == '*') ? 1 : ((op == '+') ? 2 : 3));
+        if (!((t > 1 && !y) || (t < 2 && y == 1))) charge[t][y] = min(charge[t][y], (char) c);
     }
 
-    vector<tuple<char, int, int>> ops;
-    for (int y = 0; y <= 9; y++)
-        for (int i = 0; i <= 3; i++)
-            if (charge[i][y] < 1e9) {
-                ops.emplace_back(itoc[i], y, charge[i][y]);
-                c_max = max(c_max, charge[i][y]);
-            }
+    vector<tuple<char, int, char>> ops;
+    for (int t = 0; t <= 3; t++)
+        for (int y = 0; y <= 9; y++)
+            if (charge[t][y] < 4) ops.emplace_back(t, y * (t == 3 ? -1 : 1), charge[t][y]);
 
     if (ops.empty()) {
         cout << "Engin leid!";
         exit(0);
     }
 
-    vector<int> dist(1e8, 1e9);
+    vector<char> dist(1e8, -1);
     dist[0] = 0;
-    array<queue<int>, 4> buckets;
+    array<queue<unsigned>, 4> buckets;
     buckets[0].emplace(0);
-    for (int d = 0;;) {
-        while (buckets[0].empty()) {
+    for (int d = 0, b = 0;;) {
+        while (buckets[b].empty()) {
             if (all_of(buckets.begin(), buckets.end(), [&](const auto &b) { return b.empty(); })) {
                 cout << "Engin leid!";
                 exit(0);
             }
             d++;
-            for (int i = 0; i + 1 < 4; i++) buckets[i].swap(buckets[i + 1]);
+            ++b &= 3;
         }
 
-        int v = buckets[0].front();
-        buckets[0].pop();
+        auto v = buckets[b].front();
+        buckets[b].pop();
 
-        if (d != dist[v]) continue;
+        if (dist[v] == -2 || dist[v] != b) continue;
+        dist[v] = -2;
 
         if (v == x) {
             cout << d;
@@ -63,21 +59,39 @@ int main() {
         }
 
         for (auto [t, y, c] : ops) {
-            int u;
-            if (t == '+') u = v + y;
-            else if (t == '-') u = v - y;
-            else if (t == '/') u = v / y;
-            else {
-                if (__builtin_mul_overflow(v, y, &u)) u = -1;
-                else u = v * y;
-            }
+            auto u = v;
+            if (!t) {
+                switch (y) {
+                    case 2:
+                        u /= 2;
+                        break;
+                    case 3:
+                        u /= 3;
+                        break;
+                    case 4:
+                        u /= 4;
+                        break;
+                    case 5:
+                        u /= 5;
+                        break;
+                    case 6:
+                        u /= 6;
+                        break;
+                    case 7:
+                        u /= 7;
+                        break;
+                    case 8:
+                        u /= 8;
+                        break;
+                    case 9:
+                        u /= 9;
+                        break;
+                }
+            } else if (t == 1) u *= y;
+            else u += y;
 
-            if (!(0 <= u && u < 1e8)) continue;
-
-            if (dist[u] > d + c) {
-                dist[u] = d + c;
-                buckets[c].emplace(u);
-            }
+            if (u < 1e8 && dist[u] != -2)
+                if (dist[u] == -1 || ((dist[u] - b) & 3) > c) buckets[dist[u] = (b + c) & 3].emplace(u);
         }
     }
 }
