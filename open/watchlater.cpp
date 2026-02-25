@@ -11,7 +11,7 @@ void fast_subset_transform(int n, vector<T> &v, F &&f) {
 template <typename T>
 vector<T> fzt(int n, const vector<T> &f) {
     auto F = f;
-    fast_subset_transform(n, F, [](auto x, auto y) { return x + y; });
+    fast_subset_transform(n, F, [](T x, T y) { return x + y; });
     return F;
 }
 

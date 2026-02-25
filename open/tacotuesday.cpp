@@ -446,7 +446,7 @@ void fast_subset_transform(int n, vector<T> &v, F &&f) {
 template <typename T>
 vector<T> fmt(int n, const vector<T> &F) {
     auto f = F;
-    fast_subset_transform(n, f, [](auto x, auto y) { return x - y; });
+    fast_subset_transform(n, f, [](T x, T y) { return x - y; });
     return f;
 }
 
