@@ -20,22 +20,29 @@ int main() {
             seen.emplace(ai);
         }
 
-        mt19937 rng(random_device{}());
-        auto len = -1LL;
-        for (int fails = 0; fails < 175;) {
-            int j = rng() % n, offset;
-            do offset = rng() % (2 * c + 1) - c;
-            while (!offset || j + offset < 0 || j + offset >= n);
+        vector<long long> diffs;
+        for (int i = 0; i < n; i++)
+            for (int len = 1; len <= c; len++) {
+                int j = i + len;
+                if (j < n) diffs.emplace_back(a[j] - a[i]);
+            }
+        sort(diffs.begin(), diffs.end());
 
-            auto l = a[j], r = a[j], diff = abs(a[j + offset] - a[j]);
-            while (seen.count(l - diff)) l -= diff;
-            while (seen.count(r + diff)) r += diff;
-
-            auto curr = (r - l) / diff + 1;
-            if (curr > n / c && curr > len) len = curr;
-            else fails++;
+        vector<long long> valid;
+        int ratio = n / c, count = ratio - (n - ratio - 1) / c;
+        for (int l = 0, r = 1; l < diffs.size(); l = r++) {
+            for (; r < diffs.size() && diffs[l] == diffs[r]; r++);
+            if (r - l >= count) valid.emplace_back(diffs[l]);
         }
 
-        cout << len << "\n";
+        int len = 1;
+        for (auto d : valid)
+            for (auto ai : a) {
+                if (ai >= d && seen.find(ai - d) != seen.end()) continue;
+                int l = 1;
+                for (auto sum = ai + d; sum <= a.back() && seen.count(sum); sum += d) l++;
+                len = max(len, l);
+            }
+        cout << (len > ratio ? len : -1) << "\n";
     }
 }
