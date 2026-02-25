@@ -556,7 +556,7 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
         auto f_c2 = intt(n, F_c2);
 
         vector<T> c(m);
-        for (int i = 0; i < m; i++) c[i] = modint{chinese_remainder_theorem<__int128>(f_c1[i](), ntt_mod1, f_c2[i](), ntt_mod2).first}.recover();
+        for (int i = 0; i < m; i++) c[i] = modint{(modint::T) (chinese_remainder_theorem<__int128>(f_c1[i](), ntt_mod1, f_c2[i](), ntt_mod2).first % MOD)}.recover();
         return c;
     }
 
