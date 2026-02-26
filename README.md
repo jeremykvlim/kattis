@@ -6,6 +6,12 @@ My solutions to Kattis problems. Solutions are named `"problemname".<languagefil
 
 ---
 
+Favorite problem: [Alien Codebreaking](https://open.kattis.com/problems/aliencodebreaking)
+
+Favorite problem set: [SWERC 2010](https://open.kattis.com/problem-sources/Southwestern%20Europe%20Regional%20Contest%20%28SWERC%29%202010)
+
+---
+
 Problems are grouped by [NUS course](https://nus.kattis.com/courses) categorizations and a separate open category for non-NUS course problems. Some courses share several problems, you might be able to find them under any one of the categories. I generally use C++ unless the NUS course requires otherwise (language requirements found below). I switch to Python if I require big integer operations or if the solution is much shorter and simpler implementation-wise.
 
 * NUS:
