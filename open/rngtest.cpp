@@ -622,7 +622,7 @@ int main() {
         exit(0);
     }
 
-    auto c = isprime(MOD) ? berlekamp_massey(s) : reeds_sloane(s);
+    auto c = modint::prime_mod ? berlekamp_massey(s) : reeds_sloane(s);
     s.resize(c.size());
     cout << kitamasa(c, s, n);
 }
