@@ -600,9 +600,9 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int a, b, x0;
+    int A, b, x0;
     long long n;
-    cin >> a >> b >> x0 >> n >> MOD;
+    cin >> A >> b >> x0 >> n >> MOD;
 
     if (MOD == 1) {
         cout << 0;
@@ -611,18 +611,18 @@ int main() {
 
     modint::init();
 
-    vector<modint> s{x0};
+    vector<modint> a{x0};
     for (int i = 1; i < 4; i++) {
-        s.emplace_back(s.back());
-        s.back() = a * s.back() + b;
+        a.emplace_back(a.back());
+        a.back() = A * a.back() + b;
     }
 
     if (n < 4) {
-        cout << s[n];
+        cout << a[n];
         exit(0);
     }
 
-    auto c = modint::prime_mod ? berlekamp_massey(s) : reeds_sloane(s);
-    s.resize(c.size());
-    cout << kitamasa(c, s, n);
+    auto c = modint::prime_mod ? berlekamp_massey(a) : reeds_sloane(a);
+    a.resize(c.size());
+    cout << kitamasa(c, a, n);
 }
