@@ -513,9 +513,10 @@ vector<modint> reeds_sloane(const vector<modint> &S) {
             }
         }
 
-        coeffs.emplace_back();
-        for (auto c : a_new[0]) coeffs.back().emplace_back(c());
-        n = max(n, (int) coeffs.back().size());
+        int d = L(a_new[0], b_new[0]) + 1;
+        coeffs.emplace_back(vector<U>(d, 0));
+        for (int i = 0; i < a_new[0].size(); i++) coeffs.back()[i] = a_new[0][i]();
+        n = max(n, d);
     }
     MOD = undo;
     modint::init();
