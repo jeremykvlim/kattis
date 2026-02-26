@@ -131,19 +131,17 @@ array<T, 3> extended_gcd(const T &a, const T &b) {
     auto divmod = [&](const T &x, const T &y) -> pair<T, T> {
         if constexpr (requires(T z) { z.real(); z.imag(); }) {
             auto div = [&](const T &x, const T &y) -> T {
-                auto numer = x * conj(y);
+                T numer = x * conj(y);
                 auto denom = norm(y);
                 auto round_div = [&](auto part) {
                     return (part >= 0) ? (part + denom / 2) / denom : (part - denom / 2) / denom;
                 };
                 return (T) {round_div(numer.real()), round_div(numer.imag())};
             };
-            auto q = div(x, y);
-            auto r = x - q * y;
+            T q = div(x, y), r = x - q * y;
             return {q, r};
         } else {
-            auto q = x / y;
-            auto r = x - q * y;
+            T q = x / y, r = x - q * y;
             return {q, r};
         }
     };
