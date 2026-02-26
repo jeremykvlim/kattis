@@ -648,7 +648,7 @@ int main() {
             continue;
         }
 
-        auto c = isprime(MOD) ? berlekamp_massey(a) : reeds_sloane(a);
+        auto c = modint::prime_mod ? berlekamp_massey(a) : reeds_sloane(a);
         a.resize(c.size());
         cout << modint::pow(26, n) - kitamasa(c, a, n) << "\n";
     }
