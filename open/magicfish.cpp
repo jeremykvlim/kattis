@@ -71,8 +71,9 @@ int main() {
             if (l == b || l % g || (!(b % g) && start && (b < 0) ^ (b < l)) || start && t == g) continue;
 
             int gt = __gcd(g, t);
-            if (!dist.count({gt, false}) || dist[{gt, false}] > d + c) {
-                dist[{gt, false}] = d + c;
+            auto it = dist.try_emplace({gt, false}, LLONG_MAX).first;
+            if (it->second > d + c) {
+                it->second = d + c;
                 pq.emplace(d + c, gt, false);
             }
         }
