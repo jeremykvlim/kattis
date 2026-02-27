@@ -10,15 +10,22 @@ int main() {
 
     auto sum = LLONG_MIN;
     vector<unordered_map<int, long long>> adj_matrix(V + 1);
+    auto add_edge = [&](int a, int b, long long s) {
+        auto [it, inserted] = adj_matrix[a].try_emplace(b, s);
+        if (inserted) adj_matrix[b][a] = s;
+        else {
+            auto t = it->second;
+            adj_matrix[b][a] = it->second = max(s, t);
+            sum = max(sum, s + t);
+        }
+    };
+
+
     while (E--) {
         int a, b, s;
         cin >> a >> b >> s;
 
-        if (adj_matrix[a].count(b)) {
-            auto t = adj_matrix[a][b];
-            adj_matrix[a][b] = adj_matrix[b][a] = max((long long) s, t);
-            sum = max(sum, s + t);
-        } else adj_matrix[a][b] = adj_matrix[b][a] = s;
+        add_edge(a, b, s);
     }
 
     queue<int> q;
@@ -44,12 +51,7 @@ int main() {
             adj_matrix[v].erase(b);
             adj_matrix[b].erase(v);
 
-            auto s = w1 + w2;
-            if (adj_matrix[a].count(b)) {
-                auto t = adj_matrix[a][b];
-                adj_matrix[a][b] = adj_matrix[b][a] = max((long long) s, t);
-                sum = max(sum, s + t);
-            } else adj_matrix[a][b] = adj_matrix[b][a] = s;
+            add_edge(a, b, w1 + w2);
             if (adj_matrix[a].size() <= 2) q.emplace(a);
             if (adj_matrix[b].size() <= 2) q.emplace(b);
         }
