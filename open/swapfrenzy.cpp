@@ -17,8 +17,8 @@ int main() {
         repeat |= seen[temp % 10];
         seen[temp % 10] = true;
     }
-    vector<vector<unordered_set<long long>>> visited(digits.size(), vector<unordered_set<long long>>(k));
 
+    vector<vector<unordered_set<long long>>> visited(digits.size(), vector<unordered_set<long long>>(k));
     auto largest = [&](auto &&self, long long curr, int pos, int k) -> long long {
         if (pos < 0) {
             if (!repeat && (k & 1)) curr -= digits[0] + 10 * digits[1] - 10 * digits[0] - digits[1];
@@ -26,9 +26,7 @@ int main() {
         }
 
         if (!k) return curr;
-        if (visited[pos][k - 1].count(curr)) return -1;
-
-        visited[pos][k - 1].emplace(curr);
+        if (!visited[pos][k - 1].emplace(curr).second) return -1;
         int p = pos;
         vector<int> indices;
         for (int i = pos - 1; ~i; i--)
