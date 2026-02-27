@@ -182,7 +182,7 @@ int main() {
     sort(c.begin(), c.end());
 
     vector<unordered_map<Fraction<int>, string, Hash>> memo(1 << C);
-    auto dp = [&](auto &&self, int m1) {
+    auto dp = [&](auto &&self, int m1) -> decltype(auto) {
         if (!memo[m1].empty()) return memo[m1];
 
         unordered_map<Fraction<int>, string, Hash> solutions;
@@ -194,18 +194,24 @@ int main() {
                 }
         } else {
             for (int m2 = (m1 - 1) & m1; m2; --m2 &= m1) {
-                if (m1 == m2) continue;
+                if (m1 != m2) {
+                    const auto &left = self(self, m2), &right = self(self, m1 ^ m2);
 
-                auto left = self(self, m2), right = self(self, m1 ^ m2);
-                for (auto [f1, s1] : left)
-                    for (auto [f2, s2] : right) {
-                        if (!solutions.count({f1 + f2})) solutions[{f1 + f2}] = "(" + s1 + "+" + s2 + ")";
-                        if (!solutions.count({f1 - f2})) solutions[{f1 - f2}] = "(" + s1 + "-" + s2 + ")";
-                        if (!solutions.count({f2 - f1})) solutions[{f2 - f1}] = "(" + s2 + "-" + s1 + ")";
-                        if (!solutions.count({f1 * f2})) solutions[{f1 * f2}] = "(" + s1 + "*" + s2 + ")";
-                        if (f2.numer() && !solutions.count({f1 / f2})) solutions[{f1 / f2}] = "(" + s1 + "/" + s2 + ")";
-                        if (f1.numer() && !solutions.count({f2 / f1})) solutions[{f2 / f1}] = "(" + s2 + "/" + s1 + ")";
-                    }
+                    auto insert = [&](const auto &f, const auto &s1, const auto &op, const auto &s2) {
+                        auto [it, inserted] = solutions.try_emplace(f);
+                        if (inserted) it->second = "(" + s1 + op + s2 + ")";
+                    };
+
+                    for (auto [f1, s1] : left)
+                        for (auto [f2, s2] : right) {
+                            insert(f1 + f2, s1, "+", s2);
+                            insert(f1 - f2, s1, "-", s2);
+                            insert(f2 - f1, s2, "-", s1);
+                            insert(f1 * f2, s1, "*", s2);
+                            if (f2.numer()) insert(f1 / f2, s1, "/", s2);
+                            if (f1.numer()) insert(f2 / f1, s2, "/", s1);
+                        }
+                }
             }
         }
         return memo[m1] = solutions;
