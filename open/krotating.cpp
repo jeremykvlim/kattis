@@ -4,7 +4,7 @@ using namespace std;
 struct SplayTree {
     struct SplayNode {
         array<int, 3> family;
-        
+
         SplayNode() : family{0, 0, 0} {}
     };
 
