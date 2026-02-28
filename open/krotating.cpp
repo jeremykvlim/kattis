@@ -4,6 +4,7 @@ using namespace std;
 struct SplayTree {
     struct SplayNode {
         array<int, 3> family;
+        
         SplayNode() : family{0, 0, 0} {}
     };
 
@@ -18,7 +19,7 @@ struct SplayTree {
     void splay(int i) {
         auto root = [&](int i) {
             auto [l, r, p] = ST[ST[i].family[2]].family;
-            return !i || (l != i && r != i);
+            return !i || l != i && r != i;
         };
 
         auto child = [&](int i, int parent) { return ST[parent].family[1] == i; };
