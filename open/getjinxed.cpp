@@ -185,7 +185,7 @@ int main() {
                 cycle[t] = 0;
             }
         }
-        if (!v) return;
+
         if (lct.find(v) != u) {
             lct.link(u, v);
             parent[u] = v;
@@ -305,7 +305,6 @@ int main() {
                     add(x, y, i);
                 }
                 mirror[i] = c;
-                if (i <= n) continue;
                 for (int dir = 0; dir < 4; dir++) update(i, dir);
             }
         } else {
