@@ -4,7 +4,6 @@ using namespace std;
 struct SplayTree {
     struct SplayNode {
         array<int, 3> family;
-
         SplayNode() : family{0, 0, 0} {}
     };
 
@@ -16,22 +15,10 @@ struct SplayTree {
         return ST[i];
     }
 
-    void pull(int i) {
-        if (!i) return;
-    }
-
-    void flip(int i) {
-        if (!i) return;
-    }
-
-    void push(int i) {
-        if (!i) return;
-    }
-
     void splay(int i) {
         auto root = [&](int i) {
             auto [l, r, p] = ST[ST[i].family[2]].family;
-            return !i || l != i && r != i;
+            return !i || (l != i && r != i);
         };
 
         auto child = [&](int i, int parent) { return ST[parent].family[1] == i; };
@@ -46,41 +33,28 @@ struct SplayTree {
             ST[i].family[c ^ 1] = j;
             ST[i].family[2] = k;
             ST[j].family[2] = i;
-            pull(j);
         };
 
-        auto propagate = [&](auto &&self, int i) -> void {
-            if (!root(i)) self(self, ST[i].family[2]);
-            push(i);
-        };
-
-        propagate(propagate, i);
         while (!root(i)) {
             int j = ST[i].family[2], k = ST[j].family[2];
             if (!root(j)) rotate(child(i, j) != child(j, k) ? i : j);
             rotate(i);
         }
-        pull(i);
     }
 
     int subtree_min(int i) {
-        while (ST[i].family[0]) {
-            push(i);
-            i = ST[i].family[0];
-        }
-        push(i);
+        while (ST[i].family[0]) i = ST[i].family[0];
         return i;
     }
 };
 
-struct LinkCutTree : SplayTree {
-    LinkCutTree(int n) : SplayTree(n) {}
+struct RootedLinkCutTree : SplayTree {
+    RootedLinkCutTree(int n) : SplayTree(n) {}
 
     void access(int i) {
         for (int u = 0, v = i; v; u = v, v = ST[v].family[2]) {
             splay(v);
             ST[v].family[1] = u;
-            pull(v);
         }
         splay(i);
     }
@@ -92,26 +66,15 @@ struct LinkCutTree : SplayTree {
         return i;
     }
 
-    void reroot(int i) {
-        access(i);
-        flip(i);
-        pull(i);
-    }
-
     void link(int i, int j) {
-        reroot(i);
+        access(i);
         ST[i].family[2] = j;
     }
 
-    void split(int i, int j) {
-        reroot(j);
+    void cut(int i) {
         access(i);
-    }
-
-    void cut(int i, int j) {
-        split(i, j);
-        ST[i].family[0] = ST[j].family[2] = 0;
-        pull(i);
+        auto &[l, r, p] = ST[i].family;
+        l = ST[l].family[2] = 0;
     }
 };
 
@@ -158,20 +121,16 @@ int main() {
             }
         }
 
-    LinkCutTree lct(nodes);
-    vector<int> parent(nodes + 1, 0);
+    RootedLinkCutTree lct(nodes);
     for (int pi = 1; pi <= n; pi++)
-        for (int j = 0; j < id[pi].size(); j++) {
-            int v = id[pi][j];
-            lct.link(v, parent[v] = !j ? pi : id[pi][j - 1]);
-        }
+        for (int j = 0; j < id[pi].size(); j++) lct.link(id[pi][j], !j ? pi : id[pi][j - 1]);
 
     for (auto [b, t, x] : queries)
         if (!b) {
             for (int i = 0; i < k[x]; i++) {
                 int u = edges[x][(i + 1) % k[x]].first, v = edges[x][i].second;
-                if (parent[v]) lct.cut(v, parent[v]);
-                if (u) lct.link(v, parent[v] = u);
+                lct.cut(v);
+                if (u) lct.link(v, u);
             }
         } else {
             int j = upper_bound(weeks[t].begin(), weeks[t].end(), x) - weeks[t].begin();
