@@ -166,7 +166,7 @@ int main() {
 
     int n;
     while (cin >> n && n) {
-        vector<Point<double>> points(n);
+        vector<Point<int>> points(n);
         vector<int> v(n), l(n);
         int sum_v = 0, sum_l = 0;
         for (int i = 0; i < n; i++) {
@@ -176,22 +176,29 @@ int main() {
             sum_l += l[i];
         }
 
+        int all = 1 << n;
+        vector<int> val_masks(all), len_masks(all);
+        val_masks[0] = len_masks[0] = 0;
+        for (int m1 = 1; m1 < all; m1++) {
+            int m2 = m1 & (m1 - 1), i = countr_zero((unsigned) m1 ^ m2);
+            val_masks[m1] = val_masks[m2] + v[i];
+            len_masks[m1] = len_masks[m2] + l[i];
+        }
+
         int value = 1e9;
-        for (int mask = 0; mask < 1 << n; mask++) {
-            int val = 0, len = 0;
-            vector<Point<double>> valid;
+        for (int m1 = 0; m1 < all; m1++) {
+            if (value <= val_masks[m1]) continue;
+
+            int m2 = m1 ^ (all - 1);
+            vector<Point<int>> valid;
             for (int i = 0; i < n; i++)
-                if ((mask >> i) & 1) {
-                    val += v[i];
-                    len += l[i];
-                    valid.emplace_back(points[i]);
-                }
+                if ((m2 >> i) & 1) valid.emplace_back(points[i]);
 
             auto convex_hull = monotone_chain(valid);
             auto perimeter = 0.;
             for (int i = 0; i < convex_hull.size(); i++) perimeter += euclidean_dist(convex_hull[i], convex_hull[(i + 1) % convex_hull.size()]);
-            if (sum_l - len >= perimeter) value = min(value, sum_v - val);
+            if (len_masks[m1] >= perimeter) value = val_masks[m1];
         }
-        cout << "The lost value is " << value << "\n";
+        cout << "The lost value is " << value << ".\n";
     }
 }
