@@ -9,13 +9,11 @@ struct SparseTable {
     SparseTable() {}
     SparseTable(const vector<T> &v, function<T(T, T)> func) : f(func) {
         if (v.empty()) return;
-        int n = __lg(v.size()) + 1;
-        ST.resize(n);
-        ST.front() = v;
-        for (int i = 1; i < n; i++) {
+        ST.resize(__lg(v.size()) + 1);
+        ST[0] = v;
+        for (int i = 1; i < ST.size(); i++) {
             ST[i].resize(v.size() - (1 << i) + 1);
-            for (int j = 0; j <= v.size() - (1 << i); j++)
-                ST[i][j] = f(ST[i - 1][j], ST[i - 1][j + (1 << (i - 1))]);
+            for (int j = 0; j < ST[i].size(); j++) ST[i][j] = f(ST[i - 1][j], ST[i - 1][j + (1 << (i - 1))]);
         }
     }
 
