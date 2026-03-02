@@ -7,7 +7,7 @@ struct SparseTable {
     function<T(T, T)> f;
 
     SparseTable() {}
-    SparseTable(vector<T> v, function<T(T, T)> func) : f(move(func)) {
+    SparseTable(const vector<T> &v, function<T(T, T)> func) : f(func) {
         if (v.empty()) return;
         int n = __lg(v.size()) + 1;
         ST.resize(n);
