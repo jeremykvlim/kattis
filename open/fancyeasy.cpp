@@ -144,7 +144,7 @@ struct Matrix {
         return C;
     }
 
-    friend auto operator*=(Matrix<T> &A, Matrix<T> &B) {
+    friend auto operator*=(Matrix<T> &A, const Matrix<T> &B) {
         return A = A * B;
     }
 
