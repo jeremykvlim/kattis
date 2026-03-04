@@ -19,12 +19,11 @@ int main() {
     vector<long long> potential(n, 0);
     for (int _ = 0; _ < n; _++) {
         bool changed = false;
-        for (auto [u, v, w] : edges) {
+        for (auto [u, v, w] : edges)
             if (potential[v] > potential[u] + w) {
                 potential[v] = potential[u] + w;
                 changed = true;
             }
-        }
         if (!changed) break;
     }
 
