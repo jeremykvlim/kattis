@@ -8,25 +8,17 @@ int main() {
     int n, k;
     cin >> n >> k;
 
-    int c = 0, offset = 0;
-    for (int i = 1; i <= n; i++) {
-        int curr = min(n - i, n - (n + i - 1) / i);
-        if (curr > c) {
-            c = curr;
-            offset = i;
-        }
-    }
-
-    if (c < k) {
+    int d = sqrt(n) + 1;
+    if (n - d < k) {
         cout << "NO";
         exit(0);
     }
 
     cout << "YES\n";
     for (int i = 1, j = 0; j < k; i++)
-        if (i % offset) {
+        if (i % d) {
             cout << i << " " << i + 1 << "\n";
             j++;
         }
-    for (int i = 1; i <= k; i++) cout << i << " " << i + offset << "\n";
+    for (int i = 1; i <= k; i++) cout << i << " " << i + d << "\n";
 }
