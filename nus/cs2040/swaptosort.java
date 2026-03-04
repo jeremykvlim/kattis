@@ -8,7 +8,6 @@ public class swaptosort {
         int n = Integer.parseInt(input[0]), k = Integer.parseInt(input[1]);
 
         var dsu = new DisjointSets(n + 1);
-
         while (k-- > 0) {
             var pair = br.readLine().split(" ");
             int a = Integer.parseInt(pair[0]), b = Integer.parseInt(pair[1]);
@@ -18,7 +17,7 @@ public class swaptosort {
         for (int i = 1, j = n; i <= n / 2; i++, j--)
             if (dsu.find(i) != dsu.find(j)) {
                 System.out.println("No");
-                return;
+                System.exit(0);
             }
 
         System.out.println("Yes");
