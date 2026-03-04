@@ -120,7 +120,6 @@ int main() {
                         dist[d] = max(dist[d], active_dists[u][i]);
                     }
         };
-
         dfs(dfs);
 
         cout << g << "\n";
