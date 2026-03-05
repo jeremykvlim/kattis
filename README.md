@@ -1,6 +1,6 @@
 # kattis
 
-My solutions to Kattis problems. Solutions are named `"problemname".<languagefilename>`. To find the problem statement, please go to:
+My solutions to Kattis problems (retired, 2026). Solutions are named `"problemname".<languagefilename>`. To find the problem statement, please go to:
 
 `https://nus.kattis.com/problems/"problemname"` or `https://open.kattis.com/problems/"problemname"`
 
