@@ -594,27 +594,10 @@ int main() {
     for (int &e : v2) cin >> e;
     reverse(v2.begin(), v2.end());
 
-    vector<int> v3(n);
-    for (int i = 0; i < n; i++) v3[i] = max({0, -v1[i], -v2[i], -v1[i] - v2[i]});
-
-    vector<int> _1_3 = v3, _2_3 = v3, _1_2_3 = v3;
-    for (int i = 0; i < n; i++) {
-        _1_3[i] += v1[i];
-        _2_3[i] += v2[i];
-        _1_2_3[i] += v1[i] + v2[i];
-    }
-
-    auto x = convolve(_1_3, _2_3), y = convolve(v3, _1_2_3);
-    x.resize(2 * n, 0);
-    y.resize(2 * n, 0);
-
+    auto c = convolve(v1, v2);
     vector<int> K;
-    for (int k = 0; k < n; k++) {
-        auto dot = x[k + n - 1] - y[k + n - 1];
-        if (k) dot += x[k - 1] - y[k - 1];
-
-        if (!dot) K.emplace_back(k);
-    }
+    for (int k = 0; k < n; k++)
+        if (c[k + n - 1] == (k ? -c[k - 1] : 0)) K.emplace_back(k);
 
     if (!K.empty())
         for (int k : K) cout << k << "\n";
