@@ -161,6 +161,7 @@ int main() {
     long long l = -1, r = 0, mid;
     for (int i = 0; i < S; i++)
         for (int j = 1; j <= n; j++) r = max(r, dist[i][j]);
+    
     while (l + 1 < r) {
         mid = l + (r - l) / 2;
 
