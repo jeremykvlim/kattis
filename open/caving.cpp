@@ -2,8 +2,6 @@
 using namespace std;
 
 struct StaticTopTree {
-    static inline vector<int> vals;
-
     enum Operation {
         NA = 0,
         LeafVertex = 1,
@@ -25,8 +23,7 @@ struct StaticTopTree {
             long long sum, pref, suff, subpath;
 
             Monoid(long long v = 0) {
-                sum = v;
-                pref = suff = subpath = max(0LL, v);
+                sum = pref = suff = subpath = v;
             }
 
             friend auto operator+(const Monoid &ml, const Monoid &mr) {
@@ -42,13 +39,13 @@ struct StaticTopTree {
         Monoid m;
         long long aggregate;
 
-        Path(const Monoid &m = {0}, const long long aggregate = 0) : m(m), aggregate(aggregate) {}
+        Path(const Monoid &m = {0}, const long long &aggregate = LLONG_MIN) : m(m), aggregate(aggregate) {}
     };
 
     struct Point {
-        long long sum, base;
+        long long light_sum, base;
 
-        Point(const long long sum = 0, const long long base = 0) : sum(sum), base(base) {}
+        Point(const long long &sum = 0LL, const long long &base = LLONG_MIN) : light_sum(sum), base(base) {}
     };
 
     int root, nodes;
@@ -56,11 +53,11 @@ struct StaticTopTree {
     vector<Path> dp_path;
     vector<Point> dp_point;
     vector<vector<int>> adj_list;
+    vector<int> vals;
 
     StaticTopTree(int n, vector<vector<int>> &adj_list, const vector<int> &values) : root(-1), nodes(n), STT(4 * n),
                                                                                      dp_path(4 * n), dp_point(4 * n),
-                                                                                     adj_list(adj_list) {
-        vals = values;
+                                                                                     adj_list(adj_list), vals(values) {
         auto hld = [&](auto &&self, int v = 0) -> int {
             int subtree_size = 1, largest = 0;
             for (int &u : adj_list[v]) {
@@ -202,23 +199,8 @@ int main() {
     int n;
     cin >> n;
 
-    int max_v = INT_MIN;
     vector<int> values(n);
-    for (int &vi : values) {
-        cin >> vi;
-
-        max_v = max(max_v, vi);
-    }
-
-    if (max_v < 0) {
-        cout << "0 1";
-        exit(0);
-    }
-
-    if (!max_v) {
-        cout << "0 0";
-        exit(0);
-    }
+    for (int &vi : values) cin >> vi;
 
     vector<vector<int>> adj_list(n);
     for (int _ = 0; _ < n - 1; _++) {
