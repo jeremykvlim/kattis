@@ -171,11 +171,10 @@ struct Fraction : array<T, 2> {
 };
 
 struct WeightedDisjointSets {
-    vector<int> sets, prio, size;
-    vector<pair<int, int>> weight;
+    vector<int> sets, prio, size, weight;
     long long sum;
 
-    WeightedDisjointSets(int n) : sets(n), prio(n), size(n, 1), weight(n, {INT_MAX, 0}), sum(0) {
+    WeightedDisjointSets(int n) : sets(n), prio(n), size(n, 1), weight(n, INT_MAX), sum(0) {
         iota(sets.begin(), sets.end(), 0);
         iota(prio.begin(), prio.end(), 0);
         shuffle(prio.begin(), prio.end(), mt19937_64(random_device{}()));
@@ -183,7 +182,7 @@ struct WeightedDisjointSets {
 
     int & compress(int v) {
         if (sets[v] == v) return sets[v];
-        while (weight[sets[v]].first <= weight[v].first) {
+        while (weight[sets[v]] <= weight[v]) {
             size[sets[v]] -= size[v];
             sets[v] = sets[sets[v]];
         }
@@ -191,7 +190,7 @@ struct WeightedDisjointSets {
     }
 
     int find(int v, int w = INT_MAX - 1) {
-        while (weight[v].first <= w) v = compress(v);
+        while (weight[v] <= w) v = compress(v);
         return v;
     }
 
@@ -202,20 +201,20 @@ struct WeightedDisjointSets {
     }
 
     int attach(int v, int w = INT_MAX - 1) {
-        while (weight[v].first <= w) {
+        while (weight[v] <= w) {
             size[sets[v]] += size[v];
             v = sets[v];
         }
         return v;
     }
 
-    void link(int u, int v, pair<int, int> w) {
+    void link(int u, int v, int w) {
         sum += (long long) component_size(u) * component_size(v);
         detach(u);
         detach(v);
         while (u != v) {
-            u = attach(u, w.first);
-            v = attach(v, w.first);
+            u = attach(u, w);
+            v = attach(v, w);
             if (prio[u] < prio[v]) swap(u, v);
             swap(sets[v], u);
             swap(weight[v], w);
@@ -225,14 +224,14 @@ struct WeightedDisjointSets {
 
     void cut(int v, int w) {
         while (sets[v] != v) {
-            if (weight[v].first == w) {
+            if (weight[v] == w) {
                 int u = v;
                 for (; u != sets[u]; u = sets[u]);
                 sum -= (long long) size[v] * (size[u] - size[v]);
 
                 for (u = v; u != sets[u]; size[u = sets[u]] -= size[v]);
                 sets[v] = v;
-                weight[v] = {INT_MAX, 0};
+                weight[v] = INT_MAX;
                 return;
             }
             v = compress(v);
@@ -248,26 +247,26 @@ struct WeightedDisjointSets {
         if (find(u) != find(v)) return -1;
 
         for (;;) {
-            if (weight[u].first > weight[v].first) swap(u, v);
+            if (weight[u] > weight[v]) swap(u, v);
             if (sets[u] == v) return u;
             u = sets[u];
         }
     }
 
-    int unite(int u, int v, pair<int, int> w) {
+    int unite(int u, int v, int w) {
         if (u != v) {
             int t = path_max(u, v);
             if (t == -1) {
                 link(u, v, w);
                 return -1;
-            } else if (weight[t].first > w.first) {
-                int i = weight[t].second;
-                cut(t, weight[t].first);
+            } else if (weight[t] > w) {
+                int temp = weight[t];
+                cut(t, weight[t]);
                 link(u, v, w);
-                return i;
+                return temp;
             }
         }
-        return w.second;
+        return w;
     }
 
     int component_size(int v) {
@@ -322,15 +321,16 @@ int main() {
         }
     }
 
-    vector<int> order(edges.size());
+    int k = edges.size();
+    vector<int> order(k);
     iota(order.begin(), order.end(), 0);
     sort(order.begin(), order.end(), [&](int i, int j) { return edges[i][2] != edges[j][2] ? edges[i][2] > edges[j][2] : i < j; });
-    for (int i = 0; i < order.size(); i++) edges[order[i]][2] = i;
+    for (int i = 0; i < k; i++) edges[order[i]][2] = i;
 
     WeightedDisjointSets wdsu(n);
     for (int e = 0; e < m; e++) {
         auto [u, v, w] = edges[e];
-        wdsu.unite(u, v, {w, e});
+        wdsu.unite(u, v, w);
     }
 
     auto total = (long long) n * (n - 1) / 2;
@@ -339,7 +339,7 @@ int main() {
             if (add[i] != -1) {
                 int e = add[i];
                 auto [u, v, w] = edges[e];
-                wdsu.unite(u, v, {w, e});
+                wdsu.unite(u, v, w);
                 m++;
             }
         } else if (t[i] == 2) {
