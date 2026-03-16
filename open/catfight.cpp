@@ -351,7 +351,7 @@ int main() {
         auto g1 = male, g2 = female;
         if (male.size() < female.size()) swap(g1, g2);
 
-        KDTree<double> kdt(g1.size(), g1);
+        KDTree kdt(g1.size(), g1);
         auto d = 1e20;
         for (auto p : g2) d = min(d, kdt.nearest_neighbor_dist(p));
         Circle c1({0, 0}, rf), c2({sqrt(d), 0}, rm);
