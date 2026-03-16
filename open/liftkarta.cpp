@@ -1,46 +1,90 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct DisjointSets {
-    vector<int> sets;
+struct WeightedDisjointSets {
+    vector<int> sets, prio, weight;
 
-    int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            return true;
-        }
-        return false;
-    }
-
-    DisjointSets(int n) : sets(n) {
+    WeightedDisjointSets(int n) : sets(n), prio(n), weight(n, INT_MAX) {
         iota(sets.begin(), sets.end(), 0);
+        iota(prio.begin(), prio.end(), 0);
+        shuffle(prio.begin(), prio.end(), mt19937_64(random_device{}()));
     }
-};
 
-template <typename T>
-struct ReachabilityTree {
-    int n;
-    vector<int> parent;
-    vector<vector<int>> adj_list;
-    vector<T> weight;
+    int & compress(int v) {
+        if (sets[v] == v) return sets[v];
+        while (weight[sets[v]] <= weight[v]) sets[v] = sets[sets[v]];
+        return sets[v];
+    }
 
-    ReachabilityTree(int m, vector<tuple<int, int, T>> &edges) : n(m), parent(2 * m), adj_list(2 * m), weight(2 * m, 0) {
-        DisjointSets dsu(2 * n);
-        for (auto [u, v, w] : edges) {
-            int u_set = dsu.find(u), v_set = dsu.find(v);
-            if (u_set != v_set) {
-                n++;
-                weight[n] = w;
-                parent[u_set] = parent[v_set] = dsu.sets[u_set] = dsu.sets[v_set] = dsu.sets[n] = n;
-                adj_list[n].emplace_back(u_set);
-                adj_list[n].emplace_back(v_set);
+    int find(int v, int w = INT_MAX - 1) {
+        while (weight[v] <= w) v = compress(v);
+        return v;
+    }
+
+    void detach(int v) {
+        if (sets[v] == v) return;
+        detach(sets[v]);
+    }
+
+    int attach(int v, int w = INT_MAX - 1) {
+        while (weight[v] <= w) v = sets[v];
+        return v;
+    }
+
+    void link(int u, int v, int w) {
+        detach(u);
+        detach(v);
+        while (u != v) {
+            u = attach(u, w);
+            v = attach(v, w);
+            if (prio[u] < prio[v]) swap(u, v);
+            swap(sets[v], u);
+            swap(weight[v], w);
+        }
+        attach(u);
+    }
+
+    void cut(int v, int w) {
+        while (sets[v] != v) {
+            if (weight[v] == w) {
+                for (int u = v; u != sets[u]; u = sets[u]);
+                sets[v] = v;
+                weight[v] = INT_MAX;
+                return;
+            }
+            v = compress(v);
+        }
+    }
+
+    void cut(int u, int v, int w) {
+        cut(u, w);
+        cut(v, w);
+    }
+
+    int path_max(int u, int v) {
+        if (find(u) != find(v)) return -1;
+
+        for (;;) {
+            if (weight[u] > weight[v]) swap(u, v);
+            if (sets[u] == v) return u;
+            u = sets[u];
+        }
+    }
+
+    int unite(int u, int v, int w) {
+        if (u != v) {
+            int t = path_max(u, v);
+            if (t == -1) {
+                link(u, v, w);
+                return -1;
+            } else if (weight[t] > w) {
+                int temp = weight[t];
+                cut(t, weight[t]);
+                link(u, v, w);
+                return temp;
             }
         }
+        return w;
     }
 };
 
@@ -51,61 +95,19 @@ int main() {
     int n, m, q;
     cin >> n >> m >> q;
 
-    vector<tuple<int, int, int>> edges(m);
-    for (auto &[u, v, s] : edges) cin >> u >> v >> s;
-    sort(edges.begin(), edges.end(), [&](auto e1, auto e2) { return get<2>(e1) < get<2>(e2); });
+    WeightedDisjointSets wdsu(n + 1);
+    while (m--) {
+        int u, v, s;
+        cin >> u >> v >> s;
 
-    ReachabilityTree rt(n, edges);
-    n = rt.n + 1;
-    for (int i = 1; i < n; i++)
-        if (!rt.parent[i]) rt.adj_list[0].emplace_back(i);
-
-    auto lsb = [&](int x) {
-        return x & -x;
-    };
-
-    vector<pair<int, int>> tour;
-    vector<int> index(n), depth(n, 0), in(n), out(n), prev(n, 0), anc_mask(n, 0), head(n + 1);
-    int count = 0;
-    auto dfs = [&](auto &&self, int v = 0) -> void {
-        tour.emplace_back(v, prev[v]);
-        index[v] = tour.size();
-        in[v] = count++;
-
-        for (int u : rt.adj_list[v])
-            if (u != prev[v]) {
-                prev[u] = v;
-                depth[u] = depth[v] + 1;
-                self(self, u);
-                head[index[u]] = v;
-                if (lsb(index[v]) < lsb(index[u])) index[v] = index[u];
-            }
-        out[v] = count;
-    };
-    dfs(dfs);
-    for (auto [v, p] : tour) anc_mask[v] = anc_mask[p] | lsb(index[v]);
-
-    auto lca = [&](int u, int v) -> int {
-        if (unsigned above = index[u] ^ index[v]; above) {
-            above = (anc_mask[u] & anc_mask[v]) & -bit_floor(above);
-            if (unsigned below = anc_mask[u] ^ above; below) {
-                below = bit_floor(below);
-                u = head[(index[u] & -below) | below];
-            }
-            if (unsigned below = anc_mask[v] ^ above; below) {
-                below = bit_floor(below);
-                v = head[(index[v] & -below) | below];
-            }
-        }
-
-        return depth[u] < depth[v] ? u : v;
-    };
+        wdsu.unite(u, v, s);
+    }
 
     while (q--) {
         int a, b, f, k, l;
         cin >> a >> b >> f >> k >> l;
 
-        int w = rt.weight[lca(a, b)];
+        int w = wdsu.weight[wdsu.path_max(a, b)];
         if (w <= l) cout << f << "\n";
         else cout << max(0, f - (w - l + k - 1) / k) << "\n";
     }
