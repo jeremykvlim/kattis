@@ -582,7 +582,7 @@ int main() {
 
     vector<modint> fact(w + h + 1, 1), fact_inv(w + h + 1, 1);
     auto prepare = [&]() {
-        vector<modint> inv(w + h + 1, 1);
+        auto inv = fact;
 
         for (int i = 1; i <= w + h; i++) {
             if (i > 1) inv[i] = (MOD - MOD / i) * inv[MOD % i];

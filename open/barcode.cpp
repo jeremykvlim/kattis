@@ -386,7 +386,7 @@ int main() {
 
         vector<modint> fact(n + 1, 1), fact_inv(n / 2 + 1, 1);
         auto prepare = [&]() {
-            vector<modint> inv(n / 2 + 1, 1);
+            auto inv = fact;
 
             for (int i = 1; i <= n / 2; i++) {
                 if (i > 1) inv[i] = (MOD - MOD / i) * inv[MOD % i];
