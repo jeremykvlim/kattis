@@ -4,10 +4,9 @@ using namespace std;
 struct SplayTree {
     struct SplayNode {
         array<int, 3> family;
-        bool flip;
         long long value = 0, sum = 0;
 
-        SplayNode(long long v = 0) : family{0, 0, 0}, flip(false), value(v), sum(v) {}
+        SplayNode(long long v = 0) : family{0, 0, 0}, value(v), sum(v) {}
 
         auto operator=(long long v) {
             value = sum = v;
@@ -26,23 +25,6 @@ struct SplayTree {
         if (!i) return;
         auto [l, r, p] = ST[i].family;
         ST[i].sum = ST[i].value + ST[l].sum + ST[r].sum;
-    }
-
-    void flip(int i) {
-        if (!i) return;
-        auto &[l, r, p] = ST[i].family;
-        swap(l, r);
-        ST[i].flip ^= true;
-    }
-
-    void push(int i) {
-        if (!i) return;
-        if (ST[i].flip) {
-            auto [l, r, p] = ST[i].family;
-            if (l) flip(l);
-            if (r) flip(r);
-            ST[i].flip = false;
-        }
     }
 
     void splay(int i) {
@@ -66,12 +48,6 @@ struct SplayTree {
             pull(j);
         };
 
-        auto propagate = [&](auto &&self, int i) -> void {
-            if (!root(i)) self(self, ST[i].family[2]);
-            push(i);
-        };
-
-        propagate(propagate, i);
         while (!root(i)) {
             int j = ST[i].family[2], k = ST[j].family[2];
             if (!root(j)) rotate(child(i, j) != child(j, k) ? i : j);
@@ -79,45 +55,46 @@ struct SplayTree {
         }
         pull(i);
     }
+
+    int subtree_min(int i) {
+        while (ST[i].family[0]) i = ST[i].family[0];
+        return i;
+    }
 };
 
-struct LinkCutTree : SplayTree {
-    LinkCutTree(int n) : SplayTree(n) {}
+struct RootedLinkCutTree : SplayTree {
+    RootedLinkCutTree(int n) : SplayTree(n) {}
 
     void access(int i) {
         for (int u = 0, v = i; v; u = v, v = ST[v].family[2]) {
             splay(v);
             ST[v].family[1] = u;
-            pull(v);
         }
         splay(i);
     }
 
-    void reroot(int i) {
+    int find(int i) {
         access(i);
-        flip(i);
-        pull(i);
+        i = subtree_min(i);
+        splay(i);
+        return i;
     }
 
     void link(int i, int j) {
-        reroot(i);
+        access(i);
         ST[i].family[2] = j;
     }
 
-    void split(int i, int j) {
-        reroot(j);
+    void cut(int i) {
         access(i);
-    }
-
-    void cut(int i, int j) {
-        split(i, j);
-        ST[i].family[0] = ST[j].family[2] = 0;
+        auto &[l, r, p] = ST[i].family;
+        l = ST[l].family[2] = 0;
         pull(i);
     }
 
-    long long path_sum(int i, int j) {
-        split(i, j);
-        return ST[i].sum;
+    long long path_sum() {
+        access(1);
+        return ST[1].sum;
     }
 };
 
@@ -130,10 +107,10 @@ int main() {
     cin >> Q >> m >> s1 >> s2;
     long long both = s1 + s2;
 
-    LinkCutTree lct(4 * Q);
+    RootedLinkCutTree lct(4 * Q);
     unordered_map<long long, map<long long, int>> nodes;
     vector<long long> haze(4 * Q, 0);
-    vector<int> link(4 * Q, 0);
+    vector<int> parent(4 * Q, 0);
     vector<pair<long long, long long>> cycles(4 * Q, {0, 0});
     auto unite = [&](int i, int j) {
         auto time = [&](int i) -> pair<int, long long> {
@@ -147,8 +124,8 @@ int main() {
 
         auto dist = (j == 2 ? m : t2) - t1 - haze[i];
         lct[i] = dist <= (k ? s1 : s2) ? 1 : min((dist + both - 1) / both * 2, (dist + both - 1 - (k ? s1 : s2)) / both * 2 + 1);
-        if (link[i]) lct.cut(i, link[i]);
-        link[i] = j;
+        if (parent[i]) lct.cut(i);
+        parent[i] = j;
         lct.link(i, j);
     };
     nodes[0][0] = 1;
@@ -201,6 +178,6 @@ int main() {
                 unite(i, j);
             }
 
-        cout << lct.path_sum(1, 2) << "\n" << flush;
+        cout << lct.path_sum() << "\n" << flush;
     }
 }
