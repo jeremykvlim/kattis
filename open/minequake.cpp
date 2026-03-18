@@ -2,7 +2,7 @@
 using namespace std;
 
 template <typename T>
-auto rerooting_dp(int n, const vector<tuple<int, int, T>> &edges, const vector<int> &auxiliary) {
+auto rerooting_dp(int n, const vector<tuple<int, int, T>> &edges) {
     vector<vector<pair<int, T>>> adj_list(n);
     for (auto [u, v, w] : edges) {
         adj_list[u].emplace_back(v, w);
@@ -23,24 +23,26 @@ auto rerooting_dp(int n, const vector<tuple<int, int, T>> &edges, const vector<i
     parent[0] = -2;
     dfs(dfs);
 
-    using State = array<long long, 2>;
+    using State = array<long long, 3>;
     auto base = [&]() -> State {
-        return {0, 0};
+        return {0, 0, 0};
     };
 
     auto merge = [&](const State &s1, const State &s2) -> State {
-        return State{s1[0] + s2[0], s1[1] + s2[1]};
+        return {s1[0] + s2[0], s1[1] + s2[1], s1[2] + s2[2]};
     };
 
     auto finalize = [&](const vector<pair<State, int>> &states, int v) -> State {
         auto t = base();
         for (auto [s, _] : states) t = merge(t, s);
-        t[0] += t[1] * auxiliary[v];
+        t[0] += t[1] * t[1] - t[2];
         t[1]++;
+        t[2] = t[1] * t[1];
         return t;
     };
 
     auto climb = [&](State s, int w) -> State {
+        s[0] += s[1] * w;
         return s;
     };
 
@@ -89,19 +91,20 @@ int main() {
     int n;
     cin >> n;
 
-    vector<int> a(n);
-    for (int &ai : a) cin >> ai;
+    if (n == 1) {
+        cout << 0;
+        exit(0);
+    }
 
     vector<tuple<int, int, int>> edges(n - 1);
     for (auto &[u, v, w] : edges) {
         cin >> u >> v;
         u--;
         v--;
-        w = 0;
+        w = 1;
     }
 
-    pair<long long, int> p{LLONG_MIN, -1};
-    auto dp = rerooting_dp(n, edges, a);
-    for (int i = 0; i < n; i++) p = max(p, {dp[i][0] - (long long) a[i] * n, i});
-    cout << p.second + 1;
+    auto dist = LLONG_MAX;
+    for (auto [cost, size, sq] : rerooting_dp(n, edges)) dist = min(dist, cost);
+    cout << dist;
 }
