@@ -5,18 +5,19 @@ template <typename T>
 struct FenwickTree {
     vector<T> BIT;
     function<T(T, T)> f;
+    T unit;
 
     void update(int i, T v) {
         for (; i && i < BIT.size(); i += i & -i) BIT[i] = f(BIT[i], v);
     }
 
     T range_query(int i) {
-        T v = numeric_limits<T>::max();
+        T v = unit;
         for (; i; i &= i - 1) v = f(v, BIT[i]);
         return v;
     }
 
-    FenwickTree(int n, function<T(T, T)> func) : BIT(n, numeric_limits<T>::max()), f(move(func)) {}
+    FenwickTree(int n, function<T(T, T)> func, T unit) : BIT(n, unit), f(move(func)), unit(unit) {}
 };
 
 int main() {
@@ -37,7 +38,7 @@ int main() {
     r.erase(unique(r.begin(), r.end()), r.end());
 
     int m = r.size();
-    FenwickTree<long long> fw(m + 1, [](long long x, long long y) { return min(x, y); });
+    FenwickTree<long long> fw(m + 1, [](auto x, auto y) { return min(x, y); }, LLONG_MAX);
     vector<long long> dp(n + 1, 0);
     auto damage = LLONG_MAX, lowest = LLONG_MAX;
     for (int i = 0; i <= n; i++) {

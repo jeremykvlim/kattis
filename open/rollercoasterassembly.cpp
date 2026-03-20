@@ -5,18 +5,19 @@ template <typename T>
 struct FenwickTree {
     vector<T> BIT;
     function<T(T, T)> f;
+    T unit;
 
     void update(int i, T v) {
         for (; i && i < BIT.size(); i += i & -i) BIT[i] = f(BIT[i], v);
     }
 
     T range_query(int i) {
-        T v = numeric_limits<T>::lowest();
+        T v = unit;
         for (; i; i &= i - 1) v = f(v, BIT[i]);
         return v;
     }
 
-    FenwickTree(int n, function<T(T, T)> func) : BIT(n, numeric_limits<T>::lowest()), f(move(func)) {}
+    FenwickTree(int n, function<T(T, T)> func, T unit) : BIT(n, unit), f(move(func)), unit(unit) {}
 };
 
 int main() {
@@ -37,7 +38,7 @@ int main() {
     for (int i = 0; i < n - 1; i++) pref[i + 1] = pref[i] + min(a[i + 1], b[i]);
 
     int m = deduped.size();
-    FenwickTree<long long> fw_l(m + 1, [](auto x, auto y) { return max(x, y); }), fw_r(m + 1, [](auto x, auto y) { return max(x, y); });
+    FenwickTree<long long> fw_l(m + 1, [](auto x, auto y) { return max(x, y); }, LLONG_MIN), fw_r(m + 1, [](auto x, auto y) { return max(x, y); }, LLONG_MIN);
     vector<long long> dp(n + 2, 0), max_l(m, LLONG_MIN), max_r(m, LLONG_MIN);
     for (int i = n - 1; ~i; i--) {
         if (i < n - 1) {

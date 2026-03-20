@@ -5,18 +5,19 @@ template <typename T>
 struct FenwickTree {
     vector<T> BIT;
     function<T(T, T)> f;
+    T unit;
 
     void update(int i, T v) {
         for (; i && i < BIT.size(); i += i & -i) BIT[i] = f(BIT[i], v);
     }
 
     T range_query(int i) {
-        T v = 0;
+        T v = unit;
         for (; i; i &= i - 1) v = f(v, BIT[i]);
         return v;
     }
 
-    FenwickTree(int n, function<T(T, T)> func) : BIT(n, 0), f(move(func)) {}
+    FenwickTree(int n, function<T(T, T)> func, T unit) : BIT(n, unit), f(move(func)), unit(unit) {}
 };
 
 int main() {
@@ -34,13 +35,12 @@ int main() {
         indices[xi].emplace_front(i);
     }
 
-    FenwickTree<int> fw(n * k + 1, [](int x, int y) { return max(x, y); });
+    FenwickTree<int> fw(n * k + 1, [](int x, int y) { return max(x, y); }, 0);
     for (int i = 0; i < n * k; i++) {
         int xi;
         cin >> xi;
 
         for (int j : indices[xi]) fw.update(j + 1, fw.range_query(j) + 1);
     }
-
     cout << fw.range_query(n * k);
 }

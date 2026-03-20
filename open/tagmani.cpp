@@ -5,18 +5,19 @@ template <typename T>
 struct FenwickTree {
     vector<T> BIT;
     function<T(T, T)> f;
+    T unit;
 
     void update(int i, T v) {
         for (; i && i < BIT.size(); i += i & -i) BIT[i] = f(BIT[i], v);
     }
 
     T range_query(int i) {
-        T v = 0;
+        T v = unit;
         for (; i; i &= i - 1) v = f(v, BIT[i]);
         return v;
     }
 
-    FenwickTree(int n, function<T(T, T)> func) : BIT(n, 0), f(move(func)) {}
+    FenwickTree(int n, function<T(T, T)> func, T unit) : BIT(n, unit), f(move(func)), unit(unit) {}
 };
 
 struct CentroidDecomposition {
@@ -100,33 +101,30 @@ int main() {
     }
 
     vector<FenwickTree<int>> fws;
-    for (int c = 0; c <= n; c++) fws.emplace_back(times[c].size() + 1, [&](int x, int y) { return max(x, y); });
+    for (int c = 0; c <= n; c++) fws.emplace_back(times[c].size() + 1, [&](int x, int y) { return max(x, y); }, 0);
     for (int i = 0; i < k; i++) {
         auto [u, v, t, d] = trains[i];
         int dp = 0;
-        for (auto [c, layer] : cd[v]) {
-            if (times[c].empty()) continue;
-
-            int j = lower_bound(times[c].begin(), times[c].end(), cd.dist[layer][v] + t + d) - times[c].begin();
-            if (j < times[c].size()) dp = max(dp, fws[c].range_query(times[c].size() - j));
-        }
-
-        for (auto [c, layer] : cd[u]) {
-            if (times[c].empty()) continue;
-
-            int j = lower_bound(times[c].begin(), times[c].end(), t - cd.dist[layer][u]) - times[c].begin();
-            fws[c].update(times[c].size() - j, dp + 1);
-        }
+        for (auto [c, layer] : cd[v])
+            if (!times[c].empty()) {
+                int j = lower_bound(times[c].begin(), times[c].end(), cd.dist[layer][v] + t + d) - times[c].begin();
+                if (j < times[c].size()) dp = max(dp, fws[c].range_query(times[c].size() - j));
+            }
+        
+        for (auto [c, layer] : cd[u]) 
+            if (!times[c].empty()) {
+                int j = lower_bound(times[c].begin(), times[c].end(), t - cd.dist[layer][u]) - times[c].begin();
+                fws[c].update(times[c].size() - j, dp + 1);
+            }
     }
 
     for (int v = 1; v <= n; v++) {
         int x = 0;
-        for (auto [c, layer] : cd[v]) {
-            if (times[c].empty()) continue;
-
-            int j = lower_bound(times[c].begin(), times[c].end(), cd.dist[layer][v]) - times[c].begin();
-            if (j < times[c].size()) x = max(x, fws[c].range_query(times[c].size() - j));
-        }
+        for (auto [c, layer] : cd[v]) 
+            if (!times[c].empty()) {
+                int j = lower_bound(times[c].begin(), times[c].end(), cd.dist[layer][v]) - times[c].begin();
+                if (j < times[c].size()) x = max(x, fws[c].range_query(times[c].size() - j));
+            }
         cout << x << " ";
     }
 }
