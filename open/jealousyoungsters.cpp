@@ -1,65 +1,78 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+vector<int> gale_shapley(const vector<vector<int>> &pref, const vector<vector<int>> &rank) {
+    int n = pref.size(), m = rank.size();
+    if (n > m) return {};
+
+    vector<int> next(n, 0), remaining(n), match_p(n, -1), match_r(m, -1);
+    iota(remaining.begin(), remaining.end(), 0);
+
+    while (!remaining.empty()) {
+        int v = remaining.back();
+        remaining.pop_back();
+
+        while (next[v] < pref[v].size()) {
+            int u = pref[v][next[v]++];
+            if (!~match_r[u]) {
+                match_r[u] = v;
+                match_p[v] = u;
+                break;
+            }
+
+            int t = match_r[u];
+            if (rank[u][v] < rank[u][t]) {
+                match_r[u] = v;
+                match_p[v] = u;
+                match_p[t] = -1;
+                remaining.emplace_back(t);
+                break;
+            }
+        }
+    }
+
+    return match_p;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n, m;
-    cin >> n >> m;
+    int n, m, d, e;
+    cin >> n >> m >> d >> e;
 
     if (m < n) {
         cout << "impossible";
         exit(0);
     }
 
-    int d, e;
-    cin >> d >> e;
-
-    vector<vector<int>> start(n, vector<int>(m, -1)), first(n, vector<int>(m, -1)), total(n, vector<int>(m, 0)), desirable(n, vector<int>(m, 0));
-    vector<int> pos(n, 0), toy(n, 0);
+    vector<int> start(n, 0), toy(n, -1);
+    vector<vector<int>> pref(n), rank(m, vector<int>(n, 0));
+    vector<vector<bool>> seen(n, vector<bool>(m, false));
     while (e--) {
         int s, k, t;
         cin >> s >> k >> t;
         k--;
 
-        if (~start[k][toy[k]]) {
-            total[k][toy[k]] += s - start[k][toy[k]];
-            start[k][toy[k]] = -1;
+        if (~toy[k]) rank[toy[k]][k] += s - start[k];
+
+        if (!t) toy[k] = -1;
+        else {
+            t--;
+            if (!seen[k][t]) {
+                seen[k][t] = true;
+                pref[k].emplace_back(t);
+            }
+            toy[k] = t;
         }
-
-        if (!t || t > n) continue;
-        t--;
-
-        toy[k] = t;
-        start[k][t] = s;
-
-        if (!~first[k][t]) {
-            first[k][t] = s;
-            desirable[k][pos[k]++] = t;
-        }
+        start[k] = s;
     }
 
-    for (int k = 0; k < n; k++)
-        for (int t = 0; t < m; t++) {
-            if (!~first[k][t]) desirable[k][pos[k]++] = t;
-            if (~start[k][t]) total[k][t] += d - start[k][t];
-        }
-
-    vector<int> kid(m, -1);
-    fill(pos.begin(), pos.end(), 0);
-    fill(toy.begin(), toy.end(), 0);
-    for (int i = 0; i < n; i++) {
-        int k = i;
-        while (~k) {
-            int t = desirable[k][pos[k]];
-            if (!~kid[t] || total[k][t] < total[kid[t]][t]) {
-                int temp = kid[t];
-                kid[t] = k;
-                toy[k] = t + 1;
-                k = temp;
-            } else pos[k]++;
-        }
+    for (int k = 0; k < n; k++) {
+        if (~toy[k]) rank[toy[k]][k] += d - start[k];
+        for (int t = 0; t < m; t++)
+            if (!seen[k][t]) pref[k].emplace_back(t);
     }
-    for (int t : toy) cout << t << " ";
+
+    for (int i : gale_shapley(pref, rank)) cout << i + 1 << " ";
 }
