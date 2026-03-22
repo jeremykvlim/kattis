@@ -13,12 +13,10 @@ T linear_congruence_solution(T a, T b, T n) {
     T g = __gcd(a, n);
     if (b % g) return -1;
 
-    a /= g;
-    b /= g;
     n /= g;
-    auto [x, y] = bezout(a, n);
+    auto [x, y] = bezout(a / g, n);
     x = (x + n) % n;
-    return (b * x) % n;
+    return (b / g * x) % n;
 }
 
 ostream & operator<<(ostream &stream, const __int128 &v) {
