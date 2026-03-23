@@ -6,9 +6,9 @@ struct AffineFunction {
     T m, c;
     int i;
 
-    AffineFunction(T m = 0, T c = -1e10, int i = -1) : m(m), c(c), i(i) {}
+    AffineFunction(T m = 0, T c = numeric_limits<T>::lowest() / 4, int i = -1) : m(m), c(c), i(i) {}
 
-    T operator()(T x) {
+    T operator()(T x) const {
         return m * x + c;
     }
 };
