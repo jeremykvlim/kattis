@@ -121,7 +121,8 @@ int main() {
                     int seen = 0;
                     auto w = 0LL;
                     for (int i = 0; i < m; i++) {
-                        int v = (val + i) % 13;
+                        int v = val + i;
+                        if (v > 13) v -= 13;
                         seen |= 1 << v;
                         w |= card(s, v);
                     }
