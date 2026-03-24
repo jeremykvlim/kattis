@@ -5,57 +5,70 @@ template <typename T>
 struct AffineFunction {
     T m, c;
     int i;
+    mutable T cutoff;
 
-    AffineFunction(T m = 0, T c = numeric_limits<T>::lowest() / 4, int i = -1) : m(m), c(c), i(i) {}
+    AffineFunction(T m = 0, T c = numeric_limits<T>::lowest() / 4, int i = -1) : m(m), c(c), i(i), cutoff(0) {}
 
     T operator()(T x) const {
         return m * x + c;
     }
+
+    bool operator<(const AffineFunction &f) const {
+        return m < f.m;
+    }
+
+    bool operator<(T x) const {
+        return cutoff < x;
+    }
 };
 
 template <typename T>
-struct LiChaoSegmentTree {
-    int n;
-    vector<T> xs;
-    vector<AffineFunction<T>> ST;
-
-    void insert(AffineFunction<T> f) {
-        insert(1, 0, n, f);
+struct DynamicHull : multiset<AffineFunction<T>, less<>> {
+    T div(T a, T b) {
+        if constexpr (!is_floating_point_v<T>) return a / b - ((a ^ b) < 0 && a % b);
+        else return a / b;
     }
 
-    void insert(int i, int l, int r, AffineFunction<T> f) {
-        bool left = f(xs[l]) > ST[i](xs[l]);
-        if (l + 1 == r) {
-            if (left) ST[i] = f;
-            return;
+    bool update(auto it_l, auto it_r) {
+        if (it_r == this->end()) {
+            it_l->cutoff = numeric_limits<T>::max();
+            return false;
         }
 
-        int m = midpoint(l, r);
-        bool mid = f(xs[m]) > ST[i](xs[m]);
-        if (mid) swap(f, ST[i]);
+        if (it_l->m == it_r->m) it_l->cutoff = it_l->c > it_r->c ? numeric_limits<T>::max() : numeric_limits<T>::lowest();
+        else it_l->cutoff = div(it_r->c - it_l->c, it_l->m - it_r->m);
+        return it_l->cutoff >= it_r->cutoff;
+    }
 
-        if (left != mid) insert(i << 1, l, m, f);
-        else insert(i << 1 | 1, m, r, f);
+    void add(const AffineFunction<T> &f) {
+        auto it = this->insert(f);
+        for (auto it_r = next(it); update(it, it_r); it_r = this->erase(it_r));
+
+        if (it != this->begin()) {
+            auto it_l = prev(it);
+            if (update(it_l, it)) {
+                this->erase(it);
+                it = it_l;
+                update(it, next(it));
+            } else it = it_l;
+        }
+
+        while (it != this->begin()) {
+            auto it_l = prev(it);
+            if (it_l->cutoff < it->cutoff) break;
+            update(it_l, this->erase(it));
+            it = it_l;
+        }
+    }
+
+    void add(T m, T c, int i = -1) {
+        add(AffineFunction<T>(m, c, i));
     }
 
     pair<T, int> query(T x) {
-        return query(1, lower_bound(xs.begin(), xs.end(), x) - xs.begin(), 0, n);
+        auto f = *this->lower_bound(x);
+        return {f(x), f.i};
     }
-
-    pair<T, int> query(int i, int pos, int l, int r) {
-        if (l + 1 == r) return {ST[i](xs[pos]), ST[i].i};
-
-        int m = midpoint(l, r);
-        if (pos < m) return max({ST[i](xs[pos]), ST[i].i}, query(i << 1, pos, l, m));
-        else return max({ST[i](xs[pos]), ST[i].i}, query(i << 1 | 1, pos, m, r));
-    }
-
-    int midpoint(int l, int r) {
-        int i = 1 << __lg(r - l);
-        return min(l + i, r - (i >> 1));
-    }
-
-    LiChaoSegmentTree(int n, const vector<T> &xs) : n(n), xs(xs), ST(2 * n) {}
 };
 
 int main() {
@@ -66,15 +79,8 @@ int main() {
     cin >> n;
 
     vector<tuple<long long, long long, int>> events(n);
-    vector<long long> V;
-    for (auto &[t, v, e] : events) {
-        cin >> v >> t >> e;
-
-        V.emplace_back(v);
-    }
+    for (auto &[t, v, e] : events) cin >> v >> t >> e;
     sort(events.begin(), events.end());
-    sort(V.begin(), V.end());
-    V.erase(unique(V.begin(), V.end()), V.end());
 
     int M;
     cin >> M;
@@ -87,7 +93,7 @@ int main() {
         adj_matrix[a][b] = adj_matrix[b][a] = false;
     }
 
-    vector<LiChaoSegmentTree<long long>> lcsts(6, LiChaoSegmentTree<long long>(V.size(), V));
+    vector<DynamicHull<long long>> dhs(6);
     vector<int> prev(n, -1);
     int j = -1;
     long long m = -1e10;
@@ -97,21 +103,21 @@ int main() {
         int k = -1;
         long long satisfaction = -1e10;
         for (int d = 1; d <= 5; d++)
-            if (adj_matrix[d][e]) {
-                auto [s, l] = lcsts[d].query(v);
+            if (adj_matrix[d][e] && !dhs[d].empty()) {
+                auto [s, l] = dhs[d].query(v);
                 if (satisfaction < s) {
                     satisfaction = s;
                     k = l;
                 }
             }
 
-        AffineFunction<long long> f(v, 0, i);
+        auto c = 0LL;
         if (satisfaction < v) satisfaction = v;
         else {
-            f.c = satisfaction;
+            c = satisfaction;
             prev[i] = k;
         }
-        lcsts[e].insert(f);
+        dhs[e].add(v, c, i);
 
         if (m < satisfaction) {
             m = satisfaction;
