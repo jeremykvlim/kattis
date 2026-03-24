@@ -34,20 +34,16 @@ void cooley_tukey(int n, vector<T> &v, R root) {
 }
 
 template <typename T>
-vector<complex<T>> fft(int n, const vector<complex<T>> &f) {
-    auto F = f;
-    cooley_tukey(n, F, [](int k) { return polar((T) 1, (T) -M_PI / k); });
-    return F;
+void fft(int n, vector<complex<T>> &f) {
+    cooley_tukey(n, f, [](int k) { return polar((T) 1, (T) -M_PI / k); });
 }
 
 template <typename T>
-vector<complex<T>> ifft(int n, const vector<complex<T>> &F) {
-    auto f = F;
-    cooley_tukey(n, f, [](int k) { return polar((T) 1, (T) -M_PI / k); });
+void ifft(int n, vector<complex<T>> &f) {
+    fft(n, f);
     T n_inv = (T) 1 / n;
     for (auto &v : f) v *= n_inv;
     reverse(f.begin() + 1, f.end());
-    return f;
 }
 
 template <typename T>
@@ -70,13 +66,13 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
         return z;
     }
 
-    vector<complex<T>> dft(n);
-    for (int i = 0; i < da; i++) dft[i].real(a[i]);
-    for (int i = 0; i < db; i++) dft[i].imag(b[i]);
+    vector<complex<T>> f(n);
+    for (int i = 0; i < da; i++) f[i].real(a[i]);
+    for (int i = 0; i < db; i++) f[i].imag(b[i]);
 
-    auto F = fft(n, dft);
-    for (auto &v : F) v *= v;
-    auto f = ifft(n, F);
+    fft(n, f);
+    for (auto &v : f) v *= v;
+    ifft(n, f);
 
     vector<T> c(m, 0.5);
     for (int i = 0; i < m; i++) c[i] *= f[i].imag();

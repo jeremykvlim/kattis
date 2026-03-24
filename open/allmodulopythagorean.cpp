@@ -488,20 +488,16 @@ void cooley_tukey(int n, vector<T> &v, R root) {
 }
 
 template <typename M>
-vector<M> ntt(int n, const vector<M> &f) {
-    auto F = f;
-    cooley_tukey(n, F, [](int k) { return M::pow(M::primitive_root(), (M::mod() - 1) / (k << 1)); });
-    return F;
+void ntt(int n, vector<M> &f) {
+    cooley_tukey(n, f, [](int k) { return M::pow(M::primitive_root(), (M::mod() - 1) / (k << 1)); });
 }
 
 template <typename M>
-vector<M> intt(int n, const vector<M> &F) {
-    auto f = F;
-    cooley_tukey(n, f, [](int k) { return M::pow(M::primitive_root(), (M::mod() - 1) / (k << 1)); });
+void intt(int n, vector<M> &f) {
+    ntt(n, f);
     auto n_inv = M::inv(n);
     for (auto &v : f) v *= n_inv;
     reverse(f.begin() + 1, f.end());
-    return f;
 }
 
 template <typename T>
@@ -543,40 +539,41 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
             f_b2[i] = b[i];
         }
 
-        auto F_a1 = ntt(n, f_a1), F_b1 = ntt(n, f_b1);
-        auto F_a2 = ntt(n, f_a2), F_b2 = ntt(n, f_b2);
+        ntt(n, f_a1);
+        ntt(n, f_b1);
+        ntt(n, f_a2);
+        ntt(n, f_b2);
 
-        vector<ntt_modint1> F_c1(n);
-        vector<ntt_modint2> F_c2(n);
         for (int i = 0; i < n; i++) {
-            F_c1[i] = F_a1[i] * F_b1[i];
-            F_c2[i] = F_a2[i] * F_b2[i];
+            f_a1[i] *= f_b1[i];
+            f_a2[i] *= f_b2[i];
         }
-        auto f_c1 = intt(n, F_c1);
-        auto f_c2 = intt(n, F_c2);
+
+        intt(n, f_a1);
+        intt(n, f_a2);
 
         vector<T> c(m);
-        for (int i = 0; i < m; i++) c[i] = modint{(modint::T) (chinese_remainder_theorem<__int128>(f_c1[i](), ntt_mod1, f_c2[i](), ntt_mod2).first % MOD)}.recover();
+        for (int i = 0; i < m; i++) c[i] = modint{(modint::T) (chinese_remainder_theorem<__int128>(f_a1[i](), ntt_mod1, f_a2[i](), ntt_mod2).first % MOD)}.recover();
         return c;
     }
 
     vector<modint> f_a(n);
     for (int i = 0; i < da; i++) f_a[i] = a[i];
+    ntt(n, f_a);
 
-    vector<modint> F_a = ntt(n, f_a), F_b;
-    if (a == b) F_b = F_a;
+    if (a == b)
+        for (int i = 0; i < n; i++) f_a[i] *= f_a[i];
     else {
         vector<modint> f_b(n);
         for (int i = 0; i < db; i++) f_b[i] = b[i];
-        F_b = ntt(n, f_b);
+        ntt(n, f_b);
+        for (int i = 0; i < n; i++) f_a[i] *= f_b[i];
     }
 
-    vector<modint> F_c(n);
-    for (int i = 0; i < n; i++) F_c[i] = F_a[i] * F_b[i];
-    auto f_c = intt(n, F_c);
+    intt(n, f_a);
 
     vector<T> c(m);
-    for (int i = 0; i < m; i++) c[i] = f_c[i].recover();
+    for (int i = 0; i < m; i++) c[i] = f_a[i].recover();
     return c;
 }
 
