@@ -33,62 +33,29 @@ int main() {
     for (int i = 1; i <= n; i++) cin >> a[i];
 
     vector<vector<int>> adj_list(n + 1);
+    vector<int> depth(n + 1, 0), prev(n + 1, 0), heavy(n + 1, -1);
     for (int i = 2; i <= n; i++) {
         int p;
         cin >> p;
 
+        prev[i] = p;
+        depth[i] = depth[p] + 1;
         adj_list[p].emplace_back(i);
-        adj_list[i].emplace_back(p);
     }
 
-    auto lsb = [&](int x) {
-        return x & -x;
-    };
-
-    vector<pair<int, int>> tour;
-    vector<int> index(n + 1), depth(n + 1, 0), prev(n + 1, 0), anc_mask(n + 1, 0), head(n + 2), heavy(n + 1, -1);
     auto hld = [&](auto &&self, int v = 1) -> int {
-        tour.emplace_back(v, prev[v]);
-        index[v] = tour.size();
-
         int subtree_size = 1, largest = 0;
-        for (int u : adj_list[v])
-            if (u != prev[v]) {
-                prev[u] = v;
-                depth[u] = depth[v] + 1;
-                int size = self(self, u);
-                subtree_size += size;
-                if (largest < size) {
-                    largest = size;
-                    heavy[v] = u;
-                }
-                head[index[u]] = v;
-                if (lsb(index[v]) < lsb(index[u])) index[v] = index[u];
+        for (int u : adj_list[v]) {
+            int size = self(self, u);
+            subtree_size += size;
+            if (largest < size) {
+                largest = size;
+                heavy[v] = u;
             }
+        }
         return subtree_size;
     };
     hld(hld);
-    for (auto [v, p] : tour) anc_mask[v] = anc_mask[p] | lsb(index[v]);
-
-    auto lca = [&](int u, int v) -> int {
-        if (unsigned above = index[u] ^ index[v]; above) {
-            above = (anc_mask[u] & anc_mask[v]) & -bit_floor(above);
-            if (unsigned below = anc_mask[u] ^ above; below) {
-                below = bit_floor(below);
-                u = head[(index[u] & -below) | below];
-            }
-            if (unsigned below = anc_mask[v] ^ above; below) {
-                below = bit_floor(below);
-                v = head[(index[v] & -below) | below];
-            }
-        }
-
-        return depth[u] < depth[v] ? u : v;
-    };
-
-    auto dist = [&](int u, int v) {
-        return depth[u] + depth[v] - 2 * depth[lca(u, v)];
-    };
 
     int count = 0, chain_len = 0;
     vector<int> chain_head(n + 1, 0), chain_id(n + 1, -1), chain_pos(n + 1, -1);
@@ -106,7 +73,7 @@ int main() {
             chain_pos[v] = chains[count].size() - 1;
             chain_head[v] = h;
             for (int u : adj_list[v])
-                if (u != prev[v] && u != heavy[v]) q.emplace(u);
+                if (u != heavy[v]) q.emplace(u);
         }
         chain_len = max(chain_len, (int) chains.back().size());
         count++;
@@ -156,47 +123,45 @@ int main() {
         int u, v, x, y;
         cin >> u >> v >> x >> y;
 
-        if (dist(u, v) == dist(x, y)) {
-            auto path1 = decompose(u, v), path2 = decompose(x, y);
-            for (int i = 0, j = 0, o1 = 0, o2 = 0; i < path1.size() && j < path2.size();) {
-                auto [c1, l1, r1, dir1] = path1[i];
-                auto [c2, l2, r2, dir2] = path2[j];
-                int len1 = r1 - l1 + 1 - o1, len2 = r2 - l2 + 1 - o2, len = min(len1, len2);
+        auto path1 = decompose(u, v), path2 = decompose(x, y);
+        for (int i = 0, j = 0, o1 = 0, o2 = 0; i < path1.size() && j < path2.size();) {
+            auto [c1, l1, r1, dir1] = path1[i];
+            auto [c2, l2, r2, dir2] = path2[j];
+            int len1 = r1 - l1 + 1 - o1, len2 = r2 - l2 + 1 - o2, len = min(len1, len2);
 
-                if (!dir1) l1 += o1;
-                else l1 = r1 - o1 - len + 1;
-                r1 = l1 + len - 1;
-                o1 += len;
+            if (!dir1) l1 += o1;
+            else l1 = r1 - o1 - len + 1;
+            r1 = l1 + len - 1;
+            o1 += len;
 
-                if (!dir2) l2 += o2;
-                else l2 = r2 - o2 - len + 1;
-                r2 = l2 + len - 1;
-                o2 += len;
+            if (!dir2) l2 += o2;
+            else l2 = r2 - o2 - len + 1;
+            r2 = l2 + len - 1;
+            o2 += len;
 
-                while (len) {
-                    int l = __lg(len), s = 1 << l,
-                        p1 = dir1 ? r1 - s + 1 : l1,
-                        p2 = dir2 ? r2 - s + 1 : l2;
+            while (len) {
+                int l = __lg(len), s = 1 << l,
+                    p1 = dir1 ? r1 - s + 1 : l1,
+                    p2 = dir2 ? r2 - s + 1 : l2;
 
-                    edges[l].emplace_back(encode(l, c1, p1, dir1), encode(l, c2, p2, dir2));
+                edges[l].emplace_back(encode(l, c1, p1, dir1), encode(l, c2, p2, dir2));
 
-                    if (dir1) r1 -= s;
-                    else l1 += s;
-                    if (dir2) r2 -= s;
-                    else l2 += s;
+                if (dir1) r1 -= s;
+                else l1 += s;
+                if (dir2) r2 -= s;
+                else l2 += s;
 
-                    len -= s;
-                }
+                len -= s;
+            }
 
-                if (o1 == path1[i][2] - path1[i][1] + 1) {
-                    o1 = 0;
-                    i++;
-                }
+            if (o1 == path1[i][2] - path1[i][1] + 1) {
+                o1 = 0;
+                i++;
+            }
 
-                if (o2 == path2[j][2] - path2[j][1] + 1) {
-                    o2 = 0;
-                    j++;
-                }
+            if (o2 == path2[j][2] - path2[j][1] + 1) {
+                o2 = 0;
+                j++;
             }
         }
     }
