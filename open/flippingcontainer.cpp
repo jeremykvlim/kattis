@@ -27,51 +27,39 @@ template <typename T>
 array<T, 3> extended_gcd(const T &a, const T &b) {
     if (b == (T) 0) return {a, (T) 1, (T) 0};
 
-    auto divmod = [&](const T &x, const T &y) -> pair<T, T> {
-        if constexpr (requires(T z) { z.real(); z.imag(); }) {
-            auto div = [&](const T &x, const T &y) -> T {
-                T numer = x * conj(y);
-                auto denom = norm(y);
-                auto round_div = [&](auto part) {
-                    return (part >= 0) ? (part + denom / 2) / denom : (part - denom / 2) / denom;
-                };
-                return (T) {round_div(numer.real()), round_div(numer.imag())};
+    auto div = [&](const T &x, const T &y) {
+        if constexpr (!requires(T z) { z.real(); z.imag(); }) return x / y;
+        else {
+            T numer = x * conj(y);
+            auto denom = norm(y);
+            auto round_div = [&](auto part) {
+                return (part >= 0) ? (part + denom / 2) / denom : (part - denom / 2) / denom;
             };
-            T q = div(x, y), r = x - q * y;
-            return {q, r};
-        } else {
-            T q = x / y, r = x - q * y;
-            return {q, r};
+            return (T) {round_div(numer.real()), round_div(numer.imag())};
         }
     };
 
-    auto [q, r] = divmod(a, b);
+    T q = div(a, b), r = a - q * b;
     auto [g, s, t] = extended_gcd(b, r);
     return {g, t, s - t * q};
 }
 
 template <typename T>
 tuple<T, T, bool> linear_diophantine_solution(T &a, T &b, T c) {
-    auto divmod = [&](const T &x, const T &y) -> pair<T, T> {
-        if constexpr (requires(T z) { z.real(); z.imag(); }) {
-            auto div = [&](const T &x, const T &y) -> T {
-                T numer = x * conj(y);
-                auto denom = norm(y);
-                auto round_div = [&](auto part) {
-                    return (part >= 0) ? (part + denom / 2) / denom : (part - denom / 2) / denom;
-                };
-                return (T) {round_div(numer.real()), round_div(numer.imag())};
+    auto div = [&](const T &x, const T &y) {
+        if constexpr (!requires(T z) { z.real(); z.imag(); }) return x / y;
+        else {
+            T numer = x * conj(y);
+            auto denom = norm(y);
+            auto round_div = [&](auto part) {
+                return (part >= 0) ? (part + denom / 2) / denom : (part - denom / 2) / denom;
             };
-            T q = div(x, y), r = x - q * y;
-            return {q, r};
-        } else {
-            T q = x / y, r = x - q * y;
-            return {q, r};
+            return (T) {round_div(numer.real()), round_div(numer.imag())};
         }
     };
 
     auto [g, x, y] = extended_gcd(a, b);
-    auto [q, r] = divmod(c, g);
+    T q = div(a, b), r = a - q * b;
     if (r != (T) 0) return {x, y, false};
 
     a /= g;
