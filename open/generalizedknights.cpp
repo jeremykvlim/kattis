@@ -244,7 +244,7 @@ tuple<T, T, bool> linear_diophantine_solution(T &a, T &b, T c) {
     };
 
     auto [g, x, y] = extended_gcd(a, b);
-    T q = div(a, b), r = a - q * b;
+    T q = div(c, g), r = c - q * g;
     if (r != (T) 0) return {x, y, false};
 
     a /= g;
