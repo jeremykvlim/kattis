@@ -433,7 +433,7 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
     return stream;
 }
 
-constexpr unsigned long long MOD = 2524775926340780033;
+constexpr unsigned long long MOD = 998244353;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 template <typename T>
@@ -591,6 +591,36 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
     return c;
 }
 
+vector<bool> wildcard_pattern_matching(const string &s, const string &t, char wildcard = '*', bool both = false) {
+    int n = s.size(), m = t.size();
+    if (n < m) return {};
+
+    mt19937 rng(random_device{}());
+    uniform_int_distribution<int> dist(1, modint::mod() - 1);
+
+    vector<int> a(n, 0), b(m, 0), c(n, 1), d(m, 0);
+    for (int i = 0; i < n; i++) {
+        if (!both || s[i] != wildcard) a[i] = s[i];
+        if (both) c[i] = s[i] != wildcard;
+    }
+
+    modint checksum = 0;
+    for (int i = 0; i < m; i++)
+        if (t[i] != wildcard) checksum += d[m - 1 - i] = ((modint) (b[m - 1 - i] = dist(rng)) * t[i]).recover();
+
+    auto x = convolve(a, b);
+    vector<bool> match(n - m + 1, false);
+    if (!both) {
+        int y = checksum.recover();
+        for (int i = 0; i + m <= n; i++) match[i] = x[i + m - 1] == y;
+        return match;
+    }
+
+    auto y = convolve(c, d);
+    for (int i = 0; i + m <= n; i++) match[i] = x[i + m - 1] == y[i + m - 1];
+    return match;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -600,18 +630,9 @@ int main() {
     int rp, cp;
     cin >> rp >> cp;
 
-    modint sum = 0;
-    vector<vector<long long>> motif(rp, vector<long long>(cp));
-    mt19937 rng(random_device{}());
-    uniform_int_distribution<int> dist;
-    for (int r = 0; r < rp; r++)
-        for (int c = 0; c < cp; c++) {
-            cin >> motif[r][c];
-
-            auto h = dist(rng);
-            sum += motif[r][c] * motif[r][c] * h;
-            motif[r][c] *= h;
-        }
+    vector<vector<int>> motif(rp, vector<int>(cp));
+    for (auto &row : motif)
+        for (int &sq : row) cin >> sq;
 
     int rq, cq;
     cin >> rq >> cq;
@@ -621,19 +642,28 @@ int main() {
         exit(0);
     }
 
-    vector<long long> mosaic(rq * cq);
-    for (auto &m : mosaic) cin >> m;
+    string text;
+    vector<vector<int>> mosaic(rq, vector<int>(cq));
+    for (auto &row : mosaic)
+        for (int &sq : row) {
+            cin >> sq;
 
-    vector<long long> motif_rev(rp * cq);
-    for (int r = 0; r < rp; r++)
-        for (int c = 0; c < cp; c++) motif_rev[r * cq + c] = motif[r][c];
-    reverse(motif_rev.begin(), motif_rev.end());
+            text += sq;
+        }
 
-    auto p = convolve(mosaic, motif_rev);
+    string pattern;
+    for (int i = 0; i < rp; i++) {
+        for (int sq : motif[i]) pattern += sq;
+        if (i + 1 < rp) pattern.append(cq - cp, 0);
+    }
+
+    auto match = wildcard_pattern_matching(text, pattern, 0);
     vector<pair<int, int>> matches;
-    for (int r = 0; r <= rq - rp; r++)
-        for (int c = 0; c <= cq - cp; c++)
-            if (p[r * cq + c + rp * cq - 1] == sum) matches.emplace_back(r + 1, c + 1);
+    for (int i = 0; i < match.size(); i++)
+        if (match[i]) {
+            int r = i / cq, c = i % cq;
+            if (r + rp <= rq && c + cp <= cq) matches.emplace_back(r + 1, c + 1);
+        }
 
     cout << matches.size() << "\n";
     for (auto [r, c] : matches) cout << r << " " << c << "\n";
