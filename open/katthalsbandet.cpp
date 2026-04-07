@@ -10,10 +10,7 @@ int main() {
     cin >> n >> a >> b >> s;
 
     vector<int> pref(n + 1, 0), pref_min(n + 1, 0), suff_min(n + 1, 0);
-    for (int i = 0; i < n; i++) {
-        pref[i + 1] = pref[i] + (s[i] == '(' ? 1 : -1);
-        pref_min[i + 1] = min(pref_min[i], pref[i + 1]);
-    }
+    for (int i = 0; i < n; i++) pref_min[i + 1] = min(pref_min[i], pref[i + 1] = pref[i] + (s[i] == '(' ? 1 : -1));
     suff_min[n] = pref[n];
     for (int i = n - 1; ~i; i--) suff_min[i] = min(suff_min[i + 1], pref[i]);
 
