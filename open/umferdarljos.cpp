@@ -227,6 +227,12 @@ struct Treap {
         int key;
 
         TreapNode(int k = 0) : family{0, 0, 0}, prio(rng()), key(k) {}
+
+        auto & operator=(int k) {
+            family = {0, 0, 0};
+            key = k;
+            return *this;
+        }
     };
 
     int root;
@@ -308,11 +314,10 @@ struct Treap {
         auto [l, r, p] = T[i].family;
         int m = meld(l, r);
         T[m].family[2] = p;
-        T[i] = {};
         recycled.emplace(i);
         (!p ? root : T[p].family[T[p].family[0] != i]) = m;
         for (; p; p = T[p].family[2]) pull(p);
-        if (root) T[root].family[2] = 0;
+        T[root].family[2] = 0;
         return root;
     }
 
