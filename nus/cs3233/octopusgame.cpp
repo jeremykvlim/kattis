@@ -129,6 +129,10 @@ struct Treap {
     auto & operator[](int i) {
         return T[i];
     }
+
+    long long query() {
+        return T[root].subtree_sum - T[root].sums[0];
+    }
 };
 
 int main() {
@@ -156,6 +160,6 @@ int main() {
             treap.erase({skill[i], i});
             skill[i] = 0;
         }
-        cout << treap[treap.root].subtree_sum - treap[treap.root].sums[0] << "\n" << flush;
+        cout << treap.query() << "\n" << flush;
     }
 }
