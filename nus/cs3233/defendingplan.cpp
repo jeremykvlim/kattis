@@ -438,16 +438,17 @@ using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MO
 
 struct Treap {
     static inline mt19937_64 rng{random_device{}()};
+    static inline array<modint, 5> identity;
 
     struct TreapNode {
         array<int, 3> family;
         unsigned long long prio;
-        pair<long long, int> key;
+        int key;
         array<modint, 5> base, aggregate;
 
-        TreapNode() : family{0, 0, 0}, prio(rng()), key{0, 0}, base{1, 0, 0, 0, 0}, aggregate{1, 0, 0, 0, 0} {}
+        TreapNode() : family{0, 0, 0}, prio(rng()), key(0), base(identity), aggregate(identity) {}
 
-        auto & operator=(const pair<pair<long long, int>, array<modint, 5>> &k) {
+        auto & operator=(const pair<int, array<modint, 5>> &k) {
             key = k.first;
             base = aggregate = k.second;
             return *this;
@@ -458,9 +459,11 @@ struct Treap {
     vector<TreapNode> T;
     stack<int> recycled;
 
-    Treap(int n) : root(0), T(n + 1) {}
+    Treap() : root(0), T(1) {
+        identity = {1, 0, 0, 0, 0};
+    }
 
-    int node(const pair<long long, int> &key, const array<modint, 5> &a) {
+    int node(const int &key, const array<modint, 5> &a) {
         int i;
         if (!recycled.empty()) {
             i = recycled.top();
@@ -474,7 +477,7 @@ struct Treap {
     }
 
     array<modint, 5> aggregate(int i) {
-        return !i ? array<modint, 5>{1, 0, 0, 0, 0} : T[i].aggregate;
+        return !i ? identity : T[i].aggregate;
     }
 
     int pull(int i) {
@@ -493,7 +496,7 @@ struct Treap {
         pull(i);
     }
 
-    pair<int, int> split(int i, const pair<long long, int> &key) {
+    pair<int, int> split(int i, const int &key) {
         if (!i) return {0, 0};
         auto [l, r, p] = T[i].family;
         if (T[i].key > key) {
@@ -528,7 +531,7 @@ struct Treap {
         }
     }
 
-    int insert(const pair<long long, int> &key, const array<modint, 5> &a) {
+    int insert(const int &key, const array<modint, 5> &a) {
         int i = node(key, a);
         auto [l, r] = split(root, key);
         root = meld(meld(l, i), r);
@@ -536,13 +539,13 @@ struct Treap {
         return i;
     }
 
-    int erase(const pair<long long, int> &key) {
+    int erase(const int &key) {
         root = erase(root, key);
         T[root].family[2] = 0;
         return root;
     }
 
-    int erase(int i, const pair<long long, int> &key) {
+    int erase(int i, const int &key) {
         if (!i) return 0;
         auto [l, r, p] = T[i].family;
         if (T[i].key == key) {
@@ -572,13 +575,13 @@ int main() {
     int n, Q;
     cin >> n >> Q;
 
-    Treap treap(n + Q + 1);
-    vector<pair<long long, int>> keys(n);
+    Treap treap;
+    vector<int> keys(n);
     vector<modint> b(n), e(n);
     modint base = 0, extra = 0;
     auto update = [&](int i, int a, int x, int p_num, long long p_den) {
         modint p = (modint) p_num / p_den, q = 1 - p, p_zero = modint::pow(q, x), p_one = modint::pow(q, x - 1), p_any = 1 - p_zero;
-        treap.insert(keys[i] = {a, i}, {p_zero, p_any * a, p_any * a, 0, 0});
+        treap.insert(keys[i] = a, {p_zero, p_any * a, p_any * a, 0, 0});
         base += b[i] = (p * x + p_zero - 1) * a * a;
         extra += e[i] = ((p_any - p * x * p_one) * a * a) / p_zero;
     };
