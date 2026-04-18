@@ -124,29 +124,6 @@ struct Treap {
         return i;
     }
 
-    int erase(const pair<long long, int> &key) {
-        root = erase(root, key);
-        T[root].family[2] = 0;
-        return root;
-    }
-
-    int erase(int i, const pair<long long, int> &key) {
-        if (!i) return 0;
-        auto [l, r, p] = T[i].family;
-        if (T[i].key == key) {
-            int m = meld(l, r);
-            T[m].family[2] = 0;
-            T[i] = {};
-            lazy_key[i] = lazy_val[i] = 0;
-            recycled.emplace(i);
-            return m;
-        }
-
-        if (T[i].key > key) attach(i, 0, erase(l, key));
-        else attach(i, 1, erase(r, key));
-        return i;
-    }
-
     void update(int c, int s) {
         auto [l, r] = split(root, {c, -1});
         if (r) apply(r, -c, s);
