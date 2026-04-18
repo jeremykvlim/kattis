@@ -449,6 +449,7 @@ struct Treap {
         TreapNode() : family{0, 0, 0}, prio(rng()), key(0), base(identity), aggregate(identity) {}
 
         auto & operator=(const pair<int, array<modint, 5>> &k) {
+            family = {0, 0, 0};
             key = k.first;
             base = aggregate = k.second;
             return *this;
@@ -539,26 +540,16 @@ struct Treap {
         return i;
     }
 
-    int erase(const int &key) {
-        root = erase(root, key);
-        T[root].family[2] = 0;
-        return root;
-    }
-
-    int erase(int i, const int &key) {
+    int erase_node(int i) {
         if (!i) return 0;
         auto [l, r, p] = T[i].family;
-        if (T[i].key == key) {
-            int m = meld(l, r);
-            T[m].family[2] = 0;
-            T[i] = TreapNode();
-            recycled.emplace(i);
-            return m;
-        }
-
-        if (T[i].key > key) attach(i, 0, erase(l, key));
-        else attach(i, 1, erase(r, key));
-        return i;
+        int m = meld(l, r);
+        T[m].family[2] = p;
+        recycled.emplace(i);
+        (!p ? root : T[p].family[T[p].family[0] != i]) = m;
+        for (; p; p = T[p].family[2]) pull(p);
+        T[root].family[2] = 0;
+        return root;
     }
 
     array<modint, 5> query() {
@@ -576,12 +567,12 @@ int main() {
     cin >> n >> Q;
 
     Treap treap;
-    vector<int> keys(n);
+    vector<int> nodes(n);
     vector<modint> b(n), e(n);
     modint base = 0, extra = 0;
-    auto update = [&](int i, int a, int x, int p_num, long long p_den) {
+    auto update = [&](int i, int a, int x, int p_num, int p_den) {
         modint p = (modint) p_num / p_den, q = 1 - p, p_zero = modint::pow(q, x), p_one = modint::pow(q, x - 1), p_any = 1 - p_zero;
-        treap.insert(keys[i] = a, {p_zero, p_any * a, p_any * a, 0, 0});
+        nodes[i] = treap.insert(a, {p_zero, p_any * a, p_any * a, 0, 0});
         base += b[i] = (p * x + p_zero - 1) * a * a;
         extra += e[i] = ((p_any - p * x * p_one) * a * a) / p_zero;
     };
@@ -602,7 +593,7 @@ int main() {
         cin >> i >> a >> x >> p_num >> p_den;
         i--;
 
-        treap.erase(keys[i]);
+        treap.erase_node(nodes[i]);
         base -= b[i];
         extra -= e[i];
         update(i, a, x, p_num, p_den);
