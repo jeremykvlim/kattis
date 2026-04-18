@@ -69,7 +69,7 @@ struct ImplicitTreap {
             T.emplace_back();
             i = T.size() - 1;
         }
-        T[i] = {c, l};
+        T[i] = TreapNode(c, l);
         return i;
     }
 
@@ -247,7 +247,6 @@ struct ImplicitTreap {
         auto [l, r, p] = T[i].family;
         destroy(l);
         destroy(r);
-        T[i] = {};
         recycled.emplace(i);
     }
 

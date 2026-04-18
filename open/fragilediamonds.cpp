@@ -10,13 +10,9 @@ struct Treap {
         pair<long long, int> key;
         long long x_plus, x_minus, x_max_plus, x_max_minus;
 
-        TreapNode() : family{0, 0, 0}, prio(rng()), key{0, 0}, x_plus(0), x_minus(0), x_max_plus(LLONG_MIN), x_max_minus(LLONG_MIN) {}
-
-        auto & operator=(const pair<pair<long long, int>, long long> &k) {
-            key = k.first;
-            x_plus = x_max_plus = k.first.first + 2 * k.second;
-            x_minus = x_max_minus = -k.first.first + 2 * k.second;
-            return *this;
+        TreapNode(const pair<long long, int> &k = {0, 0}, long long y = 0) : family{0, 0, 0}, prio(rng()), key(k), x_plus(0), x_minus(0), x_max_plus(LLONG_MIN), x_max_minus(LLONG_MIN) {
+            x_plus = x_max_plus = k.first + 2 * y;
+            x_minus = x_max_minus = -k.first + 2 * y;
         }
     };
 
@@ -35,7 +31,7 @@ struct Treap {
             T.emplace_back();
             i = T.size() - 1;
         }
-        T[i] = {key, y};
+        T[i] = TreapNode(key, y);
         return i;
     }
 
@@ -116,7 +112,6 @@ struct Treap {
         if (T[i].key == key) {
             int m = meld(l, r);
             T[m].family[2] = 0;
-            T[i] = TreapNode();
             recycled.emplace(i);
             return m;
         }

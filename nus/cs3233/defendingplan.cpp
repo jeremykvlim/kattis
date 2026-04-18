@@ -446,14 +446,7 @@ struct Treap {
         int key;
         array<modint, 5> base, aggregate;
 
-        TreapNode() : family{0, 0, 0}, prio(rng()), key(0), base(identity), aggregate(identity) {}
-
-        auto & operator=(const pair<int, array<modint, 5>> &k) {
-            family = {0, 0, 0};
-            key = k.first;
-            base = aggregate = k.second;
-            return *this;
-        }
+        TreapNode(const int &key = 0, const array<modint, 5> &a = identity) : family{0, 0, 0}, prio(rng()), key(key), base(a), aggregate(a) {}
     };
 
     int root;
@@ -473,7 +466,7 @@ struct Treap {
             T.emplace_back();
             i = T.size() - 1;
         }
-        T[i] = {key, a};
+        T[i] = TreapNode(key, a);
         return i;
     }
 

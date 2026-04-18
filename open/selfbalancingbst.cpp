@@ -13,11 +13,11 @@ struct Treap {
         TreapNode(int k = 0, int v = 0) : family{0, 0, 0}, size(1), prio(rng()), key(k), val(v) {}
     };
 
-    int root, nodes;
+    int root;
     vector<TreapNode> T;
     stack<int> recycled;
 
-    Treap() : root(0), nodes(1), T(1) {}
+    Treap() : root(0), T(1) {}
 
     int node(const int &key, const int &val) {
         int i;
@@ -28,7 +28,7 @@ struct Treap {
             T.emplace_back();
             i = T.size() - 1;
         }
-        T[i] = {key, val};
+        T[i] = TreapNode(key, val);
         return i;
     }
 
@@ -113,27 +113,16 @@ struct Treap {
         return i;
     }
 
-    int erase(const int &i) {
-        if (!i) return 0;
-        root = erase(root, T[i].key);
-        T[root].family[2] = 0;
-        return root;
-    }
-
-    int erase(int i, const int &key) {
+    int erase_node(const int &i) {
         if (!i) return 0;
         auto [l, r, p] = T[i].family;
-        if (T[i].key == key) {
-            int m = meld(l, r);
-            T[m].family[2] = 0;
-            T[i] = {};
-            recycled.emplace(i);
-            return m;
-        }
-
-        if (T[i].key > key) attach(i, 0, erase(l, key));
-        else attach(i, 1, erase(r, key));
-        return i;
+        int m = meld(l, r);
+        T[m].family[2] = p;
+        recycled.emplace(i);
+        (!p ? root : T[p].family[T[p].family[0] != i]) = m;
+        for (; p; p = T[p].family[2]) pull(p);
+        T[root].family[2] = 0;
+        return root;
     }
 
     int lower_bound(const int &key) const {
@@ -268,7 +257,7 @@ int main() {
             cursor[id] = instances[id].insert(key, val);
         } else if (op == 'e') {
             if (cursor[id]) {
-                instances[id].erase(cursor[id]);
+                instances[id].erase_node(cursor[id]);
                 cursor[id] = 0;
             }
         } else if (op == 'f') cursor[id] = instances[id].front();

@@ -227,12 +227,6 @@ struct Treap {
         int key;
 
         TreapNode(int k = 0) : family{0, 0, 0}, prio(rng()), key(k) {}
-
-        auto & operator=(int k) {
-            family = {0, 0, 0};
-            key = k;
-            return *this;
-        }
     };
 
     int root;
@@ -251,7 +245,7 @@ struct Treap {
             T.emplace_back();
             i = T.size() - 1;
         }
-        T[i] = key;
+        T[i] = TreapNode(key);
         return i;
     }
 

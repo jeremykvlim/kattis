@@ -26,7 +26,7 @@ struct Treap {
             i = recycled.top();
             recycled.pop();
         } else i = nodes++;
-        T[i] = key;
+        T[i] = TreapNode(key);
         return i;
     }
 

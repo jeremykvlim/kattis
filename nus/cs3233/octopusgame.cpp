@@ -32,7 +32,7 @@ struct Treap {
             T.emplace_back();
             i = T.size() - 1;
         }
-        T[i] = key;
+        T[i] = TreapNode(key);
         return i;
     }
 
@@ -116,7 +116,6 @@ struct Treap {
         if (T[i].key == key) {
             int m = meld(l, r);
             T[m].family[2] = 0;
-            T[i] = {};
             recycled.emplace(i);
             return m;
         }
