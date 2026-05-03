@@ -3,10 +3,10 @@ using namespace std;
 
 struct KineticTournament {
     static inline vector<long long> A, S;
-    static inline int time, C;
+    static inline int time;
 
     static long long cost(int l, int r) {
-        return S[l] + (A[r] - A[l + 1]) * (r - l) + C;
+        return S[l] + (A[r] - A[l + 1]) * (r - l);
     }
 
     static long long eval(int i) {
@@ -16,6 +16,7 @@ struct KineticTournament {
     static int overtake(int i, int j) {
         if (i < 0 || j < 0) return 1e9;
         if (cost(i, time) > cost(j, time)) return 0;
+        if (time >= A.size() - 1 || cost(i, A.size() - 1) <= cost(j, A.size() - 1)) return 1e9;
         int l = time, r = A.size(), m;
         while (l + 1 < r) {
             m = l + (r - l) / 2;
@@ -27,69 +28,52 @@ struct KineticTournament {
     }
 
     struct Monoid {
-        int index, t;
+        int t, index;
 
-        Monoid(int i = -1, int t = 1e9) : index(i), t(t) {}
+        Monoid(int t = 1e9, int i = -1) : t(t), index(i) {}
 
         friend Monoid operator+(const Monoid &ml, const Monoid &mr) {
             int l = ml.index, r = mr.index;
             if (eval(l) < eval(r)) swap(l, r);
-            return {l, min({ml.t, mr.t, overtake(l, r)})};
+            return {min({ml.t, mr.t, overtake(l, r)}), l};
         }
     };
 
     int n;
-    vector<Monoid> KT;
+    vector<Monoid> ST;
 
-    KineticTournament(int n, const vector<long long> &a, int c) : n(n), KT(2 * n) {
+    KineticTournament(int n, const vector<long long> &a) : n(n), ST(2 * n) {
         time = 0;
         A = a;
         S = vector<long long>(n, 0);
-        C = c;
     }
 
     void pull(int i) {
-        KT[i] = KT[i << 1] + KT[i << 1 | 1];
+        ST[i] = ST[i << 1] + ST[i << 1 | 1];
     }
 
-    int midpoint(int l, int r) {
-        int i = 1 << __lg(r - l);
-        return min(l + i, r - (i >> 1));
+    void point_update(int i) {
+        for (ST[i += n] = {(int) 1e9, ST[i + n].index == i ? -1 : i}; i > 1; i >>= 1) pull(i >> 1);
     }
 
-    void refresh() {
-        refresh(1, 0, n);
-    }
-
-    void refresh(int i, int l, int r) {
-        if (KT[i].t > time || l + 1 == r) return;
-
-        int m = midpoint(l, r);
-        refresh(i << 1, l, m);
-        refresh(i << 1 | 1, m, r);
-        pull(i);
-    }
-
-    void modify(const int &pos) {
-        modify(1, pos, 0, n);
-    }
-
-    void modify(int i, int pos, int l, int r) {
-        if (l + 1 == r) {
-            KT[i] = {KT[i].index == l ? -1 : l, (int) 1e9};
-            return;
+    void advance(int t) {
+        for (time = t; ST[1].t <= time;) {
+            int i = 1;
+            while (i < n) {
+                if (ST[i << 1].t <= time) i = i << 1;
+                else if (ST[i << 1 | 1].t <= time) i = i << 1 | 1;
+                else break;
+            }
+            for (; i; i >>= 1) pull(i);
         }
-
-        int m = midpoint(l, r);
-        if (pos < m) modify(i << 1, pos, l, m);
-        else modify(i << 1 | 1, pos, m, r);
-        pull(i);
     }
 
-    long long query(int t) {
-        time = t;
-        refresh();
-        return eval(KT[1].index);
+    long long top() {
+        return eval(ST[1].index);
+    }
+
+    auto & operator[](int i) {
+        return ST[i];
     }
 };
 
@@ -103,16 +87,17 @@ int main() {
     vector<long long> a(n + 1);
     for (int i = 1; i <= n; i++) cin >> a[i];
 
-    KineticTournament kt(n + 1, a, c);
-    kt.modify(0);
+    KineticTournament kt(n + 1, a);
+    kt.point_update(0);
     for (int i = 1; i <= n; i++) {
         int k;
         cin >> k;
 
-        kt.S[i] = -kt.query(i);
+        kt.advance(i);
+        kt.S[i] = c - kt.top();
         if (i == n) break;
-        kt.modify(i);
-        kt.modify(((kt.S[i] + k) % i) + 1);
+        kt.point_update(i);
+        kt.point_update(((kt.S[i] + k) % i) + 1);
     }
     cout << kt.S[n];
 }
