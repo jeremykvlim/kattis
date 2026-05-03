@@ -159,7 +159,7 @@ struct Line {
 };
 
 template <typename T>
-bool point_on_line(const Point<T> &p, const Line<T> &l, bool include_endpoints = true) {
+bool point_on_line(const Line<T> &l, const Point<T> &p, bool include_endpoints = true) {
     return !sgn(cross(l.b - l.a, p - l.a)) && (dot(l.a - p, l.b - p) < 0 || (include_endpoints && approximately_equal(dot(l.a - p, l.b - p), (T) 0)));
 }
 
@@ -226,18 +226,18 @@ int main() {
                     c + Point(0, 1) == lamps[k] * 2 ||
                     c + Point(-1, 0) == lamps[k] * 2 ||
                     c + Point(0, -1) == lamps[k] * 2 ||
-                    point_on_line(lamps[k], l1, false) ||
-                    point_on_line(corners[4 * k], l1, false) ||
-                    point_on_line(corners[4 * k + 1], l1, false) ||
-                    point_on_line(corners[4 * k + 2], l1, false) ||
-                    point_on_line(corners[4 * k + 3], l1, false)) goto next;
+                    point_on_line(l1, lamps[k], false) ||
+                    point_on_line(l1, corners[4 * k], false) ||
+                    point_on_line(l1, corners[4 * k + 1], false) ||
+                    point_on_line(l1, corners[4 * k + 2], false) ||
+                    point_on_line(l1, corners[4 * k + 3], false)) goto next;
 
                 Line<double> l2(corners[4 * k], corners[4 * k + 1]), l3(corners[4 * k], corners[4 * k + 2]),
                              l4(corners[4 * k + 3], corners[4 * k + 1]), l5(corners[4 * k + 3], corners[4 * k + 2]);
                 for (auto l : {l2, l3, l4, l5}) {
                     if (!intersects(l1, l) || collinear(l1, l)) continue;
                     auto p = non_collinear_intersection(l1, l);
-                    if (point_on_line(p, l1, false) && point_on_line(p, l)) goto next;
+                    if (point_on_line(l1, p, false) && point_on_line(l, p)) goto next;
                 }
             }
             adj_list[i].emplace_back(j);

@@ -672,7 +672,7 @@ struct Line {
 };
 
 template <typename T>
-bool point_on_line(const Point<T> &p, const Line<T> &l, bool include_endpoints = true) {
+bool point_on_line(const Line<T> &l, const Point<T> &p, bool include_endpoints = true) {
     return !sgn(cross(l.b - l.a, p - l.a)) && (dot(l.a - p, l.b - p) < 0 || (include_endpoints && approximately_equal(dot(l.a - p, l.b - p), (T) 0)));
 }
 
@@ -818,7 +818,7 @@ int main() {
 
                 auto check = [&](__int128 f) -> bool {
                     if (diff.size() == 1) return p == diff[0] * f;
-                    if (diff.size() == 2) return point_on_line(p, Line<__int128>{diff[0] * f, diff[1] * f});
+                    if (diff.size() == 2) return point_on_line(Line<__int128>{diff[0] * f, diff[1] * f}, p);
 
                     for (int k = 0; k < diff.size(); k++) polygon[k] = diff[k] * f;
                     auto [in, on] = point_in_polygon(polygon, p);

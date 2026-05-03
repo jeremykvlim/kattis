@@ -149,7 +149,7 @@ struct Line {
 };
 
 template <typename T>
-bool point_on_line(const Point<T> &p, const Line<T> &l, bool include_endpoints = true) {
+bool point_on_line(const Line<T> &l, const Point<T> &p, bool include_endpoints = true) {
     return !sgn(cross(l.b - l.a, p - l.a)) && (dot(l.a - p, l.b - p) < 0 || (include_endpoints && approximately_equal(dot(l.a - p, l.b - p), (T) 0)));
 }
 
@@ -259,8 +259,8 @@ int main() {
                         }
                     } else {
                         auto p = non_collinear_intersection(l1, l2);
-                        if (point_on_line(p, l1) && point_on_line(p, l2))
-                            if (!(point_on_line(pivot, l1) && point_on_line(pivot, l2))) {
+                        if (point_on_line(l1, p) && point_on_line(l2, p))
+                            if (!(point_on_line(l1, pivot) && point_on_line(l2, pivot))) {
                                 cout << "GHOST";
                                 exit(0);
                             }

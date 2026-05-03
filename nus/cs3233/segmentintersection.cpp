@@ -149,7 +149,7 @@ struct Line {
 };
 
 template <typename T>
-bool point_on_line(const Point<T> &p, const Line<T> &l, bool include_endpoints = true) {
+bool point_on_line(const Line<T> &l, const Point<T> &p, bool include_endpoints = true) {
     return !sgn(cross(l.b - l.a, p - l.a)) && (dot(l.a - p, l.b - p) < 0 || (include_endpoints && approximately_equal(dot(l.a - p, l.b - p), (T) 0)));
 }
 
@@ -202,12 +202,12 @@ int main() {
                 return true;
             } else if (p1 == p2) {
                 Line<long double> l(p3, p4);
-                if (point_on_line(p1, l)) cout << fixed << setprecision(2) << p1.x << " " << p1.y << "\n";
+                if (point_on_line(l, p1)) cout << fixed << setprecision(2) << p1.x << " " << p1.y << "\n";
                 else cout << "none\n";
                 return true;
             } else if (p3 == p4) {
                 Line<long double> l(p1, p2);
-                if (point_on_line(p3, l)) cout << fixed << setprecision(2) << p3.x << " " << p3.y << "\n";
+                if (point_on_line(l, p3)) cout << fixed << setprecision(2) << p3.x << " " << p3.y << "\n";
                 else cout << "none\n";
                 return true;
             }
@@ -227,7 +227,7 @@ int main() {
                 }
             } else {
                 auto p = non_collinear_intersection(l1, l2);
-                if (point_on_line(p, l1) && point_on_line(p, l2)) cout << fixed << setprecision(2) << p.x << " " << p.y << "\n";
+                if (point_on_line(l1, p) && point_on_line(l2, p)) cout << fixed << setprecision(2) << p.x << " " << p.y << "\n";
                 else cout << "none\n";
             }
         };

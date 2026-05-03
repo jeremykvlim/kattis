@@ -204,7 +204,7 @@ struct Line {
 };
 
 template <typename T>
-bool point_on_line(const Point<T> &p, const Line<T> &l, bool include_endpoints = true) {
+bool point_on_line(const Line<T> &l, const Point<T> &p, bool include_endpoints = true) {
     return !sgn(cross(l.b - l.a, p - l.a)) && (dot(l.a - p, l.b - p) < 0 || (include_endpoints && approximately_equal(dot(l.a - p, l.b - p), (T) 0)));
 }
 
@@ -420,7 +420,7 @@ vector<pair<Point<T>, vector<int>>> bentley_ottmann(const vector<Line<T>> &lines
         if (parallel(l1, l2)) return;
 
         auto p = non_collinear_intersection(l1, l2);
-        if (!point_on_line(p, l1, true) || !point_on_line(p, l2, true)) return;
+        if (!point_on_line(l1, p, true) || !point_on_line(l2, p, true)) return;
 
         auto [it, inserted] = intersections_map.try_emplace(p);
         if (inserted && x <= p.x) sweep[p][3].emplace_back();
