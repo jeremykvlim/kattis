@@ -2,9 +2,15 @@
 using namespace std;
 
 struct DisjointSets {
-    vector<int> sets;
+    int t;
+    vector<int> sets, seen;
 
     int find(int v) {
+        if (seen[v] != t) {
+            seen[v] = t;
+            return sets[v] = v;
+        }
+
         return sets[v] == v ? v : (sets[v] = find(sets[v]));
     }
 
@@ -18,10 +24,10 @@ struct DisjointSets {
     }
 
     void reset() {
-        iota(sets.begin(), sets.end(), 0);
+        t++;
     }
 
-    DisjointSets(int n) : sets(n) {
+    DisjointSets(int n) : t(1), sets(n), seen(n, 0) {
         iota(sets.begin(), sets.end(), 0);
     }
 };

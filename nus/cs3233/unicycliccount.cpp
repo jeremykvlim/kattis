@@ -436,31 +436,6 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
-struct DisjointSets {
-    vector<int> sets;
-
-    int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            return true;
-        }
-        return false;
-    }
-
-    void reset() {
-        iota(sets.begin(), sets.end(), 0);
-    }
-
-    DisjointSets(int n) : sets(n) {
-        iota(sets.begin(), sets.end(), 0);
-    }
-};
-
 template <typename T>
 struct Matrix {
     int r, c;
@@ -524,6 +499,37 @@ T kirchoffs_theorem(int n, const vector<pair<int, int>> &edges) {
 
     return rref(laplacian);
 }
+
+struct DisjointSets {
+    int t;
+    vector<int> sets, seen;
+
+    int find(int v) {
+        if (seen[v] != t) {
+            seen[v] = t;
+            return sets[v] = v;
+        }
+
+        return sets[v] == v ? v : (sets[v] = find(sets[v]));
+    }
+
+    bool unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set != v_set) {
+            sets[v_set] = u_set;
+            return true;
+        }
+        return false;
+    }
+
+    void reset() {
+        t++;
+    }
+
+    DisjointSets(int n) : t(1), sets(n), seen(n, 0) {
+        iota(sets.begin(), sets.end(), 0);
+    }
+};
 
 int main() {
     ios::sync_with_stdio(false);
