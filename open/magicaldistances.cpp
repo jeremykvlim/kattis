@@ -57,7 +57,7 @@ int main() {
     vector<vector<pair<int, int>>> adj_list(n + 1);
     vector<array<int, 3>> extra;
     vector<int> vertices;
-    for (int i = 0; i < m; i++) {
+    while (m--) {
         int a, b, w;
         cin >> a >> b >> w;
 
