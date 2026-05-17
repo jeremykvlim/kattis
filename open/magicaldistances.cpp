@@ -2,9 +2,15 @@
 using namespace std;
 
 struct DisjointSets {
-    vector<int> sets;
+    int t;
+    vector<int> sets, seen;
 
     int find(int v) {
+        if (seen[v] != t) {
+            seen[v] = t;
+            return sets[v] = v;
+        }
+
         return sets[v] == v ? v : (sets[v] = find(sets[v]));
     }
 
@@ -18,15 +24,15 @@ struct DisjointSets {
     }
 
     void reset() {
-        iota(sets.begin(), sets.end(), 0);
+        t++;
     }
 
-    DisjointSets(int n) : sets(n) {
+    DisjointSets(int n) : t(1), sets(n), seen(n, 0) {
         iota(sets.begin(), sets.end(), 0);
     }
 };
 
-vector<pair<int, int>> virtual_tree(vector<int> &vertices, const vector<int> &in, auto &&lca) {
+void build_virtual_tree(vector<vector<int>> &vt, vector<int> &vertices, const vector<int> &in, auto &&lca) {
     auto dedupe = [&](auto &v) {
         sort(v.begin(), v.end(), [&](int u, int v) { return in[u] < in[v]; });
         v.erase(unique(v.begin(), v.end()), v.end());
@@ -37,9 +43,7 @@ vector<pair<int, int>> virtual_tree(vector<int> &vertices, const vector<int> &in
     for (int i = 0; i + 1 < m; i++) vertices.emplace_back(lca(vertices[i], vertices[i + 1]));
     dedupe(vertices);
 
-    vector<pair<int, int>> vt_edges(vertices.size() - 1);
-    for (int i = 0; i + 1 < vertices.size(); i++) vt_edges[i] = {lca(vertices[i], vertices[i + 1]), vertices[i + 1]};
-    return vt_edges;
+    for (int i = 0; i + 1 < vertices.size(); i++) vt[lca(vertices[i], vertices[i + 1])].emplace_back(vertices[i + 1]);
 }
 
 int main() {
@@ -49,17 +53,22 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    DisjointSets dsu1(n + 1);
+    DisjointSets dsu(n + 1);
     vector<vector<pair<int, int>>> adj_list(n + 1);
     vector<array<int, 3>> extra;
-    while (m--) {
+    vector<int> vertices;
+    for (int i = 0; i < m; i++) {
         int a, b, w;
         cin >> a >> b >> w;
 
-        if (dsu1.unite(a, b)) {
+        if (dsu.unite(a, b)) {
             adj_list[a].emplace_back(b, w);
             adj_list[b].emplace_back(a, w);
-        } else extra.push_back({a, b, w});
+        } else {
+            extra.push_back({a, b, w});
+            vertices.emplace_back(a);
+            vertices.emplace_back(b);
+        }
     }
 
     auto lsb = [&](int x) {
@@ -68,7 +77,7 @@ int main() {
 
     vector<pair<int, int>> tour;
     vector<int> index(n + 1), depth(n + 1, 0), in(n + 1), anc_mask(n + 1, 0), head(n + 2);
-    vector<array<int, 31>> pref(n + 1);
+    vector<array<int, 30>> pref(n + 1);
     int count = 0;
     auto dfs = [&](auto &&self, int v = 1, int prev = 1) -> void {
         tour.emplace_back(v, prev);
@@ -78,7 +87,7 @@ int main() {
         for (auto [u, w] : adj_list[v])
             if (u != prev) {
                 depth[u] = depth[v] + 1;
-                for (int b = 0; b <= 30; b++) pref[u][b] = pref[v][b] + ((w >> b) & 1);
+                for (int b = 0; b < 30; b++) pref[u][b] = pref[v][b] + ((w >> b) & 1);
                 self(self, u, v);
                 head[index[u]] = v;
                 if (lsb(index[v]) < lsb(index[u])) index[v] = index[u];
@@ -103,9 +112,13 @@ int main() {
         return depth[u] < depth[v] ? u : v;
     };
 
+    auto ancestor = [&](int u, int v) {
+        return lca(u, v) == u;
+    };
+
     auto path_OR = [&](int u, int v) {
         int OR = 0;
-        for (int a = lca(u, v), b = 0; b <= 30; b++)
+        for (int a = lca(u, v), b = 0; b < 30; b++)
             if (pref[u][b] + pref[v][b] > 2 * pref[a][b]) OR |= 1 << b;
         return OR;
     };
@@ -122,57 +135,102 @@ int main() {
         exit(0);
     }
 
-    int e = extra.size();
-    vector<int> base(2 * e);
-    for (int i = 0; i < e; i++) {
-        base[2 * i] = extra[i][0];
-        base[2 * i + 1] = extra[i][1];
-    }
-    sort(base.begin(), base.end(), [&](int u, int v) { return in[u] < in[v]; });
-    base.erase(unique(base.begin(), base.end()), base.end());
-
     vector<int> indices(n + 1, -1);
-    while (q--) {
+    vector<vector<int>> vt(n + 1);
+    vector<array<int, 3>> edges;
+    build_virtual_tree(vt, vertices, in, lca);
+    int V = vertices.size();
+    for (int i = 0; i < V; i++) indices[vertices[i]] = i;
+    for (int v : vertices)
+        for (int u : vt[v]) edges.push_back({indices[v], indices[u], path_OR(v, u)});
+    for (auto [u, v, w] : extra) edges.push_back({indices[u], indices[v], w});
+
+    vector<array<int, 2>> queries(q);
+    vector<int> OR(q), nodes, node_id(n + 1, -1);
+    for (int i = 0; i < q; i++) {
         int s, t;
         cin >> s >> t;
 
-        auto cities = base;
-        cities.emplace_back(s);
-        cities.emplace_back(t);
-        auto vt_edges = virtual_tree(cities, in, lca);
+        queries[i] = {s, t};
+        OR[i] = path_OR(s, t);
+        if (!~node_id[s]) {
+            nodes.emplace_back(s);
+            node_id[s] = nodes.size() - 1;
+        }
+        if (!~node_id[t]) {
+            nodes.emplace_back(t);
+            node_id[t] = nodes.size() - 1;
+        }
+    }
 
-        for (int i = 0; i < cities.size(); i++) indices[cities[i]] = i;
-        int all = 0, k = vt_edges.size();
-        vector<array<int, 3>> edges(k + e);
-        for (int i = 0; i < k; i++) {
-            auto [a, b] = vt_edges[i];
-            int w = path_OR(a, b);
-            edges[i] = {indices[a], indices[b], w};
-            all |= w;
+    vector<vector<array<int, 2>>> links(nodes.size());
+    for (int k = 0; k < nodes.size(); k++) {
+        int x = nodes[k];
+        if (~indices[x]) {
+            links[k].push_back({indices[x], 0});
+            continue;
         }
 
-        for (int i = 0; i < e; i++) {
-            auto [a, b, w] = extra[i];
-            edges[i + k] = {indices[a], indices[b], w};
-            all |= w;
+        int j = -1;
+        for (int i = 0; i < V; i++) {
+            int v = vertices[i];
+            if (ancestor(v, x) && (!~j || depth[v] > depth[vertices[j]])) j = i;
         }
 
-        int remove = 0;
-        DisjointSets dsu2(cities.size());
-        for (int b = 30; ~b; b--)
-            if ((all >> b) & 1) {
-                int temp = remove | (1 << b);
-                dsu2.reset();
-                for (auto [u, v, w] : edges)
-                    if (!(w & temp)) {
-                        dsu2.unite(u, v);
-                        if (dsu2.find(indices[s]) == dsu2.find(indices[t])) {
-                            remove = temp;
-                            goto next;
-                        }
-                    }
-                next:;
+        if (~j) {
+            int v = vertices[j];
+            for (int u : vt[v]) {
+                int a = lca(x, u);
+                if (a != v && ancestor(v, a) && ancestor(a, u)) {
+                    links[k].push_back({j, path_OR(v, x)});
+                    links[k].push_back({indices[u], path_OR(x, u)});
+                    goto next;
+                }
             }
-        cout << (all & ~remove) << "\n";
+            links[k].push_back({j, path_OR(v, x)});
+        } else links[k].push_back({0, path_OR(vertices[0], x)});
+        next:;
+    }
+
+    dsu.reset();
+    unordered_map<int, vector<int>> memo;
+    for (int i = 0; i < q; i++) {
+        int b = 29;
+        for (; ~b; b--)
+            if ((OR[i] >> b) & 1) break;
+
+        int m1 = (1 << (b + 1)) - 1;
+        auto [s, t] = queries[i];
+        for (; ~b; b--) {
+            int m2 = m1 ^ (1 << b), m3 = ((1 << 30) - 1) ^ m2;
+            if (!(OR[i] & m3)) {
+                m1 = m2;
+                continue;
+            }
+
+            auto [it, inserted] = memo.try_emplace(m2, V);
+            auto &components = it->second;
+            if (inserted) {
+                dsu.reset();
+                for (auto [u, v, w] : edges)
+                    if (!(w & m3)) dsu.unite(u, v);
+                for (int j = 0; j < V; j++) components[j] = dsu.find(j);
+            }
+
+            vector<int> l, r;
+            for (auto [j, w] : links[node_id[s]])
+                if (!(w & m3)) l.emplace_back(components[j]);
+            for (auto [j, w] : links[node_id[t]])
+                if (!(w & m3)) r.emplace_back(components[j]);
+
+            for (int c1 : l)
+                for (int c2 : r)
+                    if (c1 == c2) {
+                        m1 = m2;
+                        goto done;
+                    }
+            done:;
+        }
+        cout << m1 << "\n";
     }
 }
