@@ -209,19 +209,19 @@ int main() {
             }
 
             auto [it, inserted] = memo.try_emplace(m2, V);
-            auto &components = it->second;
+            auto &component = it->second;
             if (inserted) {
                 dsu.reset();
                 for (auto [u, v, w] : edges)
                     if (!(w & m3)) dsu.unite(u, v);
-                for (int j = 0; j < V; j++) components[j] = dsu.find(j);
+                for (int j = 0; j < V; j++) component[j] = dsu.find(j);
             }
 
             vector<int> l, r;
             for (auto [j, w] : links[node_id[s]])
-                if (!(w & m3)) l.emplace_back(components[j]);
+                if (!(w & m3)) l.emplace_back(component[j]);
             for (auto [j, w] : links[node_id[t]])
-                if (!(w & m3)) r.emplace_back(components[j]);
+                if (!(w & m3)) r.emplace_back(component[j]);
 
             for (int c1 : l)
                 for (int c2 : r)
