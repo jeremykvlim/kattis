@@ -1,45 +1,35 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct PersistentDisjointSets {
-    vector<int> sets, size;
-    vector<pair<int, int>> history;
+struct DisjointSets {
+    int t;
+    vector<int> sets, seen;
 
     int find(int v) {
-        return sets[v] == v ? v : find(sets[v]);
+        if (seen[v] != t) {
+            seen[v] = t;
+            return sets[v] = v;
+        }
+
+        return sets[v] == v ? v : (sets[v] = find(sets[v]));
     }
 
     bool unite(int u, int v) {
         int u_set = find(u), v_set = find(v);
+
         if (u_set != v_set) {
-            if (size[u_set] < size[v_set]) swap(u_set, v_set);
-            history.push_back({v_set, size[v_set]});
             sets[v_set] = u_set;
-            size[u_set] += size[v_set];
             return true;
         }
+
         return false;
     }
 
-    int record() {
-        return history.size();
+    void reset() {
+        t++;
     }
 
-    void restore(int version) {
-        while (record() > version) {
-            auto [v_set, s] = history.back();
-            history.pop_back();
-            int u_set = sets[v_set];
-            sets[v_set] = v_set;
-            size[u_set] -= s;
-        }
-    }
-
-    void delete_history(int version = 0) {
-        history.resize(version);
-    }
-
-    PersistentDisjointSets(int n) : sets(n), size(n, 1) {
+    DisjointSets(int n) : t(1), sets(n), seen(n, 0) {
         iota(sets.begin(), sets.end(), 0);
     }
 };
@@ -51,47 +41,56 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    int lg = __lg(m), mask = (1 << (lg + 1)) - 1;
-    vector<array<int, 2>> roads(mask + 1, {0, 0});
+    vector<array<int, 2>> roads(m + 1);
     for (int i = 1; i <= m; i++) cin >> roads[i][0] >> roads[i][1];
 
-    int q;
-    cin >> q;
+    int Q;
+    cin >> Q;
 
-    vector<array<int, 2>> junctions(q);
-    for (auto &[s, t] : junctions) cin >> s >> t;
+    vector<int> from, to(Q);
+    vector<array<int, 2>> junctions(Q);
+    for (int q = 0; q < Q; q++) {
+        auto &[s, t] = junctions[q];
+        cin >> s >> t;
 
-    vector<int> order(q), cost(q);
-    iota(order.begin(), order.end(), 0);
+        if (s != t) from.emplace_back(q);
+    }
 
-    PersistentDisjointSets pdsu(n + 1);
-    auto dfs = [&](auto &&self, int l, int r, int m1, int b) -> void {
-        if (l >= r) return;
-        if (!~b) {
-            for (int i = l; i < r; i++) cost[order[i]] = m1;
-            return;
+    DisjointSets dsu(n + 1);
+    vector<int> component(n + 1), cost(Q);
+    auto dfs = [&](auto &&self, int b, int l, int r, vector<int> &from, vector<int> &to, int m1 = 0) -> void {
+        if (l >= r || !~b) return;
+
+        dsu.reset();
+        for (int m2 = m1, len = (1 << b) - 1;; --m2 &= m1) {
+            for (int i = max(m2, 1); i <= min(m2 + len, m); i++) dsu.unite(roads[i][0], roads[i][1]);
+            if (!m2) break;
         }
 
-        int m2 = m1 ^ (1 << b), version = pdsu.record();
-        for (int m3 = m2; m3; --m3 &= m2) {
-            auto [u, v] = roads[m3];
-            pdsu.unite(u, v);
-        }
-
-        int i = l, j = r;
-        while (i < j) {
-            auto [s, t] = junctions[order[i]];
-            if (pdsu.find(s) == pdsu.find(t)) i++;
-            else {
-                j--;
-                swap(order[i], order[j]);
+        int mid = l, right = r;
+        if (n < 2 * (r - l)) {
+            for (int i = 1; i <= n; i++) component[i] = dsu.find(i);
+            for (int i = l; i < r; i++) {
+                int q = from[i];
+                if (component[junctions[q][0]] == component[junctions[q][1]]) to[mid++] = q;
+                else {
+                    cost[q] |= 1 << b;
+                    to[--right] = q;
+                }
             }
-        }
-        pdsu.restore(version);
+        } else
+            for (int i = l; i < r; i++) {
+                int q = from[i];
+                if (dsu.find(junctions[q][0]) == dsu.find(junctions[q][1])) to[mid++] = q;
+                else {
+                    cost[q] |= 1 << b;
+                    to[--right] = q;
+                }
+            }
 
-        self(self, l, i, m2, b - 1);
-        self(self, i, r, m1, b - 1);
+        self(self, b - 1, l, mid, to, from, m1);
+        self(self, b - 1, mid, r, to, from, m1 | (1 << b));
     };
-    dfs(dfs, 0, q, mask, lg);
+    dfs(dfs, __lg(m), 0, from.size(), from, to);
     for (int c : cost) cout << c << "\n";
 }
