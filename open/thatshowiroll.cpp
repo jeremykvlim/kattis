@@ -35,12 +35,12 @@ int main() {
             }
         }
 
-        vector<vector<int>> suff(26, vector<int>(27, 0));
+        vector<array<int, 27>> suff(26);
         for (int c1 = 0; c1 < 26; c1++)
             for (int c2 = 25; ~c2; c2--) suff[c1][c2] = suff[c1][c2 + 1] + ((adj_mask_regular[c1] >> c2) & 1);
 
         vector<int> degree(26, 0), add(6, 0);
-        int score = -1, z = 0, m2 = 0;
+        int score = -1, m1 = 0, m2 = 0;
         auto dfs = [&](auto &&self, int ch = 0, int chosen = 0) -> void {
             if (chosen == 6) {
                 int s = 0;
@@ -48,7 +48,7 @@ int main() {
 
                 if (score < s) {
                     score = s;
-                    z = m2;
+                    m1 = m2;
                 }
                 return;
             }
@@ -91,7 +91,7 @@ int main() {
 
         string s;
         for (int c = 0; c < 26; c++)
-            if ((z >> c) & 1) s += (char) ('a' + c);
+            if ((m1 >> c) & 1) s += (char) ('a' + c);
         cout << fixed << setprecision(6) << s << "\n" << score / 18. << "\n";
     }
 }
