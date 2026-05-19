@@ -5,13 +5,13 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    vector<array<int, 6>> states;
-    for (int r1 = 0; r1 < 21; r1++)
-        for (int r2 = r1 + 1; r2 < 22; r2++)
-            for (int r3 = r2 + 1; r3 < 23; r3++)
-                for (int r4 = r3 + 1; r4 < 24; r4++)
-                    for (int r5 = r4 + 1; r5 < 25; r5++)
-                        for (int r6 = r5 + 1; r6 < 26; r6++) states.push_back({r1, r2, r3, r4, r5, r6});
+    vector<int> masks;
+    for (int c1 = 0; c1 < 21; c1++)
+        for (int c2 = c1 + 1; c2 < 22; c2++)
+            for (int c3 = c2 + 1; c3 < 23; c3++)
+                for (int c4 = c3 + 1; c4 < 24; c4++)
+                    for (int c5 = c4 + 1; c5 < 25; c5++)
+                        for (int c6 = c5 + 1; c6 < 26; c6++) masks.emplace_back((1 << c1) | (1 << c2) | (1 << c3) | (1 << c4) | (1 << c5) | (1 << c6));
 
     int t;
     cin >> t;
@@ -20,39 +20,78 @@ int main() {
         int l;
         cin >> l;
 
-        vector<bool> root(26, false);
-        vector<int> adj_masks(26, 0);
+        int m0 = 0;
+        vector<int> adj_mask_regular(26, 0), adj_mask_transpose(26, 0);
         while (l--) {
             string s;
             cin >> s;
 
-            int r = s[0] - 'a';
-            root[r] = true;
+            int c1 = s[0] - 'a';
+            m0 |= 1 << c1;
             if (s.size() > 1) {
-                int c = s[1] - 'a';
-                adj_masks[r] |= 1 << c;
+                int c2 = s[1] - 'a';
+                adj_mask_regular[c1] |= 1 << c2;
+                adj_mask_transpose[c2] |= 1 << c1;
             }
         }
 
-        double score = -1;
-        array<int, 6> choice;
-        for (auto rolls : states) {
-            int m = 0;
-            for (int r : rolls) m |= 1 << r;
+        vector<array<int, 27>> suff(26);
+        for (int c1 = 0; c1 < 26; c1++)
+            for (int c2 = 25; ~c2; c2--) suff[c1][c2] = suff[c1][c2 + 1] + ((adj_mask_regular[c1] >> c2) & 1);
 
-            double root_sum = 0;
-            for (int r : rolls)
-                if (root[r]) root_sum += max(1., (2. * popcount((unsigned) (adj_masks[r] & m))) / 6);
+        vector<int> degree(26, 0), add(6, 0);
+        int score = -1, z = 0, m2 = 0;
+        auto dfs = [&](auto &&self, int ch = 0, int chosen = 0) -> void {
+            if (chosen == 6) {
+                int s = 0;
+                for (int m3 = m2 & m0; m3; m3 &= m3 - 1) s += max(3, degree[countr_zero((unsigned) m3)]);
 
-            auto curr = root_sum / 6;
-            if (score + 1e-6 < curr) {
-                score = curr;
-                choice = rolls;
+                if (score < s) {
+                    score = s;
+                    z = m2;
+                }
+                return;
             }
-        }
+            if (20 < ch - chosen) return;
+
+            int remaining = 6 - chosen, bound = 0;
+            for (int m3 = m2 & m0; m3; m3 &= m3 - 1) {
+                int c = countr_zero((unsigned) m3);
+                bound += max(3, degree[c] + min(remaining, suff[c][ch]));
+            }
+
+            if (remaining) {
+                fill(add.begin(), add.end(), -1);
+                for (int c = ch; c < 26; c++)
+                    if ((m0 >> c) & 1) {
+                        int value = max(3, degree[c] + min(remaining - 1, suff[c][ch]));
+                        for (int i = 0; i < remaining; i++)
+                            if (add[i] < value) {
+                                for (int j = remaining - 1; j > i; j--) add[j] = add[j - 1];
+                                add[i] = value;
+                                break;
+                            }
+                    }
+
+                for (int i = 0; i < remaining; i++)
+                    if (~add[i]) bound += add[i];
+            }
+            if (score >= bound) return;
+
+            for (int c = ch; c <= chosen + 20; c++) {
+                if (score >= bound) return;
+                m2 |= 1 << c;
+                for (int m3 = adj_mask_transpose[c]; m3; m3 &= m3 - 1) degree[countr_zero((unsigned) m3)]++;
+                self(self, c + 1, chosen + 1);
+                for (int m3 = adj_mask_transpose[c]; m3; m3 &= m3 - 1) degree[countr_zero((unsigned) m3)]--;
+                m2 ^= 1 << c;
+            }
+        };
+        dfs(dfs);
 
         string s;
-        for (int r : choice) s += (char) ('a' + r);
-        cout << fixed << setprecision(6) << s << "\n" << score << "\n";
+        for (int c = 0; c < 26; c++)
+            if ((z >> c) & 1) s += (char) ('a' + c);
+        cout << fixed << setprecision(6) << s << "\n" << score / 18. << "\n";
     }
 }
