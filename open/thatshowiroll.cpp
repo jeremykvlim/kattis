@@ -35,7 +35,7 @@ int main() {
             }
         }
 
-        vector<array<int, 27>> suff(26);
+        vector<vector<int>> suff(26, vector<int>(27, 0));
         for (int c1 = 0; c1 < 26; c1++)
             for (int c2 = 25; ~c2; c2--) suff[c1][c2] = suff[c1][c2 + 1] + ((adj_mask_regular[c1] >> c2) & 1);
 
