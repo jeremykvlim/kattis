@@ -44,7 +44,7 @@ int main() {
     unordered_set<tuple<long long, long long, int>, Hash> seen;
     int a = -1, b = -1;
     auto temp_x = x, temp_y = y;
-    for (int nodes = 1; nodes < 29; nodes++) {
+    for (int nodes = 1; nodes < 29; nodes++)
         for (a = 0; a < nodes; a++) {
             b = nodes - a - 1;
             chain.clear();
@@ -76,7 +76,6 @@ int main() {
             };
             if (dfs(dfs, temp_x, temp_y, 29 - a - b)) goto found;
         }
-    }
     cout << -1;
     exit(0);
 
