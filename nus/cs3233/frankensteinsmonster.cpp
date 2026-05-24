@@ -73,15 +73,14 @@ int main() {
             }
         }
 
-    auto piece_moves = [&](const array<int, 3> &p, int i, bool discovered_attack = false) {
+    auto piece_moves = [&](const array<int, 3> &p, int i) {
         int sq = p[i];
 
         vector<int> next_sqs;
         if (pieces[i] == 'N') {
             for (int next_sq : knight[sq]) {
-                if (i && !discovered_attack && (next_sq == p[1] || next_sq == p[2]) && p[0] != next_sq) continue;
+                if (i && (next_sq == p[1] || next_sq == p[2]) && p[0] != next_sq) continue;
                 next_sqs.emplace_back(next_sq);
-                if (i && p[0] == next_sq) break;
             }
             return next_sqs;
         }
@@ -89,9 +88,9 @@ int main() {
         auto move_KQRB = [&](const auto &base) -> void {
             for (const auto &dir : base)
                 for (int next_sq : dir) {
-                    if (i && !discovered_attack && (next_sq == p[1] || next_sq == p[2]) && p[0] != next_sq) break;
+                    if (i && (next_sq == p[1] || next_sq == p[2]) && p[0] != next_sq) break;
                     next_sqs.emplace_back(next_sq);
-                    if (i && p[0] == next_sq || pieces[i] == 'K') break;
+                    if ((i && p[0] == next_sq) || pieces[i] == 'K') break;
                 }
         };
 
@@ -104,7 +103,7 @@ int main() {
         if (i) return max(abs((p[i] >> 3) - (p[0] >> 3)), abs((p[i] & 7) - (p[0] & 7))) == 1;
 
         for (int j : {1, 2})
-            for (int sq : piece_moves(p, j, true))
+            for (int sq : piece_moves(p, j))
                 if (p[0] == sq) return true;
         return false;
     };
@@ -114,6 +113,7 @@ int main() {
         vector<int> pieces_to_move{turn ? vector<int>{0} : vector<int>{1, 2}};
         for (int i : pieces_to_move)
             for (int sq : piece_moves(p, i)) {
+                if (!turn && sq == p[0]) continue;
                 auto q = p;
                 q[i] = sq;
                 if (pieces[i] == 'K' && attacked(q, i)) continue;
@@ -159,32 +159,11 @@ int main() {
     }
 
     vector<array<vector<int>, 2>> adj_list(mask);
-    vector<array<int, 2>> moves(mask, {-1, -1}), degree(mask, {0, 0});
-    vector<array<bool, 2>> wins(mask, {false, false});
-
-    auto win = [&](int v, int turn, int m = 0) {
-        if (~moves[v][turn]) return;
-        moves[v][turn] = m;
-        wins[v][turn] = true;
-        dq.emplace_front(v, turn);
-    };
-
-    auto lose = [&](int v, int turn, int m, bool force = false) {
-        if (~moves[v][turn]) return;
-        if (force || !--degree[v][turn]) {
-            moves[v][turn] = m;
-            dq.emplace_back(v, turn);
-        }
-    };
-
+    vector<array<int, 2>> degree(mask, {0, 0});
     for (auto [v, turn] : possible) {
         auto p = decode(v);
 
-        if (p[0] == p[1] || p[0] == p[2]) {
-            win(v, 1);
-            lose(v, 0, 0, true);
-            continue;
-        }
+        if (p[0] == p[1] || p[0] == p[2]) continue;
 
         for (const auto &q : legal_moves(p, turn)) {
             int u = encode(q), next_turn = turn ^ 1;
@@ -195,26 +174,37 @@ int main() {
         }
     }
 
-    for (auto [v, turn] : possible)
-        if (v != s && turn && !degree[v][1]) {
-            if (attacked(decode(v), 0)) {
-                win(v, 0);
-                lose(v, 1, 0, true);
-            } else {
-                win(v, 1);
-                lose(v, 0, 0, true);
-            }
+    vector<array<bool, 2>> wins(mask, {false, false});
+    vector<array<int, 2>> dist(mask, {-1, -1});
+    priority_queue<array<int, 3>, vector<array<int, 3>>, greater<>> pq;
+    auto update = [&](int v, int turn, bool winning, int d = 0) {
+        if (~dist[v][turn]) return;
+        dist[v][turn] = d;
+        wins[v][turn] = winning;
+        pq.push({d, v, turn});
+    };
+
+    for (auto [v, turn] : possible) {
+        auto p = decode(v);
+
+        if (p[0] == p[1] || p[0] == p[2]) update(v, turn, turn == 1);
+        else if (!degree[v][turn]) {
+            if (turn == 1) update(v, turn, !attacked(p, 0));
+            else update(v, turn, false);
         }
+    }
 
-    while (!dq.empty()) {
-        if (~moves[s][0]) break;
+    while (!pq.empty()) {
+        auto [d, v, turn] = pq.top();
+        pq.pop();
 
-        auto [v, turn] = dq.front();
-        dq.pop_front();
+        if (d != dist[v][turn]) continue;
 
-        for (int u : adj_list[v][turn])
-            if (!wins[v][turn]) win(u, turn ^ 1, moves[v][turn] + 1);
-            else lose(u, turn ^ 1, moves[v][turn] + 1);
+        for (int u : adj_list[v][turn]) {
+            int next_turn = turn ^ 1;
+            if (!wins[v][turn]) update(u, next_turn, true, d + 1);
+            else if (!--degree[u][next_turn]) update(u, next_turn, false, d + 1);
+        }
     }
 
     if (!wins[s][0]) {
@@ -222,19 +212,19 @@ int main() {
         exit(0);
     }
 
-    cout << "win\n" << moves[s][0] / 2 + 1 << "\n" << flush;
+    cout << "win\n" << dist[s][0] / 2 + 1 << "\n" << flush;
 
     for (;;) {
         for (const auto &p : legal_moves(pos)) {
             int v = encode(p);
-            if (!~moves[v][1] || wins[v][1] || moves[v][1] >= moves[s][0]) continue;
+            if (!~dist[v][1] || wins[v][1] || dist[v][1] + 1 != dist[s][0]) continue;
 
             int i = mismatch(p.begin(), p.end(), pos.begin()).first - p.begin(),
                     rank = pos[i] >> 3, file = pos[i] & 7,
                     next_rank = p[i] >> 3, next_file = p[i] & 7;
             cout << pieces[i] << " " << (char) (file + 'a') << (char) (rank + '1') << " " << (char) (next_file + 'a') << (char) (next_rank + '1') << "\n" << flush;
 
-            if (!moves[v][1]) exit(0);
+            if (!dist[v][1]) exit(0);
             pos = p;
             break;
         }
