@@ -19,18 +19,18 @@ int main() {
     }
 
     auto cmp = [&](vector<int> &t1, int t1_end, vector<int> &t2, int t2_end) -> double {
-        double exponent = 1, scale = 1;
+        double exponent = 1, ratio = 1;
         for (int i = t2_end - 1; ~i; i--) {
-            double a = i < t2_end ? t2[i] : 1, b = i < t1_end ? t1[i] : 1, ratio = scale * log(b) / log(a) - 1;
-            scale = abs(ratio) < 1e-9 ? 1 : pow(a, ratio * exponent);
+            auto a = i < t2_end ? t2[i] : 1., b = i < t1_end ? t1[i] : 1., delta = ratio * log(b) - log(a);
+            ratio = fabs(delta) <= 1e-13 * max(fabs(ratio * log(b)), fabs(log(a))) ? 1 : exp(delta * exponent);
 
-            if (scale > 50) return 2;
-            else if (scale < 0.05) return 0;
+            if (ratio > 9) return 2;
+            else if (ratio * 9 < 1) return 0;
 
             exponent = pow(a, exponent);
         }
 
-        return scale;
+        return ratio;
     };
 
     stable_sort(towers.begin(), towers.end(), [&](auto t1, auto t2) {
