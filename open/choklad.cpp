@@ -9,8 +9,7 @@ int main() {
     cin >> n;
 
     vector<int> k(n);
-    vector<long long> odd_count_all;
-    vector<vector<long long>> odd_count(n);
+    vector<pair<long long, int>> odd_count;
     for (int i = 0; i < n; i++) {
         long long R, C;
         cin >> R >> C >> k[i];
@@ -35,26 +34,24 @@ int main() {
                 ++R >>= 1;
             }
         }
-        sort(s.begin(), s.end());
+
         for (int l = 0, r = 1; l < s.size(); l = r++) {
             for (; r < s.size() && s[l] == s[r]; r++);
-            if ((r - l) & 1) {
-                odd_count[i].emplace_back(s[l]);
-                odd_count_all.emplace_back(s[l]);
-            }
+            if ((r - l) & 1) odd_count.emplace_back(s[l], i);
         }
     }
-    sort(odd_count_all.begin(), odd_count_all.end());
-    odd_count_all.erase(unique(odd_count_all.begin(), odd_count_all.end()), odd_count_all.end());
-    reverse(odd_count_all.begin(), odd_count_all.end());
+    sort(odd_count.rbegin(), odd_count.rend());
 
-    int m = odd_count_all.size();
+    vector<long long> odd_count_all;
     vector<vector<int>> indices(n);
-    for (int i = 0; i < n; i++) {
-        for (auto s : odd_count[i]) indices[i].emplace_back(lower_bound(odd_count_all.begin(), odd_count_all.end(), s, greater()) - odd_count_all.begin());
-        sort(indices[i].begin(), indices[i].end());
+    for (int l = 0, r = 1; l < odd_count.size(); l = r++) {
+        for (; r < odd_count.size() && odd_count[l].first == odd_count[r].first; r++);
+
+        odd_count_all.emplace_back(odd_count[l].first);
+        for (int i = l; i < r; i++) indices[odd_count[i].second].emplace_back(odd_count_all.size() - 1);
     }
 
+    int m = odd_count_all.size();
     vector<bool> parity(m, false);
     for (int i = 0; i < n; i++)
         if (k[i] & 1)
