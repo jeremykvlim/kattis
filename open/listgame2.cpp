@@ -1,6 +1,28 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+struct Hash {
+    template <typename T>
+    static inline void combine(size_t &h, const T &v) {
+        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
+    }
+
+    template <typename T>
+    size_t operator()(const T &v) const {
+        if constexpr (requires { tuple_size<T>::value; })
+            return apply([](const auto &...e) {
+                size_t h = 0;
+                (combine(h, e), ...);
+                return h;
+            }, v);
+        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
+            size_t h = 0;
+            for (const auto &e : v) combine(h, e);
+            return h;
+        } else return hash<T>{}(v);
+    }
+};
+
 template <typename T, typename U, typename V>
 T mul(U x, V y, T mod) {
     return (unsigned __int128) x * y % mod;
@@ -173,37 +195,50 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    long long n;
-    cin >> n;
+    long long x;
+    cin >> x;
 
-    vector<long long> pfs;
-    auto temp = n;
-    for (int p = 2; p <= sqrt(n); p == 2 ? p++ : p += 2)
-        if (!(n % p)) {
-            pfs.emplace_back(p);
-            while (!(n % p)) n /= p;
-            temp /= p;
-        }
-
-    if (n > 1) {
-        pfs.emplace_back(n);
-        n = temp / n;
-    } else n = temp;
-
-    auto divs = divisors(n);
+    auto divs = divisors(x);
     sort(divs.begin(), divs.end());
-    unordered_set<long long> s(divs.begin() + 1, divs.end());
-    for (auto &pf : pfs) s.erase(pf);
 
-    vector<int> dp(divs.size(), INT_MIN);
-    dp[0] = 0;
-    for (auto d : s)
-        for (int i = divs.size() - 1, j = divs.size(); ~i; i--) {
-            while (j && d * divs[j - 1] > divs[i]) j--;
-            if (!j) break;
+    unordered_set<tuple<long long, long long, int>, Hash> seen;
+    auto dfs = [&](auto &&self, long long x, long long div, int k) -> bool {
+        if (k == 1) return x > div;
+        if (seen.count({x, div, k})) return false;
 
-            if (d * divs[j - 1] == divs[i]) dp[i] = max(dp[i], dp[j - 1] + 1);
+        auto valid = [&](long long x, long long div, int count) {
+            auto product = 1LL;
+            for (int i = 1; i <= count; i++) {
+                product *= div + i;
+                if (product > x) return false;
+            }
+            return true;
+        };
+        if (!valid(x, div, k)) {
+            seen.emplace(x, div, k);
+            return false;
         }
 
-    cout << *max_element(dp.begin(), dp.end()) + pfs.size();
+        for (auto it = upper_bound(divs.begin(), divs.end(), div); it != divs.end(); it++) {
+            auto d = *it;
+            if (d * d >= x) break;
+            if (!(x % d)) {
+                auto q = x / d;
+                if (!valid(q, d, k - 1)) break;
+                if (self(self, q, d, k - 1)) return true;
+            }
+        }
+
+        seen.emplace(x, div, k);
+        return false;
+    };
+
+    int k = 1;
+    auto product = 1LL;
+    while (product <= x) product *= ++k;
+    for (; k; k--)
+        if (dfs(dfs, x, 1, k)) {
+            cout << k;
+            exit(0);
+        }
 }
