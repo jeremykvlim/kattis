@@ -19,7 +19,7 @@ struct RURQSegmentTree {
 
         auto & operator+=(const Monoid &monoid) {
             if (value > monoid.value) return *this;
-            else if (value < monoid.value) return monoid;
+            else if (value < monoid.value) return *this = monoid;
             else freq += monoid.freq;
 
             return *this;

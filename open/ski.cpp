@@ -50,7 +50,7 @@ struct PURQSegmentTree {
             m.sum = sum + monoid.sum;
             m.pref = max(pref, sum + monoid.pref);
             m.suff = max(monoid.suff, monoid.sum + suff);
-            return m;
+            return *this = m;
         }
 
         friend auto operator+(Monoid ml, const Monoid &mr) {

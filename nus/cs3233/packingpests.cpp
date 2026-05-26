@@ -20,7 +20,7 @@ struct RURQSegmentTree {
         }
 
         auto & operator+=(const Monoid &monoid) {
-            if (value <= monoid.value) return monoid;
+            if (value <= monoid.value) return *this = monoid;
             return *this;
         }
 
