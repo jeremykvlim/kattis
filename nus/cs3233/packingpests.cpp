@@ -58,7 +58,7 @@ struct RURQSegmentTree {
     }
 
     void point_update(int i, const long long &v) {
-        for (apply(i += n, v); i > 1; i >>= 1) pull(i >> 1);
+        range_update(i, i + 1, v);
     }
 
     void range_update(int l, int r, const long long &v) {
