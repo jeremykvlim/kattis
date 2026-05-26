@@ -2,50 +2,37 @@
 using namespace std;
 
 struct RURQSegmentTree {
+    static inline array<int, 55> delta;
+    static inline vector<vector<int>> indices;
+
     struct Monoid {
-        array<int, 10> count;
-        array<int, 45> both;
-        int len;
+        array<int, 55> sgn;
         long long sum;
 
-        Monoid() : count{}, both{}, len(0), sum(0) {}
+        Monoid() : sgn{}, sum(0) {}
 
         auto & operator=(const int &v) {
-            len = 1;
-            sum = (long long) v * v;
-            for (int i = 0; i < 10; i++) count[i] = (v >> i) & 1;
-            for (int i = 0, k = 0; i < 10; i++)
-                for (int j = i + 1; j < 10; j++, k++) both[k] = count[i] && count[j];
+            sum = v * v;
+            array<int, 10> temp;
+            for (int b = 0; b < 10; b++) sgn[b] = temp[b] = ((v >> b) & 1) ? -1 : 1;
+
+            for (int i = 10, b1 = 0; b1 < 10; b1++)
+                for (int b2 = b1 + 1; b2 < 10; b2++) sgn[i++] = temp[b1] * temp[b2];
+
             return *this;
         }
 
         auto & operator+=(const int &v) {
-            if (!v) return *this;
-
-            auto temp = count;
-            for (int i = 0; i < 10; i++)
-                if ((v >> i) & 1) count[i] = len - count[i];
-            
-            sum = 0;
-            for (int i = 0; i < 10; i++) sum += (long long) count[i] << (2 * i);
-
-            for (int i = 0, k = 0; i < 10; i++) {
-                bool bi = (v >> i) & 1;
-                for (int j = i + 1; j < 10; j++, k++) {
-                    bool bj = (v >> j) & 1;
-                    if (bi && bj) both[k] += len - temp[i] - temp[j];
-                    else if (bi) both[k] = temp[j] - both[k];
-                    else if (bj) both[k] = temp[i] - both[k];
-                    sum += (long long) both[k] << (i + j + 1);
-                }
+            for (int j : indices[v]) {
+                sum += sgn[j] * delta[j];
+                sgn[j] *= -1;
             }
+
             return *this;
         }
 
         auto & operator+=(const Monoid &monoid) {
-            for (int i = 0; i < 10; i++) count[i] += monoid.count[i];
-            for (int i = 0; i < 45; i++) both[i] += monoid.both[i];
-            len += monoid.len;
+            for (int i = 0; i < 55; i++) sgn[i] += monoid.sgn[i];
             sum += monoid.sum;
             return *this;
         }
@@ -122,9 +109,11 @@ struct RURQSegmentTree {
         return ST[i];
     }
 
-    RURQSegmentTree(int n, const vector<int> &a) : n(n), h(__lg(n)), ST(2 * n), lazy(n, 0) {
+    RURQSegmentTree(int n, const vector<int> &a, const auto &d, const auto &ids) : n(n), h(__lg(n)), ST(2 * n), lazy(n, 0) {
         for (int i = 0; i < a.size(); i++) ST[i + n] = a[i];
         build();
+        delta = d;
+        indices = ids;
     }
 };
 
@@ -138,7 +127,24 @@ int main() {
     vector<int> a(n);
     for (int &ai : a) cin >> ai;
 
-    RURQSegmentTree st(bit_ceil((unsigned) n), a);
+    array<int, 55> delta;
+    vector<vector<int>> indices(1024);
+    for (int b = 0; b < 10; b++) delta[b] = ((1 << 10) - 1) * (1 << b);
+    for (int i = 10, b1 = 0; b1 < 10; b1++)
+        for (int b2 = b1 + 1; b2 < 10; b2++) delta[i++] = -(1 << b1) * (1 << b2);
+
+    for (int mask = 0; mask < 1024; mask++) {
+        for (int b = 0; b < 10; b++)
+            if ((mask >> b) & 1) indices[mask].emplace_back(b);
+
+        for (int i = 10, b1 = 0; b1 < 10; b1++)
+            for (int b2 = b1 + 1; b2 < 10; b2++) {
+                if (((mask >> b1) & 1) != ((mask >> b2) & 1)) indices[mask].emplace_back(i);
+                i++;
+            }
+    }
+
+    RURQSegmentTree st(bit_ceil((unsigned) n), a, delta, indices);
     while (q--) {
         int type, l, r;
         cin >> type >> l >> r;
