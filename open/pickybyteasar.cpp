@@ -99,20 +99,16 @@ struct RURQSegmentTree {
 
     int kth(int k, int c) {
         int i = 1;
-
-        for (;;) {
-            if (i >= n) return i - n;
-
+        while (i < n) {
             push(i);
 
-            int left = i << 1;
-            if (k <= ST[left].count[c]) {
-                i = left;
-            } else {
-                k -= ST[left].count[c];
-                i = left | 1;
+            if (k <= ST[i << 1].count[c]) i <<= 1;
+            else {
+                k -= ST[i << 1].count[c];
+                (i <<= 1) |= 1;
             }
         }
+        return i - n;
     }
 
     string walk() {
@@ -122,7 +118,7 @@ struct RURQSegmentTree {
         for (int i = 0; i < m; i++)
             for (int c = 0; c < 5; c++)
                 if (ST[i + n].count[c]) {
-                    s += char('a' + c);
+                    s += (char) ('a' + c);
                     break;
                 }
 
