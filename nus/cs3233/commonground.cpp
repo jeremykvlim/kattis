@@ -194,44 +194,48 @@ struct RURQSegmentTree {
     }
 
     void push(int i) {
-        for (int k = h; k; k--) {
-            int j = i >> k;
-            if (lazy[j]) {
-                apply(j << 1, lazy[j]);
-                apply(j << 1 | 1, lazy[j]);
-                lazy[j] = 0;
-            }
+        if (lazy[i]) {
+            apply(i << 1, lazy[i]);
+            apply(i << 1 | 1, lazy[i]);
+            lazy[i] = 0;
+        }
+    }
+
+    void push_down(int l, int r) {
+        for (int b = h; b; b--) {
+            if (((l >> b) << b) != l) push(l >> b);
+            if (((r >> b) << b) != r) push((r - 1) >> b);
+        }
+    }
+
+    void pull_up(int l, int r) {
+        for (int b = 1; b <= h; b++) {
+            if (((l >> b) << b) != l) pull(l >> b);
+            if (((r >> b) << b) != r) pull((r - 1) >> b);
         }
     }
 
     void range_update(int l, int r, const long long &v) {
-        push(l + n);
-        push(r + n - 1);
-        bool cl = false, cr = false;
-        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
-            if (cl) pull(l - 1);
-            if (cr) pull(r);
-            if (l & 1) {
-                cl = true;
-                apply(l++, v);
-            }
-            if (r & 1) {
-                cr = true;
-                apply(--r, v);
-            }
+        l += n;
+        r += n;
+        push_down(l, r);
+
+        int temp_l = l, temp_r = r;
+        for (; l < r; l >>= 1, r >>= 1) {
+            if (l & 1) apply(l++, v);
+            if (r & 1) apply(--r, v);
         }
 
-        for (l--; r; l >>= 1, r >>= 1) {
-            if (cl) pull(l);
-            if (cr && (!cl || l < r)) pull(r);
-        }
+        pull_up(temp_l, temp_r);
     }
 
     Monoid range_query(int l, int r) {
-        push(l + n);
-        push(r + n - 1);
+        l += n;
+        r += n;
+        push_down(l, r);
+
         Monoid ml, mr;
-        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+        for (; l < r; l >>= 1, r >>= 1) {
             if (l & 1) ml = ml + ST[l++];
             if (r & 1) mr = ST[--r] + mr;
         }
