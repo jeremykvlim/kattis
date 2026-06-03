@@ -436,111 +436,6 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned int MOD = 11092019;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
-struct RURQSegmentTree {
-    struct Monoid {
-        long long value;
-        modint freq;
-
-        Monoid(long long v = 0, modint f = 0) : value(v), freq(f) {}
-
-        auto & operator=(const int &v) {
-            freq = v;
-            return *this;
-        }
-
-        auto operator!=(const Monoid &monoid) {
-            return value != monoid.value || freq != monoid.freq;
-        }
-
-        auto & operator+=(const int &v) {
-            value += v;
-            return *this;
-        }
-
-        auto & operator+=(const Monoid &monoid) {
-            if (value > monoid.value) return *this;
-            else if (value < monoid.value) return *this = monoid;
-            else freq += monoid.freq;
-
-            return *this;
-        }
-
-        friend auto operator+(Monoid ml, const Monoid &mr) {
-            return ml += mr;
-        }
-    };
-
-    int n, h;
-    vector<Monoid> ST, lazy;
-
-    void pull(int i) {
-        ST[i] = ST[i << 1] + ST[i << 1 | 1];
-    }
-
-    void apply(int i, const Monoid &v) {
-        ST[i] += v;
-        if (i < n) lazy[i] += v;
-    }
-
-    void push(int i) {
-        if (lazy[i] != Monoid()) {
-            apply(i << 1, lazy[i]);
-            apply(i << 1 | 1, lazy[i]);
-            lazy[i] = Monoid();
-        }
-    }
-
-    void push_down(int l, int r) {
-        for (int b = h; b; b--) {
-            if (((l >> b) << b) != l) push(l >> b);
-            if (((r >> b) << b) != r) push((r - 1) >> b);
-        }
-    }
-
-    void pull_up(int l, int r) {
-        for (int b = 1; b <= h; b++) {
-            if (((l >> b) << b) != l) pull(l >> b);
-            if (((r >> b) << b) != r) pull((r - 1) >> b);
-        }
-    }
-
-    void range_update(int l, int r, const Monoid &v) {
-        l += n;
-        r += n;
-        push_down(l, r);
-
-        int temp_l = l, temp_r = r;
-        for (; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) apply(l++, v);
-            if (r & 1) apply(--r, v);
-        }
-
-        pull_up(temp_l, temp_r);
-    }
-
-    Monoid range_query(int l, int r) {
-        l += n;
-        r += n;
-        push_down(l, r);
-
-        Monoid ml, mr;
-        for (; l < r; l >>= 1, r >>= 1) {
-            if (l & 1) ml = ml + ST[l++];
-            if (r & 1) mr = ST[--r] + mr;
-        }
-
-        return ml + mr;
-    }
-
-    auto & operator[](int i) {
-        i += n;
-        push_down(i, i + 1);
-        return ST[i];
-    }
-
-    RURQSegmentTree(int n) : n(n), h(__lg(n)), ST(2 * n), lazy(n) {}
-};
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -550,8 +445,8 @@ int main() {
     int n;
     cin >> n;
 
-    vector<int> labels(n + 1);
-    for (int i = 1; i <= n; i++) cin >> labels[i];
+    vector<int> U(n + 1);
+    for (int i = 1; i <= n; i++) cin >> U[i];
 
     vector<vector<int>> adj_list(n + 1);
     for (int v = 2; v <= n; v++) {
@@ -561,34 +456,55 @@ int main() {
         adj_list[p].emplace_back(v);
     }
 
-    vector<int> in(n + 1), out(n + 1), depth(n + 1, 0);
-    int count = 0;
-    auto dfs = [&](auto &&self, int v = 1) -> void {
-        in[v] = count++;
-        for (int u : adj_list[v]) {
-            depth[u] = depth[v] + 1;
-            self(self, u);
+    vector<int> dp(n + 1), tail(n + 2, 1e9);
+    tail[0] = -1;
+    int longest = 0;
+    auto dfs1 = [&](auto &&self, int v = 1) -> void {
+        int l = 0, r = longest + 1, m;
+        while (l + 1 < r) {
+            m = l + (r - l) / 2;
+
+            if (tail[m] <= U[v]) l = m;
+            else r = m;
         }
-        out[v] = count;
+        dp[v] = r;
+        int temp1 = tail[r], temp2 = longest;
+        longest = max(longest, r);
+        tail[r] = U[v];
+        for (int u : adj_list[v]) self(self, u);
+        tail[r] = temp1;
+        longest = temp2;
     };
-    dfs(dfs);
+    dfs1(dfs1);
 
-    vector<int> order(n);
-    iota(order.begin(), order.end(), 1);
-    sort(order.begin(), order.end(), [&](int u, int v) { return labels[u] != labels[v] ? labels[u] < labels[v] : depth[u] < depth[v]; });
+    int L = 0, k = *max_element(dp.begin(), dp.end());
+    modint M = 0;
+    vector<vector<int>> labels(k + 1);
+    vector<vector<modint>> pref(k + 1);
+    labels[0].emplace_back(-1);
+    pref[0].emplace_back(1);
+    auto dfs2 = [&](auto &&self, int v = 1) -> void {
+        int len = dp[v], l = -1, r = labels[len - 1].size(), m;
+        while (l + 1 < r) {
+            m = l + (r - l) / 2;
 
-    RURQSegmentTree st(bit_ceil((unsigned) n + 1));
-    int l = 0;
-    modint m = 0;
-    for (int v : order) {
-        auto [value, freq] = st[in[v]];
-        int len = value + 1;
-        modint f = !value ? 1 : freq;
-        if (l < len) {
-            l = len;
-            m = f;
-        } else if (l == len) m += f;
-        st.range_update(in[v], out[v], {len, f});
-    }
-    cout << l << " " << m;
+            if (labels[len - 1][m] <= U[v]) r = m;
+            else l = m;
+        }
+
+        auto paths = pref[len - 1].back() - (!r ? 0 : pref[len - 1][r - 1]);
+        if (L < len) {
+            L = len;
+            M = paths;
+        } else if (L == len) M += paths;
+
+        labels[len].emplace_back(U[v]);
+        pref[len].emplace_back(paths + (pref[len].empty() ? 0 : pref[len].back()));
+        for (int u : adj_list[v]) self(self, u);
+        labels[len].pop_back();
+        pref[len].pop_back();
+    };
+    dfs2(dfs2);
+
+    cout << L << " " << M;
 }
