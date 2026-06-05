@@ -59,6 +59,29 @@ int main() {
         }
         if (!removed_mask) return true;
 
+        auto backtrack = [&](int u, auto mask) {
+            for (; mask; mask &= mask - 1) {
+                int sq = countr_zero(mask), r = sq / 8, c = sq % 8;
+                if (row_sum[r] + u <= 260 && col_sum[c] + u <= 260) {
+                    removed_mask ^= 1ULL << sq;
+                    pos[u] = sq;
+                    row_sum[r] += u;
+                    col_sum[c] += u;
+                    row_removed[r]--;
+                    col_removed[c]--;
+                    if (self(self)) return true;
+                    col_removed[c]++;
+                    row_removed[r]++;
+                    col_sum[c] -= u;
+                    row_sum[r] -= u;
+                    pos[u] = -1;
+                    removed_mask |= 1ULL << sq;
+                }
+            }
+            return false;
+        };
+        if (pos[1] == -1) return backtrack(1, removed_mask);
+
         int u = -1, w = -1;
         for (int v = 2; v <= 64; v++) {
             if (pos[v] != -1 || pos[v - 1] == -1) continue;
@@ -78,26 +101,7 @@ int main() {
                 if (bounded && degree < 2 || !bounded && !degree) return false;
             }
         }
-
-        for (auto mask = knight[pos[u - 1]] & removed_mask; mask; mask &= mask - 1) {
-            int sq = countr_zero(mask), r = sq / 8, c = sq % 8;
-            if ((removed_mask >> sq) & 1 && row_sum[r] + u <= 260 && col_sum[c] + u <= 260) {
-                removed_mask ^= 1ULL << sq;
-                pos[u] = sq;
-                row_sum[r] += u;
-                col_sum[c] += u;
-                row_removed[r]--;
-                col_removed[c]--;
-                if (self(self)) return true;
-                col_removed[c]++;
-                row_removed[r]++;
-                col_sum[c] -= u;
-                row_sum[r] -= u;
-                pos[u] = -1;
-                removed_mask |= 1ULL << sq;
-            }
-        }
-        return false;
+        return backtrack(u, knight[pos[u - 1]] & removed_mask);
     };
     dfs(dfs);
 
