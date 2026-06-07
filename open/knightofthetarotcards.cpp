@@ -1,7 +1,5 @@
 #include <bits/stdc++.h>
-#include <ext/pb_ds/assoc_container.hpp>
 using namespace std;
-using namespace __gnu_pbds;
 
 struct Hash {
     template <typename T>
@@ -50,74 +48,111 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n;
-    cin >> n;
+    int n, sr, sc, sa, sb, sp;
+    cin >> n >> sr >> sc >> sa >> sb >> sp;
 
-    auto normalize = [&](complex<long long> &Z) {
-        if (Z == complex<long long>{0, 0}) return Z;
-        if (Z.real() < 0 || !Z.real() && Z.imag() < 0) Z = -Z;
-        return Z;
-    };
-
-    vector<complex<long long>> pos(n), gcds(n);
-    vector<int> p(n);
-    for (int i = 0; i < n; i++) {
-        long long r, c, a, b;
-        cin >> r >> c >> a >> b >> p[i];
-
-        pos[i] = {r, c};
-        auto [g, s, t] = extended_gcd(complex<long long>{a, b}, complex<long long>{b, a});
-        gcds[i] = normalize(g);
-    }
-
-    if (!pos[0].real() && !pos[0].imag()) {
+    if (!sr && !sc) {
         cout << 0;
         exit(0);
     }
 
-    gp_hash_table<pair<long long, long long>, long long, Hash> dist;
-    priority_queue pq(
-            [&](const auto &p1, const auto &p2) -> bool {
-                return p1.first != p2.first ? p1.first > p2.first
-                                            : p1.second.real() != p2.second.real() ? p1.second.real() < p2.second.real()
-                                                                                   : p1.second.imag() < p2.second.imag();
-            }, vector<pair<long long, complex<long long>>>());
+    vector<array<int, 3>> start;
+    vector<array<int, 5>> other;
+    auto add = [&](int r, int c, int a, int b, int p) {
+        complex<long long> Z{a, b};
+        auto [G, _, __] = extended_gcd(Z, conj(Z));
 
-    auto relax = [&](const complex<long long> &Z, long long d) -> void {
-        pair<long long, long long> v{Z.real(), Z.imag()};
-        if (dist.find(v) == dist.end() || dist[v] > d) {
-            dist[v] = d;
-            pq.emplace(d, Z);
+        int real = abs(G.real()), imag = abs(G.imag()), g, t;
+        if (!real || !imag) {
+            g = real ^ imag;
+            t = 1;
+        } else {
+            g = gcd(real, imag);
+            t = 2;
         }
-    };
 
-    vector<complex<long long>> delta(n);
-    for (int i = 0; i < n; i++) {
-        if (pos[i] == pos[0]) relax(gcds[i], p[i]);
-        if (i) delta[i] = pos[i] - pos[0];
+        if (r == sr && c == sc) start.push_back({p, g, t});
+        else other.push_back({r - sr, c - sc, p, g, t});
+    };
+    add(sr, sc, sa, sb, sp);
+
+    for (int _ = 0; _ < n - 1; _++) {
+        int r, c, a, b, p;
+        cin >> r >> c >> a >> b >> p;
+
+        add(r, c, a, b, p);
     }
 
-    auto divides = [&](const complex<long long> &Z1, const complex<long long> &Z2) {
-        auto N = norm(Z1);
-        return !((Z1.real() * Z2.real() + Z1.imag() * Z2.imag()) % N) && !((Z1.real() * Z2.imag() - Z1.imag() * Z2.real()) % N);
+    auto cost = LLONG_MAX;
+    vector<long long> dist;
+    vector<array<int, 2>> states;
+    unordered_map<array<int, 2>, int, Hash> indices;
+    auto relax = [&](long long d, int g, int t) {
+        if (cost <= d) return false;
+
+        auto [it, inserted] = indices.emplace(array{g, t}, states.size());
+        int i = it->second;
+        if (inserted) {
+            dist.emplace_back(d);
+            states.push_back({g, t});
+            return true;
+        }
+
+        if (dist[i] > d) {
+            dist[i] = d;
+            return true;
+        }
+        return false;
     };
+
+    auto reachable = [&](int g, int t) {
+        return !(sr % g) && !(sc % g) && !((sr + sc) % (g * t));
+    };
+
+    for (auto &[p, g1, t1] : start) {
+        int s = states.size(), z1 = countr_zero((unsigned) g1);
+        if (reachable(g1, t1)) cost = min(cost, (long long) p);
+        relax(p, g1, t1);
+
+        for (int i = 0; i < s; i++) {
+            auto d = dist[i] + p;
+            if (cost > d) {
+                auto [g2, t2] = states[i];
+                int z2 = countr_zero((unsigned) g2), g3 = gcd(g1, g2), t3 = min(z1 + (t1 == 2), z2 + (t2 == 2)) > min(z1, z2) ? 2 : 1;
+                if (g2 != g3 || t2 != t3) {
+                    if (reachable(g3, t3)) cost = d;
+                    relax(d, g3, t3);
+                }
+            }
+        }
+    }
+
+    priority_queue<tuple<long long, int, int>, vector<tuple<long long, int, int>>, greater<>> pq;
+    for (int i = 0; i < states.size(); i++)
+        if (cost > dist[i]) pq.emplace(dist[i], states[i][0], states[i][1]);
 
     while (!pq.empty()) {
-        auto [d, v] = pq.top();
+        auto [p1, g1, t1] = pq.top();
         pq.pop();
 
-        if (dist[{v.real(), v.imag()}] != d) continue;
+        auto it = indices.find({g1, t1});
+        if (it == indices.end() || dist[it->second] != p1) continue;
+        if (p1 >= cost) break;
 
-        if (divides(v, pos[0])) {
-            cout << d;
-            exit(0);
-        }
-
-        for (int i = 1; i < n; i++)
-            if (divides(v, delta[i])) {
-                auto [g, s, t] = extended_gcd(v, gcds[i]);
-                relax(normalize(g), d + p[i]);
+        int z1 = countr_zero((unsigned) g1);
+        for (auto &[dr, dc, p2, g2, t2] : other) {
+            if (dr % g1 || dc % g1 || (dr + dc) % (g1 * t1)) continue;
+            auto d = p1 + p2;
+            if (cost > d) {
+                int z2 = countr_zero((unsigned) g2), g3 = gcd(g1, g2), t3 = min(z1 + (t1 == 2), z2 + (t2 == 2)) > min(z1, z2) ? 2 : 1;
+                if (g1 != g3 || t1 != t3) {
+                    if (reachable(g3, t3)) cost = d;
+                    if (relax(d, g3, t3)) pq.emplace(d, g3, t3);
+                }
             }
+        }
     }
-    cout << -1;
+
+    if (cost != LLONG_MAX) cout << cost;
+    else cout << -1;
 }
