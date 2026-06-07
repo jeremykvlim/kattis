@@ -23,7 +23,7 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    vector<int> label(1e5 + 1), heavy(1e5 + 1), spf = sieve(5e5), indices(5e5 + 1);
+    vector<int> label(1e5 + 1), subtree_size(1e5 + 1), spf = sieve(5e5), indices(5e5 + 1);
     vector<long long> depth(1e5 + 1), dist(5e5 + 1, -1);
     vector<vector<pair<int, int>>> adj_list(1e5 + 1);
     vector<vector<int>> active(1e5 + 1);
@@ -36,7 +36,7 @@ int main() {
             cin >> label[i];
 
             labels.emplace_back(label[i]);
-            heavy[i] = depth[i] = 0;
+            depth[i] = 0;
             adj_list[i].clear();
             active[i].clear();
             active_dists[i].clear();
@@ -72,26 +72,28 @@ int main() {
             }
         }
 
-        auto hld = [&](auto &&self, int v = 1, int prev = -1) -> int {
-            int subtree_size = 1, largest = 0;
+        auto dfs1 = [&](auto &&self, int v = 1, int prev = -1) -> int {
+            subtree_size[v] = 1;
             for (auto [u, w] : adj_list[v])
                 if (u != prev) {
                     depth[u] = depth[v] + w;
-                    int size = self(self, u, v);
-                    subtree_size += size;
-                    if (largest < size) {
-                        largest = size;
-                        heavy[v] = u;
-                    }
+                    subtree_size[v] += self(self, u, v);
                 }
-            return subtree_size;
+            return subtree_size[v];
         };
-        hld(hld);
+        dfs1(dfs1);
 
         auto g = 0LL;
-        auto dfs = [&](auto &&self, int v = 1, int prev = -1) -> void {
+        auto dfs2 = [&](auto &&self, int v = 1, int prev = -1) -> void {
+            int largest = 0, t = -1;
             for (auto [u, w] : adj_list[v])
-                if (u != prev && u != heavy[v]) {
+                if (u != prev && largest < subtree_size[u]) {
+                    largest = subtree_size[u];
+                    t = u;
+                }
+
+            for (auto [u, w] : adj_list[v])
+                if (u != prev && u != t) {
                     self(self, u, v);
 
                     for (int d : active[u]) {
@@ -100,9 +102,9 @@ int main() {
                     }
                 }
 
-            if (heavy[v]) {
-                self(self, heavy[v], v);
-                swap(active[v], active[heavy[v]]);
+            if (~t) {
+                self(self, t, v);
+                swap(active[v], active[t]);
             }
 
             for (int d : divs[indices[label[v]]]) {
@@ -112,7 +114,7 @@ int main() {
             }
 
             for (auto [u, w] : adj_list[v])
-                if (u != prev && u != heavy[v])
+                if (u != prev && u != t)
                     for (int i = 0; i < active[u].size(); i++) {
                         int d = active[u][i];
                         if (~dist[d]) g = max(g, (dist[d] + active_dists[u][i] - 2 * depth[v]) * d);
@@ -120,7 +122,7 @@ int main() {
                         dist[d] = max(dist[d], active_dists[u][i]);
                     }
         };
-        dfs(dfs);
+        dfs2(dfs2);
 
         cout << g << "\n";
         for (int d : active[1]) dist[d] = -1;
