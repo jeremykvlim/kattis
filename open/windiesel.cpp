@@ -51,7 +51,7 @@ int main() {
     };
 
     vector<pair<int, int>> tour;
-    vector<int> index(n), depth(n, 0), prev(n, 0), anc_mask(n, 0), head(n + 1);
+    vector<int> index(n), depth(n, 0), prev(n, 0), ascendant(n, 0), head(n + 1);
     auto dfs = [&](auto &&self, int v = 0) -> void {
         tour.emplace_back(v, prev[v]);
         index[v] = tour.size();
@@ -66,16 +66,16 @@ int main() {
             }
     };
     dfs(dfs);
-    for (auto [v, p] : tour) anc_mask[v] = anc_mask[p] | lsb(index[v]);
+    for (auto [v, p] : tour) ascendant[v] = ascendant[p] | lsb(index[v]);
 
     auto lca = [&](int u, int v) -> int {
         if (unsigned above = index[u] ^ index[v]; above) {
-            above = (anc_mask[u] & anc_mask[v]) & -bit_floor(above);
-            if (unsigned below = anc_mask[u] ^ above; below) {
+            above = (ascendant[u] & ascendant[v]) & -bit_floor(above);
+            if (unsigned below = ascendant[u] ^ above; below) {
                 below = bit_floor(below);
                 u = head[(index[u] & -below) | below];
             }
-            if (unsigned below = anc_mask[v] ^ above; below) {
+            if (unsigned below = ascendant[v] ^ above; below) {
                 below = bit_floor(below);
                 v = head[(index[v] & -below) | below];
             }

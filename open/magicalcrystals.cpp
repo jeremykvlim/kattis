@@ -77,34 +77,34 @@ int main() {
     };
 
     vector<pair<int, int>> tour;
-    vector<int> index(m), depth(m, 0), in(m), anc_mask(m, 0), head(m + 1);
+    vector<int> depth(m, 0), in(m), inlabel(m), ascendant(m, 0), head(m + 1);
     int count = 0;
     auto dfs1 = [&](auto &&self, int v, int prev) -> void {
         tour.emplace_back(v, prev);
-        index[v] = tour.size();
+        inlabel[v] = tour.size();
         in[v] = count++;
 
         for (int u : rt.adj_list[v])
             if (u != prev) {
                 depth[u] = depth[v] + 1;
                 self(self, u, v);
-                head[index[u]] = v;
-                if (lsb(index[v]) < lsb(index[u])) index[v] = index[u];
+                head[inlabel[u]] = v;
+                if (lsb(inlabel[v]) < lsb(inlabel[u])) inlabel[v] = inlabel[u];
             }
     };
     dfs1(dfs1, rt.n, rt.n);
-    for (auto [v, p] : tour) anc_mask[v] = anc_mask[p] | lsb(index[v]);
+    for (auto [v, p] : tour) ascendant[v] = ascendant[p] | lsb(inlabel[v]);
 
     auto lca = [&](int u, int v) -> int {
-        if (unsigned above = index[u] ^ index[v]; above) {
-            above = (anc_mask[u] & anc_mask[v]) & -bit_floor(above);
-            if (unsigned below = anc_mask[u] ^ above; below) {
+        if (unsigned above = inlabel[u] ^ inlabel[v]; above) {
+            above = (ascendant[u] & ascendant[v]) & -bit_floor(above);
+            if (unsigned below = ascendant[u] ^ above; below) {
                 below = bit_floor(below);
-                u = head[(index[u] & -below) | below];
+                u = head[(inlabel[u] & -below) | below];
             }
-            if (unsigned below = anc_mask[v] ^ above; below) {
+            if (unsigned below = ascendant[v] ^ above; below) {
                 below = bit_floor(below);
-                v = head[(index[v] & -below) | below];
+                v = head[(inlabel[v] & -below) | below];
             }
         }
 

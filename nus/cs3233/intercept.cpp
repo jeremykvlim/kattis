@@ -3,13 +3,13 @@ using namespace std;
 
 struct DominatorTree {
     int n;
-    vector<int> DT, semidom, sets, label, order, index, depth, anc_mask, head;
+    vector<int> DT, semidom, sets, label, order, depth, inlabel, ascendant, head;
     vector<vector<int>> adj_list_DT;
     vector<pair<int, int>> tour;
 
     DominatorTree(int n, const vector<vector<int>> &adj_list, int root = 1) : n(n), DT(n + 1, -1), semidom(n + 1, -1), sets(n + 1, 0),
                                                                               label(n + 1, 0), order(n + 1, -1), adj_list_DT(n + 1),
-                                                                              index(n + 1), depth(n + 1, 0), anc_mask(n + 1), head(n + 2) {
+                                                                              inlabel(n + 1), depth(n + 1, 0), ascendant(n + 1), head(n + 2) {
         build(adj_list, root);
     }
 
@@ -58,18 +58,18 @@ struct DominatorTree {
 
         auto dfs = [&](auto &&self, int v = 1, int prev = 1) -> void {
             tour.emplace_back(v, prev);
-            index[v] = tour.size();
+            inlabel[v] = tour.size();
 
             for (int u : adj_list_DT[v])
                 if (u != prev) {
                     depth[u] = depth[v] + 1;
                     self(self, u, v);
-                    head[index[u]] = v;
-                    if (lsb(index[v]) < lsb(index[u])) index[v] = index[u];
+                    head[inlabel[u]] = v;
+                    if (lsb(inlabel[v]) < lsb(inlabel[u])) inlabel[v] = inlabel[u];
                 }
         };
         dfs(dfs, root);
-        for (auto [v, p] : tour) anc_mask[v] = anc_mask[p] | lsb(index[v]);
+        for (auto [v, p] : tour) ascendant[v] = ascendant[p] | lsb(inlabel[v]);
     }
 
     int find(int v, bool compress = false) {
@@ -88,15 +88,15 @@ struct DominatorTree {
     }
 
     int lca(int u, int v) {
-        if (unsigned above = index[u] ^ index[v]; above) {
-            above = (anc_mask[u] & anc_mask[v]) & -bit_floor(above);
-            if (unsigned below = anc_mask[u] ^ above; below) {
+        if (unsigned above = inlabel[u] ^ inlabel[v]; above) {
+            above = (ascendant[u] & ascendant[v]) & -bit_floor(above);
+            if (unsigned below = ascendant[u] ^ above; below) {
                 below = bit_floor(below);
-                u = head[(index[u] & -below) | below];
+                u = head[(inlabel[u] & -below) | below];
             }
-            if (unsigned below = anc_mask[v] ^ above; below) {
+            if (unsigned below = ascendant[v] ^ above; below) {
                 below = bit_floor(below);
-                v = head[(index[v] & -below) | below];
+                v = head[(inlabel[v] & -below) | below];
             }
         }
 

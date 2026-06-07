@@ -4,7 +4,7 @@ using namespace std;
 struct BlockCutTree {
     int n;
     vector<vector<int>> BCT, bccs;
-    vector<int> node_id, index, depth, anc_mask, head, sizes, cuts;
+    vector<int> node_id, depth, inlabel, ascendant, head, sizes, cuts;
     vector<long long> pref_sizes, pref_cuts;
     vector<bool> cutpoint;
     vector<pair<int, int>> tour;
@@ -51,9 +51,9 @@ struct BlockCutTree {
 
         int m = node;
         BCT.resize(m);
-        index.resize(m);
+        inlabel.resize(m);
         depth.resize(m);
-        anc_mask.resize(m);
+        ascendant.resize(m);
         head.resize(m + 1);
         node = 0;
         for (auto &comp : bccs) {
@@ -82,7 +82,7 @@ struct BlockCutTree {
 
         auto dfs = [&](auto &&self, int v = 0, int prev = 0) -> void {
             tour.emplace_back(v, prev);
-            index[v] = tour.size();
+            inlabel[v] = tour.size();
 
             for (int u : BCT[v])
                 if (u != prev) {
@@ -90,24 +90,24 @@ struct BlockCutTree {
                     pref_sizes[u] = pref_sizes[v] + sizes[u];
                     pref_cuts[u] = pref_cuts[v] + cuts[u];
                     self(self, u, v);
-                    head[index[u]] = v;
-                    if (lsb(index[v]) < lsb(index[u])) index[v] = index[u];
+                    head[inlabel[u]] = v;
+                    if (lsb(inlabel[v]) < lsb(inlabel[u])) inlabel[v] = inlabel[u];
                 }
         };
         dfs(dfs);
-        for (auto [v, p] : tour) anc_mask[v] = anc_mask[p] | lsb(index[v]);
+        for (auto [v, p] : tour) ascendant[v] = ascendant[p] | lsb(inlabel[v]);
     }
 
     int lca(int u, int v) {
-        if (unsigned above = index[u] ^ index[v]; above) {
-            above = (anc_mask[u] & anc_mask[v]) & -bit_floor(above);
-            if (unsigned below = anc_mask[u] ^ above; below) {
+        if (unsigned above = inlabel[u] ^ inlabel[v]; above) {
+            above = (ascendant[u] & ascendant[v]) & -bit_floor(above);
+            if (unsigned below = ascendant[u] ^ above; below) {
                 below = bit_floor(below);
-                u = head[(index[u] & -below) | below];
+                u = head[(inlabel[u] & -below) | below];
             }
-            if (unsigned below = anc_mask[v] ^ above; below) {
+            if (unsigned below = ascendant[v] ^ above; below) {
                 below = bit_floor(below);
-                v = head[(index[v] & -below) | below];
+                v = head[(inlabel[v] & -below) | below];
             }
         }
 
