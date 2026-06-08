@@ -11,13 +11,6 @@ struct StaticTopTree {
         Compress = 5
     };
 
-    struct StaticTopTreeNode {
-        array<int, 3> family;
-        Operation op;
-
-        StaticTopTreeNode() : family{-1, -1, -1}, op(NA) {}
-    };
-
     struct Path {
         struct Monoid {
             long long sum, pref, suff, subpath;
@@ -39,25 +32,31 @@ struct StaticTopTree {
         Monoid m;
         long long aggregate;
 
-        Path(const Monoid &m = {0}, const long long &aggregate = LLONG_MIN) : m(m), aggregate(aggregate) {}
+        Path(const Monoid &m = {0}, long long aggregate = LLONG_MIN) : m(m), aggregate(aggregate) {}
     };
 
     struct Point {
         long long light_sum, base;
 
-        Point(const long long &sum = 0LL, const long long &base = LLONG_MIN) : light_sum(sum), base(base) {}
+        Point(long long sum = 0LL, long long base = LLONG_MIN) : light_sum(sum), base(base) {}
+    };
+
+    struct StaticTopTreeNode {
+        array<int, 3> family;
+        int size;
+        Operation op;
+        Path path;
+        Point point;
+
+        StaticTopTreeNode() : family{-1, -1, -1}, size(0), op(NA) {}
     };
 
     int root, nodes;
     vector<StaticTopTreeNode> STT;
-    vector<Path> dp_path;
-    vector<Point> dp_point;
-    vector<vector<int>> adj_list;
     vector<int> vals;
 
-    StaticTopTree(int n, vector<vector<int>> &adj_list, const vector<int> &values) : root(-1), nodes(n), STT(4 * n),
-                                                                                     dp_path(4 * n), dp_point(4 * n),
-                                                                                     adj_list(adj_list), vals(values) {
+    StaticTopTree(int n, vector<vector<int>> &adj_list, const vector<int> &values) : root(-1), nodes(n), STT(4 * n), vals(values) {
+        vector<int> heavy(n, -1);
         auto hld = [&](auto &&self, int v = 0) -> int {
             int subtree_size = 1, largest = 0;
             for (int &u : adj_list[v]) {
@@ -65,13 +64,45 @@ struct StaticTopTree {
                 subtree_size += size;
                 if (largest < size) {
                     largest = size;
+                    heavy[v] = u;
                     swap(u, adj_list[v][0]);
                 }
             }
             return subtree_size;
         };
         hld(hld);
-        dfs(root = build_compress(0).first);
+
+        auto build = [&](auto &&self, vector<int> &clusters, int l, int r, Operation o) -> int {
+            if (l + 1 == r) return clusters[l];
+
+            int sum = 0;
+            for (int i = l; i < r; i++) sum += STT[clusters[i]].size;
+
+            int m = r - 1;
+            for (int i = l, s = 0; i < m; i++) {
+                s += STT[clusters[i]].size;
+                if (2 * s >= sum) {
+                    m = i + 1;
+                    break;
+                }
+            }
+
+            return node(self(self, clusters, l, m, o), self(self, clusters, m, r, o), o);
+        };
+
+        auto dfs = [&](auto &&self, int v = 0) -> int {
+            vector<int> path_clusters;
+            for (int u = v; ~u; u = heavy[u]) {
+                vector<int> point_clusters;
+                for (int i = 1; i < adj_list[u].size(); i++) point_clusters.emplace_back(node(self(self, adj_list[u][i]), -1, Edge));
+
+                int l = -1;
+                if (!point_clusters.empty()) l = build(build, point_clusters, 0, point_clusters.size(), Rake);
+                path_clusters.emplace_back(node(l, -1, !~l ? LeafVertex : InnerVertex, u));
+            }
+            return build(build, path_clusters, 0, path_clusters.size(), Compress);
+        };
+        root = dfs(dfs);
     }
 
     int node(int l, int r, Operation o, int i = -1) {
@@ -80,51 +111,14 @@ struct StaticTopTree {
         STT[i].op = o;
         if (~l) STT[l].family[2] = i;
         if (~r) STT[r].family[2] = i;
+
+        if (o == LeafVertex) STT[i].size = 1;
+        else if (o == InnerVertex) STT[i].size = STT[l].size + 1;
+        else if (o == Edge) STT[i].size = STT[l].size;
+        else STT[i].size = STT[l].size + STT[r].size;
+
+        push(i);
         return i;
-    }
-
-    pair<int, int> build(vector<pair<int, int>> &path, Operation o) {
-        if (path.size() == 1) return path[0];
-
-        int total = 0;
-        for (auto [i, s] : path) total += s;
-        vector<pair<int, int>> pl, pr;
-        for (auto [i, s] : path) {
-            if (s < total) pl.emplace_back(i, s);
-            else pr.emplace_back(i, s);
-            total -= 2 * s;
-        }
-
-        if (pl.empty()) return build(pr, o);
-        if (pr.empty()) return build(pl, o);
-        auto [l, sl] = build(pl, o);
-        auto [r, sr] = build(pr, o);
-        return {node(l, r, o), sl + sr};
-    }
-
-    pair<int, int> build_vertex(int v) {
-        auto [l, s] = build_rake(v);
-        return {node(l, -1, !~l ? LeafVertex : InnerVertex, v), s + 1};
-    }
-
-    pair<int, int> build_edge(int v) {
-        auto [l, s] = build_compress(v);
-        return {node(l, -1, Edge), s};
-    }
-
-    pair<int, int> build_rake(int v) {
-        vector<pair<int, int>> path;
-        for (int u : adj_list[v])
-            if (u != adj_list[v][0]) path.emplace_back(build_edge(u));
-        if (path.empty()) return {-1, 0};
-        return build(path, Rake);
-    }
-
-    pair<int, int> build_compress(int v) {
-        vector<pair<int, int>> path;
-        path.emplace_back(build_vertex(v));
-        while (!adj_list[v].empty()) path.emplace_back(build_vertex(v = adj_list[v][0]));
-        return build(path, Compress);
     }
 
     Path leaf(int i) {
@@ -151,43 +145,33 @@ struct StaticTopTree {
         auto [l, r, p] = STT[i].family;
         switch (STT[i].op) {
             case LeafVertex: {
-                dp_path[i] = leaf(i);
+                STT[i].path = leaf(i);
                 return;
             }
             case InnerVertex: {
-                dp_path[i] = inner(i, dp_point[l]);
+                STT[i].path = inner(i, STT[l].point);
                 return;
             }
             case Edge: {
-                dp_point[i] = edge(dp_path[l]);
+                STT[i].point = edge(STT[l].path);
                 return;
             }
             case Rake: {
-                dp_point[i] = rake(dp_point[l], dp_point[r]);
+                STT[i].point = rake(STT[l].point, STT[r].point);
                 return;
             }
             case Compress: {
-                dp_path[i] = compress(dp_path[l], dp_path[r]);
+                STT[i].path = compress(STT[l].path, STT[r].path);
                 return;
             }
             default: return;
         }
     }
 
-    void dfs(int i) {
-        auto [l, r, p] = STT[i].family;
-        if (~l) dfs(l);
-        if (~r) dfs(r);
-        push(i);
-    }
-
-    long long dp(int i) {
-        auto val = max(dp_path[root].m.subpath, dp_path[root].aggregate);
+    long long query(int i) {
+        auto val = max(STT[root].path.m.subpath, STT[root].path.aggregate);
         vals[i] = 0;
-        while (~i) {
-            push(i);
-            i = STT[i].family[2];
-        }
+        for (; ~i; i = STT[i].family[2]) push(i);
         return val;
     }
 };
@@ -211,22 +195,19 @@ int main() {
         adj_list[v - 1].emplace_back(u - 1);
     }
 
-    vector<vector<int>> adj_list_tree(n);
+    vector<vector<int>> dag(n);
     auto dfs = [&](auto &&self, int v = 0, int prev = -1) -> void {
         for (int u : adj_list[v])
             if (u != prev) {
-                adj_list_tree[v].emplace_back(u);
+                dag[v].emplace_back(u);
                 self(self, u, v);
             }
     };
     dfs(dfs);
 
-    StaticTopTree stt(n, adj_list_tree, values);
-    vector<long long> v(n);
-    for (int d = 0; d < n; d++) v[d] = stt.dp(d);
-
+    StaticTopTree stt(n, dag, values);
     pair<long long, int> p{0, -n};
     auto &[val, day] = p;
-    for (int d = 0; d < n; d++) p = max(p, {v[d], -d});
+    for (int d = 0; d < n; d++) p = max(p, {stt.query(d), -d});
     cout << val << " " << -day;
 }
