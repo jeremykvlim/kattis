@@ -1,6 +1,175 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+struct PURQSegmentTree {
+    struct Monoid {
+        pair<long long, int> v1, v2;
+
+        Monoid() : v1({1e18, -1}), v2({1e18, -1}) {}
+
+        auto & operator=(const pair<pair<long long, long long>, int> &v) {
+            v1 = {v.first.first, v.second};
+            v2 = {v.first.second, v.second};
+            return *this;
+        }
+
+        auto & operator+=(const Monoid &monoid) {
+            v1 = min(v1, monoid.v1);
+            v2 = min(v2, monoid.v2);
+            return *this;
+        }
+
+        friend auto operator+(Monoid ml, const Monoid &mr) {
+            return ml += mr;
+        }
+    };
+
+    int n;
+    vector<Monoid> ST;
+
+    void pull(int i) {
+        ST[i] = ST[i << 1] + ST[i << 1 | 1];
+    }
+
+    void build() {
+        for (int i = n - 1; i; i--) pull(i);
+    }
+
+    void point_update(int i, const pair<long long, long long> &v) {
+        for (ST[i += n] = {v, i}; i > 1; i >>= 1) pull(i >> 1);
+    }
+
+    Monoid range_query(int l, int r) {
+        Monoid ml, mr;
+        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+            if (l & 1) ml = ml + ST[l++];
+            if (r & 1) mr = ST[--r] + mr;
+        }
+
+        return ml + mr;
+    }
+
+    auto & operator[](int i) {
+        return ST[i];
+    }
+
+    PURQSegmentTree(int n, const vector<pair<long long, long long>> &a) : n(n), ST(2 * n) {
+        for (int i = 0; i < a.size(); i++) ST[i + n] = {a[i], i};
+        build();
+    }
+};
+
+struct SegmentTreeBeats {
+    struct Monoid {
+        long long xl, xr;
+        pair<long long, int> inactive, delta;
+
+        Monoid() : xl(-1e18), xr(-1e18), inactive({1e18, -1}), delta({1e18, -1}) {}
+
+        auto & operator=(const pair<long long, int> &v) {
+            inactive = v;
+            delta = {inactive.first - xr, inactive.second};
+            return *this;
+        }
+
+        auto & operator+=(const long long &v) {
+            xl = xr = v;
+            delta = {inactive.first - xr, inactive.second};
+            return *this;
+        }
+
+        auto & operator+=(const Monoid &monoid) {
+            xl = min(xl, monoid.xl);
+            xr = max(xr, monoid.xr);
+            inactive = min(inactive, monoid.inactive);
+            delta = min(delta, monoid.delta);
+            return *this;
+        }
+
+        friend auto operator+(Monoid ml, const Monoid &mr) {
+            return ml += mr;
+        }
+    };
+
+    int n;
+    vector<Monoid> ST;
+    vector<long long> lazy;
+
+    int midpoint(int l, int r) {
+        int i = 1 << __lg(r - l);
+        return min(l + i, r - (i >> 1));
+    }
+
+    void pull(int i) {
+        ST[i] = ST[i << 1] + ST[i << 1 | 1];
+    }
+
+    void build() {
+        for (int i = n - 1; i; i--) pull(i);
+    }
+
+    void apply(int i, const long long &v) {
+        ST[i] += v;
+        if (i < n) lazy[i] = max(lazy[i], v);
+    }
+
+    void push(int i) {
+        if (lazy[i] != -1e18) {
+            apply(i << 1, lazy[i]);
+            apply(i << 1 | 1, lazy[i]);
+            lazy[i] = -1e18;
+        }
+    }
+
+    void point_update(int pos, const long long &v) {
+        point_update(1, pos, v, 0, n);
+    }
+
+    void point_update(int i, int pos, const long long &v, int l, int r) {
+        if (l + 1 == r) {
+            ST[i] = {v, pos};
+            return;
+        }
+
+        push(i);
+
+        int m = midpoint(l, r);
+        if (pos < m) point_update(i << 1, pos, v, l, m);
+        else point_update(i << 1 | 1, pos, v, m, r);
+
+        pull(i);
+    }
+
+    void range_update(int l, int r, const long long &v) {
+        range_update(1, l, r, v, 0, n);
+    }
+
+    void range_update(int i, int ql, int qr, const long long &v, int l, int r) {
+        if (qr <= l || r <= ql || ST[i].xl >= v) return;
+        if (ql <= l && r <= qr && ST[i].xr <= v) {
+            apply(i, v);
+            return;
+        }
+
+        push(i);
+
+        int m = midpoint(l, r);
+        range_update(i << 1, ql, qr, v, l, m);
+        range_update(i << 1 | 1, ql, qr, v, m, r);
+
+        pull(i);
+    }
+
+    auto & operator[](int i) {
+        return ST[i];
+    }
+
+    SegmentTreeBeats(int n, const vector<long long> &a) : n(n), ST(2 * n), lazy(n, -1e18) {
+        for (int i = 0; i < a.size(); i++) ST[i + n] = {a[i], i};
+        build();
+    }
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -12,123 +181,62 @@ int main() {
     for (auto &[t, x] : meteors) cin >> t >> x;
     sort(meteors.begin(), meteors.end());
 
-    vector<long long> t_20;
-    vector<vector<long long>> x_20;
-    for (int i = 0; i < n;) {
-        auto t = meteors[i].first;
-        vector<long long> x;
-        for (; i < n && meteors[i].first == t; i++) x.emplace_back(meteors[i].second * 20);
-        sort(x.begin(), x.end());
-        t_20.emplace_back(t * 20);
-        x_20.emplace_back(x);
+    vector<pair<long long, long long>> endpoints(n);
+    for (int i = 0; i < n; i++) {
+        auto [t, x] = meteors[i];
+        endpoints[i] = {x - t, x + t};
     }
 
-    auto feasible = [&](auto d_20) {
-        set<array<long long, 3>> s;
-        priority_queue<array<long long, 3>, vector<array<long long, 3>>, greater<>> pq;
-        vector<set<array<long long, 3>>::iterator> its;
+    vector<pair<int, int>> intervals;
+    vector<int> pos(n);
+    for (int l = 0, r = 1; l < n; l = r++) {
+        for (; r < n && meteors[l].first == meteors[r].first; r++);
+        intervals.emplace_back(l, r);
+        for (int k = l; k < r; k++) pos[k] = intervals.size() - 1;
+    }
 
-        int count = 0;
-        auto time = 0LL;
-        auto add = [&](auto it_l, auto it_r) {
-            auto [xl, tl, l] = *it_l;
-            auto [xr, tr, r] = *it_r;
-            pq.push({((xr + tr) - (xl - tl)) / 2, l, r});
+    int m = intervals.size();
+    vector<long long> l_min(m, LLONG_MAX), r_min(m, LLONG_MAX);
+    for (int i = 0; i < n; i++) {
+        int p = pos[i];
+        l_min[p] = min(l_min[p], endpoints[i].first);
+        r_min[p] = min(r_min[p], endpoints[i].second);
+    }
+
+    vector<bool> visited(n, false);
+    PURQSegmentTree st(n, endpoints);
+    SegmentTreeBeats st_l(bit_ceil((unsigned) m), l_min), st_r(bit_ceil((unsigned) m), r_min);
+    auto dist = LLONG_MAX, sweep = 2 * st[1].v2.first;
+    while (dist > sweep) {
+        auto update = [&](int i) {
+            if (visited[i]) return;
+            visited[i] = true;
+            st.point_update(i, {1e18, 1e18});
+            int p = pos[i];
+            auto [l, r] = intervals[p];
+            auto [v1, v2] = st.range_query(l, r);
+            st_l.point_update(p, v1.first);
+            st_l.range_update(0, p + 1, endpoints[i].first);
+            st_r.point_update(p, v2.first);
+            st_r.range_update(p, m, endpoints[i].second);
+            dist = min(dist, max(sweep, -2 * endpoints[i].first));
         };
 
-        auto left = [&](const array<long long, 3> &a, long long t) {
-            return a[0] - (t - a[1]);
-        };
-
-        auto right = [&](const array<long long, 3> &a, long long t) {
-            return a[0] + (t - a[1]);
-        };
-
-        its.emplace_back(s.insert({0, 0, count++}).first);
-        for (int i = 0; i < t_20.size(); i++) {
-            auto T = t_20[i];
-            while (!pq.empty() && pq.top()[0] <= T) {
-                auto [t, pos_l, pos_r] = pq.top();
-                pq.pop();
-
-                auto it_l = its[pos_l], it_r = its[pos_r];
-                if (it_l == s.end() || it_r == s.end()) continue;
-
-                auto temp = next(it_l);
-                if (temp == s.end() || (*temp)[2] != (*it_r)[2]) continue;
-
-                t = max(t, time);
-                auto l = left(*it_l, t), r = right(*it_r, t);
-                auto a = (it_l == s.begin() ? s.end() : prev(it_l)), b = next(it_r);
-                its[(*it_l)[2]] = its[(*it_r)[2]] = s.end();
-                s.erase(it_l);
-                s.erase(it_r);
-
-                its.emplace_back(s.insert(b, {l + (r - l) / 2, t - (r - l) / 2, count++}));
-                if (a != s.end()) add(a, its.back());
-                if (b != s.end()) add(its.back(), b);
-                time = t;
-            }
-
-            auto xl0 = x_20[i][0] - d_20, xr0 = x_20[i][0] + d_20;
-            auto cut = [&]() -> bool {
-                if (s.empty()) return false;
-                auto it_l = s.lower_bound({xl0, 0, LLONG_MIN});
-                if (it_l != s.begin()) {
-                    auto temp = prev(it_l);
-                    if (xl0 < right(*temp, T)) it_l = temp;
-                }
-
-                while (it_l != s.end() && right(*it_l, T) <= xl0) it_l++;
-                if (it_l == s.end() || left(*it_l, T) >= xr0) return true;
-
-                auto it_r = it_l;
-                while (it_r != s.end() && left(*it_r, T) < xr0) it_r++;
-
-                auto l = left(*it_l, T), r = right(*prev(it_r), T);
-                auto a = (it_l == s.begin() ? s.end() : prev(it_l)), b = it_r;
-
-                for (auto k = it_l; k != it_r; k++) its[(*k)[2]] = s.end();
-                s.erase(it_l, it_r);
-
-                if (xl0 > l) {
-                    its.emplace_back(s.insert(b, {l + (xl0 - l) / 2, T - (xl0 - l) / 2, count++}));
-                    auto p = (its.back() == s.begin() ? s.end() : prev(its.back())), q = next(its.back());
-                    if (p != s.end()) add(p, its.back());
-                    if (q != s.end()) add(its.back(), q);
-                }
-                if (xr0 < r) {
-                    its.emplace_back(s.insert(b, {xr0 + (r - xr0) / 2, T - (r - xr0) / 2, count++}));
-                    auto p = (its.back() == s.begin() ? s.end() : prev(its.back())), q = next(its.back());
-                    if (p != s.end()) add(p, its.back());
-                    if (q != s.end()) add(its.back(), q);
-                }
-                if (xl0 < l && xr0 > r && a != s.end() && b != s.end()) add(a, b);
-                return !s.empty();
-            };
-
-            for (int j = 1; j < x_20[i].size(); j++) {
-                auto xl1 = x_20[i][j] - d_20, xr1 = x_20[i][j] + d_20;
-                if (xl1 <= xr0) xr0 = max(xr0, xr1);
-                else {
-                    if (!cut()) return false;
-                    tie(xl0, xr0) = tie(xl1, xr1);
-                }
-            }
-            if (!cut()) return false;
-            time = T;
+        for (;;) {
+            if (2 * st[1].v2.first <= sweep) update(st[1].v2.second);
+            else if (st_l[1].delta.first <= sweep) {
+                int p = st_l[1].delta.second;
+                auto [l, r] = intervals[p];
+                auto [v1, v2] = st.range_query(l, r);
+                update(v1.second);
+            } else if (st_r[1].delta.first <= sweep) {
+                int p = st_r[1].delta.second;
+                auto [l, r] = intervals[p];
+                auto [v1, v2] = st.range_query(l, r);
+                update(v2.second);
+            } else break;
         }
-        return !s.empty();
-    };
-
-    long long l = 0, r = 0, m;
-    for (auto [t, x] : meteors) r = max(r, t + abs(x));
-    r *= 10;
-    while (l + 1 < r) {
-        m = l + (r - l) / 2;
-
-        if (feasible(2 * m)) l = m;
-        else r = m;
+        sweep = min({2 * st[1].v2.first, st_l[1].delta.first, st_r[1].delta.first});
     }
-    cout << fixed << setprecision(1) << (feasible(2 * l + 1) ? r : l) / 10.;
+    cout << dist / 2 << (dist & 1 ? ".5" : ".0");
 }
