@@ -25,7 +25,7 @@ struct SegmentTree {
     vector<Monoid> ST;
     vector<array<long long, 4>> lazy;
 
-    SegmentTree(int n) : n(n), ST(2 * n), lazy(2 * n, {0, 0, 0, 0}) {}
+    SegmentTree(int n) : n(n), ST(2 * n), lazy(n, {0, 0, 0, 0}) {}
 
     int midpoint(int l, int r) {
         int i = 1 << __lg(r - l);
@@ -46,8 +46,10 @@ struct SegmentTree {
         ST[i].sums[b] += c0 * (r - l) + c1 * sum_i;
         ST[i].sums[b + 2] += c0 * sum_i + c1 * (sum_of_sq(r) - sum_of_sq(l));
         ST[i].sums[b + 4] += c0 + c1 * (l + 1);
-        lazy[i][b] += c0;
-        lazy[i][b + 2] += c1;
+        if (i < n) {
+            lazy[i][b] += c0;
+            lazy[i][b + 2] += c1;
+        }
     }
 
     void push(int i, int l, int r) {
@@ -113,7 +115,7 @@ struct SegmentTree {
     void prefix_query(int i, int l, int r, long long c, long long extra_v, long long extra_h, long long v, long long h, long long base,
                       long long &sum_v, long long &sum_h, long long &sum_both, array<long long, 4> &a) {
         if (l + 1 == r) {
-            auto cost = sum_both + ST[i].sums[6] + extra_v * (sum_h + ST[i].sums[1]) + extra_h * (sum_v + ST[i].sums[0]) + 
+            auto cost = sum_both + ST[i].sums[6] + extra_v * (sum_h + ST[i].sums[1]) + extra_h * (sum_v + ST[i].sums[0]) +
                         (base - (v + extra_v) * (h + extra_h)) * (l + 1);
             if (c >= cost) {
                 sum_v += ST[i].sums[0];
