@@ -369,11 +369,15 @@ struct ConvexHull3D {
         ForwardStar list;
         vector<int> state;
         vector<bool> invalid;
+        vector<pair<Point3D<T>, int>> planes;
         auto add_face = [&](int ca, int ab, int bc) {
             int i = faces.size();
             faces.push_back({ca, ab, bc});
             valid_faces.emplace_back(i);
             edge_face[ca] = edge_face[ab] = edge_face[bc] = i;
+            auto [a, b, c] = face_vertices(i);
+            planes.emplace_back(cross(points[a], points[b], points[c]), a);
+
             s.emplace(i);
             list.extend();
             state.emplace_back(0);
@@ -384,9 +388,13 @@ struct ConvexHull3D {
         add_face(9, 6, 10);
         add_face(11, 3, 4);
 
+        auto face_volume = [&](int f, int p) {
+            auto [normal, a] = planes[f];
+            return dot(normal, points[p] - points[a]);
+        };
+
         auto face_visible_from_point = [&](int f, int d) -> bool {
-            auto [a, b, c] = face_vertices(f);
-            return sgn(signed_volume_of_parallelepiped(points[a], points[b], points[c], points[d])) > 0;
+            return sgn(face_volume(f, d)) > 0;
         };
 
         vector<int> conflict_points;
@@ -406,13 +414,12 @@ struct ConvexHull3D {
             if (state[v] == 1 || !~list.head[v]) continue;
 
             auto pivot = [&]() {
-                auto [a, b, c] = face_vertices(v);
-                T prev = numeric_limits<T>::lowest();
+                T prev = 0;
                 int p = -1;
                 for (int i = list.head[v]; ~i; i = list.next[i]) {
                     int d = conflict_points[i];
-                    auto vol = signed_volume_of_parallelepiped(points[a], points[b], points[c], points[d]);
-                    if (prev < vol) {
+                    auto vol = face_volume(v, d);
+                    if (p < 0 || prev < vol) {
                         prev = vol;
                         p = d;
                     }
