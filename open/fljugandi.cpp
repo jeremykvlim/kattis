@@ -386,10 +386,8 @@ struct PowerTriangulation {
 
                 visited_t[i] = p;
                 cavity.emplace_back(i);
-                for (int j : adj_list[i]) {
+                for (int j : adj_list[i])
                     if (j != -1 && triangles[j].valid && visited_t[j] != p) q.emplace(j);
-                    if (j != -1 && visited_t[j] == p) q.emplace(j);
-                }
             }
             if (cavity.empty()) continue;
 
@@ -599,15 +597,13 @@ int main() {
         bool blocked = false;
         vector<int> active;
         for (int i = 0; i < n; i++)
-            if (radius[i]) {
+            if (radius[i] > h) {
                 active.emplace_back(i);
-
-                if (radius[i] > h)
-                    if (euclidean_dist(coords[i], start) < radius[i] - h ||
-                        euclidean_dist(coords[i], end) < radius[i] - h) {
-                        blocked = true;
-                        break;
-                    }
+                if (euclidean_dist(coords[i], start) < radius[i] - h ||
+                    euclidean_dist(coords[i], end) < radius[i] - h) {
+                    blocked = true;
+                    break;
+                }
             }
 
         if (blocked) r = mid;
