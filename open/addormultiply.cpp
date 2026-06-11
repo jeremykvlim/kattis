@@ -540,15 +540,15 @@ int main() {
         if (!(i & 1)) d[i / 2] = s[i] - '0';
         else op[i / 2] = s[i] == '*';
 
-    PURQSegmentTree st(n, [&]{
-                               vector<pair<int, bool>> a(n);
-                               for (int i = 0; i < n; i++) a[i] = {d[i], op[i]};
-                               return a;
-                           }()
+    PURQSegmentTree st(bit_ceil((unsigned) n), [&]{
+                                                    vector<pair<int, bool>> a(n);
+                                                    for (int i = 0; i < n; i++) a[i] = {d[i], op[i]};
+                                                    return a;
+                                                }()
     );
 
     bool a = false;
-    auto v = st.range_query(0, n).total[a];
+    auto v = st[1].total[a];
     cout << v << "\n";
     while (m--) {
         char t;
@@ -577,6 +577,6 @@ int main() {
             st.point_update(i, {d[i], op[i]});
         } else a = !a;
 
-        cout << (v = st.range_query(0, n).total[a]) << "\n";
+        cout << (v = st[1].total[a]) << "\n";
     }
 }
