@@ -201,7 +201,7 @@ int main() {
                 if (((u > v) ^ invert[i])) return l <= j && j <= r;
                 else return j < l || r < j;
             };
-            auto [value, i] = st2.range_query(0, n);
+            auto [value, i] = st2[1];
             if (value <= m) break;
 
             int l = 2 * m - 1, r = 0;
