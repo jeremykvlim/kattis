@@ -1,28 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct Hash {
-    template <typename T>
-    static inline void combine(size_t &h, const T &v) {
-        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
-    }
-
-    template <typename T>
-    size_t operator()(const T &v) const {
-        if constexpr (requires { tuple_size<T>::value; })
-            return apply([](const auto &...e) {
-                size_t h = 0;
-                (combine(h, e), ...);
-                return h;
-            }, v);
-        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
-            size_t h = 0;
-            for (const auto &e : v) combine(h, e);
-            return h;
-        } else return hash<T>{}(v);
-    }
-};
-
 template <typename T>
 bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
     return fabs(v1 - v2) <= epsilon;
@@ -342,7 +320,10 @@ struct PowerTriangulation {
 
     void bowyer_watson(const vector<int> &order) {
         int n = points.size(), k = 0;
+        deque<int> q;
+        vector<int> cavity;
         vector<int> next(n, -1), visited_t(1, -1), visited_v1(n, -1), visited_v2(n, -1), indices(n, -1);
+        vector<pair<int, int>> boundary_edges, boundary_triangles;
         for (int p : order) {
             if (visited_t.size() < triangles.size()) visited_t.resize(triangles.size(), -1);
 
@@ -369,12 +350,12 @@ struct PowerTriangulation {
                     }
                 }
 
-            vector<int> cavity;
-            queue<int> q;
-            q.emplace(k);
+            cavity.clear();
+            q.clear();
+            q.emplace_back(k);
             while (!q.empty()) {
                 int i = q.front();
-                q.pop();
+                q.pop_front();
 
                 auto in_circle = [&](int a, int b, int c, int d) {
                     return point_in_circumcircle<U>({{{points[a], a}, {points[b], b}, {points[c], c}}}, {points[d], d},
@@ -387,11 +368,12 @@ struct PowerTriangulation {
                 visited_t[i] = p;
                 cavity.emplace_back(i);
                 for (int j : adj_list[i])
-                    if (j != -1 && triangles[j].valid && visited_t[j] != p) q.emplace(j);
+                    if (j != -1 && triangles[j].valid && visited_t[j] != p) q.emplace_back(j);
             }
             if (cavity.empty()) continue;
 
-            vector<pair<int, int>> boundary_edges, boundary_triangles;
+            boundary_edges.clear();
+            boundary_triangles.clear();
             for (int i : cavity)
                 for (int e = 0; e < 3; e++) {
                     int j = adj_list[i][e];
@@ -419,12 +401,12 @@ struct PowerTriangulation {
 
                     next[u] = v;
                     indices[u] = boundary_edges.size() - 1;
-                    q.emplace(u);
+                    q.emplace_back(u);
                 }
 
             while (!q.empty()) {
                 int s = q.front();
-                q.pop();
+                q.pop_front();
 
                 if (visited_v1[s] != p || visited_v2[s] == p) continue;
 
@@ -433,27 +415,25 @@ struct PowerTriangulation {
                     visited_v2[t] = p;
                     auto [u, v] = boundary_edges[indices[t]];
 
-                    auto edge_id = [&](const auto &triangle, const auto &edge) {
-                        auto [a, b, c, _] = triangle;
-                        if (minmax(b, c) == edge) return 0;
-                        if (minmax(c, a) == edge) return 1;
-                        if (minmax(a, b) == edge) return 2;
-                        return -1;
-                    };
-
-                    int a = u, b = v, c = p;
-                    if (sgn(cross(points[a], points[b], points[c])) == -1) swap(b, c);
-                    triangles.emplace_back(a, b, c, true);
+                    int uv, vp = 0, pu;
+                    if (sgn(cross(points[u], points[v], points[p])) == -1) {
+                        triangles.emplace_back(u, p, v, true);
+                        uv = 1;
+                        pu = 2;
+                    } else {
+                        triangles.emplace_back(u, v, p, true);
+                        uv = 2;
+                        pu = 1;
+                    }
                     adj_list.push_back({-1, -1, -1});
 
-                    int uv = edge_id(triangles.back(), minmax(u, v)), vp = edge_id(triangles.back(), minmax(v, p)), pu = edge_id(triangles.back(), minmax(p, u));
                     k = triangles.size() - 1;
                     auto [i, e] = boundary_triangles[indices[t]];
 
-                    if (i != -1 && visited_t[i] != p && triangles[i].valid && edge_id(triangles[i], minmax(u, v)) != -1) {
+                    if (i != -1 && visited_t[i] != p && triangles[i].valid) {
                         adj_list[k][uv] = i;
                         if (e != -1) adj_list[i][e] = k;
-                    } else adj_list[k][uv] = -1;
+                    }
 
                     if (j != -1) {
                         adj_list[j][prev_vp] = k;
@@ -480,42 +460,33 @@ struct PowerTriangulation {
 
     void build_power_diagram() {
         int t = triangles.size();
-
-        vector<int> ids(t);
-        unordered_map<Point<U>, int, Hash> indices;
-        auto add_vertex = [&](auto p) -> int {
-            if (indices.count(p)) return indices[p];
-            power_vertices.emplace_back(p);
-            vertex_match.emplace_back();
-            return indices[p] = power_vertices.size() - 1;
-        };
+        power_vertices.resize(t);
+        vertex_match.assign(t, -1);
 
         for (int i = 0; i < t; i++) {
             auto [a, b, c, _] = triangles[i];
-            ids[i] = add_vertex(circumcenter<U>({{{points[a], a}, {points[b], b}, {points[c], c}}}, [&](auto p) { return weights[p.second]; }));
+            power_vertices[i] = circumcenter<U>({{{points[a], a}, {points[b], b}, {points[c], c}}}, [&](auto p) { return weights[p.second]; });
         }
-
-        unordered_set<pair<int, int>, Hash> seen;
-        auto add_edge = [&](int i, int j, int k) {
-            auto [p, q] = minmax(i, j);
-            vertex_match[p] = vertex_match[q] = k;
-            if (!seen.count({p, q})) {
-                seen.emplace(p, q);
-                power_edges.emplace_back(power_vertices[p], power_vertices[q]);
-                edge_match.emplace_back(k);
-            }
-        };
 
         for (int i = 0; i < t; i++)
             for (int e = 0; e < 3; e++) {
                 auto [u, v] = triangle_edge(i, e);
                 int j = adj_list[i][e];
-                if (j != -1) add_edge(ids[i], ids[j], min(u, v));
-                else {
+
+                if (j != -1) {
+                    if (i < j) {
+                        power_edges.emplace_back(power_vertices[i], power_vertices[j]);
+                        edge_match.emplace_back(min(u, v));
+                        vertex_match[i] = vertex_match[j] = min(u, v);
+                    }
+                } else {
                     auto [a, b] = power_bisector<U>(points[u], points[v], z[u], z[v]);
                     auto dir = b - a;
                     int p = !e ? triangles[i].a : (e == 1 ? triangles[i].b : triangles[i].c);
-                    add_edge(ids[i], sgn(dot((Point<U>) points[p] - a, dir)) == 1 ? add_vertex(a - (dir / 2)) : add_vertex(a + (dir / 2)), min(u, v));
+                    auto q = sgn(dot((Point<U>) points[p] - a, dir)) == 1 ? a - dir / 2 : a + dir / 2;
+
+                    power_edges.emplace_back(power_vertices[i], q);
+                    edge_match.emplace_back(vertex_match[i] = min(u, v));
                 }
             }
     }
