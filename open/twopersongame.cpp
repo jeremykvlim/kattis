@@ -24,26 +24,32 @@ struct Hash {
 };
 
 struct DisjointSets {
-    vector<int> sets, size;
+    vector<int> sets;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
+        }
+        return v;
     }
 
     bool unite(int u, int v) {
         int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            size[u_set] += size[v_set];
-            size[v_set] = 0;
-            return true;
-        }
-        return false;
+        if (u_set == v_set) return false;
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return true;
     }
 
-    DisjointSets(int n) : sets(n), size(n, 1) {
-        iota(sets.begin(), sets.end(), 0);
+    int size(int v) {
+        return -sets[find(v)];
     }
+
+    DisjointSets(int n) : sets(n, -1) {}
 };
 
 int main() {
@@ -81,9 +87,9 @@ int main() {
 
         int c0 = 0, c1 = 0, c2 = 0, c3 = 0;
         for (int i = 0; i < n; i++)
-            if (dsu.size[i]) {
-                int parity = ((dsu.size[i] >> 1) & 1) ^ (count[i] & 1);
-                if (!(dsu.size[i] & 1)) parity += 2;
+            if (dsu.find(i) == i) {
+                int s = dsu.size(i), parity = ((s >> 1) & 1) ^ (count[i] & 1);
+                if (!(s & 1)) parity += 2;
                 if (!parity) c0++;
                 else if (parity == 1) c1++;
                 else if (parity == 2) c2++;

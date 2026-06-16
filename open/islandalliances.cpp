@@ -5,21 +5,29 @@ struct DisjointSets {
     vector<int> sets;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            return true;
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
         }
-        return false;
+        return v;
     }
 
-    DisjointSets(int n) : sets(n) {
-        iota(sets.begin(), sets.end(), 0);
+    pair<int, int> unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set == v_set) return {u_set, -1};
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return {u_set, v_set};
     }
+
+    int size(int v) {
+        return -sets[find(v)];
+    }
+
+    DisjointSets(int n) : sets(n, -1) {}
 };
 
 int main() {
@@ -51,8 +59,11 @@ int main() {
         }
 
         cout << "APPROVE\n";
-        if (adj_list[a_set].size() < adj_list[b_set].size()) swap(a_set, b_set);
-        dsu.unite(a_set, b_set);
-        for (int v : adj_list[b_set]) adj_list[a_set].emplace(dsu.find(v));
+        auto [big, small] = dsu.unite(a_set, b_set);
+        for (int v : adj_list[small]) {
+            int v_set = dsu.find(v);
+            if (v_set != big) adj_list[big].emplace(v_set);
+        }
+        adj_list[small].clear();
     }
 }

@@ -24,26 +24,32 @@ struct FenwickTree {
 };
 
 struct DisjointSets {
-    vector<int> sets, size;
+    vector<int> sets;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            if (size[u_set] < size[v_set]) swap(u_set, v_set);
-            sets[v_set] = u_set;
-            size[u_set] += size[v_set];
-            return true;
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
         }
-        return false;
+        return v;
     }
 
-    DisjointSets(int n) : sets(n), size(n, 1) {
-        iota(sets.begin(), sets.end(), 0);
+    pair<int, int> unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set == v_set) return {u_set, -1};
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return {u_set, v_set};
     }
+
+    int size(int v) {
+        return -sets[find(v)];
+    }
+
+    DisjointSets(int n) : sets(n, -1) {}
 };
 
 int main() {
@@ -68,19 +74,19 @@ int main() {
     vector<vector<pair<int, int>>> sweep(n);
     for (int i : indices) {
         auto [u, v, w] = edges[i];
-        int u_set = dsu.find(u), v_set = dsu.find(v);
-        if (!dsu.unite(u, v)) continue;
+        auto [big, small] = dsu.unite(u, v);
+        if (small == -1) continue;
 
         base += w;
-        if (dsu.size[u_set] < dsu.size[v_set]) swap(u_set, v_set);
-        for (int r : members[v_set]) {
-            auto it = members[u_set].lower_bound(r);
-            if (it != members[u_set].begin()) sweep[r].emplace_back(*prev(it), i);
-            if (it != members[u_set].end()) sweep[*it].emplace_back(r, i);
+        for (int r : members[small]) {
+            auto it = members[big].lower_bound(r);
+            if (it != members[big].begin()) sweep[r].emplace_back(*prev(it), i);
+            if (it != members[big].end()) sweep[*it].emplace_back(r, i);
         }
-        members[u_set].insert(members[v_set].begin(), members[v_set].end());
-        members[v_set].clear();
+        members[big].insert(members[small].begin(), members[small].end());
+        members[small].clear();
     }
+
 
     vector<vector<pair<int, int>>> queries(n);
     for (int i = 0; i < Q; i++) {

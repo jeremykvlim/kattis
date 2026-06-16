@@ -8,28 +8,37 @@ struct DisjointSets {
     int find(int v) {
         if (seen[v] != t) {
             seen[v] = t;
-            return sets[v] = v;
+            sets[v] = -1;
+            return v;
         }
 
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
+        }
+        return v;
     }
 
     bool unite(int u, int v) {
         int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            return true;
-        }
-        return false;
+        if (u_set == v_set) return false;
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return true;
+    }
+
+    int size(int v) {
+        return -sets[find(v)];
     }
 
     void reset() {
         t++;
     }
 
-    DisjointSets(int n) : t(1), sets(n), seen(n, 0) {
-        iota(sets.begin(), sets.end(), 0);
-    }
+    DisjointSets(int n) : t(1), sets(n, -1), seen(n, 0) {}
 };
 
 int main() {

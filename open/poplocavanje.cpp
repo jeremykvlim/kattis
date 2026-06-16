@@ -152,21 +152,29 @@ struct DisjointSets {
     vector<int> sets;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            return true;
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
         }
-        return false;
+        return v;
     }
 
-    DisjointSets(int n) : sets(n) {
-        iota(sets.begin(), sets.end(), 0);
+    pair<int, int> unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set == v_set) return {u_set, -1};
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return {u_set, v_set};
     }
+
+    int size(int v) {
+        return -sets[find(v)];
+    }
+
+    DisjointSets(int n) : sets(n, -1) {}
 };
 
 int main() {
@@ -190,15 +198,18 @@ int main() {
         cout << n;
         exit(0);
     }
-    
+
     sort(matches.rbegin(), matches.rend());
     DisjointSets dsu(n + 1);
-    vector<int> pref(n + 1, 0);
+    vector<int> pref(n + 1, 0), rep(n + 1);
+    iota(rep.begin(), rep.end(), 0);
     for (auto [len, l, r] : matches)
-        for (int i = dsu.find(l); i < r; i = dsu.find(i + 1)) {
+        for (int i = rep[dsu.find(l)]; i < r; i = rep[dsu.find(i + 1)]) {
             pref[sa[i]]++;
             pref[sa[i] + len]--;
-            dsu.unite(i + 1, i);
+
+            auto [big, small] = dsu.unite(i + 1, i);
+            if (small != -1) rep[big] = max(rep[big], rep[small]);
         }
 
     for (int i = 1; i < n; i++) pref[i] += pref[i - 1];

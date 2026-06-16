@@ -5,21 +5,29 @@ struct DisjointSets {
     vector<int> sets;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            return true;
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
         }
-        return false;
+        return v;
     }
 
-    DisjointSets(int n) : sets(n) {
-        iota(sets.begin(), sets.end(), 0);
+    pair<int, int> unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set == v_set) return {u_set, -1};
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return {u_set, v_set};
     }
+
+    int size(int v) {
+        return -sets[find(v)];
+    }
+
+    DisjointSets(int n) : sets(n, -1) {}
 };
 
 int main() {
@@ -92,9 +100,8 @@ int main() {
 
     for (int i = 1; i <= k; i++)
         if (row[0][i] != row[1][i]) {
-            int r0_set = dsu.find(row[0][i]), r1_set = dsu.find(row[1][i]);
-            if (dsu.unite(row[0][i], row[1][i]))
-                if (!full_row[r1_set]) full_row[r0_set]= false;
+            auto [big, small] = dsu.unite(row[0][i], row[1][i]);
+            if (small != -1) full_row[big] = full_row[big] && full_row[small];
         }
 
     vector<bool> visited(n + 1, false);

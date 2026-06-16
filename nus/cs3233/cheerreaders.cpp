@@ -2,26 +2,33 @@
 using namespace std;
 
 struct DisjointSets {
-    vector<int> sets, size, prev;
+    vector<int> sets, value;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            size[u_set] += size[v_set];
-            prev[v] = v_set;
-            return true;
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
         }
-        return false;
+        return v;
     }
 
-    DisjointSets(int n) : sets(n), size(n, 1), prev(n, -1) {
-        iota(sets.begin(), sets.end(), 0);
+    pair<int, int> unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set == v_set) return {u_set, -1};
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        value[u_set] += value[v_set];
+        return {u_set, v_set};
     }
+
+    int size(int v) {
+        return -sets[find(v)];
+    }
+
+    DisjointSets(int n) : sets(n, -1), value(n, 1) {}
 };
 
 int main() {
@@ -40,10 +47,8 @@ int main() {
     DisjointSets dsu(2 * Q);
     set<array<int, 3>> intervals;
     auto merge = [&](int u, int v) {
-        if (dsu.unite(u, v)) {
-            int u_set = dsu.find(u), v_set = dsu.prev[v];
-            count += pairs(dsu.size[u_set]) - pairs(dsu.size[u_set] - dsu.size[v_set]) - pairs(dsu.size[v_set]);
-        }
+        auto [big, small] = dsu.unite(u, v);
+        if (small != -1) count += pairs(dsu.value[big]) - pairs(dsu.value[big] - dsu.value[small]) - pairs(dsu.value[small]);
     };
 
     auto add = [&](int l1, int r1) {
@@ -81,9 +86,10 @@ int main() {
             overlap = 1;
         }
 
-        count -= pairs(dsu.size[u]);
-        dsu.size[u] += r1 - l1 + 1 - overlap;
-        count += pairs(dsu.size[u]);
+        u = dsu.find(u);
+        count -= pairs(dsu.value[u]);
+        dsu.value[u] += r1 - l1 + 1 - overlap;
+        count += pairs(dsu.value[u]);
         intervals.insert({l1, r1, u});
         return u;
     };

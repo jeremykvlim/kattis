@@ -2,25 +2,32 @@
 using namespace std;
 
 struct DisjointSets {
-    vector<int> sets, size;
+    vector<int> sets;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
+        }
+        return v;
     }
 
     bool unite(int u, int v) {
         int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            size[u_set] += size[v_set];
-            return true;
-        }
-        return false;
+        if (u_set == v_set) return false;
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return true;
     }
 
-    DisjointSets(int n) : sets(n), size(n, 1) {
-        iota(sets.begin(), sets.end(), 0);
+    int size(int v) {
+        return -sets[find(v)];
     }
+
+    DisjointSets(int n) : sets(n, -1) {}
 };
 
 int main() {
@@ -75,8 +82,6 @@ int main() {
     }
 
     DisjointSets dsu(n);
-    vector<int> sets(n), size(n, 1);
-    iota(sets.begin(), sets.end(), 0);
     for (int i = 0; i < n; i++)
         if (!cycle[i] && !cycle[lover[i]]) dsu.unite(i, lover[i]);
 
@@ -84,7 +89,7 @@ int main() {
     for (int i = 0, i_set; i < n; i++)
         if (!cycle[i] && !visited[i_set = dsu.find(i)]) {
             visited[i_set] = true;
-            arrows += (dsu.size[i_set] + 1) / 2;
+            arrows += (dsu.size(i_set) + 1) / 2;
         }
 
     cout << arrows;

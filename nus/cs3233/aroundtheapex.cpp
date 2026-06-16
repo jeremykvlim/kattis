@@ -5,21 +5,29 @@ struct DisjointSets {
     vector<int> sets;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            return true;
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
         }
-        return false;
+        return v;
     }
 
-    DisjointSets(int n) : sets(n) {
-        iota(sets.begin(), sets.end(), 0);
+    pair<int, int> unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set == v_set) return {u_set, -1};
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return {u_set, v_set};
     }
+
+    int size(int v) {
+        return -sets[find(v)];
+    }
+
+    DisjointSets(int n) : sets(n, -1) {}
 };
 
 int main() {
@@ -72,16 +80,21 @@ int main() {
             for (int j = 0; j < m; j++) order.emplace_back(a[j], j);
             sort(order.rbegin(), order.rend());
 
-            vector<int> temp(m);
+            vector<int> temp(m), rep(m + 1);
+            iota(rep.begin(), rep.end(), 0);
+
             DisjointSets dsu(m + 1);
             set<pair<int, int>> s;
             for (auto [aj, j] : order) {
                 auto it1 = s.upper_bound({j, m});
 
-                int lj = max(l[j], it1 == s.begin() ? 0 : prev(it1)->second + 1), rj = min(r[j], it1 == s.end() ? m - 1 : it1->first - 1), k = dsu.find(rj + 1);
+                int lj = max(l[j], it1 == s.begin() ? 0 : prev(it1)->second + 1), rj = min(r[j], it1 == s.end() ? m - 1 : it1->first - 1), k = rep[dsu.find(rj + 1)];
                 temp[k - 1] = aj;
-                dsu.unite(k - 1, k);
-                if (lj + 1 > dsu.find(rj + 1)) {
+
+                auto [big, small] = dsu.unite(k - 1, k);
+                if (small != -1) rep[big] = min(rep[big], rep[small]);
+
+                if (lj + 1 > rep[dsu.find(rj + 1)]) {
                     auto it2 = s.lower_bound({lj, -1});
                     if (it2 != s.begin()) {
                         auto it3 = prev(it2);

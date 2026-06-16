@@ -27,25 +27,29 @@ struct DisjointSets {
     vector<int> sets;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
+        }
+        return v;
     }
 
     bool unite(int u, int v) {
         int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            return true;
-        }
-        return false;
+        if (u_set == v_set) return false;
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return true;
     }
 
-    void reroot() {
-        for (int i = 0; i < sets.size(); i++) sets[i] = sets[find(i)];
+    int size(int v) {
+        return -sets[find(v)];
     }
 
-    DisjointSets(int n) : sets(n) {
-        iota(sets.begin(), sets.end(), 0);
-    }
+    DisjointSets(int n) : sets(n, -1) {}
 };
 
 int main() {
@@ -128,7 +132,6 @@ int main() {
 
         if (!col_bombs.empty()) join();
     }
-    dsu.reroot();
 
     int stumps = 0;
     vector<vector<vector<int>>> stump_bombs(n, vector<vector<int>>(n));
@@ -136,10 +139,10 @@ int main() {
         for (int c = 0; c < n; c++)
             if (grid[r][c] == 'S') {
                 stumps++;
-                if (left[r][c] != -1 && c - left[r][c] <= R && grid[r][left[r][c]] == '*') stump_bombs[r][c].emplace_back(dsu.sets[indices[r][left[r][c]]]);
-                if (right[r][c] < n && right[r][c] - c <= R && grid[r][right[r][c]] == '*') stump_bombs[r][c].emplace_back(dsu.sets[indices[r][right[r][c]]]);
-                if (up[r][c] != -1 && r - up[r][c] <= R && grid[up[r][c]][c] == '*') stump_bombs[r][c].emplace_back(dsu.sets[indices[up[r][c]][c]]);
-                if (down[r][c] < n && down[r][c] - r <= R && grid[down[r][c]][c] == '*') stump_bombs[r][c].emplace_back(dsu.sets[indices[down[r][c]][c]]);
+                if (left[r][c] != -1 && c - left[r][c] <= R && grid[r][left[r][c]] == '*') stump_bombs[r][c].emplace_back(dsu.find(indices[r][left[r][c]]));
+                if (right[r][c] < n && right[r][c] - c <= R && grid[r][right[r][c]] == '*') stump_bombs[r][c].emplace_back(dsu.find(indices[r][right[r][c]]));
+                if (up[r][c] != -1 && r - up[r][c] <= R && grid[up[r][c]][c] == '*') stump_bombs[r][c].emplace_back(dsu.find(indices[up[r][c]][c]));
+                if (down[r][c] < n && down[r][c] - r <= R && grid[down[r][c]][c] == '*') stump_bombs[r][c].emplace_back(dsu.find(indices[down[r][c]][c]));
                 sort(stump_bombs[r][c].begin(), stump_bombs[r][c].end());
                 stump_bombs[r][c].erase(unique(stump_bombs[r][c].begin(), stump_bombs[r][c].end()), stump_bombs[r][c].end());
             }
@@ -172,10 +175,10 @@ int main() {
                 int count = 0;
 
                 vector<int> explode;
-                if (left[r][c] != -1 && c - left[r][c] <= R && grid[r][left[r][c]] == '*') explode.emplace_back(dsu.sets[indices[r][left[r][c]]]);
-                if (right[r][c] < n && right[r][c] - c <= R && grid[r][right[r][c]] == '*') explode.emplace_back(dsu.sets[indices[r][right[r][c]]]);
-                if (up[r][c] != -1 && r - up[r][c] <= R && grid[up[r][c]][c] == '*') explode.emplace_back(dsu.sets[indices[up[r][c]][c]]);
-                if (down[r][c] < n && down[r][c] - r <= R && grid[down[r][c]][c] == '*') explode.emplace_back(dsu.sets[indices[down[r][c]][c]]);
+                if (left[r][c] != -1 && c - left[r][c] <= R && grid[r][left[r][c]] == '*') explode.emplace_back(dsu.find(indices[r][left[r][c]]));
+                if (right[r][c] < n && right[r][c] - c <= R && grid[r][right[r][c]] == '*') explode.emplace_back(dsu.find(indices[r][right[r][c]]));
+                if (up[r][c] != -1 && r - up[r][c] <= R && grid[up[r][c]][c] == '*') explode.emplace_back(dsu.find(indices[up[r][c]][c]));
+                if (down[r][c] < n && down[r][c] - r <= R && grid[down[r][c]][c] == '*') explode.emplace_back(dsu.find(indices[down[r][c]][c]));
                 sort(explode.begin(), explode.end());
                 explode.erase(unique(explode.begin(), explode.end()), explode.end());
 

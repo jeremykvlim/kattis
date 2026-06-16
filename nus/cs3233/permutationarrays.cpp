@@ -437,32 +437,32 @@ constexpr unsigned long long MOD = 998244353;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
 struct DisjointSets {
-    vector<int> sets, size;
-    vector<vector<int>> perm;
+    vector<int> sets;
 
     int find(int v) {
-        if (sets[v] == v) return v;
-
-        int p = find(sets[v]);
-        auto temp = perm[v];
-        transform(perm[sets[v]].begin(), perm[sets[v]].end(), perm[v].begin(), [temp](int i) { return temp[i]; });
-        return sets[v] = p;
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            size[u_set] += size[v_set];
-            return true;
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
         }
-        return false;
+        return v;
     }
 
-    DisjointSets(int n, int m) : sets(n), size(n, 1), perm(n, vector<int>(m)) {
-        iota(sets.begin(), sets.end(), 0);
-        for (auto &p : perm) iota(p.begin(), p.end(), 0);
+    pair<int, int> unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set == v_set) return {u_set, -1};
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return {u_set, v_set};
     }
+
+    int size(int v) {
+        return -sets[find(v)];
+    }
+
+    DisjointSets(int n) : sets(n, -1) {}
 };
 
 int main() {
@@ -477,14 +477,17 @@ int main() {
     modint fact = 2;
     for (int i = 3; i <= n; i++) fact *= i;
 
-    DisjointSets dsu(2 * k + 1, n);
+    DisjointSets dsu(2 * k + 1);
     vector<int> id(m + 1, -1);
+    vector<vector<int>> perm(2 * k + 1, vector<int>(n)), members(2 * k + 1);
     id[0] = 0;
+    for (auto &p : perm) iota(p.begin(), p.end(), 0);
+    members[0].emplace_back(0);
     int sets = 1;
     auto set_id = [&](int i) -> int {
-        if (id[i] == -1) {
+        if (!~id[i]) {
             id[i] = sets++;
-            if (!i) m--;
+            members[id[i]].emplace_back(id[i]);
         }
         return id[i];
     };
@@ -517,26 +520,32 @@ int main() {
         int u = set_id(l - 1), v = set_id(r), u_set = dsu.find(u), v_set = dsu.find(v);
         if (u_set == v_set) {
             for (int i = 0; i < n; i++)
-                if (dsu.perm[v][i] != f[dsu.perm[u][i]]) {
+                if (perm[v][i] != f[perm[u][i]]) {
                     zero = true;
                     break;
                 }
         } else {
             vector<int> pu_inv(n), pv_inv(n), f_inv(n);
             for (int i = 0; i < n; i++) {
-                pu_inv[dsu.perm[u][i]] = i;
-                pv_inv[dsu.perm[v][i]] = i;
+                pu_inv[perm[u][i]] = i;
+                pv_inv[perm[v][i]] = i;
                 f_inv[f[i]] = i;
             }
 
-            int root = dsu.find(0);
-            if (v_set == root || (u_set != root && v_set != root && dsu.size[u_set] < dsu.size[v_set])) {
-                dsu.unite(v, u);
-                transform(dsu.perm[v].begin(), dsu.perm[v].end(), dsu.perm[u_set].begin(), [&](int f) { return pu_inv[f_inv[f]]; });
-            } else {
-                dsu.unite(u, v);
-                transform(dsu.perm[u].begin(), dsu.perm[u].end(), dsu.perm[v_set].begin(), [&](int i) { return pv_inv[f[i]]; });
+            auto [big, small] = dsu.unite(u, v);
+            vector<int> pos(n), temp(n);
+            if (small == v_set)
+                for (int i = 0; i < n; i++) pos[i] = pv_inv[f[perm[u][i]]];
+            else
+                for (int i = 0; i < n; i++) pos[i] = pu_inv[f_inv[perm[v][i]]];
+
+            for (int t : members[small]) {
+                for (int i = 0; i < n; i++) temp[i] = perm[t][pos[i]];
+                copy(temp.begin(), temp.end(), perm[t].begin());
+                members[big].emplace_back(t);
             }
+
+            members[small].clear();
             m--;
         }
 

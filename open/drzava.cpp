@@ -128,21 +128,29 @@ struct DisjointSets {
     vector<int> sets;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            return true;
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
         }
-        return false;
+        return v;
     }
 
-    DisjointSets(int n) : sets(n) {
-        iota(sets.begin(), sets.end(), 0);
+    pair<int, int> unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set == v_set) return {u_set, -1};
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return {u_set, v_set};
     }
+
+    int size(int v) {
+        return -sets[find(v)];
+    }
+
+    DisjointSets(int n) : sets(n, -1) {}
 };
 
 int main() {
@@ -164,25 +172,25 @@ int main() {
         m = l + (r - l) / 2;
 
         auto vaild = [&](auto d) {
-            DisjointSets dsu(n);
             vector<vector<bool>> dp(n, vector<bool>(k + 1, false));
             for (int i = 0; i < n; i++) dp[i][cities[i].second] = true;
 
+            DisjointSets dsu(n);
             for (int i = 0; i < n; i++)
                 for (int j = i + 1; j < n; j++) {
                     if (cities[j].first.x - cities[i].first.x > d) break;
                     if (euclidean_dist(cities[i].first, cities[j].first) > d) continue;
 
-                    int i_set = dsu.find(i), j_set = dsu.find(j);
-                    if (dsu.unite(i, j)) {
+                    auto [big, small] = dsu.unite(i, j);
+                    if (small != -1) {
                         vector<bool> temp(2 * k + 1, false);
                         for (int k1 = 0; k1 <= k; k1++)
-                            if (dp[i_set][k1])
+                            if (dp[big][k1])
                                 for (int k2 = 0; k2 <= k; k2++)
-                                    if (dp[j_set][k2]) temp[k1 + k2] = true;
+                                    if (dp[small][k2]) temp[k1 + k2] = true;
                         for (int k1 = 0; k1 <= 2 * k; k1++)
-                            if (temp[k1] || dp[j_set][k1 % k]) dp[i_set][k1 % k] = true;
-                        if (dp[i_set][0]) return true;
+                            if (temp[k1] || dp[small][k1 % k]) dp[big][k1 % k] = true;
+                        if (dp[big][0]) return true;
                     }
                 }
             return false;

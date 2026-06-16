@@ -9,14 +9,17 @@ public class ladice {
         int n = Integer.parseInt(input[0]), l = Integer.parseInt(input[1]);
         var dsu = new DisjointSets(l + 1);
         var count = new int[l + 1];
+
         while (n-- > 0) {
             var pair = br.readLine().split(" ");
-            int a = Integer.parseInt(pair[0]), b = Integer.parseInt(pair[1]), a_set = dsu.find(a), b_set = dsu.find(b);
+            int a = Integer.parseInt(pair[0]), b = Integer.parseInt(pair[1]);
 
-            if (dsu.unite(a, b)) count[a_set] += count[b_set];
-            if (count[a_set] == dsu.size[a_set]) pw.println("SMECE");
+            var p = dsu.unite(a, b);
+            int big = p.first(), small = p.second();
+            if (small != -1) count[big] += count[small];
+            if (count[big] == dsu.size(big)) pw.println("SMECE");
             else {
-                count[a_set]++;
+                count[big]++;
                 pw.println("LADICA");
             }
         }
@@ -24,31 +27,48 @@ public class ladice {
         pw.flush();
     }
 
+    record Pair<T extends Comparable<T>, U extends Comparable<U>>(T first, U second) implements Comparable<Pair<T, U>> {
+        @Override
+        public int compareTo(Pair<T, U> p) {
+            int cmp = first.compareTo(p.first);
+            return (cmp == 0) ? second.compareTo(p.second) : cmp;
+        }
+    }
+
     static class DisjointSets {
-        int[] sets, size;
+        int[] sets;
 
         DisjointSets(int n) {
             sets = new int[n];
-            size = new int[n];
-            for (int i = 0; i < n; i++) {
-                sets[i] = i;
-                size[i] = 1;
-            }
+            for (int i = 0; i < n; i++) sets[i] = -1;
         }
 
-        boolean unite(int u, int v) {
+        Pair<Integer, Integer> unite(int u, int v) {
             u = find(u);
             v = find(v);
-            if (u != v) {
-                sets[v] = u;
-                size[u] += size[v];
-                return true;
+            if (u == v) return new Pair<>(u, -1);
+
+            if (sets[u] > sets[v]) {
+                int temp = u;
+                u = v;
+                v = temp;
             }
-            return false;
+            sets[u] += sets[v];
+            sets[v] = u;
+            return new Pair<>(u, v);
+        }
+
+        int size(int v) {
+            return -sets[find(v)];
         }
 
         int find(int v) {
-            return sets[v] == v ? v : (sets[v] = find(sets[v]));
+            while (sets[v] >= 0) {
+                int p = sets[v];
+                if (sets[p] >= 0) sets[v] = sets[p];
+                v = p;
+            }
+            return v;
         }
     }
 }

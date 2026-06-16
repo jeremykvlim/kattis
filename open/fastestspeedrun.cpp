@@ -2,24 +2,32 @@
 using namespace std;
 
 struct DisjointSets {
-    vector<int> sets, parent;
+    vector<int> sets;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            parent[v_set] = sets[v_set] = u_set;
-            return true;
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
         }
-        return false;
+        return v;
     }
 
-    DisjointSets(int n) : sets(n), parent(n, -1) {
-        iota(sets.begin(), sets.end(), 0);
+    pair<int, int> unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set == v_set) return {u_set, -1};
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return {u_set, v_set};
     }
+
+    int size(int v) {
+        return -sets[find(v)];
+    }
+
+    DisjointSets(int n) : sets(n, -1) {}
 };
 
 template <typename T>
@@ -29,13 +37,15 @@ pair<T, vector<int>> edmonds_dense(int n, vector<vector<pair<int, T>>> adj_list_
     DisjointSets dsu(n);
     vector<T> cost(n, 0), loss(n, 0);
     vector<pair<int, int>> chosen_edge(n, {-1, -1});
-    vector<int> visited(n, 0);
+    vector<int> parent(n, -1), visited(n, 0), rep(n);
+    iota(rep.begin(), rep.end(), 0);
     vector<bool> cycle(n, false);
+
     stack<pair<vector<int>, vector<pair<int, int>>>> history;
     for (T len = 0;;) {
-        int root_set = dsu.find(root);
+        int root_set = rep[dsu.find(root)];
         for (int v = 0; v < n; v++)
-            if (v == dsu.find(v)) {
+            if (v == rep[dsu.find(v)]) {
                 cost[v] = v != root_set ? numeric_limits<T>::max() : 0;
                 chosen_edge[v] = {-1, -1};
             }
@@ -45,7 +55,7 @@ pair<T, vector<int>> edmonds_dense(int n, vector<vector<pair<int, T>>> adj_list_
             if (!adj_list_transpose[v].empty()) {
                 auto [u, w] = adj_list_transpose[v].back();
                 T c = w - loss[v];
-                int v_set = dsu.find(v);
+                int v_set = rep[dsu.find(v)];
                 if (cost[v_set] > c) {
                     cost[v_set] = c;
                     chosen_edge[v_set] = {u, v};
@@ -54,7 +64,7 @@ pair<T, vector<int>> edmonds_dense(int n, vector<vector<pair<int, T>>> adj_list_
         }
 
         for (int v = 0; v < n; v++)
-            if (v == dsu.find(v) && cost[v] == numeric_limits<T>::max()) return {-1, {}};
+            if (v == rep[dsu.find(v)] && cost[v] == numeric_limits<T>::max()) return {-1, {}};
 
         int count = 1;
         vector<vector<int>> cycles;
@@ -62,13 +72,13 @@ pair<T, vector<int>> edmonds_dense(int n, vector<vector<pair<int, T>>> adj_list_
         fill(visited.begin(), visited.end(), 0);
         visited[root_set] = count++;
         for (int v = 0; v < n; v++)
-            if (v == dsu.find(v) && !visited[v]) {
+            if (v == rep[dsu.find(v)] && !visited[v]) {
                 int u = v;
                 stack<int> s;
                 while (!visited[u]) {
                     visited[u] = count;
                     s.emplace(u);
-                    u = dsu.find(chosen_edge[u].first);
+                    u = rep[dsu.find(chosen_edge[u].first)];
                 }
 
                 if (visited[u] == count) {
@@ -85,7 +95,7 @@ pair<T, vector<int>> edmonds_dense(int n, vector<vector<pair<int, T>>> adj_list_
 
         if (!cycles.empty()) {
             for (int v = 0; v < n; v++) {
-                int v_set = dsu.find(v);
+                int v_set = rep[dsu.find(v)];
                 if (cycle[v_set]) {
                     if (v == v_set) len += cost[v_set];
                     loss[v] += cost[v_set];
@@ -95,7 +105,11 @@ pair<T, vector<int>> edmonds_dense(int n, vector<vector<pair<int, T>>> adj_list_
             for (auto &c : cycles) {
                 vector<pair<int, int>> edges;
                 for (int ci : c) {
-                    if (ci != c[0]) dsu.unite(c[0], ci);
+                    if (ci != c[0]) {
+                        parent[ci] = c[0];
+                        auto [big, small] = dsu.unite(c[0], ci);
+                        if (small != -1) rep[big] = c[0];
+                    }
                     edges.emplace_back(chosen_edge[ci]);
                 }
                 history.emplace(c, edges);
@@ -104,12 +118,13 @@ pair<T, vector<int>> edmonds_dense(int n, vector<vector<pair<int, T>>> adj_list_
         }
 
         for (int v = 0; v < n; v++)
-            if (v == dsu.find(v)) len += cost[v];
+            if (v == rep[dsu.find(v)]) len += cost[v];
 
         vector<int> mst(n, -1);
+        root_set = rep[dsu.find(root)];
         for (int v = 0; v < n; v++)
-            if (v == dsu.find(v)) {
-                if (v == dsu.find(root)) chosen_edge[v] = {-1, root};
+            if (v == rep[dsu.find(v)]) {
+                if (v == root_set) chosen_edge[v] = {-1, root};
                 else mst[chosen_edge[v].second] = chosen_edge[v].first;
             }
 
@@ -120,10 +135,10 @@ pair<T, vector<int>> edmonds_dense(int n, vector<vector<pair<int, T>>> adj_list_
             auto [u, v] = chosen_edge[c[0]];
             for (int ci : c) visited[ci] = count;
             int t = v;
-            while (t != -1 && visited[t] != count) t = dsu.parent[t];
+            while (t != -1 && visited[t] != count) t = parent[t];
             count++;
 
-            for (int i = 0; i < c.size(); i++) 
+            for (int i = 0; i < c.size(); i++)
                 if (c[i] == t) {
                     mst[v] = u;
                     chosen_edge[c[i]] = {u, v};

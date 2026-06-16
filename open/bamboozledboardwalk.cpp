@@ -5,21 +5,29 @@ struct DisjointSets {
     vector<int> sets;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            return true;
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
         }
-        return false;
+        return v;
     }
 
-    DisjointSets(int n) : sets(n) {
-        iota(sets.begin(), sets.end(), 0);
+    pair<int, int> unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set == v_set) return {u_set, -1};
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return {u_set, v_set};
     }
+
+    int size(int v) {
+        return -sets[find(v)];
+    }
+
+    DisjointSets(int n) : sets(n, -1) {}
 };
 
 tuple<int, vector<bool>, vector<vector<pair<int, int>>>> kruskal(int n, vector<array<int, 4>> &edges) {
@@ -30,7 +38,7 @@ tuple<int, vector<bool>, vector<vector<pair<int, int>>>> kruskal(int n, vector<a
     vector<bool> in_mst(edges.size(), false);
     vector<vector<pair<int, int>>> adj_list(n);
     for (auto [w, u, v, i] : edges)
-        if (dsu.unite(u, v)) {
+        if (dsu.unite(u, v).second != -1) {
             len += w;
             in_mst[i] = true;
             adj_list[u].emplace_back(v, w);
@@ -97,16 +105,20 @@ int main() {
     };
 
     DisjointSets dsu(V);
-    vector<int> replacement(V, 1e9);
+    vector<int> replacement(V, 1e9), rep(V);
+    iota(rep.begin(), rep.end(), 0);
+
     for (auto [c, u, v, i] : edges) {
         if (in_mst[i]) continue;
         int a = lca(u, v);
         auto climb = [&](int t) {
             for (;;) {
-                t = dsu.find(t);
+                t = rep[dsu.find(t)];
                 if (depth[t] <= depth[a]) break;
                 replacement[t] = c;
-                dsu.unite(prev[t].first, t);
+
+                auto [big, small] = dsu.unite(prev[t].first, t);
+                if (small != -1 && depth[rep[small]] < depth[rep[big]]) rep[big] = rep[small];
             }
         };
         climb(u);

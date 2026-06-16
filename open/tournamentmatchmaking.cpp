@@ -1,11 +1,20 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct PersistentDisjointSets {
-    vector<int> sets;
+struct RollbackDisjointSets {
+    int t;
+    vector<int> sets, seen;
     vector<pair<int, int>> history;
 
+    void see(int v) {
+        if (seen[v] != t) {
+            seen[v] = t;
+            sets[v] = v;
+        }
+    }
+
     int find(int v) {
+        see(v);
         return sets[v] == v ? v : find(sets[v]);
     }
 
@@ -13,10 +22,21 @@ struct PersistentDisjointSets {
         return history.size();
     }
 
-    void restore(int version = 0) {
+    void assign(int v, int p) {
+        see(v);
+        see(p);
+        sets[v] = p;
+        history.emplace_back(v, p);
+    }
+
+    void rollback(int version = 0) {
         while (record() > version) {
-            sets[history.back().first] = history.back().second;
+            auto [v, p] = history.back();
             history.pop_back();
+
+            see(v);
+            see(p);
+            sets[v] = p;
         }
     }
 
@@ -25,12 +45,10 @@ struct PersistentDisjointSets {
     }
 
     void reset() {
-        iota(sets.begin(), sets.end(), 0);
+        t++;
     }
 
-    PersistentDisjointSets(int n) : sets(n) {
-        iota(sets.begin(), sets.end(), 0);
-    }
+    RollbackDisjointSets(int n) : t(1), sets(n), seen(n, 0) {}
 };
 
 struct ForwardStar {
@@ -69,7 +87,7 @@ pair<int, vector<int>> gabow(int n, const vector<pair<int, int>> &edges) {
     vector<int> match(n + 1, 0), label(n + 1, 0), potential(n + 1, 1);
     vector<pair<int, int>> link(n + 1, {0, 0});
     ForwardStar list(h + 1, adj_list.size()), blossom(n + 1, n + 1);
-    PersistentDisjointSets pdsu(n + 1);
+    RollbackDisjointSets rdsu(n + 1);
 
     int matches = 0;
     while (2 * matches < n - 1) {
@@ -95,36 +113,35 @@ pair<int, vector<int>> gabow(int n, const vector<pair<int, int>> &edges) {
         };
 
         auto contract = [&](int x, int y) {
-            int base_x = pdsu.find(x), base_y = pdsu.find(y);
+            int base_x = rdsu.find(x), base_y = rdsu.find(y);
             label[match[base_x]] = label[match[base_y]] = --l;
 
             int lca;
             for (;;) {
                 if (match[base_y]) swap(base_x, base_y);
-                base_x = lca = pdsu.find(link[base_x].first);
+                base_x = lca = rdsu.find(link[base_x].first);
                 if (label[match[base_x]] == l) break;
                 label[match[base_x]] = l;
             }
 
-            base_x = pdsu.find(x), base_y = pdsu.find(y);
+            base_x = rdsu.find(x), base_y = rdsu.find(y);
             for (int base : {base_x, base_y})
-                for (; base != lca; base = pdsu.find(link[base].first)) {
+                for (; base != lca; base = rdsu.find(link[base].first)) {
                     int z = match[base];
                     make_outer(x, y, z, p_curr - potential[z]);
 
-                    pdsu.sets[base] = pdsu.sets[z] = lca;
-                    pdsu.history.emplace_back(base, lca);
-                    pdsu.history.emplace_back(z, lca);
+                    rdsu.assign(base, lca);
+                    rdsu.assign(z, lca);
                 }
         };
 
         for (;;) {
             while (!q.empty()) {
-                int x = q.front(), l_x = label[x], p_x = potential[x], base_x = pdsu.find(x);
+                int x = q.front(), l_x = label[x], p_x = potential[x], base_x = rdsu.find(x);
                 q.pop();
 
                 for (int i = degree[x]; i < degree[x + 1]; i++) {
-                    int y = adj_list[i].second, l_y = label[y], p_y = potential[y], base_y = pdsu.find(y);
+                    int y = adj_list[i].second, l_y = label[y], p_y = potential[y], base_y = rdsu.find(y);
 
                     if (l_y > 0) {
                         int p_mid = (p_x + p_y) / 2;
@@ -135,7 +152,7 @@ pair<int, vector<int>> gabow(int n, const vector<pair<int, int>> &edges) {
                             if (base_x == base_y) continue;
                             if (p_mid == p_curr) {
                                 contract(x, y);
-                                base_x = pdsu.find(x);
+                                base_x = rdsu.find(x);
                             } else if (p_mid <= h) list.add_edge(p_mid, i);
                         }
                     } else if (!l_y) {
@@ -148,14 +165,14 @@ pair<int, vector<int>> gabow(int n, const vector<pair<int, int>> &edges) {
 
             int limit = min(h + 1, p_augment);
             for (p_curr++; p_curr <= limit; p_curr++) {
-                version = pdsu.record();
+                version = rdsu.record();
                 if (p_curr == limit) break;
 
                 bool updated = false;
                 for (int i = list.head[p_curr]; ~i; i = list.next[i]) {
                     auto [x, y] = adj_list[i];
-                    int l_x = label[x], p_x = potential[x], base_x = pdsu.find(x),
-                        l_y = label[y], p_y = potential[y], base_y = pdsu.find(y);
+                    int l_x = label[x], p_x = potential[x], base_x = rdsu.find(x),
+                            l_y = label[y], p_y = potential[y], base_y = rdsu.find(y);
 
                     if (l_y > 0) {
                         if (p_curr != (p_x + p_y) / 2 || base_x == base_y) continue;
@@ -185,13 +202,13 @@ pair<int, vector<int>> gabow(int n, const vector<pair<int, int>> &edges) {
             if (label[u] > 0) potential[u] -= p_curr;
             else if (label[u] < 0) potential[u] = p_curr + 1 - potential[u];
         }
-        pdsu.reset();
-        pdsu.delete_history(version);
-        pdsu.restore();
+        rdsu.reset();
+        rdsu.delete_history(version);
+        rdsu.rollback();
 
         for (int u = 1; u <= n; u++) {
             label[u] = 0;
-            blossom.add_edge(pdsu.find(u), u);
+            blossom.add_edge(rdsu.find(u), u);
         }
 
         stack<int> s;
@@ -201,14 +218,15 @@ pair<int, vector<int>> gabow(int n, const vector<pair<int, int>> &edges) {
                 int y = adj_list[i].second, p_y = potential[y];
                 if (p_x != -p_y) continue;
 
-                int base_y = pdsu.find(y), l_base_y = label[base_y];
+                int base_y = rdsu.find(y), l_base_y = label[base_y];
                 if (l_base_y > 0) {
                     if (l_base_x >= l_base_y) continue;
                     int size = s.size();
-                    for (int base = base_y; base != base_x; base = pdsu.find(link[base].first)) {
-                        int z = match[base], base_z = pdsu.find(z);
+                    for (int base = base_y; base != base_x; base = rdsu.find(link[base].first)) {
+                        int z = match[base], base_z = rdsu.find(z);
                         link[base_z] = {x, y};
-                        pdsu.sets[base] = pdsu.sets[base_z] = base_x;
+                        rdsu.assign(base, base_x);
+                        rdsu.assign(base_z, base_x);
                         s.emplace(base_z);
                     }
 
@@ -232,7 +250,7 @@ pair<int, vector<int>> gabow(int n, const vector<pair<int, int>> &edges) {
                         if (match[t] != u) return;
 
                         auto [a, b] = link[u];
-                        if (pdsu.find(b) == b) {
+                        if (rdsu.find(b) == b) {
                             match[t] = a;
                             self2(self2, match[t], t);
                         } else {
@@ -247,7 +265,7 @@ pair<int, vector<int>> gabow(int n, const vector<pair<int, int>> &edges) {
                         return true;
                     }
 
-                    int base_z = pdsu.find(z);
+                    int base_z = rdsu.find(z);
                     link[base_z] = {x, y};
                     label[base_z] = outer++;
                     for (int v = blossom.head[base_z]; ~v; v = blossom.next[v])
@@ -259,7 +277,7 @@ pair<int, vector<int>> gabow(int n, const vector<pair<int, int>> &edges) {
 
         for (int u = 1; u <= n; u++)
             if (!match[u]) {
-                int base_u = pdsu.find(u);
+                int base_u = rdsu.find(u);
                 if (label[base_u]) continue;
 
                 label[base_u] = outer++;
@@ -270,8 +288,8 @@ pair<int, vector<int>> gabow(int n, const vector<pair<int, int>> &edges) {
                 }
             }
 
-        pdsu.reset();
-        pdsu.delete_history();
+        rdsu.reset();
+        rdsu.delete_history();
         fill(potential.begin(), potential.end(), 1);
         fill(blossom.head.begin(), blossom.head.end(), -1);
         fill(list.head.begin(), list.head.end(), -1);

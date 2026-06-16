@@ -436,28 +436,6 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned long long MOD = 998244353;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
-struct DisjointSets {
-    vector<int> sets, size;
-
-    int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            size[u_set] += size[v_set];
-            return true;
-        }
-        return false;
-    }
-
-    DisjointSets(int n) : sets(n), size(n, 1) {
-        iota(sets.begin(), sets.end(), 0);
-    }
-};
-
 struct SuffixArray {
     vector<int> SA, ascii, SA_inv;
 
@@ -564,6 +542,35 @@ struct SuffixArray {
     };
 };
 
+struct DisjointSets {
+    vector<int> sets;
+
+    int find(int v) {
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
+        }
+        return v;
+    }
+
+    pair<int, int> unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set == v_set) return {u_set, -1};
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return {u_set, v_set};
+    }
+
+    int size(int v) {
+        return -sets[find(v)];
+    }
+
+    DisjointSets(int n) : sets(n, -1) {}
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -597,8 +604,8 @@ int main() {
             if (i >= n - 1) return;
 
             auto add = [&](int i, int l) {
-                int i_set = dsu.find(i), size = dsu.size[i_set];
-                h += (long long) size * size * (len[i_set] - l);
+                int i_set = dsu.find(i), s = dsu.size(i_set);
+                h += (long long) s * s * (len[i_set] - l);
             };
 
             int l = lcp[indices[i]];
@@ -607,9 +614,9 @@ int main() {
                 add(curr, l);
                 add(prev, l);
 
-                dsu.unite(curr, prev);
-                int curr_set = dsu.find(curr), prev_set = dsu.find(prev);
-                len[curr_set] = min({len[curr_set], len[prev_set], l});
+                auto [big, small] = dsu.unite(curr, prev);
+                if (small == -1) len[big] = min(len[big], l);
+                else len[big] = min({len[big], len[small], l});
             }
 
             self(self, i);

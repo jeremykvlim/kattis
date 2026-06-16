@@ -5,21 +5,29 @@ struct DisjointSets {
     vector<int> sets;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
+        }
+        return v;
     }
 
     bool unite(int u, int v) {
         int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            return true;
-        }
-        return false;
+        if (u_set == v_set) return false;
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return true;
     }
 
-    DisjointSets(int n) : sets(n) {
-        iota(sets.begin(), sets.end(), 0);
+    int size(int v) {
+        return -sets[find(v)];
     }
+
+    DisjointSets(int n) : sets(n, -1) {}
 };
 
 int main() {
@@ -89,8 +97,9 @@ int main() {
 
         string S(n, '0');
         vector<int> good;
+        int target = dsu.find(maybe_good.back());
         for (int i = 1; i <= n; i++)
-            if (dsu.find(i) == maybe_good.back()) {
+            if (dsu.find(i) == target) {
                 good.emplace_back(i);
                 S[i - 1] = '1';
             }
@@ -114,8 +123,9 @@ int main() {
                 if (s[m - 1] == '1') q.emplace(x[m]);
 
             while (!q.empty()) {
+                target = dsu.find(q.front());
                 for (int i = 1; i <= n; i++)
-                    if (dsu.find(i) == q.front()) {
+                    if (dsu.find(i) == target) {
                         good.emplace_back(i);
                         S[i - 1] = '1';
                     }

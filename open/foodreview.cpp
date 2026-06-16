@@ -5,28 +5,30 @@ struct DisjointSets {
     vector<int> sets, members;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
+        }
+        return v;
     }
 
     bool unite(int u, int v) {
         int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            members[u_set] |= members[v_set];
-            return true;
-        }
-        return false;
+        if (u_set == v_set) return false;
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        members[u_set] |= members[v_set];
+        return true;
     }
 
-    void reroot() {
-        for (int i = 0; i < sets.size(); i++) {
-            sets[i] = sets[find(i)];
-            members[i] = members[find(i)];
-        }
+    int size(int v) {
+        return -sets[find(v)];
     }
 
-    DisjointSets(int n) : sets(n), members(n) {
-        iota(sets.begin(), sets.end(), 0);
+    DisjointSets(int n) : sets(n, -1), members(n) {
         for (int i = 0; i < n; i++) members[i] = 1 << i;
     }
 };
@@ -53,7 +55,6 @@ int main() {
         all |= (1 << a) | (1 << b);
         dsu.unite(a, b);
     }
-    dsu.reroot();
 
     int f;
     cin >> f;
@@ -87,10 +88,10 @@ int main() {
             if ((curr >> u) & 1)
                 for (int v = 0; v < n; v++)
                     if (u != v && dist[u][v] < 1e9 && !((curr >> v) & 1) && (all >> v) & 1)
-                        d = min(d, dist[u][v] + self(self, count ^ ((1 << u) | (1 << v)), curr | dsu.members[v]));
+                        d = min(d, dist[u][v] + self(self, count ^ ((1 << u) | (1 << v)), curr | dsu.members[dsu.find(v)]));
 
         return memo[curr | (count << n)] = d;
     };
 
-    cout << base + dp(dp, odd_count, dsu.members[0]);
+    cout << base + dp(dp, odd_count, dsu.members[dsu.find(0)]);
 }

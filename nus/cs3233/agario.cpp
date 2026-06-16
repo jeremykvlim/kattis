@@ -5,21 +5,29 @@ struct DisjointSets {
     vector<int> sets;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            return true;
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
         }
-        return false;
+        return v;
     }
 
-    DisjointSets(int n) : sets(n) {
-        iota(sets.begin(), sets.end(), 0);
+    pair<int, int> unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set == v_set) return {u_set, -1};
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return {u_set, v_set};
     }
+
+    int size(int v) {
+        return -sets[find(v)];
+    }
+
+    DisjointSets(int n) : sets(n, -1) {}
 };
 
 int main() {
@@ -42,14 +50,22 @@ int main() {
     sort(edges.begin(), edges.end());
 
     DisjointSets dsu(n + 1);
+    vector<int> rep(n + 1);
+    iota(rep.begin(), rep.end(), 0);
+
     vector<vector<int>> adj_list(n + 1);
     vector<bool> visited(n + 1, false);
-    for (auto [w, u, v] : edges)
-        if (dsu.unite(u, v)) {
-            if (visited[v]) v = dsu.sets[v];
+    for (auto [w, u, v] : edges) {
+        int u_set = rep[dsu.find(u)], v_set = rep[dsu.find(v)];
+
+        auto [big, small] = dsu.unite(u, v);
+        if (small != -1) {
+            if (visited[v]) v = v_set;
             adj_list[u].emplace_back(v);
             visited[v] = true;
+            rep[big] = u_set;
         }
+    }
 
     vector<long long> size(a.begin(), a.end());
 
@@ -66,7 +82,7 @@ int main() {
     };
 
     for (int i = 1; i <= n; i++)
-        if (dsu.sets[i] == i) {
+        if (rep[dsu.find(i)] == i) {
             dfs1(dfs1, i);
             dfs2(dfs2, i);
             break;

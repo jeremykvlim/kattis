@@ -5,21 +5,29 @@ struct DisjointSets {
     vector<int> sets;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            return true;
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
         }
-        return false;
+        return v;
     }
 
-    DisjointSets(int n) : sets(n) {
-        iota(sets.begin(), sets.end(), 0);
+    pair<int, int> unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set == v_set) return {u_set, -1};
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return {u_set, v_set};
     }
+
+    int size(int v) {
+        return -sets[find(v)];
+    }
+
+    DisjointSets(int n) : sets(n, -1) {}
 };
 
 template <typename T>
@@ -30,15 +38,20 @@ struct ReachabilityTree {
     vector<T> weight;
 
     ReachabilityTree(int m, vector<tuple<int, int, T>> &edges) : n(m), parent(2 * m), adj_list(2 * m), weight(2 * m, 0) {
-        DisjointSets dsu(2 * n);
+        DisjointSets dsu(2 * m);
+        vector<int> rep(2 * m);
+        iota(rep.begin(), rep.end(), 0);
+
         for (auto [u, v, w] : edges) {
             int u_set = dsu.find(u), v_set = dsu.find(v);
             if (u_set != v_set) {
                 n++;
                 weight[n] = w;
-                parent[u_set] = parent[v_set] = dsu.sets[u_set] = dsu.sets[v_set] = dsu.sets[n] = n;
-                adj_list[n].emplace_back(u_set);
-                adj_list[n].emplace_back(v_set);
+                parent[rep[u_set]] = parent[rep[v_set]] = n;
+                adj_list[n].emplace_back(rep[u_set]);
+                adj_list[n].emplace_back(rep[v_set]);
+                auto [big, small] = dsu.unite(u_set, v_set);
+                rep[big] = n;
             }
         }
     }

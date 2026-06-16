@@ -5,21 +5,29 @@ struct DisjointSets {
     vector<int> sets;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
+        }
+        return v;
     }
 
     bool unite(int u, int v) {
         int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            return true;
-        }
-        return false;
+        if (u_set == v_set) return false;
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return true;
     }
 
-    DisjointSets(int n) : sets(n) {
-        iota(sets.begin(), sets.end(), 0);
+    int size(int v) {
+        return -sets[find(v)];
     }
+
+    DisjointSets(int n) : sets(n, -1) {}
 };
 
 int main() {
@@ -46,7 +54,7 @@ int main() {
             int p_set = dsu.find(p), q_set = dsu.find(q);
             if (visited[p_set] && visited[q_set]) possible = false;
 
-            visited[p_set] = dsu.unite(p, q) ? visited[p_set] | visited[q_set] : true;
+            visited[dsu.find(p)] = !dsu.unite(p, q) || visited[p_set] | visited[q_set];
         }
 
         cout << (possible ? "possible\n" : "impossible\n");

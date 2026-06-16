@@ -2,25 +2,32 @@
 using namespace std;
 
 struct DisjointSets {
-    vector<int> sets, size;
+    vector<int> sets;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            size[u_set] += size[v_set];
-            return true;
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
         }
-        return false;
+        return v;
     }
 
-    DisjointSets(int n) : sets(n), size(n, 1) {
-        iota(sets.begin(), sets.end(), 0);
+    pair<int, int> unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set == v_set) return {u_set, -1};
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return {u_set, v_set};
     }
+
+    int size(int v) {
+        return -sets[find(v)];
+    }
+
+    DisjointSets(int n) : sets(n, -1) {}
 };
 
 int main() {
@@ -43,14 +50,14 @@ int main() {
         int u, v;
         cin >> u >> v;
 
-        int u_set = dsu.find(u), v_set = dsu.find(v);
-        if (dsu.unite(u, v)) {
-            capacity[u_set] += capacity[v_set];
-            links[u_set] += links[v_set];
+        auto [big, small] = dsu.unite(u, v);
+        if (small != -1) {
+            capacity[big] += capacity[small];
+            links[big] += links[small];
         }
 
-        capacity[u_set] -= 2;
-        links[u_set]++;
+        capacity[big] -= 2;
+        links[big]++;
     }
 
     vector<int> roots;
@@ -69,12 +76,12 @@ int main() {
         if (!capacity[s]) {
             k--;
 
-            if (links[s] == dsu.size[s] - 1) complete += 2;
+            if (links[s] == dsu.size(s) - 1) complete += 2;
             else isolated++;
 
             degree += 2;
         } else if (capacity[s] == 1) {
-            if (links[s] == dsu.size[s] - 1) complete++;
+            if (links[s] == dsu.size(s) - 1) complete++;
             else incomplete++;
         } else isolated++;
     }

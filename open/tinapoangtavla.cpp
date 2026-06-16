@@ -5,21 +5,29 @@ struct DisjointSets {
     vector<int> sets;
 
     int find(int v) {
-        return sets[v] == v ? v : (sets[v] = find(sets[v]));
-    }
-
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set != v_set) {
-            sets[v_set] = u_set;
-            return true;
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
         }
-        return false;
+        return v;
     }
 
-    DisjointSets(int n) : sets(n) {
-        iota(sets.begin(), sets.end(), 0);
+    pair<int, int> unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set == v_set) return {u_set, -1};
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return {u_set, v_set};
     }
+
+    int size(int v) {
+        return -sets[find(v)];
+    }
+
+    DisjointSets(int n) : sets(n, -1) {}
 };
 
 int main() {
@@ -90,7 +98,8 @@ int main() {
     }
 
     DisjointSets dsu(n + 1);
-    vector<int> reveals(n, -1), AC_l = after_AC, AC_r = after_AC, t_l = after_tries, t_r = after_tries;
+    vector<int> reveals(n, -1), AC_l = after_AC, AC_r = after_AC, t_l = after_tries, t_r = after_tries, rep(n + 1);
+    iota(rep.begin(), rep.end(), 0);
     for (int f = F - 1; ~f; f--) {
         auto [w, p] = submissions[f];
         if (last_attempt[w][p] != f) continue;
@@ -103,7 +112,7 @@ int main() {
             t_r[w] += t[w][p];
         }
         if (AC_l[w] >= AC_r[w]) continue;
-      
+
         int l = n, r = -1, a = AC_r[w];
         if (0 <= a && a <= P && !ACs_by_tries[a].empty()) {
             int i = upper_bound(ACs_by_tries[a].begin(), ACs_by_tries[a].end(), t_r[w]) - ACs_by_tries[a].begin();
@@ -128,15 +137,17 @@ int main() {
             }
         }
         if (r == -1) continue;
-        
-        for (int i = dsu.find(l); i <= r;) {
+
+        for (int i = rep[dsu.find(l)]; i <= r;) {
             if (order[i] == w) {
-                i = dsu.find(i + 1);
+                i = rep[dsu.find(i + 1)];
                 continue;
             }
+
             reveals[order[i]] = f;
-            dsu.unite(i + 1, i);
-            i = dsu.find(i);
+            auto [big, small] = dsu.unite(i + 1, i);
+            if (small != -1) rep[big] = max(rep[big], rep[small]);
+            i = rep[dsu.find(i)];
         }
     }
     for (int f : reveals) cout << f + 1 << " ";

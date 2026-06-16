@@ -31,21 +31,35 @@ public class wheresmyinternet {
 
         DisjointSets(int n) {
             sets = new int[n];
-            for (int i = 0; i < n; i++) sets[i] = i;
+            for (int i = 0; i < n; i++) sets[i] = -1;
         }
 
         boolean unite(int u, int v) {
             u = find(u);
             v = find(v);
-            if (u != v) {
-                sets[v] = u;
-                return true;
+            if (u == v) return false;
+
+            if (sets[u] > sets[v]) {
+                int temp = u;
+                u = v;
+                v = temp;
             }
-            return false;
+            sets[u] += sets[v];
+            sets[v] = u;
+            return true;
+        }
+
+        int size(int v) {
+            return -sets[find(v)];
         }
 
         int find(int v) {
-            return sets[v] == v ? v : (sets[v] = find(sets[v]));
+            while (sets[v] >= 0) {
+                int p = sets[v];
+                if (sets[p] >= 0) sets[v] = sets[p];
+                v = p;
+            }
+            return v;
         }
     }
 }

@@ -16,45 +16,50 @@ public class virtualfriends {
                 var friends = br.readLine().split(" ");
 
                 for (var fr : friends)
-                    if (!compress.containsKey(fr)) {
-                        compress.put(fr, i);
-                        dsu.sets[i] = i;
-                        dsu.size[i++] = 1;
-                    }
+                    if (!compress.containsKey(fr)) compress.put(fr, i++);
 
                 int a = compress.get(friends[0]), b = compress.get(friends[1]);
                 dsu.unite(a, b);
-                pw.println(dsu.size[dsu.find(a)]);
+                pw.println(dsu.size(a));
             }
         }
         pw.flush();
     }
 
     static class DisjointSets {
-        int[] sets, size;
+        int[] sets;
 
         DisjointSets(int n) {
             sets = new int[n];
-            size = new int[n];
-            for (int i = 0; i < n; i++) {
-                sets[i] = i;
-                size[i] = 1;
-            }
+            for (int i = 0; i < n; i++) sets[i] = -1;
         }
 
         boolean unite(int u, int v) {
             u = find(u);
             v = find(v);
-            if (u != v) {
-                sets[v] = u;
-                size[u] += size[v];
-                return true;
+            if (u == v) return false;
+
+            if (sets[u] > sets[v]) {
+                int temp = u;
+                u = v;
+                v = temp;
             }
-            return false;
+            sets[u] += sets[v];
+            sets[v] = u;
+            return true;
+        }
+
+        int size(int v) {
+            return -sets[find(v)];
         }
 
         int find(int v) {
-            return sets[v] == v ? v : (sets[v] = find(sets[v]));
+            while (sets[v] >= 0) {
+                int p = sets[v];
+                if (sets[p] >= 0) sets[v] = sets[p];
+                v = p;
+            }
+            return v;
         }
     }
 }
