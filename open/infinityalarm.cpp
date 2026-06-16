@@ -13,36 +13,41 @@ int main() {
         exit(0);
     }
 
-    int mask = 0;
     vector<int> s(n);
     for (int &si : s) {
         cin >> si;
         si--;
-
-        mask |= si;
     }
+    sort(s.begin(), s.end());
 
-    unordered_set<int> seen;
-    auto dfs = [&](auto &&self, int b = 31) -> int {
-        if (b < 0) return 0;
-        if (!((mask >> b) & 1)) return self(self, b - 1);
-
-        mask ^= 1 << b;
-        seen.clear();
-        for (int si : s) {
-            si &= mask;
-
-            if (seen.count(si)) seen.erase(si);
-            else seen.emplace(si);
-        }
-
-        if (!seen.empty()) return self(self, b - 1);
+    int seconds = 0;
+    for (int b = 29; ~b; b--) {
+        int mask = 1 << b, m = lower_bound(s.begin(), s.end(), mask) - s.begin();
+        if (m == s.size()) continue;
 
         vector<int> temp;
-        for (int si : s)
-            if ((si >> b) & 1) temp.emplace_back(si);
+        for (int l = 0, r = m; l < m || r < s.size();)
+            if (r == s.size()) temp.emplace_back(s[l++]);
+            else if (l == m) temp.emplace_back(s[r++] ^ mask);
+            else {
+                int left = s[l], right = s[r] ^ mask;
+                if (left < right) {
+                    temp.emplace_back(left);
+                    l++;
+                } else if (left > right) {
+                    temp.emplace_back(right);
+                    r++;
+                } else {
+                    l++;
+                    r++;
+                }
+            }
+
+        if (temp.empty()) {
+            seconds |= mask;
+            for (int i = m; i < s.size(); i++) temp.emplace_back(s[i] ^ mask);
+        }
         s = temp;
-        return self(self, b - 1) | (1 << b);
-    };
-    cout << dfs(dfs) + 1;
+    }
+    cout << seconds + 1;
 }
