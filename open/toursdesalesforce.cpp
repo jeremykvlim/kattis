@@ -128,7 +128,6 @@ template <typename T>
 T held_karp(int n, const vector<vector<T>> &dist, int src = 0) {
     T inf = numeric_limits<T>::max() / 4;
     vector<vector<T>> dp(1 << n, vector<T>(n, inf));
-    vector<vector<int>> prev(1 << n, vector<int>(n, -1));
 
     for (int i = 0; i < n; i++) dp[1 << i][i] = dist[src][i + 1];
 
@@ -138,19 +137,11 @@ T held_karp(int n, const vector<vector<T>> &dist, int src = 0) {
                 if (dp[m1][i] != inf)
                     for (int m2 = m1 ^ ((1 << n) - 1); m2; m2 &= m2 - 1) {
                         int j = countr_zero((unsigned) m2), m3 = m1 | (1 << j);
-                        if (dp[m3][j] > dp[m1][i] + dist[i + 1][j + 1]) {
-                            dp[m3][j] = dp[m1][i] + dist[i + 1][j + 1];
-                            prev[m3][j] = i;
-                        }
+                        dp[m3][j] = min(dp[m3][j], dp[m1][i] + dist[i + 1][j + 1]);
                     }
 
     T len = inf;
-    int j = -1;
-    for (int i = 0; i < n; i++)
-        if (len > dp.back()[i] + dist[i + 1][src]) {
-            len = dp.back()[i] + dist[i + 1][src];
-            j = i;
-        }
+    for (int i = 0; i < n; i++) len = min(len, dp.back()[i] + dist[i + 1][src]);
     return len;
 }
 
@@ -243,15 +234,11 @@ int main() {
     }
 
     int m = d / 2;
-    vector<int> l(m), r(m);
-    iota(l.begin(), l.end(), 0);
-    iota(r.begin(), r.end(), m);
     vector<vector<double>> cost(m, vector<double>(m, 0));
     for (int i = 0; i < m; i++)
         for (int j = 0; j < m; j++) {
-            vector<Point<int>> points;
-            for (auto &p : districts[r[i]]) points.emplace_back(p);
-            for (auto &p : districts[l[j]]) points.emplace_back(p);
+            auto points = districts[i + m];
+            points.insert(points.end(), districts[j].begin(), districts[j].end());
             cost[i][j] = len(points);
         }
     cout << fixed << setprecision(2) << prior << " " << jonker_volgenant(cost).first;
