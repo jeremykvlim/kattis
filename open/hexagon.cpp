@@ -73,13 +73,11 @@ int main() {
     for (int X = 1; X <= n; X++) {
         string s1;
         getline(cin, s1);
-
         istringstream iss1(s1);
         vector<int> pos{istream_iterator<int>{iss1}, istream_iterator<int>{}};
 
         string s2;
         getline(cin, s2);
-
         istringstream iss2(s2);
         vector<int> val{istream_iterator<int>{iss2}, istream_iterator<int>{}};
 
