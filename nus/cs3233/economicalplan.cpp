@@ -483,7 +483,7 @@ int main() {
             vector<int> cycle_edges;
             auto dfs = [&](auto &&self, int v) -> void {
                 visited_v[v] = true;
-                for (auto [u, i]: adj_list[v])
+                for (auto [u, i] : adj_list[v])
                     if (!bridge[i]) {
                         if (!visited_e[i]) {
                             visited_e[i] = true;

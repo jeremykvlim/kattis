@@ -21,7 +21,7 @@ struct FenwickTree {
     }
 
     FenwickTree(int n) : BIT(n, 0) {}
-}; 
+};
 
 int main() {
     ios::sync_with_stdio(false);

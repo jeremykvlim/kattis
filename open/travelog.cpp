@@ -28,7 +28,7 @@ int main() {
         if (dv > dist[v]) continue;
 
         order.emplace_back(v);
-        for (auto [u, w]: adj_list[v])
+        for (auto [u, w] : adj_list[v])
             if (dist[u] > dv + w) {
                 dist[u] = dv + w;
                 pq.emplace(dv + w, u);
