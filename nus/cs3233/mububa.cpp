@@ -22,7 +22,5 @@ int main() {
                 prev[i] = pref[i] - pref[j];
                 break;
             }
-        
-
     cout << dp[n];
 }
