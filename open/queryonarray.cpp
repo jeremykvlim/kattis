@@ -436,6 +436,28 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
+template <typename T>
+struct FenwickTree {
+    vector<T> BIT;
+
+    void update(int i, T v) {
+        for (; i && i < BIT.size(); i += i & -i) BIT[i] += v;
+    }
+
+    T pref_sum(int i) {
+        T sum = 0;
+        for (; i; i &= i - 1) sum += BIT[i];
+        return sum;
+    }
+
+    T range_sum_query(int l, int r) {
+        if (l >= r) return 0;
+        return pref_sum(r) - pref_sum(l);
+    }
+
+    FenwickTree(int n) : BIT(n, 0) {}
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -445,65 +467,41 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<modint> pref_a(n + 1, 0);
-    vector<vector<modint>> pref_pow(4, vector<modint>(n + 1, 0));
-    deque<array<int, 3>> lazy;
-    for (auto i = 1LL; i <= n; i++) {
-        pref_pow[3][i] = pref_pow[3][i - 1] + i * i * i;
-        pref_pow[2][i] = pref_pow[2][i - 1] + i * i;
-        pref_pow[1][i] = pref_pow[1][i - 1] + i;
-        pref_pow[0][i] = pref_pow[0][i - 1] + 1;
-    }
-
-    auto update = [&]() -> void {
-        vector<vector<modint>> temp1(4, vector<modint>(n + 2, 0));
-        while (!lazy.empty()) {
-            auto [sign, i, j] = lazy.front();
-            lazy.pop_front();
-
-            for (int k = i, s = sign; k < j + 2; k += j + 1 - i, s *= -1) {
-                temp1[3][k] += s;
-                temp1[2][k] += s * (-3 * i + 6);
-                temp1[1][k] += s * ((long long) 3 * i * i - 12 * i + 11);
-                temp1[0][k] += s * ((long long) -i * i * i + (long long) 6 * i * i - 11 * i + 6);
-            }
-        }
-
-        for (auto &t : temp1)
-            for (int i = 1; i <= n; i++) t[i] += t[i - 1];
-
-        vector<modint> temp2(n + 1, 0);
-        for (auto i = 1LL; i <= n; i++)
-            temp2[i] += temp1[3][i] * i * i * i
-                      + temp1[2][i] * i * i
-                      + temp1[1][i] * i
-                      + temp1[0][i];
-
-        for (int i = 1; i <= n; i++) {
-            temp2[i] += temp2[i - 1];
-            pref_a[i] += temp2[i];
-        }
+    vector<FenwickTree<modint>> fws(8, FenwickTree<modint>(n + 2));
+    auto pow_sum = [&](int i, modint z) -> modint {
+        if (z <= (modint) 0) return 0;
+        if (!i) return z;
+        if (i == 1) return z * (z + 1) / 2;
+        if (i == 2) return z * (z + 1) * (2 * z + 1) / 6;
+        return z * z * (z + 1) * (z + 1) / 4;
     };
 
+    array<modint, 4> c;
     while (m--) {
-        int t, x, y;
+        int t;
+        modint x, y;
         cin >> t >> x >> y;
 
-        if (!t) {
-            if (lazy.size() >= (int) sqrt(n)) update();
+        auto pref = [&](modint z) {
+            modint sum = 0;
+            for (int i = 0; i < 4; i++) sum += fws[i].pref_sum(z()) * pow_sum(i, z) + fws[i + 4].pref_sum(z());
+            return sum;
+        };
 
-            auto sum = pref_a[y] - pref_a[x - 1];
-            for (auto [sign, i, j] : lazy) {
-                int l = max(x, i), r = min(y, j);
-                if (l > r) continue;
+        if (!t) cout << pref(y) - pref(x - 1) << "\n";
+        else {
+            int sgn = t == 1 ? 1 : -1;
+            c[0] = sgn * (-x * x * x + 6 * x * x - 11 * x + 6);
+            c[1] = sgn * (3 * x * x - 12 * x + 11);
+            c[2] = sgn * (6 - 3 * x);
+            c[3] = sgn;
 
-                sum += sign * (pref_pow[3][r] - pref_pow[3][l - 1]
-                            + (pref_pow[2][r] - pref_pow[2][l - 1]) * (-3 * i + 6)
-                            + (pref_pow[1][r] - pref_pow[1][l - 1]) * ((long long) 3 * i * i - 12 * i + 11)
-                            + (pref_pow[0][r] - pref_pow[0][l - 1]) * ((long long) -i * i * i + (long long) 6 * i * i - 11 * i + 6));
+            for (int i = 0; i < 4; i++) {
+                fws[i].update(x(), c[i]);
+                fws[i].update(y() + 1, -c[i]);
+                fws[i + 4].update(x(), -c[i] * pow_sum(i, x - 1));
+                fws[i + 4].update(y() + 1, c[i] * pow_sum(i, y));
             }
-
-            cout << sum << "\n";
-        } else lazy.push_back({t == 1 ? 1 : -1, x, y});
+        }
     }
 }
