@@ -83,7 +83,7 @@ int main() {
 
     auto index = [&](const string &s) {
         int i = 0;
-        if (s[0] == 'A') i = s.size() > 1 && s[1] != 'B' ? 1 : 3;
+        if (s[0] == 'A') i = s.size() > 1 && s[1] == 'B' ? 3 : 1;
         else if (s[0] == 'B') i = 2;
 
         if (s.back() == '+') return i * 2 + 1;
