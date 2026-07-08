@@ -178,17 +178,14 @@ int main() {
             if (i != j) v.emplace_back(points[j] - points[i], j);
 
         sort(v.begin(), v.end(), [&](auto p1, auto p2) {
-            auto quadrant = [](const auto &p) -> int {
-                if (p.x > 0) return 1;
-                if (!p.x && p.y > 0) return 2;
-                if (p.x < 0) return 3;
-                if (!p.x && p.y < 0) return 4;
-                return 0;
+            auto halfplane = [](const auto &p) -> int {
+                if ((p.x > 0 && !p.y) || p.y > 0) return 0;
+                return 1;
             };
 
             auto a = p1.first, b = p2.first;
-            int qa = quadrant(a), qb = quadrant(b);
-            return qa != qb ? qa < qb : cross(a, b) > 0;
+            int ha = halfplane(a), hb = halfplane(b);
+            return ha != hb ? ha < hb : cross(a, b) > 0;
         });
 
         auto cookie = [&](auto &a, auto &b) -> double {
@@ -213,7 +210,7 @@ int main() {
             r = max(r, l);
             for (; r < l + k && cross(v[l].first, v[r % k].first) >= 0; r++);
             diff = max(diff, (double) (r - l + 1) / m - cookie(points[i], points[v[l].second]));
-            for (; l < k - 1 && !cross(v[l].first, v[l + 1].first) && ((v[l].first.x > 0) == (v[l + 1].first.x > 0)); l++);
+            for (; l < k - 1 && !cross(v[l].first, v[l + 1].first) && dot(v[l].first, v[l + 1].first) > 0; l++);
         }
     }
 
