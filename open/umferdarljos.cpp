@@ -374,14 +374,14 @@ vector<pair<Point<T>, vector<int>>> bentley_ottmann(const vector<Line<T>> &lines
         if (a.x == b.x) {
             events.emplace_back(a, i);
             vertical.emplace_back(true);
-            sweep[a][2].emplace_back(events.size() - 1);
+            sweep[a][1].emplace_back(events.size() - 1);
         } else {
             events.emplace_back(a, i);
             vertical.emplace_back(false);
             sweep[a][0].emplace_back(events.size() - 1);
             events.emplace_back(b, i);
             vertical.emplace_back(false);
-            sweep[b][1].emplace_back(events.size() - 1);
+            sweep[b][3].emplace_back(events.size() - 1);
         }
     }
 
@@ -423,73 +423,117 @@ vector<pair<Point<T>, vector<int>>> bentley_ottmann(const vector<Line<T>> &lines
         if (!point_on_line(l1, p, true) || !point_on_line(l2, p, true)) return;
 
         auto [it, inserted] = intersections_map.try_emplace(p);
-        if (inserted && x <= p.x) sweep[p][3].emplace_back();
+        if (inserted && x <= p.x) sweep[p][2].emplace_back();
         it->second.emplace_back(e1);
         it->second.emplace_back(e2);
     };
 
     while (!sweep.empty()) {
-        auto [p, buckets] = *sweep.begin();
-        sweep.erase(sweep.begin());
+        x = sweep.begin()->first.x;
 
-        for (int k = 0; k < 4; k++)
-            if (!buckets[k].empty()) {
-                x = p.x;
-                for (int e1 : buckets[k])
-                    if (!k) {
-                        left = false;
-                        if (!active[e1]) {
-                            event_node[e1] = treap.insert(e1);
-                            active[e1] = true;
-                        }
+        vector<pair<Point<T>, array<vector<int>, 4>>> batch;
+        while (!sweep.empty() && sweep.begin()->first.x == x) {
+            batch.emplace_back(*sweep.begin());
+            sweep.erase(sweep.begin());
+        }
 
-                        int node = event_node[e1], prev = treap.predecessor(node), next = treap.successor(node);
-                        if (prev) check_intersection(e1, treap[prev].key);
-                        if (next) check_intersection(e1, treap[next].key);
-                    } else if (k == 1) {
-                        const auto &[a, i] = events[e1];
-                        left = true;
-                        if (!active[e1 - 1]) break;
+        for (auto &[p, buckets] : batch)
+            for (int e : buckets[0]) {
+                left = false;
+                if (!active[e]) {
+                    event_node[e] = treap.insert(e);
+                    active[e] = true;
+                }
 
-                        int node = event_node[e1 - 1], prev = treap.predecessor(node), next = treap.successor(node);
-                        treap.erase_node(node);
-                        active[e1 - 1] = false;
-                        if (prev && next) check_intersection(treap[prev].key, treap[next].key);
-                    } else if (k == 2) {
-                        const auto &[a, i] = events[e1];
-                        left = true;
-                        T y_max = deduped[i].b.y;
-                        for (int node = treap.lower_bound(e1); node; node = treap.successor(node)) {
-                            int e2 = treap[node].key;
-                            const auto &[b, j] = events[e2];
-                            if ((vertical[e2] ? b.y : y_at_x(deduped[j])) > y_max) break;
-                            check_intersection(e1, e2);
-                        }
-                    } else {
-                        left = true;
-                        auto it = intersections_map.find(p);
-                        if (it == intersections_map.end()) break;
+                int node = event_node[e], prev = treap.predecessor(node), next = treap.successor(node);
+                if (prev) check_intersection(e, treap[prev].key);
+                if (next) check_intersection(e, treap[next].key);
+            }
 
-                        stack<int> s;
-                        for (int e2 : it->second)
-                            if (active[e2]) {
-                                treap.erase_node(event_node[e2]);
-                                active[e2] = false;
-                                s.emplace(e2);
-                            }
+        for (auto &[p, buckets] : batch)
+            for (int e1 : buckets[1]) {
+                const auto &[a, i] = events[e1];
+                left = true;
+                T y_max = deduped[i].b.y;
 
-                        left = false;
-                        while (!s.empty()) {
-                            int e2 = s.top();
-                            s.pop();
+                for (int node = treap.lower_bound(e1); node; node = treap.successor(node)) {
+                    int e2 = treap[node].key;
+                    const auto &[b, j] = events[e2];
+                    if ((vertical[e2] ? b.y : y_at_x(deduped[j])) > y_max) break;
+                    check_intersection(e1, e2);
+                }
+            }
 
-                            int node = event_node[e2] = treap.insert(e2), prev = treap.predecessor(node), next = treap.successor(node);
-                            active[e2] = true;
-                            if (prev) check_intersection(e2, treap[prev].key);
-                            if (next) check_intersection(e2, treap[next].key);
-                        }
-                        break;
+        for (auto &[p, buckets] : batch)
+            if (!buckets[2].empty()) {
+                left = true;
+                auto it = intersections_map.find(p);
+                if (it == intersections_map.end()) continue;
+
+                stack<int> s;
+                for (int e2 : it->second)
+                    if (active[e2]) {
+                        treap.erase_node(event_node[e2]);
+                        active[e2] = false;
+                        s.emplace(e2);
                     }
+
+                left = false;
+                while (!s.empty()) {
+                    int e2 = s.top();
+                    s.pop();
+
+                    int node = event_node[e2] = treap.insert(e2), prev = treap.predecessor(node), next = treap.successor(node);
+                    active[e2] = true;
+                    if (prev) check_intersection(e2, treap[prev].key);
+                    if (next) check_intersection(e2, treap[next].key);
+                }
+            }
+
+        for (;;) {
+            vector<pair<Point<T>, array<vector<int>, 4>>> extra;
+            while (!sweep.empty() && sweep.begin()->first.x == x) {
+                extra.emplace_back(*sweep.begin());
+                sweep.erase(sweep.begin());
+            }
+            if (extra.empty()) break;
+
+            for (auto &[p, buckets] : extra)
+                if (!buckets[2].empty()) {
+                    left = true;
+                    auto it = intersections_map.find(p);
+                    if (it == intersections_map.end()) continue;
+
+                    stack<int> s;
+                    for (int e2 : it->second)
+                        if (active[e2]) {
+                            treap.erase_node(event_node[e2]);
+                            active[e2] = false;
+                            s.emplace(e2);
+                        }
+
+                    left = false;
+                    while (!s.empty()) {
+                        int e2 = s.top();
+                        s.pop();
+
+                        int node = event_node[e2] = treap.insert(e2), prev = treap.predecessor(node), next = treap.successor(node);
+                        active[e2] = true;
+                        if (prev) check_intersection(e2, treap[prev].key);
+                        if (next) check_intersection(e2, treap[next].key);
+                    }
+                }
+        }
+
+        for (auto &[p, buckets] : batch)
+            for (int e : buckets[3]) {
+                left = true;
+                if (!active[e - 1]) continue;
+
+                int node = event_node[e - 1], prev = treap.predecessor(node), next = treap.successor(node);
+                treap.erase_node(node);
+                active[e - 1] = false;
+                if (prev && next) check_intersection(treap[prev].key, treap[next].key);
             }
     }
 
