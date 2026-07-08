@@ -13,8 +13,9 @@ vector<vector<T>> dreyfus_wagner(int n, const vector<array<int, 3>> &edges, cons
 
     priority_queue<pair<T, int>, vector<pair<T, int>>, greater<>> pq;
     for (int m1 = 1; m1 < 1 << t; m1++) {
-        for (int v = 0; v < n; v++)
-            for (int m2 = (m1 - 1) & m1; m2; --m2 &= m1) dp[m1][v] = min(dp[m1][v], dp[m2][v] + dp[m1 ^ m2][v]);
+        for (int m2 = (m1 - 1) & m1; m2; --m2 &= m1)
+            if ((m1 ^ m2) >= m2)
+                for (int v = 0; v < n; v++) dp[m1][v] = min(dp[m1][v], dp[m2][v] + dp[m1 ^ m2][v]);
 
         auto &dist = dp[m1];
         for (int v = 0; v < n; v++)
