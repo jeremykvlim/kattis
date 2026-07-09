@@ -17,14 +17,11 @@ int main() {
         auto [a, c] = kodamas[i];
         keys[i] = {c, -a, -i};
     }
-    auto temp = keys;
     sort(keys.begin(), keys.end());
 
-    vector<int> rank(n + 1), indices(n + 1);
-    for (int i = 0; i < n; i++) rank[i] = lower_bound(keys.begin(), keys.end(), temp[i]) - keys.begin();
-    rank[n] = n;
-    iota(indices.begin(), indices.end(), 0);
-    sort(indices.begin(), indices.end(), [&](int i, int j) { return rank[i] < rank[j]; });
+    vector<int> indices(n + 1);
+    for (int i = 0; i < n; i++) indices[i] = -keys[i][2];
+    indices[n] = n;
 
     vector<int> dp(n + 1, n + 1);
     for (int j = n + 1; int i : indices)
