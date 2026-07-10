@@ -50,9 +50,7 @@ template <typename T>
 vector<T> convolve(const vector<T> &a, const vector<T> &b) {
     int da = a.size(), db = b.size(), m = da + db - 1, n = bit_ceil((unsigned) m);
     if (n <= 256 || min(da, db) <= __lg(n)) {
-        vector<T> x(da), y(db);
-        for (int i = 0; i < da; i++) x[i] = a[i];
-        for (int i = 0; i < db; i++) y[i] = b[i];
+        auto x = a, y = b;
         if (da > db) {
             swap(x, y);
             swap(da, db);
