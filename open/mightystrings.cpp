@@ -76,10 +76,15 @@ int main() {
         t += s;
     }
 
+    int limit = 0;
+    for (; (limit + 1) * (limit + 2) / 2 <= t.size() && limit + 1<= n; limit++);
+
     HashedString hs(t);
     gp_hash_table<tuple<unsigned long long, unsigned long long, int>, int, Hash> indices;
     vector<int> start(1), length(1), freq(1);
     for (int i = 0; i < n; i++) {
+        if (len[i] > limit) continue;
+
         auto [h1, h2] = hs.pref_hash(offset[i], offset[i] + len[i]);
         auto it = indices.find({h1, h2, len[i]});
         if (it != indices.end()) freq[it->second]++;
