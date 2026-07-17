@@ -103,7 +103,8 @@ int main() {
         if (length[u] > 1) {
             auto [h1, h2] = hs.pref_hash(start[u], start[u] + length[u] - 1);
             auto it = indices.find({h1, h2, length[u] - 1});
-            if (it != indices.end()) v = it->second;
+            if (it == indices.end()) continue;
+            v = it->second;
         }
         adj_list[v].emplace_back(u);
     }
