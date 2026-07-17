@@ -183,7 +183,7 @@ struct MontgomeryModInt {
     static constexpr int bit_length = sizeof(T) * 8;
 
     static void init() {
-        prime_mod = mod() == 998244353 || mod() == (unsigned long long) 1e9 + 7 || mod() == (unsigned long long) 1e9 + 9 || mod() == (unsigned long long) 1e6 + 69 || mod() == 2524775926340780033 || isprime(mod());
+        prime_mod = mod() == 998244353 || mod() == (unsigned long long) 1e9 + 7 || mod() == (unsigned long long) 1e9 + 9 || mod() == (unsigned long long) 1e6 + 69 || mod() == 2524775926340780033 || mod() == 39582418599937 || mod() == 79164837199873 || isprime(mod());
         r = {mod(), - (U) mod() % mod()};
         while (mod() * r.first != 1) r.first *= (T) 2 - mod() * r.first;
         g = primitive_root_mod_m(mod());
@@ -607,7 +607,31 @@ vector<T> polyinv(const vector<T> &a, int n) {
             if (i < temp.size()) a_inv[i] -= temp[i];
         }
     }
+    a_inv.resize(n);
     return a_inv;
+}
+
+template <typename T>
+pair<vector<T>, vector<T>> polydiv(const vector<T> &a, const vector<T> &b) {
+    int da = a.size(), db = b.size();
+    if (da < db) return {vector<T>{0}, a};
+
+    auto a_rev = a, b_rev = b;
+    reverse(a_rev.begin(), a_rev.end());
+    reverse(b_rev.begin(), b_rev.end());
+
+    int n = da - db + 1;
+    auto q = convolve(a_rev, polyinv(b_rev, n));
+    q.resize(n);
+    reverse(q.begin(), q.end());
+
+    auto c = convolve(b, q);
+    vector<T> r(min(da, db - 1));
+    for (int i = 0; i < r.size(); i++) r[i] = a[i] - (i < c.size() ? c[i] : 0);
+
+    while (q.size() > 1 && !q.back()) q.pop_back();
+    while (r.size() > 1 && !r.back()) r.pop_back();
+    return {q, r};
 }
 
 int main() {
@@ -654,15 +678,13 @@ int main() {
     auto polyAB = convolve(polyA, polyB);
     int k = polyAB.size() - polyC.size() + 1;
 
-    auto polyC_inv = polyinv(polyC, k), polyD = convolve(polyAB, polyC_inv);
-    polyD.resize(k);
-
+    auto polyD = polydiv(vector<modint>{polyAB.begin(), polyAB.end()}, vector<modint>{polyC.begin(), polyC.end()}).first;
     int D = 0;
     vector<pair<int, int>> sides;
     for (int i = 0; i < k; i++)
         if (polyD[i]) {
-            sides.emplace_back(al + bl - cl + i, polyD[i]);
-            D += polyD[i];
+            sides.emplace_back(al + bl - cl + i, polyD[i]());
+            D += sides.back().second;
         }
 
     cout << D << "\n";
