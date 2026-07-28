@@ -27,41 +27,29 @@ int main() {
             x++;
         }
 
-    if (x + bit_width((unsigned) bound + 1) < s) {
+    if (x + bit_width((unsigned) bound + 1) <= s) {
         cout << steps;
         exit(0);
     }
 
-    bool first = true;
-    int block_plus, block_x;
-    auto process_block = [&](int l = 0) {
-        block_plus = first;
-        block_x = 0;
-        int i = l;
-        for (; i < m; i++) {
-            char c = steps[i];
-            if (c == '+') block_plus++;
-            else if (!block_plus) block_x++;
-            else break;
-        }
-        first = false;
-        return i - l;
-    };
-    int r = process_block();
-
-    int b = bit_width((unsigned) capacity + 2) - 1, mask = (1 << b) - 1;
-    if (block_plus > mask) {
-        block_plus = mask;
-        for (int i = 0; i <= r - block_plus; i++) steps[i] = 'o';
+    int b = bit_width((unsigned) capacity + 2) - 1, mask = (1 << b) - 1, r = 0, plus = 1;
+    for (; r < m && steps[r] == '+'; r++, plus++);
+    if (plus > mask) {
+        plus = mask;
+        fill(steps.begin(), steps.begin() + r + 1 - plus, 'o');
     }
 
-    int remaining = mask - block_plus, replace_x = max(0, x - s + b);
+    int remaining = mask - plus, replace_x = max(0, x - s + b);
     reverse(blocks.begin(), blocks.end());
     for (int c : blocks) {
-        int len = process_block(r), replace = min(min(block_x, replace_x), max(0, block_x + (int) bit_width((unsigned) remaining) - (int) bit_width((unsigned) c)));
+        int l = r;
+        for (; r < m && steps[r] == 'x'; r++);
+        int mid = r;
+        for (; r < m && steps[r] == '+'; r++);
+
+        int block_x = mid - l, block_plus = r - mid, replace = min({block_x, replace_x, max(0, block_x + (int) bit_width((unsigned) remaining) - (int) bit_width((unsigned) c))});
         block_x -= replace;
         replace_x -= replace;
-
         if (block_x >= 20 || remaining > c) {
             replace = min(replace_x, block_x);
             block_x -= replace;
@@ -80,12 +68,10 @@ int main() {
                 temp = inflate();
             }
             remaining = temp;
-            if (block_plus > remaining) block_plus = remaining;
+            block_plus = min(block_plus, remaining);
             remaining -= block_plus;
         }
-
-        for (int i = min(block_x, m - r); i < len - min(block_plus, len); i++) steps[i + r] = 'o';
-        r += len;
+        fill(steps.begin() + l + block_x, steps.begin() + r - block_plus, 'o');
     }
     cout << steps;
 }
