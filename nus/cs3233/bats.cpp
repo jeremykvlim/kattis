@@ -39,7 +39,7 @@ int main() {
         fill(steps.begin(), steps.begin() + r + 1 - plus, 'o');
     }
 
-    int remaining = mask - plus, replace_x = max(0, x - s + b);
+    int n = 2 * m + 1, w = bit_width((unsigned) n + 1), remaining = mask - plus, replace_x = max(0, x - s + b);
     reverse(blocks.begin(), blocks.end());
     for (int c : blocks) {
         int l = r;
@@ -47,30 +47,14 @@ int main() {
         int mid = r;
         for (; r < m && steps[r] == '+'; r++);
 
-        int block_x = mid - l, block_plus = r - mid, replace = min({block_x, replace_x, max(0, block_x + (int) bit_width((unsigned) remaining) - (int) bit_width((unsigned) c))});
-        block_x -= replace;
-        replace_x -= replace;
-        if (block_x >= 20 || remaining > c) {
-            replace = min(replace_x, block_x);
-            block_x -= replace;
-            replace_x -= replace;
-        } else {
-            auto inflate = [&]() -> int {
-                if (!block_x) return remaining;
-                if (block_x >= 20) return INT_MAX;
-                return min((((long long) remaining + 1) << block_x) - 1, (long long) INT_MAX);
-            };
-
-            int temp = inflate();
-            if (replace_x && temp > c) {
-                block_x--;
-                replace_x--;
-                temp = inflate();
-            }
-            remaining = temp;
-            block_plus = min(block_plus, remaining);
-            remaining -= block_plus;
-        }
+        int block_x = mid - l, block_plus = r - mid;
+        auto inflate = [&]() -> int {
+            return block_x >= w ? n : min((long long) n, (((long long) remaining + 1) << block_x) - 1);
+        };
+        for (; block_x && replace_x && inflate() > c; block_x--, replace_x--);
+        remaining = inflate();
+        block_plus = min(block_plus, remaining);
+        remaining -= block_plus;
         fill(steps.begin() + l + block_x, steps.begin() + r - block_plus, 'o');
     }
     cout << steps;
