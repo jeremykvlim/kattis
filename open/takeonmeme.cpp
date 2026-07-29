@@ -135,13 +135,9 @@ T squared_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
 }
 
 template <typename T>
-vector<Point<T>> minkowski_sum(vector<Point<T>> &P, vector<Point<T>> &Q) {
-    auto reorder = [&](auto &polygon) {
-        int i = min_element(polygon.begin(), polygon.end()) - polygon.begin();
-        rotate(polygon.begin(), polygon.begin() + i, polygon.end());
-    };
-    reorder(P);
-    reorder(Q);
+vector<Point<T>> minkowski_sum(vector<Point<T>> P, vector<Point<T>> Q) {
+    rotate(P.begin(), min_element(P.begin(), P.end()), P.end());
+    rotate(Q.begin(), min_element(Q.begin(), Q.end()), Q.end());
 
     int n = P.size(), m = Q.size();
     vector<Point<T>> R;
@@ -161,10 +157,6 @@ vector<Point<T>> minkowski_sum(vector<Point<T>> &P, vector<Point<T>> &Q) {
         if (cp >= 0) i++;
         if (cp <= 0) j++;
     }
-    P.pop_back();
-    P.pop_back();
-    Q.pop_back();
-    Q.pop_back();
     return R;
 }
 
