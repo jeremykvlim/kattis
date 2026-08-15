@@ -209,7 +209,7 @@ struct SternBrocotTree {
     template <typename T>
     static vector<pair<char, T>> path_to_target(const Fraction<T> &f) {
         vector<pair<char, T>> path;
-        bool left = f < Fraction{1, 1};
+        bool left = f < Fraction<T>{1, 1};
         Fraction<T> l{0, 1}, r{1, 0};
         while (f != mediant(l, r)) {
             if (left) {
