@@ -358,34 +358,35 @@ int main() {
 
     modint::init();
 
-    vector<unordered_map<int, int>> adj_list(n);
+    vector<vector<pair<int, int>>> adj_list(n);
     for (int i = 0; i < n; i++) {
         int c;
         cin >> c;
 
-        while (c--) {
-            int d;
-            cin >> d;
+        vector<int> d(c);
+        for (int &dij : d) cin >> dij;
+        sort(d.begin(), d.end());
 
-            adj_list[i][d]++;
+        for (int l = 0, r; l < c; l = r) {
+            for (r = l + 1; r < c && d[l] == d[r]; r++);
+            adj_list[i].emplace_back(d[l], r - l);
         }
     }
 
-    vector<int> state(n, 0);
-    vector<unordered_map<int, int>> build(n);
+    vector<int> state(n), order;
     auto dfs = [&](auto &&self, int v = 0) -> bool {
         state[v] = 1;
-        build[v] = adj_list[v];
         for (auto [u, count] : adj_list[v])
             if (!state[u]) {
                 if (self(self, u)) return true;
             } else if (state[u] == 1) return true;
 
         state[v] = 2;
+        order.emplace_back(v);
         return false;
     };
 
-    if (dfs(dfs) || build[0].empty()) {
+    if (dfs(dfs)) {
         cout << "Invalid";
         exit(0);
     }
@@ -398,49 +399,41 @@ int main() {
         exit(0);
     }
 
-    vector<long long> cost(n, -1);
-    auto size = [&](auto &&self, int v = 0) {
-        if (cost[v] != -1) return cost[v];
+    vector<modint> cost(n);
+    for (int v : order) {
+        cost[v] = 1;
+        for (auto [u, count] : adj_list[v]) cost[v] += cost[u] * count;
+    }
 
-        modint c = 1;
-        for (auto [u, count] : build[v]) c += self(self, u) * count;
-        return cost[v] = c();
-    };
-
-    cout << size(size) << "\n";
-
-    while (q--) {
+    cout << cost[0] << "\n";
+    vector<bitset<1000>> bs1(n);
+    for (int i = 0; i < q; i++) {
         int x;
         cin >> x;
 
-        unordered_set<int> y;
         while (x--) {
-            int yi;
-            cin >> yi;
+            int y;
+            cin >> y;
 
-            y.emplace(yi);
+            bs1[y][i] = true;
         }
-
-        vector<long long> r(n, -1);
-        vector<bool> extra(n, false);
-        auto rebuild = [&](auto &&self, int v = 0) {
-            if (r[v] != -1) return r[v];
-
-            if (y.count(v)) {
-                extra[v] = true;
-                return size(size, v);
-            }
-
-            modint c = 0;
-            for (auto [u, count] : build[v]) {
-                c += self(self, u) * count;
-                if (extra[u]) extra[v] = true;
-            }
-            c += extra[v];
-
-            return r[v] = c();
-        };
-
-        cout << rebuild(rebuild) << "\n";
     }
+
+    auto bs2 = bs1;
+    for (int v : order)
+        for (auto [u, count] : adj_list[v]) bs2[v] |= bs2[u];
+
+    vector<modint> sum(q);
+    vector<vector<modint>> dp(n, vector<modint>(q));
+    for (int v : order) {
+        fill(sum.begin(), sum.begin() + q, 0);
+
+        for (auto [u, count] : adj_list[v])
+            for (int i = 0; i < q; i++) sum[i] += count * dp[u][i];
+
+        for (int i = 0; i < q; i++)
+            if (bs1[v][i]) dp[v][i] = cost[v];
+            else if (bs2[v][i]) dp[v][i] = sum[i] + 1;
+    }
+    for (int i = 0; i < q; i++) cout << dp[0][i] << "\n";
 }
