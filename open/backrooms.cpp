@@ -57,11 +57,11 @@ int main() {
     vector<array<complex<long long>, 2>> states;
     vector<complex<long long>> base(n, zero);
     vector<int> dr{1, 0, -1, 0}, dc{0, 1, 0, -1};
+    queue<int> q;
     for (int s = 0; s < n; s++) {
-        if (component[s] != -1) continue;
+        if (~component[s]) continue;
         component[s] = count;
         states.push_back({{zero, zero}});
-        queue<int> q;
         q.emplace(s);
         while (!q.empty()) {
             int v = q.front();
@@ -88,7 +88,7 @@ int main() {
 
                 int u = index(y, x);
                 complex<long long> step(a, b);
-                if (component[u] == -1) {
+                if (!~component[u]) {
                     component[u] = count;
                     base[u] = base[v] + step;
                     q.emplace(u);
@@ -138,10 +138,10 @@ int main() {
         count++;
     }
 
-    int q;
-    cin >> q;
+    int Q;
+    cin >> Q;
 
-    while (q--) {
+    while (Q--) {
         long long sx, sy, gx, gy;
         cin >> sx >> sy >> gx >> gy;
 

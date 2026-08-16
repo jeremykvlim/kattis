@@ -29,8 +29,8 @@ int main() {
     int count = 0;
     for (int i = 1; i <= n; i++)
         if (!~component[i]) {
-            q.emplace(i);
             component[i] = count;
+            q.emplace(i);
             while (!q.empty()) {
                 int v = q.front();
                 q.pop();
