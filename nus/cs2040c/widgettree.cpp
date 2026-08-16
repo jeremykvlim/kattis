@@ -420,16 +420,15 @@ int main() {
     }
 
     auto bs2 = bs1;
-    for (int v : order)
-        for (auto [u, count] : adj_list[v]) bs2[v] |= bs2[u];
-
     vector<modint> sum(q);
     vector<vector<modint>> dp(n, vector<modint>(q));
     for (int v : order) {
         fill(sum.begin(), sum.begin() + q, 0);
 
-        for (auto [u, count] : adj_list[v])
+        for (auto [u, count] : adj_list[v]) {
+            bs2[v] |= bs2[u];
             for (int i = 0; i < q; i++) sum[i] += count * dp[u][i];
+        }
 
         for (int i = 0; i < q; i++)
             if (bs1[v][i]) dp[v][i] = cost[v];
