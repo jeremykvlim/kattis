@@ -675,16 +675,16 @@ int main() {
                 e2 = next[e2];
             } while (e2 != e1);
 
-            auto a = doubled_signed_area_of_polygon(face);
-            if (a < 0) faces[component[edges[e1 >> 1][e1 & 1]]] = face;
+            if (doubled_signed_area_of_polygon(face) < 0) faces[component[edges[e1 >> 1][e1 & 1]]] = face;
         }
 
     auto total = 0.L;
     for (int i = 0; i < count; i++)
         if (!faces[i].empty()) {
             bool enclosed = false;
+            auto p = faces[i][0];
             for (int j = 0; j < count && !enclosed; j++)
-                if (i != j && !faces[j].empty()) enclosed = point_in_polygon(faces[j], faces[i][0]).first;
+                if (i != j && !faces[j].empty()) enclosed = point_in_polygon(faces[j], p).first;
             if (!enclosed) total -= doubled_signed_area_of_polygon(faces[i]) / 2;
         }
     cout << fixed << setprecision(6) << total / habitats;
