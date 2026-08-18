@@ -447,11 +447,10 @@ struct SuffixArray {
 
         vector<int> sa(n, 0), sum_s(range + 1, 0), sum_l(range + 1, 0);
         vector<bool> sl(n, false);
-        for (int i = n - 2; ~i; i--) sl[i] = (ascii1[i] == ascii1[i + 1]) ? sl[i + 1] : (ascii1[i] < ascii1[i + 1]);
-        for (int i = 0; i < n; i++) {
+        for (int i = n - 2; ~i; i--) sl[i] = ascii1[i] == ascii1[i + 1] ? sl[i + 1] : ascii1[i] < ascii1[i + 1];
+        for (int i = 0; i < n; i++)
             if (!sl[i]) sum_s[ascii1[i]]++;
             else sum_l[ascii1[i] + 1]++;
-        }
 
         for (int i = 0; i <= range; i++) {
             sum_s[i] += sum_l[i];
@@ -462,8 +461,7 @@ struct SuffixArray {
             fill(sa.begin(), sa.end(), -1);
             vector<int> b(range + 1, 0);
             copy(sum_s.begin(), sum_s.end(), b.begin());
-            for (int i : lms)
-                if (i < n) sa[b[ascii1[i]]++] = i;
+            for (int i : lms) sa[b[ascii1[i]]++] = i;
 
             copy(sum_l.begin(), sum_l.end(), b.begin());
             sa[b[ascii1[n - 1]]++] = n - 1;
@@ -471,8 +469,10 @@ struct SuffixArray {
                 if (j > 0 && !sl[j - 1]) sa[b[ascii1[j - 1]]++] = j - 1;
 
             copy(sum_l.begin(), sum_l.end(), b.begin());
-            for (int i = n - 1, j = sa[i]; ~i; j = sa[--i])
+            for (int i = n - 1; ~i; i--) {
+                int j = sa[i];
                 if (j > 0 && sl[j - 1]) sa[--b[ascii1[j - 1] + 1]] = j - 1;
+            }
         };
 
         vector<int> lms_map(n + 1, -1), lms;
@@ -496,11 +496,7 @@ struct SuffixArray {
                 bool same = true;
                 if (l_end - l != r_end - r) same = false;
                 else {
-                    while (l < l_end && ascii1[l] == ascii1[r]) {
-                        l++;
-                        r++;
-                    }
-
+                    for (; l < l_end && ascii1[l] == ascii1[r]; l++, r++);
                     if (l == n || ascii1[l] != ascii1[r]) same = false;
                 }
 
