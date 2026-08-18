@@ -42,13 +42,13 @@ int main() {
         if (n & 1) paths.push_back({n});
 
         while (paths.size() > 1) {
-            int j = 1;
-            for (; j < paths.size() && !query(paths[0].back(), paths[j].front()); j++);
+            int i = 1;
+            for (; i < paths.size() && !query(paths[0].back(), paths[i].front()); i++);
 
-            if (j < paths.size()) {
-                paths[0].insert(paths[0].end(), paths[j].begin(), paths[j].end());
-                paths.erase(paths.begin() + j);
-                shuffle(paths.begin() + j, paths.end(), rng);
+            if (i < paths.size()) {
+                paths[0].insert(paths[0].end(), paths[i].begin(), paths[i].end());
+                paths.erase(paths.begin() + i);
+                shuffle(paths.begin() + i, paths.end(), rng);
             } else {
                 int m = rng() % paths[0].size();
                 vector<int> p(paths[0].begin(), paths[0].begin() + m), q(paths[0].begin() + m, paths[0].end());
