@@ -100,9 +100,8 @@ int main() {
     }
 
     auto dfs = [&](auto &&self, int v = 1, int prev = -1) -> int {
-        for (auto [u, e] : adj_list[v]) {
+        for (auto [u, e] : adj_list[v])
             if (u && u != prev) dp[v] = min(dp[v], self(self, u, v) + 1);
-        }
         return dp[v];
     };
     dfs(dfs);
