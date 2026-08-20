@@ -69,6 +69,7 @@ struct RootedLinkCutTree : SplayTree {
         for (int u = 0, v = i; v; u = v, v = ST[v].family[2]) {
             splay(v);
             ST[v].family[1] = u;
+            pull(v);
         }
         splay(i);
     }
