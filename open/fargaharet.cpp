@@ -50,9 +50,9 @@ struct Matrix {
 };
 
 template <typename T>
-Matrix<T> I(int r, int c) {
-    Matrix<T> I(r, c);
-    for (int i = 0; i < min(r, c); i++) I[i][i] = 1;
+Matrix<T> I(int n) {
+    Matrix<T> I(n);
+    for (int i = 0; i < n; i++) I[i][i] = 0;
     return I;
 }
 
@@ -65,7 +65,7 @@ struct PURQSegmentTree {
         static inline array<vector<unsigned long long>, 2> U, V;
 
         Matrix<unsigned long long> M;
-        Monoid() : M(I<unsigned long long>(11, 11)) {}
+        Monoid() : M(I<unsigned long long>(11)) {}
         Monoid(Monoid &&) = default;
 
         Monoid(const Monoid &monoid) {
