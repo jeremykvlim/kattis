@@ -73,8 +73,7 @@ struct PURQSegmentTree {
             if (p <= 1) M = monoid.M;
             else if (p & 1) {
                 auto M_T = monoid.M.transpose();
-                V[0] = M_T * V[0];
-                V[1] = M_T * V[1];
+                for (int i = 0; i < 2; i++) V[i] = M_T * V[i];
             }
         }
 
@@ -135,10 +134,8 @@ struct PURQSegmentTree {
 
         auto & operator+=(const Monoid &monoid) {
             if (p > 1) {
-                if (!(p & 1)) {
-                    U[0] = monoid.M * U[0];
-                    U[1] = monoid.M * U[1];
-                }
+                if (!(p & 1))
+                    for (int i = 0; i < 2; i++) U[i] = monoid.M * U[i];
                 return *this;
             }
 
