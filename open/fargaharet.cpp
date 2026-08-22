@@ -185,9 +185,9 @@ struct PURQSegmentTree {
         n = m;
         size = s;
 
-        for (int k = 0; k < 2; k++) {
-            Monoid::U[k].resize(11);
-            Monoid::V[k].resize(11);
+        for (int i = 0; i < 2; i++) {
+            Monoid::U[i].resize(11);
+            Monoid::V[i].resize(11);
         }
         Monoid::p = -1;
         for (int i = 0; i < m; i++) ST[i + m] = i;
