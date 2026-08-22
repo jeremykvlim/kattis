@@ -50,7 +50,7 @@ struct DominatorTree {
         DT[root] = root;
 
         for (int v = 1; v <= n; v++)
-            if (v != root) adj_list_DT[DT[v]].emplace_back(v);
+            if (v != root && ~DT[v]) adj_list_DT[DT[v]].emplace_back(v);
 
         auto lsb = [&](int x) {
             return x & -x;
