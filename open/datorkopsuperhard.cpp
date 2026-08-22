@@ -214,13 +214,13 @@ struct SternBrocotTree {
         while (f != mediant(l, r)) {
             if (left) {
                 T num = f.denom() * (l.numer() + r.numer()) - f.numer() * (l.denom() + r.denom()), den = f.numer() * l.denom() - f.denom() * l.numer(),
-                        n = (num + den - 1) / den;
+                  n = (num + den - 1) / den;
                 path.emplace_back('L', n);
                 r.numer() += n * l.numer();
                 r.denom() += n * l.denom();
             } else {
                 T num = f.numer() * (l.denom() + r.denom()) - f.denom() * (l.numer() + r.numer()), den = f.denom() * r.numer() - f.numer() * r.denom(),
-                        n = (num + den - 1) / den;
+                  n = (num + den - 1) / den;
                 path.emplace_back('R', n);
                 l.numer() += n * r.numer();
                 l.denom() += n * r.denom();
