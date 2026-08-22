@@ -171,7 +171,7 @@ Matrix<T> matpow(Matrix<T> A, U exponent) {
 
     while (exponent) {
         if (exponent & 1) B = A * B;
-        A = A * A;
+        A *= A;
         exponent >>= 1;
     }
     return B;

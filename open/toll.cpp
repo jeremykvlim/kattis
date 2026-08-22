@@ -52,10 +52,6 @@ struct Matrix {
         return C;
     }
 
-    friend auto operator*=(Matrix<T> &A, const Matrix<T> &B) {
-        return A = A * B;
-    }
-
     auto & operator[](int i) {
         return mat[i];
     }
