@@ -27,7 +27,8 @@ struct PURQSegmentTree {
         }
 
         friend auto operator+(Monoid ml, const Monoid &mr) {
-            return ml += mr;
+            ml += mr;
+            return ml;
         }
     };
 
