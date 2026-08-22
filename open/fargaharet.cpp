@@ -65,6 +65,7 @@ struct PURQSegmentTree {
         static inline array<vector<unsigned long long>, 2> U, V;
 
         Matrix<unsigned long long> M;
+
         Monoid() : M(I<unsigned long long>(11)) {}
         Monoid(Monoid &&) = default;
 
