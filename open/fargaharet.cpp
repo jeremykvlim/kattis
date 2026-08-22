@@ -52,7 +52,7 @@ struct Matrix {
 template <typename T>
 Matrix<T> I(int n) {
     Matrix<T> I(n);
-    for (int i = 0; i < n; i++) I[i][i] = 0;
+    for (int i = 0; i < n; i++) I[i][i] = 1;
     return I;
 }
 
