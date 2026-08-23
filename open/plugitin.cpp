@@ -50,7 +50,6 @@ tuple<vector<int>, vector<int>, int> hopcroft_karp(int n, int m, const vector<pa
     }
 }
 
-
 struct DominatorTree {
     int n;
     vector<int> DT, semidom, sets, label, order;
