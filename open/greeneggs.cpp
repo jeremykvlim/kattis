@@ -74,7 +74,7 @@ struct AbstractSyntaxTree {
         return AST[i];
     }
 
-    auto size() {
+    int size() {
         return AST.size();
     }
 };

@@ -37,7 +37,7 @@ struct Trie {
         ends.emplace_back(node);
     }
 
-    auto size() {
+    int size() {
         return T.size();
     }
 
