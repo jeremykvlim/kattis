@@ -17,8 +17,8 @@ int main() {
         return v;
     };
 
-    auto cut = [&](int a, int b, int c, int d, auto ask) {
-        auto search = [&](int l, int r, auto f) {
+    auto cut = [&](int a, int b, int c, int d, auto &&ask) {
+        auto search = [&](int l, int r, auto &&f) {
             while (l + 1 < r) {
                 int m = l + (r - l) / 2;
 
