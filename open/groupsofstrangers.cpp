@@ -129,7 +129,7 @@ int main() {
 
             bitset<1000> target(0);
             for (int i = 0; i < n; i++)
-                if (i != s) target.set(i);
+                if (i != s) target[i] = true;
 
             vector<int> neighbors;
             auto check_subsets = [&](int k) {

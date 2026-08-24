@@ -30,10 +30,10 @@ int main() {
             bs.reset();
             temp.clear();
             for (int i : r) {
-                bs.set(i);
+                bs[i] = true;
                 int j = bs.find_next(i);
                 if (j < n) {
-                    bs.reset(j);
+                    bs[j] = false;
                     temp.emplace_back(j);
                 }
             }
