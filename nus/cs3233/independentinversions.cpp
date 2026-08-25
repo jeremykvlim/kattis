@@ -38,7 +38,7 @@ int main() {
     auto diffs_l = build(kl, base_l), diffs_r = build(kr, base_r);
 
     int c = 0;
-    vector<int> count(n, 0), order(n), temp(n);
+    vector<int> count(n, 0), order(n);
     iota(order.begin(), order.end(), 0);
     auto dnc = [&](auto self, int l, int r) -> void {
         if (l + 1 >= r) return;
@@ -61,14 +61,7 @@ int main() {
             for (int x : diffs_r[quo[i]]) c += count[x * base_l + rem[i]];
         }
         for (int pos : undo) count[pos] = 0;
-
-        int i = l, j = m, k = l;
-        for (; i != m && j != r; k++)
-            if (b[order[i]] > b[order[j]]) temp[k] = order[i++];
-            else temp[k] = order[j++];
-        for (; i < m; k++) temp[k] = order[i++];
-        for (; j < r; k++) temp[k] = order[j++];
-        copy(temp.begin() + l, temp.begin() + r, order.begin() + l);
+        inplace_merge(order.begin() + l, order.begin() + m, order.begin() + r, [&](int i, int j) { return b[i] > b[j]; });
     };
     dnc(dnc, 0, n);
     cout << c;
