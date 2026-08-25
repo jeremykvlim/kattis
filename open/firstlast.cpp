@@ -8,7 +8,7 @@ int main() {
     int n;
     cin >> n;
 
-    vector<vector<int>> count(26, vector<int>(26));
+    vector<vector<int>> count(26, vector<int>(26, 0));
     while (n--) {
         string s;
         cin >> s;
