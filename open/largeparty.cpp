@@ -460,15 +460,15 @@ int main() {
         cin >> n >> k;
         int m = min(n, k);
 
-        vector<modint> f(n + 1, 0), dp(m + 1, 0), temp(m + 1, 0);
+        vector<modint> f(n + 1, 0), dp(m + 1, 0);
         f[0] = dp[0] = 1;
         for (int i = 1; i <= n; i++) {
-            temp[0] = accumulate(dp.begin(), dp.end(), (modint) 0);
-            copy(dp.begin(), dp.begin() + m, temp.begin() + 1);
-            dp = temp;
+            auto sum = accumulate(dp.begin(), dp.end(), (modint) 0);
+            copy_backward(dp.begin(), dp.begin() + m, dp.end());
+            dp[0] = sum;
             f[i] = accumulate(dp.begin(), dp.end(), (modint) 0);
         }
-
+        
         vector<int> divs;
         for (int d = 1; d * d <= n; d++)
             if (!(n % d)) {
