@@ -139,7 +139,6 @@ int main() {
 
     FenwickTree<int> count_d(diffs.size() + 1);
     FenwickTree<long long> sum_d(diffs.size() + 1);
-    vector<array<int, 6>> temp(events.size());
     auto dnc = [&](auto &&self, int l, int r) -> void {
         if (l + 1 >= r) return;
 
@@ -163,8 +162,7 @@ int main() {
                 sum_d.update(events[i][2], -events[i][5]);
             }
 
-        merge(events.begin() + l, events.begin() + m, events.begin() + m, events.begin() + r, temp.begin() + l, [&](const auto &a1, const auto &a2) { return a1[1] < a2[1]; });
-        copy(temp.begin() + l, temp.begin() + r, events.begin() + l);
+        inplace_merge(events.begin() + l, events.begin() + m, events.begin() + r, [&](const auto &a1, const auto &a2) { return a1[1] < a2[1]; });
     };
     dnc(dnc, 0, events.size());
     for (auto v : saved) cout << total - v << "\n";
