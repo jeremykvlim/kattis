@@ -52,8 +52,7 @@ int main() {
 
     auto push = [&](auto &&self, int mask, int d, int i = 0) -> void {
         if (!~d) {
-            for (int f = 1; f <= 6; f++)
-                E[i + (f << (3 * __lg(mask)))] = state[i + (f << (3 * __lg(mask)))] ? 0 : min(E[i + (f << (3 * __lg(mask)))], E[i]);
+            for (int f = 1; f <= 6; f++) E[i + (f << (3 * __lg(mask)))] = state[i + (f << (3 * __lg(mask)))] ? 0 : min(E[i + (f << (3 * __lg(mask)))], E[i]);
             return;
         }
 
@@ -62,12 +61,12 @@ int main() {
     };
 
     for (;;) {
-        auto temp = E[0] - !state[0];
+        auto temp = E[0] - 1;
         for (int m = 1; m < 1 << d; m++) pull(pull, m, m != (1 << d) - 1 ? __lg(m ^ (1 << d) - 1) : -1);
         for (int m = (1 << d) - 1; m; m--) push(push, m, m != (1 << d) - 1 ? __lg(m ^ (1 << d) - 1) : -1);
 
         if (abs(temp - E[0]) < 1e-9) {
-            cout << fixed << setprecision(6) << E[0] + !state[0];
+            cout << fixed << setprecision(6) << E[0] + 1;
             exit(0);
         }
 
