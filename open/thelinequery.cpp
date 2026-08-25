@@ -124,18 +124,18 @@ int main() {
     sort(diffs.begin(), diffs.end());
     diffs.erase(unique(diffs.begin(), diffs.end()), diffs.end());
 
-    vector<array<int, 6>> events;
+    vector<array<int, 6>> sweep;
     for (auto [l, r] : pairs) {
         int d = r - l;
-        events.push_back({-l, r, (int) (lower_bound(diffs.begin(), diffs.end(), -d) - diffs.begin()) + 1, 0, -1, d});
+        sweep.push_back({-l, r, (int) (lower_bound(diffs.begin(), diffs.end(), -d) - diffs.begin()) + 1, 0, -1, d});
     }
 
     for (int i = 0; i < q; i++) {
         auto [l, r] = queries[i];
         int d = r - l;
-        events.push_back({-l - 1, r, (int) (upper_bound(diffs.begin(), diffs.end(), -(d + 3) / 2) - diffs.begin()), 1, i, d + 1});
+        sweep.push_back({-l - 1, r, (int) (upper_bound(diffs.begin(), diffs.end(), -(d + 3) / 2) - diffs.begin()), 1, i, d + 1});
     }
-    sort(events.begin(), events.end(), [&](const auto &a1, const auto &a2) { return a1[0] != a2[0] ? a1[0] < a2[0] : a1[3] < a2[3]; });
+    sort(sweep.begin(), sweep.end(), [&](const auto &a1, const auto &a2) { return a1[0] != a2[0] ? a1[0] < a2[0] : a1[3] < a2[3]; });
 
     FenwickTree<int> count_d(diffs.size() + 1);
     FenwickTree<long long> sum_d(diffs.size() + 1);
@@ -148,22 +148,22 @@ int main() {
 
         int j = l;
         for (int i = m; i < r; i++) {
-            for (; j < m && events[i][1] >= events[j][1]; j++)
-                if (!events[j][3]) {
-                    count_d.update(events[j][2], 1);
-                    sum_d.update(events[j][2], events[j][5]);
+            for (; j < m && sweep[i][1] >= sweep[j][1]; j++)
+                if (!sweep[j][3]) {
+                    count_d.update(sweep[j][2], 1);
+                    sum_d.update(sweep[j][2], sweep[j][5]);
                 }
-            if (events[i][3]) saved[events[i][4]] += 2 * sum_d.pref_sum(events[i][2]) - (long long) events[i][5] * count_d.pref_sum(events[i][2]);
+            if (sweep[i][3]) saved[sweep[i][4]] += 2 * sum_d.pref_sum(sweep[i][2]) - (long long) sweep[i][5] * count_d.pref_sum(sweep[i][2]);
         }
 
         for (int i = l; i < j; i++)
-            if (!events[i][3]) {
-                count_d.update(events[i][2], -1);
-                sum_d.update(events[i][2], -events[i][5]);
+            if (!sweep[i][3]) {
+                count_d.update(sweep[i][2], -1);
+                sum_d.update(sweep[i][2], -sweep[i][5]);
             }
 
-        inplace_merge(events.begin() + l, events.begin() + m, events.begin() + r, [&](const auto &a1, const auto &a2) { return a1[1] < a2[1]; });
+        inplace_merge(sweep.begin() + l, sweep.begin() + m, sweep.begin() + r, [&](const auto &a1, const auto &a2) { return a1[1] < a2[1]; });
     };
-    dnc(dnc, 0, events.size());
+    dnc(dnc, 0, sweep.size());
     for (auto v : saved) cout << total - v << "\n";
 }
