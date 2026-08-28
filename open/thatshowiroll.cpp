@@ -21,7 +21,7 @@ int main() {
         cin >> l;
 
         int m0 = 0;
-        vector<int> adj_mask_regular(26, 0), adj_mask_transpose(26, 0);
+        vector<int> adj_masks_regular(26, 0), adj_masks_transpose(26, 0);
         while (l--) {
             string s;
             cin >> s;
@@ -30,14 +30,14 @@ int main() {
             m0 |= 1 << c1;
             if (s.size() > 1) {
                 int c2 = s[1] - 'a';
-                adj_mask_regular[c1] |= 1 << c2;
-                adj_mask_transpose[c2] |= 1 << c1;
+                adj_masks_regular[c1] |= 1 << c2;
+                adj_masks_transpose[c2] |= 1 << c1;
             }
         }
 
         vector<vector<int>> suff(26, vector<int>(27, 0));
         for (int c1 = 0; c1 < 26; c1++)
-            for (int c2 = 25; ~c2; c2--) suff[c1][c2] = suff[c1][c2 + 1] + ((adj_mask_regular[c1] >> c2) & 1);
+            for (int c2 = 25; ~c2; c2--) suff[c1][c2] = suff[c1][c2 + 1] + ((adj_masks_regular[c1] >> c2) & 1);
 
         vector<int> degree(26, 0), add(6, 0);
         int score = -1, m1 = 0, m2 = 0;
@@ -81,9 +81,9 @@ int main() {
             for (int c = ch; c <= chosen + 20; c++) {
                 if (score >= bound) return;
                 m2 |= 1 << c;
-                for (int m3 = adj_mask_transpose[c]; m3; m3 &= m3 - 1) degree[countr_zero((unsigned) m3)]++;
+                for (int m3 = adj_masks_transpose[c]; m3; m3 &= m3 - 1) degree[countr_zero((unsigned) m3)]++;
                 self(self, c + 1, chosen + 1);
-                for (int m3 = adj_mask_transpose[c]; m3; m3 &= m3 - 1) degree[countr_zero((unsigned) m3)]--;
+                for (int m3 = adj_masks_transpose[c]; m3; m3 &= m3 - 1) degree[countr_zero((unsigned) m3)]--;
                 m2 ^= 1 << c;
             }
         };
