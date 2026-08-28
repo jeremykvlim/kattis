@@ -133,12 +133,12 @@ int main() {
     for (int &ai : a) cin >> ai;
 
     array<int, 55> delta;
-    vector<vector<int>> indices(1024);
+    vector<vector<int>> indices(1 << 10);
     for (int b = 0; b < 10; b++) delta[b] = ((1 << 10) - 1) * (1 << b);
     for (int i = 10, b1 = 0; b1 < 10; b1++)
         for (int b2 = b1 + 1; b2 < 10; b2++) delta[i++] = -(1 << b1) * (1 << b2);
 
-    for (int mask = 0; mask < 1024; mask++) {
+    for (int mask = 0; mask < 1 << 10; mask++) {
         for (int b = 0; b < 10; b++)
             if ((mask >> b) & 1) indices[mask].emplace_back(b);
 

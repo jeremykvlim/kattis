@@ -10,7 +10,7 @@ int main() {
     int n, k;
     cin >> n >> k;
 
-    int size1 = 1024, blocks = (n + size1 - 1) / size1;
+    int size1 = 1 << 10, blocks = (n + size1 - 1) / size1;
     vector<vector<dynamic_bitset<>>> comp(blocks, vector<dynamic_bitset<>>(k, dynamic_bitset<>(size1)));
     for (int i = 0; i < n; i++) {
         string s;
