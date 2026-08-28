@@ -17,16 +17,16 @@ int main() {
     }
 
     while (m-- > 1) {
-        vector<int> lcs;
+        vector<int> lis;
         for (int _ = 0; _ < n; _++) {
             int pi;
             cin >> pi;
 
             pi = indices[pi];
-            auto it = lower_bound(lcs.begin(), lcs.end(), pi);
-            if (it == lcs.end()) lcs.emplace_back(pi);
+            auto it = lower_bound(lis.begin(), lis.end(), pi);
+            if (it == lis.end()) lis.emplace_back(pi);
             else *it = pi;
         }
-        cout << lcs.size() << "\n";
+        cout << lis.size() << "\n";
     }
 }
