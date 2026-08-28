@@ -12,14 +12,12 @@ int main() {
         int m;
         cin >> m;
 
-        vector<unsigned long long> adj_masks(36);
+        vector<unsigned long long> adj_masks(36, 0);
         while (m--) {
             int s, d;
             cin >> s >> d;
-            s--;
-            d--;
 
-            adj_masks[s] |= 1ULL << d;
+            adj_masks[s - 1] |= 1ULL << (d - 1);
         }
 
         int k = 2;
