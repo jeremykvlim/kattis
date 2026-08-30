@@ -4,9 +4,9 @@ using namespace std;
 struct SplayTree {
     struct SplayNode {
         array<int, 3> family;
-        int value = 0, maximum = 0;
+        int base = 0, aggregate = 0;
 
-        SplayNode(int v = 0) : family{0, 0, 0}, value(v), maximum(v) {}
+        SplayNode(int v = 0) : family{0, 0, 0}, base(v), aggregate(v) {}
     };
 
     vector<SplayNode> ST;
@@ -26,13 +26,13 @@ struct SplayTree {
     void pull(int i) {
         if (!i) return;
         auto [l, r, p] = ST[i].family;
-        ST[i].maximum = max(ST[i].value, max(ST[l].maximum, ST[r].maximum));
+        ST[i].aggregate = max(ST[i].base, max(ST[l].aggregate, ST[r].aggregate));
     }
 
     void apply(int i, int v) {
         if (!i) return;
-        ST[i].value += v;
-        ST[i].maximum += v;
+        ST[i].base += v;
+        ST[i].aggregate += v;
         lazy[i] += v;
     }
 
@@ -118,7 +118,7 @@ struct RootedLinkCutTree : SplayTree {
 
     void update(int i, int j) {
         access(i);
-        int v = ST[i].value;
+        int v = ST[i].base;
         apply(ST[i].family[0], -v);
         cut(i);
 
@@ -132,12 +132,12 @@ struct RootedLinkCutTree : SplayTree {
         for (;;) {
             push(i);
             auto [l, r, p] = ST[i].family;
-            if (r && ST[r].maximum >= k) i = r;
-            else if (ST[i].value < k) i = l;
+            if (r && ST[r].aggregate >= k) i = r;
+            else if (ST[i].base < k) i = l;
             else break;
         }
         splay(i);
-        return {ST[i].value, i};
+        return {ST[i].base, i};
     }
 };
 
