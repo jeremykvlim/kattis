@@ -9,7 +9,7 @@ void fast_subset_transform(int n, vector<T> &v, F &&f) {
 }
 
 template <typename T>
-vector<T> fzt(int n, const vector<T> &f) {
+vector<T> subset_zeta_transform(int n, const vector<T> &f) {
     auto F = f;
     fast_subset_transform(n, F, [](T x, T y) { return x + y; });
     return F;
@@ -44,7 +44,7 @@ int main() {
     for (int t = 0; t < k; t++) {
         vector<int> temp(m);
         for (int mask = 0; mask < m; mask++) temp[mask] = merges[t * m + mask];
-        temp = fzt(m, temp);
+        temp = subset_zeta_transform(m, temp);
         for (int mask = 0; mask < m; mask++) merges[t * m + mask] = temp[mask];
     }
 

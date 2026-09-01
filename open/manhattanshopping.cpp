@@ -9,14 +9,14 @@ void fast_subset_transform(int n, vector<T> &v, F &&f) {
 }
 
 template <typename T>
-vector<T> fzt(int n, const vector<T> &f) {
+vector<T> subset_zeta_transform(int n, const vector<T> &f) {
     auto F = f;
     fast_subset_transform(n, F, [](T x, T y) { return x + y; });
     return F;
 }
 
 template <typename T>
-vector<T> fmt(int n, const vector<T> &F) {
+vector<T> subset_mobius_transform(int n, const vector<T> &F) {
     auto f = F;
     fast_subset_transform(n, f, [](T x, T y) { return x - y; });
     return f;
@@ -36,9 +36,9 @@ vector<T> OR_convolve(const vector<T> &a, const vector<T> &b) {
     for (int i = 0; i < da; i++) fzt_a[i] = a[i];
     for (int i = 0; i < db; i++) fzt_b[i] = b[i];
 
-    vector<T> F_a = fzt(n, fzt_a), F_b = a == b ? F_a : fzt(n, fzt_b), F_c(n);
+    vector<T> F_a = subset_zeta_transform(n, fzt_a), F_b = a == b ? F_a : subset_zeta_transform(n, fzt_b), F_c(n);
     for (int i = 0; i < n; i++) F_c[i] = F_a[i] * F_b[i];
-    return fmt(n, F_c);
+    return subset_mobius_transform(n, F_c);
 }
 
 int main() {

@@ -444,7 +444,7 @@ void fast_subset_transform(int n, vector<T> &v, F &&f) {
 }
 
 template <typename T>
-vector<T> fmt(int n, const vector<T> &F) {
+vector<T> subset_mobius_transform(int n, const vector<T> &F) {
     auto f = F;
     fast_subset_transform(n, f, [](T x, T y) { return x - y; });
     return f;
@@ -481,7 +481,7 @@ int main() {
             };
             dp1[mask] = dp(dp);
         }
-        dp1 = fmt(1 << 10, dp1);
+        dp1 = subset_mobius_transform(1 << 10, dp1);
 
         fill(dp2.begin(), dp2.end(), 0);
         dp2[0] = 1;

@@ -448,6 +448,13 @@ void fast_superset_transform(int n, vector<T> &v, F &&f) {
             for (int j = 0; j < k; j++) v[i + j] = f(v[i + j], v[i + j + k]);
 }
 
+template <typename T>
+vector<T> superset_zeta_transform(int n, const vector<T> &f) {
+    auto F = f;
+    fast_superset_transform(n, F, [](T x, T y) { return x + y; });
+    return F;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -490,8 +497,7 @@ int main() {
             fill(temp.begin(), temp.end(), 0);
             for (int j = 0; j <= n; j++)
                 for (int mask = 0; mask < size; mask++) temp[masks[i][j][mask]] += dp1[j][mask];
-            fast_superset_transform(size, temp, [](auto x, auto y) { return x + y; });
-            dp2[i] = temp;
+            dp2[i] = superset_zeta_transform(size, temp);
         }
         swap(dp1, dp2);
     }
