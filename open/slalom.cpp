@@ -124,80 +124,82 @@ double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
+template <typename T>
+T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
+    return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+}
+
+template <typename T, int sign = -1, bool collinear = false>
+struct MonotonicHull : deque<Point<T>> {
+    bool violates(const auto &a, const auto &b, const auto &c) {
+        auto cp = cross(a, b, c);
+        if constexpr (sign < 0) cp = -cp;
+        return collinear ? cp >= 0 : cp > 0;
+    }
+
+    void add(const auto &p) {
+        while (this->size() > 1 && violates((*this)[1], (*this)[0], p)) this->pop_front();
+        this->emplace_front(p);
+    }
+
+    void update(const auto &p) {
+        while (!this->empty() && this->back().y >= p.y) this->pop_back();
+        while (this->size() > 1 && violates(p, this->back(), (*this)[this->size() - 2])) this->pop_back();
+        this->emplace_back(p);
+    }
+
+    auto query() {
+        return (*this)[this->size() - 2];
+    }
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     int n;
     while (cin >> n && n) {
-        vector<Point<double>> points(2 * n - 1);
-        vector<double> X(2 * n + 1);
+        Point<double> pos;
+        cin >> pos.x >> pos.y;
 
-        cin >> points[0].x >> points[0].y;
-        X[0] = points[0].x;
+        vector<array<double, 3>> gates(n);
+        for (auto &[y, l, r] : gates) cin >> y >> l >> r;
 
-        for (int i = 1; i < n; i++) {
-            double y, x1, x2;
-            cin >> y >> x1 >> x2;
+        MonotonicHull<double, 1, true> left;
+        MonotonicHull<double, -1, true> right;
+        left.emplace_back(pos);
+        right.emplace_back(pos);
 
-            points[2 * i - 1] = {x1, y};
-            points[2 * i] = {x2, y};
-            X[2 * i - 1] = x1;
-            X[2 * i] = x2;
+        double dist = 0;
+        auto turn = [&](auto p) {
+            dist += euclidean_dist(pos, p);
+            pos = p;
+            left.update(p);
+            right.update(p);
+        };
+
+        auto process = [&] {
+            while (left.size() > 1 && right.size() > 1 && cross(pos, left.query(), right.query()) < 0) {
+                auto l = left.query(), r = right.query();
+                turn(l.y > r.y ? l : r);
+            }
+        };
+
+        for (auto [y, l, r] : gates) {
+            left.add(Point{l, y});
+            right.add(Point{r, y});
+            process();
         }
 
-        double y, x1, x2;
-        cin >> y >> x1 >> x2;
+        for (;;) {
+            process();
+            if (left.size() == 1) break;
 
-        X[2 * n - 1] = x1;
-        X[2 * n] = x2;
-        sort(X.begin(), X.end());
-        X.erase(unique(X.begin(), X.end()), X.end());
-
-        for (auto x : X)
-            if (x1 <= x && x <= x2) points.emplace_back(x, y);
-
-        vector<vector<pair<int, double>>> adj_list(points.size());
-        for (int i = 0; i < 2 * n - 1; i++) {
-            double l = INT_MIN, r = INT_MAX;
-
-            auto pos = [](const Point<double> &a, const Point<double> &b) {
-                auto v = b - a;
-                return v.x / v.y;
-            };
-
-            for (int j = i + 1 + (i & 1); j < 2 * n - 1 && l <= r; j++) {
-                auto curr = pos(points[i], points[j]);
-                if (l <= curr && curr <= r) adj_list[i].emplace_back(j, euclidean_dist(points[i], points[j]));
-
-                if (j & 1) r = min(r, curr);
-                else l = max(l, curr);
-            }
-
-            for (int j = 2 * n - 1; j < points.size(); j++) {
-                auto curr = pos(points[i], points[j]);
-                if (l <= curr && curr <= r) adj_list[i].emplace_back(j, euclidean_dist(points[i], points[j]));
-            }
+            auto l = left.query(), r = right.query();
+            if (l.x > pos.x) turn(l);
+            else if (r.x < pos.x) turn(r);
+            else break;
         }
-
-        vector<int> degree(points.size(), 0);
-        for (int v = 0; v < points.size(); v++)
-            for (auto [u, w] : adj_list[v]) degree[u]++;
-
-        vector<double> dist(points.size(), INT_MAX);
-        dist[0] = 0;
-        queue<int> q;
-        q.emplace(0);
-        while (!q.empty()) {
-            int v = q.front();
-            q.pop();
-
-            for (auto [u, w] : adj_list[v]) {
-                dist[u] = min(dist[u], dist[v] + w);
-                if (!--degree[u]) q.emplace(u);
-            }
-        }
-
-        cout << fixed << setprecision(7) << *min_element(dist.begin() + 2 * n - 1, dist.end()) << "\n";
+        cout << fixed << setprecision(7) << dist + pos.y - gates.back()[0] << "\n";
     }
 }
