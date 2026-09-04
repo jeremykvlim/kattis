@@ -184,29 +184,17 @@ template <typename T>
 int kinetic_euclidean_mst(int n, const vector<array<T, 6>> &points) {
     int m = n * (n - 1) / 2;
     vector<pair<int, int>> edges(m);
-    for (int i = 0, k = 0; i < n; i++)
-        for (int j = i + 1; j < n; j++, k++) edges[k] = {i, j};
-
     vector<T> A(m), B(m), C(m);
-    for (int k = 0; k < m; k++) {
-        auto [i, j] = edges[k];
-        T dx = points[i][0] - points[j][0], dy = points[i][1] - points[j][1], dz = points[i][2] - points[j][2],
-          dvx = points[i][3] - points[j][3], dvy = points[i][4] - points[j][4], dvz = points[i][5] - points[j][5];
+    for (int i = 0, k = 0; i < n; i++)
+        for (int j = i + 1; j < n; j++, k++) {
+            edges[k] = {i, j};
+            T dx = points[i][0] - points[j][0], dy = points[i][1] - points[j][1], dz = points[i][2] - points[j][2],
+              dvx = points[i][3] - points[j][3], dvy = points[i][4] - points[j][4], dvz = points[i][5] - points[j][5];
 
-        A[k] = dvx * dvx + dvy * dvy + dvz * dvz;
-        B[k] = 2 * (dx * dvx + dy * dvy + dz * dvz);
-        C[k] = dx * dx + dy * dy + dz * dz;
-    }
-
-    auto f = [&](double t, int k) {
-        return A[k] * t * t + B[k] * t + C[k];
-    };
-
-    auto lower_weight_edge = [&](double t, int non_mst_edge, const vector<int> &path) {
-        auto weight = -1e20;
-        for (int mst_edge : path) weight = max(weight, f(t, mst_edge));
-        return f(t, non_mst_edge) + 1e-8 < weight;
-    };
+            A[k] = dvx * dvx + dvy * dvy + dvz * dvz;
+            B[k] = 2 * (dx * dvx + dy * dvy + dz * dvz);
+            C[k] = dx * dx + dy * dy + dz * dz;
+        }
 
     vector<pair<int, int>> order(m);
     for (int k = 0; k < m; k++) order[k] = {C[k], k};
@@ -220,116 +208,80 @@ int kinetic_euclidean_mst(int n, const vector<array<T, 6>> &points) {
     auto [mst, in_mst] = kruskal(n, temp);
 
     LinkCutTree lct(n, m);
-    for (int mst_edge : mst) {
-        auto [u, v] = edges[mst_edge];
-        lct.link(mst_edge + n + 1, u + 1);
-        lct.link(mst_edge + n + 1, v + 1);
+    for (int e : mst) {
+        auto [u, v] = edges[e];
+        lct.link(n + e + 1, u + 1);
+        lct.link(n + e + 1, v + 1);
     }
 
     priority_queue<tuple<double, int, int>, vector<tuple<double, int, int>>, greater<>> pq;
     vector<vector<int>> candidates(m);
     vector<int> version(m, 0), replace(m, -1), pos(m, -1);
-    auto dequeue = [&](int non_mst_edge) {
+    auto unschedule = [&](int non_mst_edge) {
         version[non_mst_edge]++;
 
         int mst_edge = replace[non_mst_edge];
-        if (mst_edge != -1) {
+        if (~mst_edge) {
             int p = pos[non_mst_edge];
-
-            auto remove = [&]() {
-                swap(candidates[mst_edge][p], candidates[mst_edge].back());
-                candidates[mst_edge].pop_back();
-                pos[candidates[mst_edge][p]] = p;
-            };
-
-            if (p != -1 && p < candidates[mst_edge].size() && candidates[mst_edge][p] == non_mst_edge) remove();
-            else
-                for (p = 0; p < candidates[mst_edge].size(); p++)
-                    if (candidates[mst_edge][p] == non_mst_edge) {
-                        remove();
-                        break;
-                    }
-
+            swap(candidates[mst_edge][p], candidates[mst_edge].back());
+            pos[candidates[mst_edge][p]] = p;
+            candidates[mst_edge].pop_back();
             replace[non_mst_edge] = pos[non_mst_edge] = -1;
         }
     };
 
-    auto enqueue = [&](int non_mst_edge, double r = 0) {
-        version[non_mst_edge]++;
+    auto schedule = [&](int non_mst_edge, double r = 0) {
+        unschedule(non_mst_edge);
 
-        auto edge_to_replace = [&]() -> pair<double, int> {
-            auto [u, v] = edges[non_mst_edge];
-            auto path = lct.path(u + 1, v + 1);
-
-            vector<pair<double, int>> same_weight_edges;
-            for (int mst_edge : path) {
-                double a = A[non_mst_edge] - A[mst_edge], b = B[non_mst_edge] - B[mst_edge], c = C[non_mst_edge] - C[mst_edge];
-                for (auto root : quadratic_roots(a, b, c))
-                    if (root.imag() < 1e-8 && root.real() - r > 1e-8) same_weight_edges.emplace_back(root.real(), mst_edge);
-            }
-            if (same_weight_edges.empty()) return {1e20, -1};
-            sort(same_weight_edges.begin(), same_weight_edges.end());
-            same_weight_edges.erase(unique(same_weight_edges.begin(), same_weight_edges.end()), same_weight_edges.end());
-
-            for (auto [t1, e] : same_weight_edges)
-                if (fabs(f(t1, non_mst_edge) - f(t1, e)) <= 1e-6)
-                    if (lower_weight_edge(t1 + 1e-6, non_mst_edge, path)) return {t1, e};
-
-            return {1e20, -1};
-        };
-
-        auto [t, mst_edge] = edge_to_replace();
-        if (mst_edge != -1) {
-            candidates[mst_edge].emplace_back(non_mst_edge);
-            pos[non_mst_edge] = candidates[mst_edge].size() - 1;
-            replace[non_mst_edge] = mst_edge;
-            pq.emplace(t, version[non_mst_edge], non_mst_edge);
+        pair<double, int> edge_to_replace{1e20, -1};
+        auto [u, v] = edges[non_mst_edge];
+        for (int mst_edge : lct.path(u + 1, v + 1)) {
+            double a = A[non_mst_edge] - A[mst_edge], b = B[non_mst_edge] - B[mst_edge], c = C[non_mst_edge] - C[mst_edge];
+            for (auto root : quadratic_roots(a, b, c))
+                if (fabs(root.imag()) <= 1e-8) {
+                    auto t = root.real();
+                    if (r + 1e-8 < t && t < edge_to_replace.first && 2 * a * t + b < 0) edge_to_replace = {t, mst_edge};
+                }
         }
+        if (edge_to_replace == make_pair(1e20, -1)) return;
+
+        auto [t, mst_edge] = edge_to_replace;
+        candidates[mst_edge].emplace_back(non_mst_edge);
+        pos[non_mst_edge] = candidates[mst_edge].size() - 1;
+        replace[non_mst_edge] = mst_edge;
+        pq.emplace(t, version[non_mst_edge], non_mst_edge);
     };
+    for (int e = 0; e < m; e++)
+        if (!in_mst[e]) schedule(e);
 
-    for (int k = 0; k < m; k++)
-        if (!in_mst[k]) enqueue(k);
-
-    double t = 0;
     int modifications = 1;
     while (!pq.empty()) {
-        auto [t1, ver, non_mst_edge] = pq.top();
+        auto [t, ver, adding] = pq.top();
         pq.pop();
 
-        if (ver != version[non_mst_edge] || in_mst[non_mst_edge]) continue;
+        if (ver != version[adding] || in_mst[adding]) continue;
 
-        auto [u, v] = edges[non_mst_edge];
+        int removing = replace[adding];
+        auto [u, v] = edges[adding];
         auto path = lct.path(u + 1, v + 1);
-
-        auto weight = -1e20;
-        int mst_edge = -1;
-        for (int e : path) {
-            auto w = f(t1, e);
-            if (weight < w) {
-                weight = w;
-                mst_edge = e;
-            }
+        if (find(path.begin(), path.end(), removing) == path.end()) {
+            schedule(adding, t);
+            continue;
         }
 
-        if (fabs(f(t1, non_mst_edge) - weight) <= 1e-6)
-            if (lower_weight_edge(t1 + 1e-6, non_mst_edge, path)) {
-                modifications++;
-                swap(non_mst_edge, mst_edge);
-                auto [i, j] = edges[non_mst_edge];
-                dequeue(mst_edge);
-                lct.cut(non_mst_edge + n + 1, i + 1);
-                lct.cut(non_mst_edge + n + 1, j + 1);
-                in_mst[non_mst_edge] = false;
-                lct.link(mst_edge + n + 1, u + 1);
-                lct.link(mst_edge + n + 1, v + 1);
-                in_mst[mst_edge] = true;
-
-                t = t1 + 1e-6;
-                for (int e : candidates[non_mst_edge]) enqueue(e, t);
-                enqueue(non_mst_edge, t);
-                continue;
-            }
-        enqueue(mst_edge, max(t, t1 + 1e-6));
+        modifications++;
+        unschedule(adding);
+        auto [i, j] = edges[removing];
+        lct.cut(n + removing + 1, i + 1);
+        lct.cut(n + removing + 1, j + 1);
+        in_mst[removing] = false;
+        lct.link(n + adding + 1, u + 1);
+        lct.link(n + adding + 1, v + 1);
+        in_mst[adding] = true;
+        for (int e : candidates[removing]) replace[e] = pos[e] = -1;
+        for (int e : candidates[removing]) schedule(e, t);
+        candidates[removing].clear();
+        schedule(removing, t);
     }
 
     return modifications;
