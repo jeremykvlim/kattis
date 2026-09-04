@@ -9,13 +9,12 @@ struct RURQSegmentTree {
         Monoid() : value(0), reduce(false), valid(false) {}
 
         auto & operator+=(const long long &v) {
-            value += v;
+            if (valid) value += v;
             return *this;
         }
 
         auto & operator+=(const Monoid &monoid) {
-            if (!monoid.valid) return *this;
-            if (!valid) return *this = monoid;
+            if (!valid) *this = monoid;
             return *this;
         }
 
