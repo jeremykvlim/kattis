@@ -1,105 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct WeightedDisjointSets {
-    vector<int> sets, prio, size;
-    vector<pair<int, int>> weight;
-
-    WeightedDisjointSets(int n) : sets(n), prio(n), size(n, 1), weight(n, {INT_MAX, 0}) {
-        iota(sets.begin(), sets.end(), 0);
-        iota(prio.begin(), prio.end(), 0);
-        shuffle(prio.begin(), prio.end(), mt19937_64(random_device{}()));
-    }
-
-    int & compress(int v) {
-        if (sets[v] == v) return sets[v];
-        while (weight[sets[v]].first <= weight[v].first) {
-            size[sets[v]] -= size[v];
-            sets[v] = sets[sets[v]];
-        }
-        return sets[v];
-    }
-
-    int find(int v, int w = INT_MAX - 1) {
-        while (weight[v].first <= w) v = compress(v);
-        return v;
-    }
-
-    void detach(int v) {
-        if (sets[v] == v) return;
-        detach(sets[v]);
-        size[sets[v]] -= size[v];
-    }
-
-    int attach(int v, int w = INT_MAX - 1) {
-        while (weight[v].first <= w) {
-            size[sets[v]] += size[v];
-            v = sets[v];
-        }
-        return v;
-    }
-
-    void link(int u, int v, pair<int, int> w) {
-        detach(u);
-        detach(v);
-        while (u != v) {
-            u = attach(u, w.first);
-            v = attach(v, w.first);
-            if (prio[u] < prio[v]) swap(u, v);
-            swap(sets[v], u);
-            swap(weight[v], w);
-        }
-        attach(u);
-    }
-
-    void cut(int v, int w) {
-        while (sets[v] != v) {
-            if (weight[v].first == w) {
-                for (int u = v; u != sets[u]; size[u = sets[u]] -= size[v]);
-                sets[v] = v;
-                weight[v] = {INT_MAX, 0};
-                return;
-            }
-            v = compress(v);
-        }
-    }
-
-    void cut(int u, int v, int w) {
-        cut(u, w);
-        cut(v, w);
-    }
-
-    int path_max(int u, int v) {
-        if (find(u) != find(v)) return -1;
-
-        for (;;) {
-            if (weight[u].first > weight[v].first) swap(u, v);
-            if (sets[u] == v) return u;
-            u = sets[u];
-        }
-    }
-
-    int unite(int u, int v, pair<int, int> w) {
-        if (u != v) {
-            int t = path_max(u, v);
-            if (t == -1) {
-                link(u, v, w);
-                return -1;
-            } else if (weight[t].first > w.first) {
-                int i = weight[t].second;
-                cut(t, weight[t].first);
-                link(u, v, w);
-                return i;
-            }
-        }
-        return w.second;
-    }
-
-    int component_size(int v) {
-        return size[find(v)];
-    }
-};
-
 struct PURQSegmentTree {
     struct Monoid {
         int count, pos, neg;
@@ -155,6 +56,113 @@ struct PURQSegmentTree {
     PURQSegmentTree(int n) : n(n), ST(2 * n) {}
 };
 
+struct AntiMonopolyTree {
+    vector<int> parent, size;
+    vector<pair<int, int>> weight;
+
+    AntiMonopolyTree(int n) : parent(n, -1), size(n, 1), weight(n, {INT_MAX, -1}) {}
+
+    pair<int, int> path_max(int u, int v) {
+        upward_maintain(u);
+        upward_maintain(v);
+
+        int max_w = INT_MIN, t = -1;
+        while (u != v) {
+            if (size[u] > size[v]) swap(u, v);
+            if (weight[u].first == INT_MAX) return {INT_MAX, -1};
+            if (max_w < weight[u].first) {
+                max_w = weight[u].first;
+                t = u;
+            }
+            u = parent[u];
+        }
+        return {max_w, t};
+    }
+
+    void upward_maintain(int v) {
+        while (~parent[v]) {
+            int p = parent[v];
+            if (3 * size[v] <= 2 * size[p]) {
+                v = p;
+                continue;
+            }
+
+            size[p] -= size[v];
+            parent[v] = parent[p];
+            if (weight[v].first < weight[p].first) {
+                size[v] += size[p];
+                swap(weight[v], weight[p]);
+                parent[p] = v;
+            }
+        }
+    }
+
+    int root(int v) {
+        while (~parent[v]) v = parent[v];
+        return v;
+    }
+
+    void cut(int v) {
+        for (int p = parent[v]; ~p; p = parent[p]) size[p] -= size[v];
+        parent[v] = -1;
+        weight[v] = {INT_MAX, -1};
+    }
+
+    int add(int u, int v, pair<int, int> w) {
+        if (u == v) return w.second;
+
+        auto [max_w, t] = path_max(u, v);
+        int i = -1;
+        if (max_w != INT_MAX) {
+            if (w.first >= max_w) return w.second;
+            i = weight[t].second;
+            cut(t);
+        }
+
+        int du = 0, dv = 0;
+        while (~u && ~v) {
+            if (w.first >= weight[u].first) {
+                int p = parent[u];
+                if (~p) size[p] += du;
+                u = p;
+            } else if (w.first >= weight[v].first) {
+                int p = parent[v];
+                if (~p) size[p] += dv;
+                v = p;
+            } else {
+                if (size[u] > size[v]) {
+                    swap(u, v);
+                    swap(du, dv);
+                }
+
+                du -= size[u];
+                dv += size[u];
+                size[v] += size[u];
+                w = exchange(weight[u], w);
+                u = exchange(parent[u], v);
+                if (~u) size[u] += du;
+            }
+        }
+
+        if (~v)
+            for (v = parent[v]; ~v; v = parent[v]) size[v] += dv;
+        return i;
+    }
+
+    bool remove(int u, int v, int w) {
+        auto [max_w, t] = path_max(u, v);
+        if (max_w != w) return false;
+
+        cut(t);
+        return true;
+    }
+
+    int component_size(int v) {
+        upward_maintain(v);
+        return size[root(v)];
+    }
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -173,7 +181,7 @@ int main() {
     vector<array<int, 3>> edges(q, {-1, -1, 0});
     vector<int> state(q + 1, 0);
     priority_queue<pair<int, int>> pq;
-    WeightedDisjointSets wdsu(n + 1);
+    AntiMonopolyTree amt(n + 1);
     while (q--) {
         char c;
         cin >> c;
@@ -185,7 +193,7 @@ int main() {
             edges[e] = {u, v, p};
             state[e] = 1;
 
-            int su = wdsu.component_size(u), sv = wdsu.component_size(v), i = wdsu.unite(u, v, {p, e});
+            int su = amt.component_size(u), sv = amt.component_size(v), i = amt.add(u, v, {p, e});
             pq.emplace(p, e);
             if (i == -1) {
                 update(su, -1);
@@ -211,9 +219,9 @@ int main() {
             if (s != 2) continue;
 
             auto [u, v, p] = edges[i];
-            int temp = wdsu.component_size(u);
-            wdsu.cut(u, v, p);
-            int su = wdsu.component_size(u), sv = wdsu.component_size(v);
+            int temp = amt.component_size(u);
+            amt.remove(u, v, p);
+            int su = amt.component_size(u), sv = amt.component_size(v);
             update(temp, -1);
             update(su, 1);
             update(sv, 1);

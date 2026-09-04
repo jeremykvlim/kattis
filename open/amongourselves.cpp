@@ -1,113 +1,122 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct WeightedDisjointSets {
-    vector<int> sets, prio, weight, XOR;
+struct AntiMonopolyTree {
+    vector<int> parent, size, weight, XOR;
 
-    WeightedDisjointSets(int n) : sets(n), prio(n), weight(n, INT_MAX), XOR(n, 0) {
-        iota(sets.begin(), sets.end(), 0);
-        iota(prio.begin(), prio.end(), 0);
-        shuffle(prio.begin(), prio.end(), mt19937_64(random_device{}()));
-    }
-
-    int & compress(int v) {
-        if (sets[v] == v) return sets[v];
-        while (weight[sets[v]] <= weight[v]) {
-            XOR[v] ^= XOR[sets[v]];
-            sets[v] = sets[sets[v]];
-        }
-        return sets[v];
-    }
-
-    int find(int v, int w = INT_MAX - 1) {
-        while (weight[v] <= w) v = compress(v);
-        return v;
-    }
-
-    void detach(int v) {
-        if (sets[v] == v) return;
-        detach(sets[v]);
-    }
-
-    pair<int, int> attach(int v, int w = INT_MAX - 1) {
-        int x = 0;
-        while (weight[v] <= w) {
-            x ^= XOR[v];
-            v = sets[v];
-        }
-        return {v, x};
-    }
-
-    void link(int u, int v, int w, int x) {
-        detach(u);
-        detach(v);
-        while (u != v) {
-            int y;
-            tie(u, y) = attach(u, w);
-            x ^= y;
-            tie(v, y) = attach(v, w);
-            x ^= y;
-            if (prio[u] < prio[v]) swap(u, v);
-            swap(sets[v], u);
-            swap(weight[v], w);
-            swap(XOR[v], x);
-        }
-        attach(u);
-    }
-
-    void cut(int v, int w) {
-        while (sets[v] != v) {
-            if (weight[v] == w) {
-                for (int u = v; u != sets[u]; u = sets[u]);
-                sets[v] = v;
-                weight[v] = INT_MAX;
-                XOR[v] = 0;
-                return;
-            }
-            v = compress(v);
-        }
-    }
-
-    void cut(int u, int v, int w) {
-        cut(u, w);
-        cut(v, w);
-    }
-
-    int path_max(int u, int v) {
-        if (find(u) != find(v)) return -1;
-
-        for (;;) {
-            if (weight[u] > weight[v]) swap(u, v);
-            if (sets[u] == v) return u;
-            u = sets[u];
-        }
-    }
+    AntiMonopolyTree(int n) : parent(n, -1), size(n, 1), weight(n, INT_MAX), XOR(n, 0) {}
 
     int path_xor(int u, int v) {
+        upward_maintain(u);
+        upward_maintain(v);
+
         int x = 0;
-        while (sets[u] != u || sets[v] != v) {
-            if (sets[u] != u) x ^= XOR[u];
-            if (sets[v] != v) x ^= XOR[v];
-            u = sets[u];
-            v = sets[v];
+        while (u != v) {
+            if (size[u] > size[v]) swap(u, v);
+            if (weight[u] == INT_MAX) return -1;
+            x ^= XOR[u];
+            u = parent[u];
         }
         return x;
     }
 
-    int unite(int u, int v, int w, int x) {
-        if (u != v) {
-            int t = path_max(u, v);
-            if (t == -1) {
-                link(u, v, w, x);
-                return -1;
-            } else if (weight[t] > w) {
-                int temp = weight[t];
-                cut(t, weight[t]);
-                link(u, v, w, x);
-                return temp;
+    pair<int, int> path_max(int u, int v) {
+        upward_maintain(u);
+        upward_maintain(v);
+
+        int max_w = INT_MIN, t = -1;
+        while (u != v) {
+            if (size[u] > size[v]) swap(u, v);
+            if (weight[u] == INT_MAX) return {INT_MAX, -1};
+            if (max_w < weight[u]) {
+                max_w = weight[u];
+                t = u;
+            }
+            u = parent[u];
+        }
+        return {max_w, t};
+    }
+
+    void upward_maintain(int v) {
+        while (~parent[v]) {
+            int p = parent[v];
+            if (3 * size[v] <= 2 * size[p]) {
+                v = p;
+                continue;
+            }
+
+            size[p] -= size[v];
+            parent[v] = parent[p];
+            XOR[v] ^= XOR[p];
+            if (weight[v] < weight[p]) {
+                size[v] += size[p];
+                swap(weight[v], weight[p]);
+                parent[p] = v;
+                XOR[p] ^= XOR[v];
+            }
+            if (!~parent[v]) XOR[v] = 0;
+        }
+    }
+
+    void cut(int v) {
+        for (int p = parent[v]; ~p; p = parent[p]) size[p] -= size[v];
+        parent[v] = -1;
+        weight[v] = INT_MAX;
+        XOR[v] = 0;
+    }
+
+    bool add(int u, int v, int w, int x) {
+        if (u == v) return false;
+
+        upward_maintain(u);
+        upward_maintain(v);
+
+        auto [max_w, t] = path_max(u, v);
+        bool merged = max_w == INT_MAX;
+        if (!merged) {
+            if (w >= max_w) return false;
+            cut(t);
+        }
+
+        int du = 0, dv = 0;
+        while (~u && ~v) {
+            if (w >= weight[u]) {
+                x ^= XOR[u];
+                int p = parent[u];
+                if (~p) size[p] += du;
+                u = p;
+            } else if (w >= weight[v]) {
+                x ^= XOR[v];
+                int p = parent[v];
+                if (~p) size[p] += dv;
+                v = p;
+            } else {
+                if (size[u] > size[v]) {
+                    swap(u, v);
+                    swap(du, dv);
+                }
+
+                du -= size[u];
+                dv += size[u];
+                size[v] += size[u];
+                x ^= exchange(XOR[u], x);
+                w = exchange(weight[u], w);
+                u = exchange(parent[u], v);
+                if (~u) size[u] += du;
             }
         }
-        return w;
+
+        if (~v)
+            for (v = parent[v]; ~v; v = parent[v]) size[v] += dv;
+        return merged;
+    }
+
+    bool remove(int u, int v, int w) {
+        auto [max_w, t] = path_max(u, v);
+        if (max_w != w) return false;
+
+        cut(t);
+        return true;
     }
 };
 
@@ -128,16 +137,17 @@ int main() {
         s = S == "imposter";
     }
 
-    WeightedDisjointSets wdsu(n + 1);
+    AntiMonopolyTree amt(n + 1);
     int tl = 2 * m, tr = 2 * m;
     for (int i = t; i < m; i++) {
         auto [u, v, x] = edges[i];
-        wdsu.unite(u, v, tl--, x);
+        amt.add(u, v, tl--, x);
     }
 
     for (int i = 0; i <= m - t; i++) {
-        if (wdsu.find(0) == wdsu.find(k - 1)) {
-            cout << i + 1 << (!wdsu.path_xor(0, k - 1) ? " crewmate" : " imposter");
+        int XOR = amt.path_xor(0, k - 1);
+        if (~XOR) {
+            cout << i + 1 << (!XOR ? " crewmate" : " imposter");
             exit(0);
         }
 
@@ -147,9 +157,9 @@ int main() {
         }
 
         auto [u, v, x] = edges[i];
-        wdsu.unite(u, v, tl--, x);
+        amt.add(u, v, tl--, x);
 
         auto [a, b, _] = edges[i + t];
-        wdsu.cut(a, b, tr--);
+        amt.remove(a, b, tr--);
     }
 }

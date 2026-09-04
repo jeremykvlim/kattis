@@ -23,90 +23,106 @@ struct Hash {
     }
 };
 
-struct WeightedDisjointSets {
-    vector<int> sets, prio, weight;
+struct AntiMonopolyTree {
+    vector<int> parent, size, weight;
 
-    WeightedDisjointSets(int n) : sets(n), prio(n), weight(n, INT_MAX) {
-        iota(sets.begin(), sets.end(), 0);
-        iota(prio.begin(), prio.end(), 0);
-        shuffle(prio.begin(), prio.end(), mt19937_64(random_device{}()));
-    }
+    AntiMonopolyTree(int n) : parent(n, -1), size(n, 1), weight(n, INT_MAX) {}
 
-    int & compress(int v) {
-        if (sets[v] == v) return sets[v];
-        while (weight[sets[v]] <= weight[v]) sets[v] = sets[sets[v]];
-        return sets[v];
-    }
+    pair<int, int> path_max(int u, int v) {
+        upward_maintain(u);
+        upward_maintain(v);
 
-    int find(int v, int w = INT_MAX - 1) {
-        while (weight[v] <= w) v = compress(v);
-        return v;
-    }
-
-    void detach(int v) {
-        if (sets[v] == v) return;
-        detach(sets[v]);
-    }
-
-    int attach(int v, int w = INT_MAX - 1) {
-        while (weight[v] <= w) v = sets[v];
-        return v;
-    }
-
-    void link(int u, int v, int w) {
-        detach(u);
-        detach(v);
+        int max_w = INT_MIN, t = -1;
         while (u != v) {
-            u = attach(u, w);
-            v = attach(v, w);
-            if (prio[u] < prio[v]) swap(u, v);
-            swap(sets[v], u);
-            swap(weight[v], w);
-        }
-        attach(u);
-    }
-
-    void cut(int v, int w) {
-        while (sets[v] != v) {
-            if (weight[v] == w) {
-                for (int u = v; u != sets[u]; u = sets[u]);
-                sets[v] = v;
-                weight[v] = INT_MAX;
-                return;
+            if (size[u] > size[v]) swap(u, v);
+            if (weight[u] == INT_MAX) return {INT_MAX, -1};
+            if (max_w < weight[u]) {
+                max_w = weight[u];
+                t = u;
             }
-            v = compress(v);
+            u = parent[u];
         }
+        return {max_w, t};
     }
 
-    void cut(int u, int v, int w) {
-        cut(u, w);
-        cut(v, w);
-    }
+    void upward_maintain(int v) {
+        while (~parent[v]) {
+            int p = parent[v];
+            if (3 * size[v] <= 2 * size[p]) {
+                v = p;
+                continue;
+            }
 
-    int path_max(int u, int v) {
-        if (find(u) != find(v)) return -1;
-
-        for (;;) {
-            if (weight[u] > weight[v]) swap(u, v);
-            if (sets[u] == v) return u;
-            u = sets[u];
-        }
-    }
-
-    int unite(int u, int v, int w) {
-        if (u != v) {
-            int t = path_max(u, v);
-            if (t == -1) {
-                link(u, v, w);
-                return -1;
-            } else if (weight[t] > w) {
-                int temp = weight[t];
-                cut(t, weight[t]);
-                link(u, v, w);
-                return temp;
+            size[p] -= size[v];
+            parent[v] = parent[p];
+            if (weight[v] < weight[p]) {
+                size[v] += size[p];
+                swap(weight[v], weight[p]);
+                parent[p] = v;
             }
         }
-        return w;
+    }
+
+    int root(int v) {
+        while (~parent[v]) v = parent[v];
+        return v;
+    }
+
+    void cut(int v) {
+        for (int p = parent[v]; ~p; p = parent[p]) size[p] -= size[v];
+        parent[v] = -1;
+        weight[v] = INT_MAX;
+    }
+
+    bool add(int u, int v, int w) {
+        if (u == v) return false;
+
+        upward_maintain(u);
+        upward_maintain(v);
+
+        auto [max_w, t] = path_max(u, v);
+        bool merged = max_w == INT_MAX;
+        if (!merged) {
+            if (w >= max_w) return false;
+            cut(t);
+        }
+
+        int du = 0, dv = 0;
+        while (~u && ~v) {
+            if (w >= weight[u]) {
+                int p = parent[u];
+                if (~p) size[p] += du;
+                u = p;
+            } else if (w >= weight[v]) {
+                int p = parent[v];
+                if (~p) size[p] += dv;
+                v = p;
+            } else {
+                if (size[u] > size[v]) {
+                    swap(u, v);
+                    swap(du, dv);
+                }
+
+                du -= size[u];
+                dv += size[u];
+                size[v] += size[u];
+                w = exchange(weight[u], w);
+                u = exchange(parent[u], v);
+                if (~u) size[u] += du;
+            }
+        }
+
+        if (~v)
+            for (v = parent[v]; ~v; v = parent[v]) size[v] += dv;
+        return merged;
+    }
+
+    bool remove(int u, int v, int w) {
+        auto [max_w, t] = path_max(u, v);
+        if (max_w != w) return false;
+
+        cut(t);
+        return true;
     }
 };
 
@@ -129,19 +145,20 @@ int main() {
     read(t1);
     read(t2);
 
-    WeightedDisjointSets wdsu(n);
+    AntiMonopolyTree amt(n);
     vector<pair<int, int>> edges;
     for (auto [u, v] : t1)
-        if (t2.count({u, v})) wdsu.unite(u, v, -1);
+        if (t2.count({u, v})) amt.add(u, v, -1);
         else {
             edges.emplace_back(u, v);
-            wdsu.unite(u, v, edges.size() - 1);
+            amt.add(u, v, edges.size() - 1);
         }
 
     cout << edges.size() << "\n";
     for (auto [c, d] : t2)
         if (!t1.count({c, d})) {
-            int i = wdsu.unite(c, d, -1);
+            auto [i, _] = amt.path_max(c, d);
+            amt.add(c, d, -1);
             auto [a, b] = edges[i];
             cout << a + 1 << " " << b + 1 << " " << c + 1 << " " << d + 1 << "\n";
         }
