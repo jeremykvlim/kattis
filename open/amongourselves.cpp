@@ -58,6 +58,11 @@ struct AntiMonopolyTree {
         }
     }
 
+    int root(int v) {
+        while (~parent[v]) v = parent[v];
+        return v;
+    }
+
     void cut(int v) {
         for (int p = parent[v]; ~p; p = parent[p]) size[p] -= size[v];
         parent[v] = -1;
