@@ -1,186 +1,77 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct Treap {
-    static inline mt19937_64 rng{random_device{}()};
+struct SegmentTree {
+    struct Monoid {
+        long long minimum, maximum;
 
-    struct TreapNode {
-        array<int, 3> family;
-        unsigned long long prio;
-        pair<long long, int> key;
-        long long x_plus, x_minus, x_max_plus, x_max_minus;
+        Monoid() : minimum(1e18), maximum(-1e18) {}
 
-        TreapNode(const pair<long long, int> &k = {0, 0}, long long y = 0) : family{0, 0, 0}, prio(rng()), key(k), x_plus(0), x_minus(0), x_max_plus(LLONG_MIN), x_max_minus(LLONG_MIN) {
-            x_plus = x_max_plus = k.first + 2 * y;
-            x_minus = x_max_minus = -k.first + 2 * y;
+        auto & operator+=(const Monoid &monoid) {
+            minimum = min(minimum, monoid.minimum);
+            maximum = max(maximum, monoid.maximum);
+            return *this;
+        }
+
+        friend auto operator+(Monoid ml, const Monoid &mr) {
+            ml += mr;
+            return ml;
         }
     };
 
-    int root;
-    vector<TreapNode> T;
-    stack<int> recycled;
+    int n;
+    vector<Monoid> ST;
+    vector<int> indices;
 
-    Treap() : root(0), T(1) {}
+    SegmentTree(int n) : n(n), ST(2 * n), indices(n, -1) {}
 
-    int node(const pair<long long, int> &key, long long y) {
-        int i;
-        if (!recycled.empty()) {
-            i = recycled.top();
-            recycled.pop();
-        } else {
-            T.emplace_back();
-            i = T.size() - 1;
+    int midpoint(int l, int r) {
+        int i = 1 << __lg(r - l);
+        return min(l + i, r - (i >> 1));
+    }
+
+    void pull(int i) {
+        ST[i] = ST[i << 1] + ST[i << 1 | 1];
+    }
+
+    void point_update(int p, long long minimum, long long maximum, int k) {
+        point_update(1, p, minimum, maximum, k, 0, n);
+    }
+
+    void point_update(int i, int pos, long long minimum, long long maximum, int k, int l, int r) {
+        if (l + 1 == r) {
+            ST[i].minimum = minimum;
+            ST[i].maximum = maximum;
+            indices[l] = k;
+            return;
         }
-        T[i] = TreapNode(key, y);
-        return i;
-    }
 
-    long long max_plus(int i) const {
-        return !i ? LLONG_MIN : T[i].x_max_plus;
-    }
+        int m = midpoint(l, r);
+        if (pos < m) point_update(i << 1, pos, minimum, maximum, k, l, m);
+        else point_update(i << 1 | 1, pos, minimum, maximum, k, m, r);
 
-    long long max_minus(int i) const {
-        return !i ? LLONG_MIN : T[i].x_max_minus;
-    }
-
-    int pull(int i) {
-        if (!i) return 0;
-        auto [l, r, p] = T[i].family;
-        T[i].x_max_plus = max({T[i].x_plus, max_plus(l), max_plus(r)});
-        T[i].x_max_minus = max({T[i].x_minus, max_minus(l), max_minus(r)});
-        return i;
-    }
-
-    void attach(int i, int c, int j) {
-        T[i].family[c] = j;
-        if (j) T[j].family[2] = i;
         pull(i);
     }
 
-    pair<int, int> split(int i, const pair<long long, int> &key) {
-        if (!i) return {0, 0};
-        auto [l, r, p] = T[i].family;
-        if (T[i].key > key) {
-            auto [ll, lr] = split(l, key);
-            attach(i, 0, lr);
-            if (ll) T[ll].family[2] = 0;
-            T[i].family[2] = 0;
-            return {ll, i};
-        } else {
-            auto [rl, rr] = split(r, key);
-            attach(i, 1, rl);
-            if (rr) T[rr].family[2] = 0;
-            T[i].family[2] = 0;
-            return {i, rr};
-        }
+    vector<int> range_update(int ql, int qr, long long x, bool b) {
+        vector<int> broken;
+        range_update(1, ql, qr, x, b, broken, 0, n);
+        return broken;
     }
 
-    int meld(int i, int j) {
-        if (!i || !j) {
-            int k = i ^ j;
-            if (k) T[k].family[2] = 0;
-            return k;
-        }
-        if (T[i].prio < T[j].prio) {
-            attach(i, 1, meld(T[i].family[1], j));
-            T[i].family[2] = 0;
-            return i;
-        } else {
-            attach(j, 0, meld(i, T[j].family[0]));
-            T[j].family[2] = 0;
-            return j;
-        }
-    }
-
-    int insert(const pair<long long, int> &key, long long y) {
-        int i = node(key, y);
-        auto [l, r] = split(root, key);
-        root = meld(meld(l, i), r);
-        T[root].family[2] = 0;
-        return i;
-    }
-
-    int erase(const pair<long long, int> &key) {
-        root = erase(root, key);
-        T[root].family[2] = 0;
-        return root;
-    }
-
-    int erase(int i, const pair<long long, int> &key) {
-        if (!i) return 0;
-        auto [l, r, p] = T[i].family;
-        if (T[i].key == key) {
-            int m = meld(l, r);
-            T[m].family[2] = 0;
-            recycled.emplace(i);
-            return m;
+    void range_update(int i, int ql, int qr, long long x, int b, vector<int> &broken, int l, int r) {
+        if (qr <= l || r <= ql || (!b ? ST[i].maximum <= x : ST[i].minimum >= x)) return;
+        if (l + 1 == r) {
+            ST[i] = {};
+            broken.emplace_back(indices[l]);
+            return;
         }
 
-        if (T[i].key > key) attach(i, 0, erase(l, key));
-        else attach(i, 1, erase(r, key));
-        return i;
-    }
+        int m = midpoint(l, r);
+        range_update(i << 1, ql, qr, x, b, broken, l, m);
+        range_update(i << 1 | 1, ql, qr, x, b, broken, m, r);
 
-    pair<int, int> erase_by_x_plus(int i, long long x) {
-        if (!i || max_plus(i) <= x) return {i, 0};
-
-        auto [l, r, p] = T[i].family;
-        if (l && max_plus(l) > x) {
-            auto [ll, j] = erase_by_x_plus(l, x);
-            attach(i, 0, ll);
-            return {pull(i), j};
-        } else if (T[i].x_plus <= x) {
-            auto [rr, j] = erase_by_x_plus(r, x);
-            attach(i, 1, rr);
-            return {pull(i), j};
-        }
-
-        int k = T[i].key.second, j = erase(i, T[i].key);
-        if (j) T[j].family[2] = 0;
-        T[i].family[2] = 0;
-        return {j, k};
-    }
-
-    pair<int, int> erase_by_x_minus(int i, long long x) {
-        if (!i || max_minus(i) <= x) return {i, 0};
-
-        auto [l, r, p] = T[i].family;
-        if (l && max_minus(l) > x) {
-            auto [ll, j] = erase_by_x_minus(l, x);
-            attach(i, 0, ll);
-            return {pull(i), j};
-        } else if (T[i].x_minus <= x) {
-            auto [rr, j] = erase_by_x_minus(r, x);
-            attach(i, 1, rr);
-            return {pull(i), j};
-        }
-
-        int k = T[i].key.second, j = erase(i, T[i].key);
-        if (j) T[j].family[2] = 0;
-        T[i].family[2] = 0;
-        return {j, k};
-    }
-
-    vector<int> query(long long x, long long y, int i) {
-        vector<int> v;
-        auto [l, r] = split(root, {x - 2 * y, INT_MAX});
-        auto [rl, rr] = split(r, {x + 2 * y - 1, INT_MAX});
-        auto [rll, rlr] = split(rl, {x, INT_MAX});
-
-        while (rll && max_plus(rll) > x) {
-            auto [ll, j] = erase_by_x_plus(rll, x);
-            rll = ll;
-            v.emplace_back(j);
-        }
-        while (rlr && max_minus(rlr) > -x) {
-            auto [lr, j] = erase_by_x_minus(rlr, -x);
-            rlr = lr;
-            v.emplace_back(j);
-        }
-
-        root = meld(l, meld(rll, meld(rlr, rr)));
-        insert({x, i}, y);
-        return v;
+        pull(i);
     }
 };
 
@@ -191,15 +82,28 @@ int main() {
     int n;
     cin >> n;
 
-    Treap treap;
-    for (int i = 1; i <= n; i++) {
-        long long x, y;
-        cin >> x >> y;
+    vector<long long> x(n), y(n), xs;
+    for (int i = 0; i < n; i++) {
+        cin >> x[i] >> y[i];
 
-        auto broken = treap.query(x, y, i);
-        sort(broken.begin(), broken.end());
-        cout << broken.size() << " ";
-        for (int j : broken) cout << j << " ";
+        xs.emplace_back(x[i]);
+    }
+    sort(xs.begin(), xs.end());
+    xs.erase(unique(xs.begin(), xs.end()), xs.end());
+
+    SegmentTree st(xs.size());
+    for (int i = 0; i < n; i++) {
+        auto l = x[i] - 2 * y[i], r = x[i] + 2 * y[i];
+        int p = lower_bound(xs.begin(), xs.end(), x[i]) - xs.begin();
+
+        auto broken_l = st.range_update(upper_bound(xs.begin(), xs.end(), l) - xs.begin(), p + 1, x[i], false);
+        auto broken_r = st.range_update(p + 1, lower_bound(xs.begin(), xs.end(), r) - xs.begin(), x[i], true);
+        broken_l.insert(broken_l.end(), broken_r.begin(), broken_r.end());
+        sort(broken_l.begin(), broken_l.end());
+        cout << broken_l.size() << " ";
+        for (int j : broken_l) cout << j << " ";
         cout << "\n";
+
+        st.point_update(p, l, r, i + 1);
     }
 }
