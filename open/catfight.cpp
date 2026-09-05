@@ -216,7 +216,7 @@ T area_of_intersection_of_circles(const vector<Circle<T>> &circles) {
                 auto v = circles[j].origin - circles[i].origin;
                 T d = euclidean_dist(v);
                 if (!sgn(d)) {
-                    if (circles[j].encloses(circles[i])) continue;
+                    if (circles[j].encloses(circles[i]) && (circles[j].radius > circles[i].radius || j > i)) continue;
                     intervals.clear();
                     break;
                 }
