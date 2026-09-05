@@ -170,7 +170,7 @@ struct Circle {
 };
 
 template <typename T>
-T area_of_circle_circle_intersections(const vector<Circle<T>> &circles) {
+T area_of_intersection_of_circles(const vector<Circle<T>> &circles) {
     int n = circles.size();
 
     T area = 0;
@@ -232,5 +232,5 @@ int main() {
 
     vector<Circle<long double>> circles(n);
     for (auto &[p, r] : circles) cin >> p.x >> p.y >> r;
-    cout << fixed << setprecision(4) << area_of_circle_circle_intersections(circles);
+    cout << fixed << setprecision(4) << area_of_intersection_of_circles(circles);
 }
