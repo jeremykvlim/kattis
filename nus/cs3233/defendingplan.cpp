@@ -436,117 +436,79 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
-struct Treap {
-    static inline mt19937_64 rng{random_device{}()};
-    static inline array<modint, 5> identity;
+struct PURQSegmentTree {
+    static inline vector<int> a;
+    static inline vector<array<modint, 3>> values;
 
-    struct TreapNode {
-        array<int, 3> family;
-        unsigned long long prio;
-        int key;
-        array<modint, 5> base, aggregate;
+    struct Monoid {
+        modint zero, left, right, sum, cycle;
 
-        TreapNode(const int &key = 0, const array<modint, 5> &a = identity) : family{0, 0, 0}, prio(rng()), key(key), base(a), aggregate(a) {}
+        Monoid() : zero(1), left(0), right(0), sum(0), cycle(0) {}
+
+        auto & operator=(const int &v) {
+            if (~v) {
+                auto [p_zero, e, p_one] = values[v];
+                auto p_any = 1 - p_zero;
+                zero = p_zero;
+                left = right = p_any * a[v];
+                sum = (e - p_any) * a[v] * a[v];
+                cycle = (p_any - p_one) * a[v] * a[v];
+            } else {
+                zero = 1;
+                left = right = sum = cycle = 0;
+            }
+            return *this;
+        }
+
+        auto & operator+=(const Monoid &monoid) {
+            cycle = cycle * monoid.zero + zero * monoid.cycle + left * monoid.right;
+            sum += monoid.sum + right * monoid.left;
+            right = right * monoid.zero + monoid.right;
+            left += zero * monoid.left;
+            zero *= monoid.zero;
+            return *this;
+        }
+
+        friend auto operator+(Monoid ml, const Monoid &mr) {
+            ml += mr;
+            return ml;
+        }
     };
 
-    int root;
-    vector<TreapNode> T;
-    stack<int> recycled;
+    int n;
+    vector<Monoid> ST;
 
-    Treap() : root(0), T(1) {
-        identity = {1, 0, 0, 0, 0};
+    void pull(int i) {
+        ST[i] = ST[i << 1] + ST[i << 1 | 1];
     }
 
-    int node(const int &key, const array<modint, 5> &a) {
-        int i;
-        if (!recycled.empty()) {
-            i = recycled.top();
-            recycled.pop();
-        } else {
-            T.emplace_back();
-            i = T.size() - 1;
+    void build() {
+        for (int i = n - 1; i; i--) pull(i);
+    }
+
+    void point_update(int i, const int &v) {
+        for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
+    }
+
+    Monoid range_query(int l, int r) {
+        Monoid ml, mr;
+        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+            if (l & 1) ml = ml + ST[l++];
+            if (r & 1) mr = ST[--r] + mr;
         }
-        T[i] = TreapNode(key, a);
-        return i;
+
+        return ml + mr;
     }
 
-    array<modint, 5> aggregate(int i) {
-        return !i ? identity : T[i].aggregate;
+    auto & operator[](int i) {
+        return ST[i];
     }
 
-    int pull(int i) {
-        if (!i) return 0;
-        auto [l, r, p] = T[i].family;
-        auto add = [&](const array<modint, 5> &a1, const array<modint, 5> &a2) -> array<modint, 5> {
-            return {a1[0] * a2[0], a1[1] + a1[0] * a2[1], a2[2] + a2[0] * a1[2], a1[3] + a2[3] + a1[2] * a2[1], a2[0] * a1[4] + a1[0] * a2[4] + a2[2] * a1[1]};
-        };
-        T[i].aggregate = add(add(aggregate(l), T[i].base), aggregate(r));
-        return i;
-    }
-
-    void attach(int i, int c, int j) {
-        T[i].family[c] = j;
-        if (j) T[j].family[2] = i;
-        pull(i);
-    }
-
-    pair<int, int> split(int i, const int &key) {
-        if (!i) return {0, 0};
-        auto [l, r, p] = T[i].family;
-        if (T[i].key > key) {
-            auto [ll, lr] = split(l, key);
-            attach(i, 0, lr);
-            if (ll) T[ll].family[2] = 0;
-            T[i].family[2] = 0;
-            return {ll, i};
-        } else {
-            auto [rl, rr] = split(r, key);
-            attach(i, 1, rl);
-            if (rr) T[rr].family[2] = 0;
-            T[i].family[2] = 0;
-            return {i, rr};
-        }
-    }
-
-    int meld(int i, int j) {
-        if (!i || !j) {
-            int k = i ^ j;
-            if (k) T[k].family[2] = 0;
-            return k;
-        }
-        if (T[i].prio < T[j].prio) {
-            attach(i, 1, meld(T[i].family[1], j));
-            T[i].family[2] = 0;
-            return i;
-        } else {
-            attach(j, 0, meld(i, T[j].family[0]));
-            T[j].family[2] = 0;
-            return j;
-        }
-    }
-
-    int insert(const int &key, const array<modint, 5> &a) {
-        int i = node(key, a);
-        auto [l, r] = split(root, key);
-        root = meld(meld(l, i), r);
-        T[root].family[2] = 0;
-        return i;
-    }
-
-    int erase_node(int i) {
-        if (!i) return 0;
-        auto [l, r, p] = T[i].family;
-        int m = meld(l, r);
-        T[m].family[2] = p;
-        recycled.emplace(i);
-        (!p ? root : T[p].family[T[p].family[0] != i]) = m;
-        for (; p; p = T[p].family[2]) pull(p);
-        T[root].family[2] = 0;
-        return root;
-    }
-
-    array<modint, 5> query() {
-        return aggregate(root);
+    PURQSegmentTree(int n, const vector<int> &arr, const vector<int> &p, const vector<array<modint, 3>> &v) : n(n), ST(2 * n) {
+        a = p;
+        values = v;
+        for (int i = 0; i < arr.size(); i++) ST[i + n] = arr[i];
+        build();
     }
 };
 
@@ -559,37 +521,45 @@ int main() {
     int n, Q;
     cin >> n >> Q;
 
-    Treap treap;
-    vector<int> nodes(n);
-    vector<modint> b(n), e(n);
-    modint base = 0, extra = 0;
-    auto update = [&](int i, int a, int x, int p_num, int p_den) {
-        modint p = (modint) p_num / p_den, q = 1 - p, p_zero = modint::pow(q, x), p_one = modint::pow(q, x - 1), p_any = 1 - p_zero;
-        nodes[i] = treap.insert(a, {p_zero, p_any * a, p_any * a, 0, 0});
-        base += b[i] = (p * x + p_zero - 1) * a * a;
-        extra += e[i] = ((p_any - p * x * p_one) * a * a) / p_zero;
-    };
-    for (int i = 0; i < n; i++) {
-        int a, x, p_num, p_den;
-        cin >> a >> x >> p_num >> p_den;
-
-        update(i, a, x, p_num, p_den);
+    int m = n + Q;
+    vector<int> a(m), x(m), p_num(m), p_den(m), squad(Q);
+    for (int i = 0; i < n; i++) cin >> a[i] >> x[i] >> p_num[i] >> p_den[i];
+    for (int q = 0; q < Q; q++) {
+        cin >> squad[q] >> a[q + n] >> x[q + n] >> p_num[q + n] >> p_den[q + n];
+        squad[q]--;
     }
 
-    auto query = [&]() {
-        auto [z, l, r, t, f] = treap.query();
-        return base + t + f + z * extra;
-    };
-    cout << query() << "\n";
-    while (Q--) {
-        int i, a, x, p_num, p_den;
-        cin >> i >> a >> x >> p_num >> p_den;
-        i--;
+    vector<int> temp(n);
+    iota(temp.begin(), temp.end(), 0);
+    for (int q = 0; q < Q; q++) squad[q] = exchange(temp[squad[q]], n + q);
 
-        treap.erase_node(nodes[i]);
-        base -= b[i];
-        extra -= e[i];
-        update(i, a, x, p_num, p_den);
-        cout << query() << "\n";
+    vector<modint> p_den_pow(m + 1, 1), p_den_inv(m);
+    for (int i = 0; i < m; i++) p_den_pow[i + 1] = p_den_pow[i] * p_den[i];
+
+    auto inv = modint::inv(p_den_pow[m]);
+    for (int i = m - 1; ~i; i--) {
+        p_den_inv[i] = inv * p_den_pow[i];
+        inv *= p_den[i];
+    }
+
+    vector<array<modint, 3>> values(m);
+    for (int i = 0; i < m; i++) {
+        auto p = p_num[i] * p_den_inv[i], q = 1 - p, e = p * x[i];
+        values[i] = {modint::pow(q, x[i]), e, e * modint::pow(q, x[i] - 1)};
+    }
+
+    vector<int> order(m), rank(m);
+    iota(order.begin(), order.end(), 0);
+    sort(order.begin(), order.end(), [&](int i, int j) { return a[i] < a[j]; });
+    for (int i = 0; i < m; i++) rank[order[i]] = i;
+
+    vector<int> pos(m, -1);
+    for (int i = 0; i < n; i++) pos[rank[i]] = i;
+    PURQSegmentTree st(m, pos, a, values);
+    cout << st[1].sum + st[1].cycle << "\n";
+    for (int q = 0; q < Q; q++) {
+        st.point_update(rank[squad[q]], -1);
+        st.point_update(rank[n + q], n + q);
+        cout << st[1].sum + st[1].cycle << "\n";
     }
 }
