@@ -37,7 +37,7 @@ int main() {
     }
 
     vector<bool> can(q);
-    alignas(64) array<unsigned short, (int) 1e5 + 1> dp;
+    alignas(32) array<unsigned short, (int) 1e5 + 1> dp;
     auto solve = [&](int k) {
         if (!~last[k]) return;
 
