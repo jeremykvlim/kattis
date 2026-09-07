@@ -531,7 +531,7 @@ int main() {
 
     vector<int> temp(n);
     iota(temp.begin(), temp.end(), 0);
-    for (int q = 0; q < Q; q++) squad[q] = exchange(temp[squad[q]], n + q);
+    for (int q = 0; q < Q; q++) squad[q] = exchange(temp[squad[q]], q + n);
 
     vector<modint> p_den_pow(m + 1, 1), p_den_inv(m);
     for (int i = 0; i < m; i++) p_den_pow[i + 1] = p_den_pow[i] * p_den[i];
@@ -559,7 +559,7 @@ int main() {
     cout << st[1].sum + st[1].cycle << "\n";
     for (int q = 0; q < Q; q++) {
         st.point_update(rank[squad[q]], -1);
-        st.point_update(rank[n + q], n + q);
+        st.point_update(rank[q + n], q + n);
         cout << st[1].sum + st[1].cycle << "\n";
     }
 }
