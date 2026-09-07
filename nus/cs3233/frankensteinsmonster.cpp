@@ -213,15 +213,14 @@ int main() {
     }
 
     cout << "win\n" << dist[s][0] / 2 + 1 << "\n" << flush;
-
     for (;;) {
         for (const auto &p : legal_moves(pos)) {
             int v = encode(p);
             if (!~dist[v][1] || wins[v][1] || dist[v][1] + 1 != dist[s][0]) continue;
 
             int i = mismatch(p.begin(), p.end(), pos.begin()).first - p.begin(),
-                    rank = pos[i] >> 3, file = pos[i] & 7,
-                    next_rank = p[i] >> 3, next_file = p[i] & 7;
+                rank = pos[i] >> 3, file = pos[i] & 7,
+                next_rank = p[i] >> 3, next_file = p[i] & 7;
             cout << pieces[i] << " " << (char) (file + 'a') << (char) (rank + '1') << " " << (char) (next_file + 'a') << (char) (next_rank + '1') << "\n" << flush;
 
             if (!dist[v][1]) exit(0);
