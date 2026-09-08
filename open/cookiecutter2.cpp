@@ -184,9 +184,7 @@ int main() {
         sort(v.begin(), v.end(), [&](auto p1, auto p2) {
             auto a = p1.first, b = p2.first;
             int ha = halfplane(a), hb = halfplane(b);
-            if (ha != hb) return ha < hb;
-            if (auto c = cross(a, b)) return c > 0;
-            return p1.second < p2.second;
+            return ha != hb ? ha < hb : cross(a, b) > 0;
         });
 
         auto cookie = [&](auto &a, auto &b) -> double {
@@ -211,7 +209,7 @@ int main() {
             r = max(r, l);
             for (; r < l + k && cross(v[l].first, v[r % k].first) >= 0; r++);
             diff = max(diff, (double) (r - l + 1) / m - cookie(points[i], points[v[l].second]));
-            for (; l < k - 1 && !cross(v[l].first, v[l + 1].first) && dot(v[l].first, v[l + 1].first) > 0; l++);
+            for (; l < k - 1 && !cross(v[l].first, v[l + 1].first); l++);
         }
     }
 
