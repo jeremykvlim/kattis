@@ -1,89 +1,36 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct SuffixArray {
-    vector<int> SA, ascii;
+struct HashedString {
+    static inline unsigned long long B1 = 0, B2 = 0;
+    static const unsigned long long MOD1 = 1e9 + 7, MOD2 = 1e9 + 9;
 
-    vector<int> sais(vector<int> &ascii1, int range) {
-        int n = ascii1.size();
-        if (!n) return {};
-        if (n == 1) return {0};
-        if (n == 2) return ascii1[0] < ascii1[1] ? vector<int>{0, 1} : vector<int>{1, 0};
+    int n;
+    vector<unsigned long long> pref1, pref2;
+    static inline vector<unsigned long long> p1{1}, p2{1};
 
-        vector<int> sa(n, 0), sum_s(range + 1, 0), sum_l(range + 1, 0);
-        vector<bool> sl(n, false);
-        for (int i = n - 2; ~i; i--) sl[i] = ascii1[i] == ascii1[i + 1] ? sl[i + 1] : ascii1[i] < ascii1[i + 1];
-        for (int i = 0; i < n; i++)
-            if (!sl[i]) sum_s[ascii1[i]]++;
-            else sum_l[ascii1[i] + 1]++;
-
-        for (int i = 0; i <= range; i++) {
-            sum_s[i] += sum_l[i];
-            if (i < range) sum_l[i + 1] += sum_s[i];
+    HashedString() : n(0), pref1(1, 0), pref2(1, 0) {}
+    HashedString(const string &s) : n(s.size()), pref1(n + 1, 0), pref2(n + 1, 0) {
+        if (!B1 && !B2) {
+            mt19937_64 rng{random_device{}()};
+            B1 = uniform_int_distribution(911382323ULL, MOD1 - 1)(rng);
+            B2 = uniform_int_distribution(972663749ULL, MOD2 - 1)(rng);
         }
-
-        auto induced_sort = [&](vector<int> &lms) {
-            fill(sa.begin(), sa.end(), -1);
-            vector<int> b(range + 1, 0);
-            copy(sum_s.begin(), sum_s.end(), b.begin());
-            for (int i : lms) sa[b[ascii1[i]]++] = i;
-
-            copy(sum_l.begin(), sum_l.end(), b.begin());
-            sa[b[ascii1[n - 1]]++] = n - 1;
-            for (int j : sa)
-                if (j > 0 && !sl[j - 1]) sa[b[ascii1[j - 1]]++] = j - 1;
-
-            copy(sum_l.begin(), sum_l.end(), b.begin());
-            for (int i = n - 1; ~i; i--) {
-                int j = sa[i];
-                if (j > 0 && sl[j - 1]) sa[--b[ascii1[j - 1] + 1]] = j - 1;
-            }
-        };
-
-        vector<int> lms_map(n + 1, -1), lms;
-        int m = 0;
-        for (int i = 1; i < n; i++)
-            if (!sl[i - 1] && sl[i]) {
-                lms_map[i] = m++;
-                lms.emplace_back(i);
-            }
-        induced_sort(lms);
-
-        if (m) {
-            vector<int> lms_sorted, ascii2(m);
-            for (int j : sa)
-                if (lms_map[j] != -1) lms_sorted.emplace_back(j);
-
-            int range2 = 0;
-            ascii2[lms_map[lms_sorted[0]]] = 0;
-            for (int i = 1; i < m; i++) {
-                int l = lms_sorted[i - 1], r = lms_sorted[i], l_end = (lms_map[l] + 1 < m) ? lms[lms_map[l] + 1] : n, r_end = (lms_map[r] + 1 < m) ? lms[lms_map[r] + 1] : n;
-                bool same = true;
-                if (l_end - l != r_end - r) same = false;
-                else {
-                    for (; l < l_end && ascii1[l] == ascii1[r]; l++, r++);
-                    if (l == n || ascii1[l] != ascii1[r]) same = false;
-                }
-
-                if (!same) range2++;
-                ascii2[lms_map[lms_sorted[i]]] = range2;
-            }
-
-            auto sa2 = sais(ascii2, range2);
-            for (int i = 0; i < m; i++) lms_sorted[i] = lms[sa2[i]];
-            induced_sort(lms_sorted);
+        while (p1.size() <= n || p2.size() <= n) {
+            p1.emplace_back((p1.back() * B1) % MOD1);
+            p2.emplace_back((p2.back() * B2) % MOD2);
         }
-
-        return sa;
+        for (int i = 0; i < n; i++) {
+            auto v = (unsigned char) s[i] + 1;
+            pref1[i + 1] = (pref1[i] * B1 + v) % MOD1;
+            pref2[i + 1] = (pref2[i] * B2 + v) % MOD2;
+        }
     }
 
-    int & operator[](int i) {
-        return SA[i];
+    pair<unsigned long long, unsigned long long> pref_hash(int l, int r) const {
+        auto h1 = (pref1[r] + MOD1 - (pref1[l] * p1[r - l]) % MOD1) % MOD1, h2 = (pref2[r] + MOD2 - (pref2[l] * p2[r - l]) % MOD2) % MOD2;
+        return {h1, h2};
     }
-
-    SuffixArray(string &s, int r = 128) : ascii(s.begin(), s.end()) {
-        SA = sais(ascii, r);
-    };
 };
 
 int main() {
@@ -98,11 +45,7 @@ int main() {
         string s;
         cin >> k >> s;
 
-        int n = s.length();
-        SuffixArray sa(s);
-        vector<int> indices(n);
-        for (int i = 0; i < n; i++) indices[sa[i]] = i;
-
+        int n = s.size();
         vector<vector<int>> next(n + 1, vector<int>(26, -1));
         vector<int> same(n + 1, 1);
         for (int i = n - 1; ~i; i--) {
@@ -111,13 +54,14 @@ int main() {
             if (i < n - 1 && s[i] == s[i + 1]) same[i] += same[i + 1];
         }
 
+        HashedString hs(s);
         string str;
         int l = 0;
         for (char c = 'z'; c >= 'a' && l < n && k; c--) {
             while (l < n && s[l] == c) str += s[l++];
 
             vector<int> diff;
-            for (int i = l + 1; i < n && next[i][c - 'a'] != -1; i++)
+            for (int i = l + 1; i < n && ~next[i][c - 'a']; i++)
                 if (s[i] == c && s[i - 1] != c) diff.emplace_back(i);
             if (diff.empty()) continue;
             sort(diff.begin(), diff.end(), [&](int i, int j) { return same[i] == same[j] ? i < j : same[j] < same[i]; });
@@ -127,19 +71,36 @@ int main() {
                 int j = diff[i];
 
                 last = j;
-                while (j < n && s[j] == c) str += s[j++];
+                for (; j < n && s[j] == c; j++) str += s[j];
                 l = max(l, j);
             }
 
             int r = l;
             for (; i < diff.size(); i++) {
                 int j = diff[i];
-                if (j > l && same[j] == same[last] && indices[j + same[j] - 1] > indices[r - 1]) r = j + same[j];
+
+                auto greater = [&](int i, int j) {
+                    if (i == j) return false;
+                    auto lce = [&](int i, int j) {
+                        int l = 0, r = min(n - i, n - j) + 1, m;
+                        while (l + 1 < r) {
+                            m = l + (r - l) / 2;
+
+                            if (hs.pref_hash(i, i + m) == hs.pref_hash(j, j + m)) l = m;
+                            else r = m;
+                        }
+                        return l;
+                    };
+                    int len = lce(i, j);
+                    if (len == min(n - i, n - j)) return n - i > n - j;
+                    return s[i + len] > s[j + len];
+                };
+                if (j > l && same[j] == same[last] && greater(j + same[j] - 1, r - 1)) r = j + same[j];
             }
             l = r;
         }
 
-        for (int i = l; i < n; i++) str += s[i];
-        cout << str << "\n";
+        str += s.substr(l);
+        cout << str << '\n';
     }
 }

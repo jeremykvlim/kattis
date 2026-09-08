@@ -72,7 +72,7 @@ int main() {
             return false;
         };
 
-        for (int i = 0; i < labels1.length(); i++)
+        for (int i = 0; i < labels1.size(); i++)
             if (labels1[0] == labels2[i] && adj_list1[0].size() == adj_list2[i].size() && dfs(dfs, 0, i)) {
                 cout << "same\n";
                 goto done;

@@ -9,7 +9,7 @@ int main() {
     cin >> s;
 
     vector<vector<int>> count(9, vector<int>(9, 0));
-    for (int i = 0; i < s.length() - 1; i++) count[s[i] - '1'][s[i + 1] - '1']++;
+    for (int i = 0; i < s.size() - 1; i++) count[s[i] - '1'][s[i + 1] - '1']++;
 
     vector<int> row(9);
     iota(row.begin(), row.end(), 0);

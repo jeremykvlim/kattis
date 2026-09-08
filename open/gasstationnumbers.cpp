@@ -7,8 +7,8 @@ int main() {
 
     string s;
     while (cin >> s && s != ".") {
-        s.erase(s.length() - 2, 1);
-        int n = s.length();
+        s.erase(s.size() - 2, 1);
+        int n = s.size();
 
         int i = n - 1;
         for (; ~i; i--)
