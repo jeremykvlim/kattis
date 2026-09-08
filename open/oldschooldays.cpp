@@ -555,9 +555,36 @@ struct Point {
 };
 
 template <typename T>
+T cross(const Point<T> &a, const Point<T> &b) {
+    return (a.x * b.y) - (a.y * b.x);
+}
+
+template <typename T>
 T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
     return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
+
+template <typename T>
+struct FenwickTree {
+    vector<T> BIT;
+
+    void update(int i, T v) {
+        for (; i && i < BIT.size(); i += i & -i) BIT[i] += v;
+    }
+
+    T pref_sum(int i) {
+        T sum = 0;
+        for (; i; i &= i - 1) sum += BIT[i];
+        return sum;
+    }
+
+    T range_sum_query(int l, int r) {
+        if (l >= r) return 0;
+        return pref_sum(r) - pref_sum(l);
+    }
+
+    FenwickTree(int n) : BIT(n, 0) {}
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -572,26 +599,36 @@ int main() {
     for (auto &[x, y] : points) cin >> x >> y;
     sort(points.begin(), points.end());
 
-    vector<vector<int>> count(n, vector<int>(n, 0));
-    for (int i = 0; i < n; i++)
-        for (int j = i + 1; j < n; j++)
-            for (int k = i + 1; k < j; k++)
-                if (cross(points[i], points[j], points[k]) > 0) count[i][j] = ++count[j][i];
+    Point<long long> total{0, 0};
+    for (auto p : points) total += p;
 
-    modint sum = 0;
-    for (int i = 0; i < n; i++)
-        for (int j = i + 1; j < n; j++)
-            for (int k = j + 1; k < n; k++) {
-                auto cross_product = cross(points[i], points[j], points[k]);
-                int c = count[i][j] + count[j][k] - count[k][i];
-                
-                if (cross_product < 0) {
-                    cross_product *= -1;
-                    c = -c - 1;
-                }
+    vector<long long> c(n);
+    for (int i = 0; i < n; i++) c[i] = cross(points[i], total);
 
-                sum += cross_product * (c * 3 + n - 3 - c);
-            }
+    modint area = 0, signed_area = 0, count = 0;
+    vector<int> order(n), rank(n);
+    for (int i = 0; i < n; i++) {
+        int m = n - i - 1;
+        iota(order.begin(), order.begin() + m, i + 1);
+        sort(order.begin(), order.begin() + m, [&](int a, int b) { return cross(points[i], points[a], points[b]) > 0; });
 
-    cout << sum / 2;
+        Point<long long> sum{0, 0};
+        for (int r = 0; r < m; r++) {
+            int j = order[r];
+            area += cross(points[i], points[i] + sum, points[j]);
+            sum += points[j] - points[i];
+            rank[j] = r;
+        }
+
+        FenwickTree<int> fw(m + 1);
+        sum = {0, 0};
+        for (int j = i + 1; j < n; j++) {
+            signed_area += cross(points[i], points[i] + sum, points[j]);
+            sum += points[j] - points[i];
+            count += (modint) fw.range_sum_query(rank[j] + 1, m) * (c[j] - c[i] + n * cross(points[i], points[j]));
+            fw.update(rank[j] + 1, 1);
+        }
+    }
+
+    cout << ((n - 4) * area + signed_area + 2 * count) / 2;
 }
