@@ -654,8 +654,7 @@ int main() {
         exit(0);
     }
 
-    for (int v = 0; v < V; v++)
-        sort(adj_edges[v].begin(), adj_edges[v].end(), [&](int e1, int e2) { return edge_angle[e1] < edge_angle[e2]; });
+    for (int v = 0; v < V; v++) sort(adj_edges[v].begin(), adj_edges[v].end(), [&](int e1, int e2) { return edge_angle[e1] < edge_angle[e2]; });
 
     vector<int> next(2 * E);
     for (int v = 0; v < V; v++) {
