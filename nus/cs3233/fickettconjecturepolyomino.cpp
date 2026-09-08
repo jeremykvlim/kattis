@@ -162,64 +162,59 @@ int main() {
         vector<string> grid(R);
         for (auto &row : grid) cin >> row;
 
-        vector<vector<bool>> cell(R, vector<bool>(C, false));
-        for (int r = 0; r < R; r++)
-            for (int c = 0; c < C; c++) cell[r][c] = grid[r][c] == '#';
-
-        vector<pair<int, int>> borders;
-        vector<int> dr{1, 0, -1, 0, 1, -1, -1, 1}, dc{0, 1, 0, -1, 1, 1, -1, -1};
-        for (int row = 0; row < R; row++)
-            for (int col = 0; col < C; col++)
-                if (cell[row][col])
-                    for (int k = 0; k < 8; k++) {
-                        int r = row + dr[k], c = col + dc[k];
-                        if (!(0 <= r && r < R && 0 <= c && c < C) || !cell[r][c]) {
-                            borders.emplace_back(row, col);
-                            break;
-                        }
-                    }
-
-        Fraction<int> f(1, 1);
-        for (int rotation = 0; rotation < 4; rotation++) {
-            int C_r = rotation & 1 ? R : C, R_r = rotation & 1 ? C : R;
-
-            auto rotate = [&](int r, int c) -> pair<int, int> {
-                if (!rotation) return {r, c};
-                if (rotation == 1) return {c, R - 1 - r};
-                if (rotation == 2) return {R - 1 - r, C - 1 -c};
-                return {C - 1 - c, r};
-            };
-          
-            vector<vector<bool>> cell_r(R_r, vector<bool>(C_r, false));
-            for (int r = 0; r < R; r++)
-                for (int c = 0; c < C; c++)
-                    if (cell[r][c]) {
-                        auto [row, col] = rotate(r, c);
-                        cell_r[row][col] = true;
-                    }
-          
-            vector<pair<int, int>> borders_r;
-            for (auto [r, c] : borders) borders_r.emplace_back(rotate(r, c));
-
-            for (int drow = 1 - R_r; drow <= R - 1; drow++)
-                for (int dcol = 1 - C_r; dcol <= C - 1; dcol++) {
-                    int n = 0, d = 0;
-                    for (auto [row, col] : borders) {
-                        int i = row - drow, j = col - dcol;
-                        if (0 <= i && i < R_r && 0 <= j && j < C_r && cell_r[i][j]) n++;
-                    }
-                    if (!n) continue;
-
-                    for (auto [row, col] : borders_r) {
-                        int i = row + drow, j = col + dcol;
-                        if (0 <= i && i < R && 0 <= j && j < C && cell[i][j]) d++;
-                    }
-                    if (!d) continue;
-
-                    Fraction<int> temp(n, d);
-                    if (f < temp) f = temp;
-                }
+        int u = R, d = 0, l = C, r = 0;
+        for (int i = 0; i < R; i++) {
+            int j = grid[i].find('#');
+            if (j != string::npos) {
+                u = min(u, i);
+                d = i;
+                l = min(l, j);
+                r = max(r, (int) grid[i].rfind('#'));
+            }
         }
+
+        vector<string> cropped(d - u + 1);
+        for (int i = u; i <= d; i++) cropped[i - u] = grid[i].substr(l, r - l + 1);
+        grid = cropped;
+        R = grid.size();
+        C = grid[0].size();
+
+        auto build = [&]() {
+            vector<array<int, 4>> A(grid.size());
+            for (int i = 0; i < grid.size(); i++) {
+                A[i] = {(int) grid[i].find('#'), (int) grid[i].rfind('#'), 1, 0};
+                if (i > 1) {
+                    A[i - 1][2] = max({A[i - 2][0], A[i - 1][0], A[i][0]}) + 1;
+                    A[i - 1][3] = min({A[i - 2][1], A[i - 1][1], A[i][1]}) - 1;
+                }
+            }
+            return A;
+        };
+        auto A = build();
+        Fraction<int> f(0, 1);
+        for (int _ = 0; _ < 4; _++) {
+            auto A1 = build();
+            int R1 = A1.size(), C1 = grid[0].size();
+            for (int dr = 1 - R1; dr < R; dr++)
+                for (int dc = 1 - C1; dc < C; dc++) {
+                    Fraction<int> temp(0, 0);
+                    for (int i = max(0, dr); i < min(R, dr + R1); i++) {
+                        int j = i - dr;
+                        auto border = [&](const auto &a, int l, int r) {
+                            return max(0, min(a[1], r) - max(a[0], l) + 1) - max(0, min(a[3], r) - max(a[2], l) + 1);
+                        };
+                        temp.numer() += border(A[i], A1[j][0] + dc, A1[j][1] + dc);
+                        temp.denom() += border(A1[j], A[i][0] - dc, A[i][1] - dc);
+                    }
+                    if (temp.denom()) f = max(f, temp);
+                }
+
+            vector<string> g(grid[0].size(), string(grid.size(), '.'));
+            for (int i = 0; i < grid.size(); i++)
+                for (int j = 0; j < grid[0].size(); j++) g[j][grid.size() - 1 - i] = grid[i][j];
+            grid = g;
+        }
+        f.reduce();
         cout << f.numer() << "/" << f.denom() << "\n";
     }
 }
