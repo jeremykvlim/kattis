@@ -60,7 +60,7 @@ int main() {
 
         vector<int> dist(n, 1e9), len(n, 0);
         dist[2 * s] = 0;
-        vector<bool> queued(n);
+        vector<bool> queued(n, false);
         queued[2 * s] = true;
         deque<int> dq{2 * s};
         while (!dq.empty()) {
