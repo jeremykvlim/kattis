@@ -5,112 +5,63 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n, m, k, A, B;
-    cin >> n >> m >> k >> A >> B;
+    int n, m, K, a, b;
+    cin >> n >> m >> K >> a >> b;
 
-    vector<vector<pair<int, long long>>> adj_list_pos(n);
-    vector<int> stations_neg{A, B};
-    vector<tuple<int, int, long long>> neg;
+    vector<vector<pair<int, int>>> adj_list(n);
+    vector<array<int, 3>> negative;
+
     while (m--) {
-        int a, b;
-        long long c;
-        cin >> a >> b >> c;
+        int u, v, w;
+        cin >> u >> v >> w;
 
-        if (c >= 0) adj_list_pos[a].emplace_back(b, c);
-        else {
-            neg.emplace_back(a, b, c);
-            stations_neg.emplace_back(a);
-            stations_neg.emplace_back(b);
-        }
+        if (w < 0) negative.push_back({u, v, w});
+        else adj_list[u].emplace_back(v, w);
     }
-    sort(stations_neg.begin(), stations_neg.end());
-    stations_neg.erase(unique(stations_neg.begin(), stations_neg.end()), stations_neg.end());
+    K = negative.size();
 
-    int s = stations_neg.size();
-    vector<int> indices(n, -1);
-    for (int i = 0; i < s; i++) indices[stations_neg[i]] = i;
+    vector<int> src(K + 1);
+    src[0] = a;
+    for (int i = 0; i < K; i++) src[i + 1] = negative[i][1];
 
-    vector<vector<int>> adj_list(s);
-    vector<tuple<int, int, long long>> edges;
-    vector<long long> dist_pos(n);
+    vector<long long> dist1(n);
+    vector<vector<long long>> dist2(K + 2, vector<long long>(K + 2, 1e18));
+    for (int i = 0; i < K + 2; i++) dist2[i][i] = 0;
     priority_queue<pair<long long, int>, vector<pair<long long, int>>, greater<>> pq;
-    for (int i = 0; i < s; i++) {
-        int src = stations_neg[i];
-        fill(dist_pos.begin(), dist_pos.end(), 1e18);
-        dist_pos[src] = 0;
-        pq.emplace(0, src);
-
-        vector<long long> weight(s, 1e18);
-        int count = 0;
-        while (!pq.empty() && count < s) {
+    for (int i = 0; i <= K; i++) {
+        fill(dist1.begin(), dist1.end(), 1e18);
+        dist1[src[i]] = 0;
+        pq.emplace(0, src[i]);
+        while (!pq.empty()) {
             auto [d, v] = pq.top();
             pq.pop();
 
-            if (d != dist_pos[v]) continue;
+            if (d != dist1[v]) continue;
 
-            if (indices[v] != -1 && weight[indices[v]] == 1e18) {
-                weight[indices[v]] = d;
-                count++;
-            }
-
-            for (auto [u, w] : adj_list_pos[v])
-                if (dist_pos[u] > d + w) {
-                    dist_pos[u] = d + w;
-                    pq.emplace(dist_pos[u], u);
+            for (auto [u, w] : adj_list[v])
+                if (dist1[u] > d + w) {
+                    dist1[u] = d + w;
+                    pq.emplace(d + w, u);
                 }
         }
 
-        for (int j = 0; j < s; j++)
-            if (i != j && weight[j] != 1e18) {
-                edges.emplace_back(i, j, weight[j]);
-                adj_list[i].emplace_back(j);
-            }
+        dist2[i][K + 1] = dist1[b];
+        for (int j = 0; j < K; j++) {
+            auto [u, v, w] = negative[j];
+            if (dist1[u] != 1e18) dist2[i][j + 1] = min(dist2[i][j + 1], dist1[u] + w);
+        }
     }
 
-    for (auto [a, b, c] : neg) {
-        int u = indices[a], v = indices[b];
-        edges.emplace_back(u, v, c);
-        adj_list[u].emplace_back(v);
-    }
+    for (int i = 0; i < K + 2; i++)
+        for (int j = 0; j < K + 2; j++)
+            for (int k = 0; k < K + 2; k++) dist2[j][k] = min(dist2[j][k], dist2[j][i] + dist2[i][k]);
 
-    vector<long long> dist(s, 1e18);
-    dist[indices[A]] = 0;
-    for (int _ = 0; _ < s - 1; _++) {
-        bool changed = false;
-        for (auto [u, v, w] : edges)
-            if (dist[u] != 1e18 && dist[v] > dist[u] + w) {
-                dist[v] = dist[u] + w;
-                changed = true;
-            }
-        if (!changed) break;
-    }
+    for (int i = 0; i < K + 2; i++)
+        if (dist2[0][i] != 1e18 && dist2[i][i] < 0 && dist2[i][K + 1] != 1e18) {
+            cout << "NEGATIVE INFINITY";
+            exit(0);
+        }
 
-    vector<bool> neg_cycle(s, false);
-    for (auto [u, v, w] : edges)
-        if (dist[u] != 1e18 && dist[v] > dist[u] + w) neg_cycle[v] = true;
-
-    queue<int> q;
-    for (int i = 0; i < s; i++)
-        if (neg_cycle[i]) q.emplace(i);
-
-    while (!q.empty()) {
-        int v = q.front();
-        q.pop();
-
-        for (int u : adj_list[v])
-            if (!neg_cycle[u]) {
-                neg_cycle[u] = true;
-                q.emplace(u);
-            }
-    }
-
-    if (neg_cycle[indices[B]]) {
-        cout << "NEGATIVE INFINITY";
-        exit(0);
-    }
-    if (dist[indices[B]] == 1e18) {
-        cout << "POSITIVE INFINITY";
-        exit(0);
-    }
-    cout << dist[indices[B]];
+    if (dist2[0][K + 1] == 1e18) cout << "POSITIVE INFINITY";
+    else cout << dist2[0][K + 1];
 }

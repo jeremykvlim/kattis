@@ -13,71 +13,71 @@ int main() {
         exit(0);
     }
 
-    vector<array<int, 3>> entries(e);
-    for (auto &[y, m, o] : entries) cin >> y >> m >> o;
+    vector<int> month(e), o(e);
+    for (int i = 0; i < e; i++) {
+        int y, m;
+        cin >> y >> m >> o[i];
 
-    if (entries[0][2] != 0) {
-        cout << "tampered odometer";
-        exit(0);
+        month[i] = 12 * y + m;
     }
 
-    auto diff = [&](int i, int j) -> int {
-        return 12 * entries[j][0] + entries[j][1] - 12 * entries[i][0] - entries[i][1];
-    };
+    auto check = [&](bool service) {
+        auto floor_div = [](int x, int y) {
+            return x >= 0 ? x / y : -(-x + y - 1) / y;
+        };
 
-    auto legit = [&](bool service) -> bool {
-        vector<array<int, 3>> edges{{e, 0, 0}, {0, e, 0}};
+        auto ceil_div = [&](int x, int y) {
+            return -floor_div(-x, y);
+        };
 
+        vector<vector<pair<int, int>>> adj_list(e);
         for (int i = 0; i < e; i++)
             for (int j = i + 1; j < e; j++) {
-                int d = diff(i, j);
+                int d = month[j] - month[i];
                 if (d < 0) return false;
 
-                int o = entries[j][2] - entries[i][2],
-                    l = (!d ? 0 : (d - 1) * 2e3) - o, r = (!d ? 2e4 : (d + 1) * 2e4) - o,
-                    wl = max(0, (int) (l + 1e5 - 1) / (int) 1e5), wr = r >= 0 ? r / 1e5 : (r - 1e5 + 1) / 1e5;
+                int l = 2000 * max(d - 1, 0), r = 20000 * (d + 1);
+                if (service && i + 1 == j) {
+                    if (d > 12) return false;
+                    r = min(r, 30000);
+                }
+
+                int wl = ceil_div(l - o[j] + o[i], 100000), wr = floor_div(r - o[j] + o[i], 100000);
                 if (wl > wr) return false;
 
-                edges.push_back({i, j, wr});
-                edges.push_back({j, i, -wl});
+                adj_list[i].emplace_back(j, wr);
+                adj_list[j].emplace_back(i, -wl);
             }
 
-        if (service)
-            for (int i = 0; i + 1 < e; i++) {
-                int d = diff(i, i + 1);
-                if (d > 12) return false;
+        vector<int> dist(e, 0), len(e, 0);
+        vector<bool> queued(e, true);
+        deque<int> dq;
+        for (int i = 0; i < e; i++) dq.emplace_back(i);
 
-                int o = 3e4 - (entries[i + 1][2] - entries[i][2]);
-                edges.push_back({i, i + 1, o >= 0 ? o / (int) 1e5 : (int) (o - 1e5 + 1) / (int) 1e5});
-            }
+        while (!dq.empty()) {
+            int v = dq.front();
+            dq.pop_front();
 
-        auto bellman_ford = [&]() -> bool {
-            vector<int> dist(e + 1, 0);
-            for (int _ = 0; _ < e; _++) {
-                bool changed = false;
-                for (auto [u, v, w] : edges)
-                    if (dist[v] > dist[u] + w) {
-                        dist[v] = dist[u] + w;
-                        changed = true;
+            queued[v] = false;
+
+            for (auto [u, w] : adj_list[v])
+                if (dist[u] > dist[v] + w) {
+                    dist[u] = dist[v] + w;
+                    len[u] = len[v] + 1;
+
+                    if (len[u] >= e) return false;
+
+                    if (!queued[u]) {
+                        queued[u] = true;
+                        if (dq.empty() || dist[u] < dist[dq.front()]) dq.emplace_front(u);
+                        else dq.emplace_back(u);
                     }
-                if (!changed) break;
-            }
-
-            for (auto [u, v, w] : edges)
-                if (dist[v] > dist[u] + w) return false;
-            return true;
-        };
-        return bellman_ford();
-    };
-
-    auto check = [&](bool service) {
-        if (!legit(service)) {
-            cout << (service ? "insufficient service" : "tampered odometer");
-            exit(0);
+                }
         }
+        return true;
     };
-    check(false);
-    check(true);
 
-    cout << "seems legit";
+    if (!check(false)) cout << "tampered odometer";
+    else if (!check(true)) cout << "insufficient service";
+    else cout << "seems legit";
 }

@@ -9,26 +9,41 @@ int main() {
     cin >> n >> m;
 
     vector<array<int, 3>> edges(m);
+    vector<vector<pair<int, int>>> adj_list(n);
     for (auto &[u, v, p] : edges) {
         cin >> u >> v >> p;
         u--;
         v--;
         p = -p;
+        
+        adj_list[u].emplace_back(v, p);
     }
 
     vector<long long> potential(n, 0);
-    for (int _ = 0; _ < n; _++) {
-        bool changed = false;
-        for (auto [u, v, w] : edges)
-            if (potential[v] > potential[u] + w) {
-                potential[v] = potential[u] + w;
-                changed = true;
+    vector<bool> queued(n, true);
+    deque<int> dq;
+    for (int i = 0; i < n; i++) dq.emplace_back(i);
+
+    while (!dq.empty()) {
+        int v = dq.front();
+        dq.pop_front();
+        
+        queued[v] = false;
+
+        for (auto [u, w] : adj_list[v])
+            if (potential[u] > potential[v] + w) {
+                potential[u] = potential[v] + w;
+
+                if (!queued[u]) {
+                    queued[u] = true;
+                    if (dq.empty() || potential[u] < potential[dq.front()]) dq.emplace_front(u);
+                    else dq.emplace_back(u);
+                }
             }
-        if (!changed) break;
     }
 
-    vector<vector<pair<int, int>>> adj_list(n);
-    for (auto [u, v, w] : edges) adj_list[u].emplace_back(v, w + potential[u] - potential[v]);
+    for (int v = 0; v < n; v++)
+        for (auto &[u, w] : adj_list[v]) w += potential[v] - potential[u];
 
     vector<int> dist1(n);
     vector<vector<int>> dist2(n, vector<int>(n, 1e9));
@@ -37,7 +52,6 @@ int main() {
         fill(dist1.begin(), dist1.end(), 1e9);
         dist1[s] = 0;
         pq.emplace(0, s);
-
         while (!pq.empty()) {
             auto [d, v] = pq.top();
             pq.pop();

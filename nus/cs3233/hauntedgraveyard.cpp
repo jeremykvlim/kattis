@@ -39,11 +39,10 @@ int main() {
                 if (!state[i][j] || state[i][j] == 1)
                     for (int k = 0; k < 4; k++) {
                         int x = i + dx[k], y = j + dy[k];
-                        if (0 <= x && x < w && 0 <= y && y < h && state[x][y] != 2)
-                            adj_list[i * h + j].emplace_back(x * h + y, 1);
+                        if (0 <= x && x < w && 0 <= y && y < h && state[x][y] != 2) adj_list[i * h + j].emplace_back(x * h + y, 1);
                     }
 
-        vector<int> dist(w * h, INT_MAX), count(w * h, 0);
+        vector<int> dist(w * h, INT_MAX), len(w * h, 0);
         dist[0] = 0;
         vector<bool> queued(w * h, false);
         queued[0] = true;
@@ -51,23 +50,23 @@ int main() {
         while (!dq.empty()) {
             int v = dq.front();
             dq.pop_front();
-            
+
             queued[v] = false;
 
             for (auto [u, d] : adj_list[v])
                 if (dist[u] > dist[v] + d) {
                     dist[u] = dist[v] + d;
-                    count[u]++;
+                    len[u] = len[v] + 1;
 
-                    if (!u || count[u] == w * h) {
+                    if (!u || len[u] == w * h) {
                         cout << "Never\n";
                         goto next;
                     }
 
                     if (!queued[u]) {
+                        queued[u] = true;
                         if (dq.empty() || dist[u] < dist[dq.front()]) dq.emplace_front(u);
                         else dq.emplace_back(u);
-                        queued[u] = true;
                     }
                 }
         }
