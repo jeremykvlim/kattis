@@ -1,3 +1,5 @@
+#pragma GCC optimize("Ofast,unroll-loops")
+#pragma GCC target("avx2")
 #include <bits/stdc++.h>
 #include <tr2/dynamic_bitset>
 using namespace std;
