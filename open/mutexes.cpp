@@ -11,26 +11,26 @@ int main() {
     cin >> n;
 
     unordered_map<string, int> functions, mutexes;
-    vector<pair<string, int *>> calls;
-    vector<vector<pair<string, int>>> commands(n);
-    for (int i = 0; i < n; i++) {
-        int m;
-        string f;
-        cin >> m >> f;
+    auto get = [&](const auto &x, auto &m) {
+        return m.try_emplace(x, m.size()).first->second;
+    };
 
-        functions[f] = i;
+    vector<vector<pair<string, int>>> commands(n);
+    for (int _ = 0; _ < n; _++) {
+        int m;
+        string X;
+        cin >> m >> X;
+
+        int i = get(X, functions);
         commands[i].resize(m);
         for (auto &[command, v] : commands[i]) {
             string x;
             cin >> command >> x;
 
-            if (command != "call") {
-                if (!mutexes.count(x)) v = mutexes[x] = mutexes.size();
-                else v = mutexes[x];
-            } else calls.emplace_back(x, &v);
+            if (command == "call") v = get(x, functions);
+            else v = get(x, mutexes);
         }
     }
-    for (auto &[f, v] : calls) *v = functions[f];
 
     vector<vector<int>> adj_list(n);
     vector<int> degree(n, 0);
