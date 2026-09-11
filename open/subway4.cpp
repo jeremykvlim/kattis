@@ -23,19 +23,22 @@ struct Hash {
     }
 };
 
+template <typename T>
 struct AntiMonopolyTree {
-    vector<int> parent, size, weight;
+    vector<int> parent, size;
+    vector<T> weight;
 
-    AntiMonopolyTree(int n) : parent(n, -1), size(n, 1), weight(n, INT_MAX) {}
+    AntiMonopolyTree(int n) : parent(n, -1), size(n, 1), weight(n, numeric_limits<T>::max()) {}
 
-    pair<int, int> path_max(int u, int v) {
+    pair<T, int> path_max(int u, int v) {
         upward_maintain(u);
         upward_maintain(v);
 
-        int max_w = INT_MIN, t = -1;
+        T max_w = numeric_limits<T>::min();
+        int t = -1;
         while (u != v) {
             if (size[u] > size[v]) swap(u, v);
-            if (weight[u] == INT_MAX) return {INT_MAX, -1};
+            if (weight[u] == numeric_limits<T>::max()) return {numeric_limits<T>::max(), -1};
             if (max_w < weight[u]) {
                 max_w = weight[u];
                 t = u;
@@ -43,6 +46,10 @@ struct AntiMonopolyTree {
             u = parent[u];
         }
         return {max_w, t};
+    }
+
+    bool connected(int u, int v) {
+        return u == v || path_max(u, v).second != -1;
     }
 
     void upward_maintain(int v) {
@@ -71,17 +78,17 @@ struct AntiMonopolyTree {
     void cut(int v) {
         for (int p = parent[v]; ~p; p = parent[p]) size[p] -= size[v];
         parent[v] = -1;
-        weight[v] = INT_MAX;
+        weight[v] = numeric_limits<T>::max();
     }
 
-    bool add(int u, int v, int w) {
+    bool add(int u, int v, T w) {
         if (u == v) return false;
 
         upward_maintain(u);
         upward_maintain(v);
 
         auto [max_w, t] = path_max(u, v);
-        bool merged = max_w == INT_MAX;
+        bool merged = max_w == numeric_limits<T>::max();
         if (!merged) {
             if (w >= max_w) return false;
             cut(t);
@@ -117,7 +124,7 @@ struct AntiMonopolyTree {
         return merged;
     }
 
-    bool remove(int u, int v, int w) {
+    bool remove(int u, int v, T w) {
         auto [max_w, t] = path_max(u, v);
         if (max_w != w) return false;
 
@@ -145,7 +152,7 @@ int main() {
     read(t1);
     read(t2);
 
-    AntiMonopolyTree amt(n);
+    AntiMonopolyTree<int> amt(n);
     vector<pair<int, int>> edges;
     for (auto [u, v] : t1)
         if (t2.count({u, v})) amt.add(u, v, -1);

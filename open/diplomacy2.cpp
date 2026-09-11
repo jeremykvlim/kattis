@@ -56,20 +56,22 @@ struct PURQSegmentTree {
     PURQSegmentTree(int n) : n(n), ST(2 * n) {}
 };
 
+template <typename T>
 struct AntiMonopolyTree {
     vector<int> parent, size;
-    vector<pair<int, int>> weight;
+    vector<pair<T, int>> weight;
 
-    AntiMonopolyTree(int n) : parent(n, -1), size(n, 1), weight(n, {INT_MAX, -1}) {}
+    AntiMonopolyTree(int n) : parent(n, -1), size(n, 1), weight(n, {numeric_limits<T>::max(), -1}) {}
 
-    pair<int, int> path_max(int u, int v) {
+    pair<T, int> path_max(int u, int v) {
         upward_maintain(u);
         upward_maintain(v);
 
-        int max_w = INT_MIN, t = -1;
+        T max_w = numeric_limits<T>::min();
+        int t = -1;
         while (u != v) {
             if (size[u] > size[v]) swap(u, v);
-            if (weight[u].first == INT_MAX) return {INT_MAX, -1};
+            if (weight[u].first == numeric_limits<T>::max()) return {numeric_limits<T>::max(), -1};
             if (max_w < weight[u].first) {
                 max_w = weight[u].first;
                 t = u;
@@ -77,6 +79,10 @@ struct AntiMonopolyTree {
             u = parent[u];
         }
         return {max_w, t};
+    }
+
+    bool connected(int u, int v) {
+        return u == v || path_max(u, v).second != -1;
     }
 
     void upward_maintain(int v) {
@@ -105,15 +111,15 @@ struct AntiMonopolyTree {
     void cut(int v) {
         for (int p = parent[v]; ~p; p = parent[p]) size[p] -= size[v];
         parent[v] = -1;
-        weight[v] = {INT_MAX, -1};
+        weight[v] = {numeric_limits<T>::max(), -1};
     }
 
-    int add(int u, int v, pair<int, int> w) {
+    int add(int u, int v, pair<T, int> w) {
         if (u == v) return w.second;
 
         auto [max_w, t] = path_max(u, v);
         int i = -1;
-        if (max_w != INT_MAX) {
+        if (max_w != numeric_limits<T>::max()) {
             if (w.first >= max_w) return w.second;
             i = weight[t].second;
             cut(t);
@@ -149,7 +155,7 @@ struct AntiMonopolyTree {
         return i;
     }
 
-    bool remove(int u, int v, int w) {
+    bool remove(int u, int v, T w) {
         auto [max_w, t] = path_max(u, v);
         if (max_w != w) return false;
 
@@ -181,7 +187,7 @@ int main() {
     vector<array<int, 3>> edges(q, {-1, -1, 0});
     vector<int> state(q + 1, 0);
     priority_queue<pair<int, int>> pq;
-    AntiMonopolyTree amt(n + 1);
+    AntiMonopolyTree<int> amt(n + 1);
     while (q--) {
         char c;
         cin >> c;

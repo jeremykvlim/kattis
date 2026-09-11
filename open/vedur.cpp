@@ -1,21 +1,22 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
 struct AntiMonopolyTree {
     vector<int> parent, size;
-    vector<long long> weight;
+    vector<T> weight;
 
-    AntiMonopolyTree(int n) : parent(n, -1), size(n, 1), weight(n, LLONG_MAX) {}
+    AntiMonopolyTree(int n) : parent(n, -1), size(n, 1), weight(n, numeric_limits<T>::max()) {}
 
-    pair<long long, int> path_max(int u, int v) {
+    pair<T, int> path_max(int u, int v) {
         upward_maintain(u);
         upward_maintain(v);
 
-        auto max_w = LLONG_MIN;
+        T max_w = numeric_limits<T>::min();
         int t = -1;
         while (u != v) {
             if (size[u] > size[v]) swap(u, v);
-            if (weight[u] == LLONG_MAX) return {LLONG_MAX, -1};
+            if (weight[u] == numeric_limits<T>::max()) return {numeric_limits<T>::max(), -1};
             if (max_w < weight[u]) {
                 max_w = weight[u];
                 t = u;
@@ -23,6 +24,10 @@ struct AntiMonopolyTree {
             u = parent[u];
         }
         return {max_w, t};
+    }
+
+    bool connected(int u, int v) {
+        return u == v || path_max(u, v).second != -1;
     }
 
     void upward_maintain(int v) {
@@ -51,17 +56,17 @@ struct AntiMonopolyTree {
     void cut(int v) {
         for (int p = parent[v]; ~p; p = parent[p]) size[p] -= size[v];
         parent[v] = -1;
-        weight[v] = LLONG_MAX;
+        weight[v] = numeric_limits<T>::max();
     }
 
-    bool add(int u, int v, long long w) {
+    bool add(int u, int v, T w) {
         if (u == v) return false;
 
         upward_maintain(u);
         upward_maintain(v);
 
         auto [max_w, t] = path_max(u, v);
-        bool merged = max_w == LLONG_MAX;
+        bool merged = max_w == numeric_limits<T>::max();
         if (!merged) {
             if (w >= max_w) return false;
             cut(t);
@@ -97,7 +102,7 @@ struct AntiMonopolyTree {
         return merged;
     }
 
-    bool remove(int u, int v, long long w) {
+    bool remove(int u, int v, T w) {
         auto [max_w, t] = path_max(u, v);
         if (max_w != w) return false;
 
@@ -122,7 +127,7 @@ int main() {
     for (int i = 1; i <= n; i++)
         for (int j = 1; j <= m; j++) cin >> a[index(i, j)];
 
-    AntiMonopolyTree amt(k + 1);
+    AntiMonopolyTree<long long> amt(k + 1);
     for (int i = 1; i <= n; i++)
         for (int j = 1; j <= m; j++) {
             int u = index(i, j);
