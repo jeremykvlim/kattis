@@ -63,9 +63,6 @@ struct AntiMonopolyTree {
     bool add(int u, int v, T w) {
         if (u == v) return false;
 
-        upward_maintain(u);
-        upward_maintain(v);
-
         auto [max_w, t] = path_max(u, v);
         bool merged = max_w == numeric_limits<T>::max();
         if (!merged) {
