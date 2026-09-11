@@ -357,7 +357,7 @@ int main() {
             if (t == 1) m += odg.add_edge(u, v);
             else m -= odg.delete_edge(u, v);
         } else {
-            odg.query([total, m](AntiMonopolyTree<int> &amt) {
+            odg.query([total, m](auto &amt) {
                 Fraction<long long> f(total - amt.sum, total - m);
                 if (!f.numer()) cout << "0/1\n";
                 else cout << f.numer() << "/" << f.denom() << "\n";
