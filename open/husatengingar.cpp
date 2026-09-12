@@ -333,7 +333,7 @@ int main() {
     cin >> n >> m;
 
     OfflineDynamicGraph odg(n);
-    for (int i = 0; i < m; i++) {
+    for (int _ = 0; _ < m; _++) {
         int u, v;
         cin >> u >> v;
 
@@ -351,11 +351,9 @@ int main() {
         if (t == 1 || t == 2) {
             int u, v;
             cin >> u >> v;
-            u--;
-            v--;
 
-            if (t == 1) m += odg.add_edge(u, v);
-            else m -= odg.delete_edge(u, v);
+            if (t == 1) m += odg.add_edge(u - 1, v - 1);
+            else m -= odg.delete_edge(u - 1, v - 1);
         } else {
             odg.query([total, m](auto &amt) {
                 Fraction<long long> f(total - amt.sum, total - m);
