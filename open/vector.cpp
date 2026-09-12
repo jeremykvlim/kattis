@@ -2,11 +2,6 @@
 using namespace std;
 
 template <typename T>
-T norm(vector<T> &v, int n) {
-    return sqrt(inner_product(v.begin(), v.begin() + n, v.begin(), (T) 0));
-}
-
-template <typename T>
 struct Matrix {
     int r, c;
     vector<vector<T>> mat;
@@ -15,42 +10,14 @@ struct Matrix {
     Matrix(int rows, int cols, T v = 0) : r(rows), c(cols), mat(rows, vector<T>(cols, v)) {}
     Matrix(const vector<vector<T>> &mat) : r(mat.size()), c(mat[0].size()), mat(mat) {}
 
-    friend auto operator*(const Matrix<T> &A, const Matrix<T> &B) {
-        int r1 = A.r, c1 = A.c, c2 = B.c;
-
-        Matrix<T> C(r1, c2);
-        for (int i = 0; i < r1; i++)
-            for (int k = 0; k < c1; k++)
-                if (A[i][k])
-                    for (int j = 0; j < c2; j++) C[i][j] += A[i][k] * B[k][j];
-        return C;
-    }
-
-    friend auto operator*(const Matrix<T> &A, const vector<T> &v) {
-        int n = A.r, m = v.size();
-
-        vector<T> u(n, 0);
-        for (int i = 0; i < n; i++)
-            for (int j = 0; j < m; j++) u[i] += A[i][j] * v[j];
-
-        return u;
-    }
-
     auto & operator[](int i) {
         return mat[i];
     }
 
-    auto & operator[](int i) const {
-        return mat[i];
-    }
-
-    Matrix<T> transpose() {
-        Matrix<T> mat_T(c, r);
-
-        for (int i = 0; i < r; i++)
-            for (int j = 0; j < c; j++) mat_T[j][i] = mat[i][j];
-
-        return mat_T;
+    void add_column(const vector<T> &column) {
+        if (!r) mat.resize(r = column.size());
+        for (int i = 0; i < r; i++) mat[i].emplace_back(column[i]);
+        c++;
     }
 };
 
@@ -62,37 +29,38 @@ Matrix<T> I(int n) {
 }
 
 template <typename T>
-pair<Matrix<T>, Matrix<T>> QR_decomposition(Matrix<T> &A) {
-    int n = A.r, m = A.c;
+void rref(Matrix<T> &matrix) {
+    int n = matrix.r, m = matrix.c;
 
-    auto Q = I<T>(n), R = A;
-    vector<T> curr(n), v(n), u(max(n, m));
-    for (int i = 0; i < min(n - 1, m); i++) {
-        for (int j = 0; j < n - i; j++) curr[j] = R[j + i][i];
+    int rank = 0;
+    for (int c = 0; c < m && rank < n; c++) {
+        int pivot = rank;
+        for (int i = rank + 1; i < n; i++)
+            if (fabs(matrix[i][c]) > fabs(matrix[pivot][c])) pivot = i;
 
-        fill(v.begin(), v.end(), 0);
-        v[0] = norm(curr, n - i);
-        for (int j = 0; j < n; j++) v[j] = curr[j] - v[j];
+        if (fabs(matrix[pivot][c]) < 1e-9) continue;
+        swap(matrix[pivot], matrix[rank]);
 
-        T temp = norm(v, n - i);
-        if (fabs(temp) > 1e-9)
-            for (T &vi : v) vi /= temp;
+        auto temp = 1 / matrix[rank][c];
+        for (int j = 0; j < m; j++) matrix[rank][j] *= temp;
 
-        auto reflect = [&](Matrix<T> &P, bool left) {
-            fill(u.begin(), u.end(), 0);
-            for (int j = 0; j < (left ? n : m); j++)
-                for (int k = i; k < n; k++)
-                    u[j] += P[left ? j : k][left ? k : j] * v[k - i];
+        for (int i = 0; i < n; i++)
+            if (i != rank && fabs(matrix[i][c]) > 1e-9) {
+                temp = matrix[i][c];
+                for (int j = 0; j < m; j++) matrix[i][j] -= temp * matrix[rank][j];
+            }
 
-            for (int j = 0; j < (left ? n : m); j++)
-                for (int k = i; k < n; k++)
-                    P[left ? j : k][left ? k : j] -= 2 * u[j] * v[k - i];
-        };
-        reflect(Q, true);
-        reflect(R, false);
+        rank++;
     }
+}
 
-    return {Q, R};
+template <typename T>
+vector<complex<T>> quadratic_roots(T a, T b, T c) {
+    if (fabs(a) < 1e-8 && fabs(b) < 1e-8) return {};
+    if (fabs(a) < 1e-8) return {(-c / b)};
+
+    complex<T> discriminant(b * b - 4 * a * c, 0);
+    return {(-b + sqrt(discriminant)) / (2 * a), (-b - sqrt(discriminant)) / (2 * a)};
 }
 
 int main() {
@@ -101,50 +69,64 @@ int main() {
 
     int d, n;
     cin >> d >> n;
-    n = min(n, d + 1);
 
-    vector<vector<double>> results(n - 1, vector<double>(d));
-    vector<double> base(d), e(n);
-    for (int i = 0; i < n; i++) {
-        if (!i)
-            for (auto &xi : base) cin >> xi;
-        else
-            for (int j = 0; j < d; j++) {
-                cin >> results[i - 1][j];
+    vector<double> base(d);
+    for (auto &xi : base) cin >> xi;
 
-                results[i - 1][j] -= base[j];
-            }
-
-        cin >> e[i];
-
-        e[i] *= e[i];
-    }
+    double e0;
+    cin >> e0;
 
     if (n == 1) {
-        base[d - 1] += sqrt(e[0]);
+        base[d - 1] += e0;
         for (auto xi : base) cout << fixed << setprecision(5) << xi << " ";
         exit(0);
     }
 
-    Matrix<double> A(d, n - 1);
-    for (int i = 0; i < n - 1; i++)
-        for (int j = 0; j < d; j++) A[j][i] = 2 * results[i][j];
+    n = min(n - 1, d);
+    e0 *= e0;
+    Matrix<double> A(n, d + 1);
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < d; j++) {
+            double xi;
+            cin >> xi;
 
-    auto [Q, R] = QR_decomposition(A);
-    auto R_T = R.transpose();
-    vector<double> b(n - 1, e[0]), y(d, 0);
-    for (int i = 0; i < n - 1; i++) b[i] += pow(norm(results[i], d), 2) - e[i + 1];
-
-    auto forward_substitution = [&]() {
-        for (int i = 0; i < n - 1; i++) {
-            y[i] = b[i];
-            for (int j = 0; j < i; j++) y[i] -= R_T[i][j] * y[j];
-            if (fabs(R_T[i][i]) > 1e-9) y[i] /= R_T[i][i];
+            A[i][j] = xi - base[j];
         }
-    };
-    forward_substitution();
 
-    y[d - 1] += sqrt(max(0., e[0] - pow(norm(y, d), 2)));
-    auto x = Q * y;
-    for (int i = 0; i < d; i++) cout << fixed << setprecision(5) << x[i] + base[i] << " ";
+        double ei;
+        cin >> ei;
+
+        A[i][d] = (inner_product(A[i].begin(), A[i].begin() + d, A[i].begin(), 0.) + e0 - ei * ei) / 2;
+    }
+    rref(A);
+
+    if (n == d) {
+        for (int i = 0; i < d; i++) cout << fixed << setprecision(5) << base[i] + A[i][d] << " ";
+        exit(0);
+    }
+
+    int m = d - n;
+    auto B = I<double>(m);
+    B.add_column(vector<double>(m));
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < m; j++) {
+            B[j][m] += A[i][j + n] * A[i][d];
+            for (int k = 0; k < m; k++) B[j][k] += A[i][j + n] * A[i][k + n];
+        }
+    rref(B);
+
+    vector<double> x(d, 0), dir(d, 0);
+    for (int i = 0; i < n; i++) {
+        x[i] = A[i][d];
+        for (int j = 0; j < m; j++) x[i] -= A[i][j + n] * B[j][m];
+        dir[i] = -A[i][n];
+    }
+    for (int j = 0; j < m; j++) x[j + n] = B[j][m];
+    dir[n] = 1;
+
+    auto r = quadratic_roots(inner_product(dir.begin(), dir.end(), dir.begin(), 0.),
+                             2 * inner_product(x.begin(), x.end(), dir.begin(), 0.),
+                             inner_product(x.begin(), x.end(), x.begin(), 0.) - e0)[0].real();
+    for (int i = 0; i < d; i++) x[i] += base[i] + r * dir[i];
+    for (auto xi : x) cout << fixed << setprecision(5) << xi << " ";
 }
