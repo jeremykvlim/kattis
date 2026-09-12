@@ -14,7 +14,7 @@ struct Matrix {
         return mat[i];
     }
 
-    void add_row(const vector<T> &row) {
+    void add_row(const vector<T> &row = {}) {
         if (!r) c = row.size();
         mat.emplace_back(row);
         r++;
