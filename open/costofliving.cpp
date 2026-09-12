@@ -14,7 +14,8 @@ struct Matrix {
         return mat[i];
     }
 
-    void add(vector<T> &row) {
+    void add_row(const vector<T> &row) {
+        if (!r) c = row.size();
         mat.emplace_back(row);
         r++;
     }
@@ -72,7 +73,7 @@ int main() {
                 vector<double> row(y + (y + 1) * c + 1);
                 row[i + j * y] = 1;
                 row.back() = log(p[i][j]);
-                A.add(row);
+                A.add_row(row);
             }
         }
 
@@ -81,14 +82,14 @@ int main() {
             vector<double> row(y + (y + 1) * c + 1);
             row[i + (y + 1) * c] = 1;
             row.back() = log(rates[i]);
-            A.add(row);
+            A.add_row(row);
         }
 
     rref(A);
     vector<double> price(A.c - 1, -1);
     for (int i = 0; i < A.r; i++) {
         int l = find_if(A[i].begin(), A[i].end(), [](auto value) { return fabs(value) > 1e-9; }) - A[i].begin(),
-            r = find_if(A[i].rbegin() + 1, A[i].rend(), [](auto value) { return fabs(value) > 1e-9; }) - A[i].rbegin();
+                r = find_if(A[i].rbegin() + 1, A[i].rend(), [](auto value) { return fabs(value) > 1e-9; }) - A[i].rbegin();
 
         if (l + 1 == A.c - r) price[l] = exp(A[i][A.c - 1]);
     }
