@@ -148,18 +148,20 @@ struct Fraction : array<T, 2> {
     }
 };
 
+template <typename T>
 struct RURQSegmentTree {
     struct Monoid {
-        long long value, freq;
+        int value;
+        T freq;
 
         Monoid() : value(0), freq(0) {}
 
-        auto & operator=(const long long &v) {
+        auto & operator=(const T &v) {
             freq = v;
             return *this;
         }
 
-        auto & operator+=(const long long &v) {
+        auto & operator+=(const int &v) {
             value += v;
             return *this;
         }
@@ -179,7 +181,7 @@ struct RURQSegmentTree {
 
     int n, h;
     vector<Monoid> ST;
-    vector<long long> lazy;
+    vector<int> lazy;
 
     void pull(int i) {
         ST[i] = ST[i << 1] + ST[i << 1 | 1];
@@ -189,7 +191,7 @@ struct RURQSegmentTree {
         for (int i = n - 1; i; i--) pull(i);
     }
 
-    void apply(int i, const long long &v) {
+    void apply(int i, const int &v) {
         ST[i] += v;
         if (i < n) lazy[i] += v;
     }
@@ -216,7 +218,7 @@ struct RURQSegmentTree {
         }
     }
 
-    void range_update(int l, int r, const long long &v) {
+    void range_update(int l, int r, const int &v) {
         l += n;
         r += n;
         push_down(l, r);
@@ -248,45 +250,41 @@ struct RURQSegmentTree {
         return ST[i];
     }
 
-    RURQSegmentTree(int n, const vector<long long> &a) : n(n), h(__lg(n)), ST(2 * n), lazy(n, 0) {
+    RURQSegmentTree(int n, const vector<T> &a) : n(n), h(__lg(n)), ST(2 * n), lazy(n, 0) {
         for (int i = 0; i < a.size(); i++) ST[i + n] = a[i];
         build();
     }
 };
 
 template <typename T>
-unsigned long long area_of_union_of_rectangles(vector<array<T, 4>> rectangles) {
+T area_of_union_of_rectangles(const vector<array<T, 4>> &rectangles) {
     if (rectangles.empty()) return 0;
 
     int n = rectangles.size();
-    vector<pair<T, int>> y(2 * n);
+    vector<T> ys(2 * n);
     for (int i = 0; i < n; i++) {
         auto [xl, xr, yd, yu] = rectangles[i];
-        y[2 * i] = {yd, 2 * i};
-        y[2 * i + 1] = {yu, 2 * i + 1};
+        ys[2 * i] = yd;
+        ys[2 * i + 1] = yu;
     }
-    sort(y.begin(), y.end());
+    sort(ys.begin(), ys.end());
+    ys.erase(unique(ys.begin(), ys.end()), ys.end());
 
-    vector<T> coords(2 * n);
-    for (int i = 0; i < 2 * n; i++) coords[i] = y[i].first;
-    coords.erase(unique(coords.begin(), coords.end()), coords.end());
+    vector<T> y_gaps(ys.size() - 1);
+    for (int i = 0; i < ys.size() - 1; i++) y_gaps[i] = ys[i + 1] - ys[i];
 
-    vector<T> y_gaps(coords.size() - 1);
-    for (int i = 0; i < coords.size() - 1; i++) y_gaps[i] = coords[i + 1] - coords[i];
-    for (auto [yi, i] : y) rectangles[i / 2][2 + (i & 1)] = lower_bound(coords.begin(), coords.end(), yi) - coords.begin();
-
-    vector<array<T, 4>> sweep(2 * n);
+    vector<tuple<T, int, int, int>> sweep(2 * n);
     for (int i = 0; i < n; i++) {
         auto [xl, xr, yd, yu] = rectangles[i];
-        sweep[2 * i] = {xl, yd, yu, 2 * i};
-        sweep[2 * i + 1] = {xr, yd, yu, 2 * i + 1};
+        int l = lower_bound(ys.begin(), ys.end(), yd) - ys.begin(), r = lower_bound(ys.begin(), ys.end(), yu) - ys.begin();
+        sweep[2 * i] = {xl, l, r, 1};
+        sweep[2 * i + 1] = {xr, l, r, -1};
     }
     sort(sweep.begin(), sweep.end());
 
-    auto a = 0ULL;
     RURQSegmentTree st(bit_ceil(y_gaps.size()), y_gaps);
-    T y_range = y.back().first - y.front().first, prev = sweep[0][0];
-    for (auto [x, yd, yu, i] : sweep) {
+    T a = 0, y_range = ys.back() - ys.front(), prev = get<0>(sweep[0]);
+    for (auto [x, yd, yu, delta] : sweep) {
         if (prev != x) {
             auto [v, f] = st[1];
 
@@ -295,7 +293,7 @@ unsigned long long area_of_union_of_rectangles(vector<array<T, 4>> rectangles) {
 
             prev = x;
         }
-        st.range_update(yd, yu, i & 1 ? -1 : 1);
+        st.range_update(yd, yu, delta);
     }
     return a;
 }
