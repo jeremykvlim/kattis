@@ -303,15 +303,15 @@ int main() {
         }
     }
 
-    BoundedFlowNetwork<int, int> fn(2 * t + 2);
-    fn.add_supply(2 * t, c);
-    fn.add_demand(2 * t + 1, c);
-    fn.add_arc(2 * t, 2 * t + 1, 0, c, 0);
+    BoundedFlowNetwork<int, int> bfn(2 * t + 2);
+    bfn.add_supply(2 * t, c);
+    bfn.add_demand(2 * t + 1, c);
+    bfn.add_arc(2 * t, 2 * t + 1, 0, c, 0);
     for (int i = 0; i < t; i++) {
-        fn.add_arc(2 * i, 2 * i + 1, 1, 1, 0);
-        fn.add_arc(2 * t, 2 * i, 0, 1, hq_to_task[i]);
-        fn.add_arc(2 * i + 1, 2 * t + 1, 0, 1, task_to_hq[i]);
-        for (int j = i + 1; j < t; j++) fn.add_arc(2 * i + 1, 2 * j, 0, 1, task_to_task[i][j]);
+        bfn.add_arc(2 * i, 2 * i + 1, 1, 1, 0);
+        bfn.add_arc(2 * t, 2 * i, 0, 1, hq_to_task[i]);
+        bfn.add_arc(2 * i + 1, 2 * t + 1, 0, 1, task_to_hq[i]);
+        for (int j = i + 1; j < t; j++) bfn.add_arc(2 * i + 1, 2 * j, 0, 1, task_to_task[i][j]);
     }
-    cout << fn.min_cost_b_flow().first;
+    cout << bfn.min_cost_b_flow().first;
 }
