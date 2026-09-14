@@ -10,9 +10,9 @@ struct FenwickTree {
     }
 
     T pref_xor(int i) {
-        T sum = 0;
-        for (; i; i &= i - 1) sum ^= BIT[i];
-        return sum;
+        T XOR = 0;
+        for (; i; i &= i - 1) XOR ^= BIT[i];
+        return XOR;
     }
 
     T range_xor_query(int l, int r) {
