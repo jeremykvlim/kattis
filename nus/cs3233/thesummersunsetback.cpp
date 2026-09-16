@@ -170,8 +170,6 @@ int main() {
 
         LaminarTree lt(k, edges);
         auto [min_cut, side] = lt.global_min_cut();
-        if (!min_cut) continue;
-
         if (m > min_cut) {
             m = min_cut;
             dynamic_bitset<> temp(s);
