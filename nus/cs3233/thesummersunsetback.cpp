@@ -66,7 +66,7 @@ struct LaminarTree {
         }
     }
 
-    pair<int, vector<bool>> minimum_cut() {
+    pair<int, vector<bool>> global_min_cut() {
         auto it = min_element(cut.begin(), cut.end());
         int min_cut = *it, i = it - cut.begin();
         vector<bool> side(n, false);
@@ -169,11 +169,11 @@ int main() {
         if (edges.empty()) continue;
 
         LaminarTree lt(k, edges);
-        auto [cut, side] = lt.minimum_cut();
-        if (!cut) continue;
+        auto [min_cut, side] = lt.global_min_cut();
+        if (!min_cut) continue;
 
-        if (m > cut) {
-            m = cut;
+        if (m > min_cut) {
+            m = min_cut;
             dynamic_bitset<> temp(s);
             for (int j = 0; j < k; j++)
                 if (side[j]) temp[components[i][j]] = true;
