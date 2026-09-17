@@ -63,9 +63,9 @@ struct BlockCutTree {
     }
 };
 
-pair<vector<int>, vector<vector<int>>> two_edge_components(int n, vector<vector<pair<int, int>>> &adj_list) {
-    vector<int> order(n, 0), low(n, 0), tec(n, -1);
-    vector<vector<int>> tecs;
+pair<vector<int>, vector<vector<int>>> two_edge_connected_components(int n, vector<vector<pair<int, int>>> &adj_list) {
+    vector<int> order(n, 0), low(n, 0), tecc(n, -1);
+    vector<vector<int>> teccs;
     stack<int> st;
     int count = 0;
 
@@ -82,13 +82,13 @@ pair<vector<int>, vector<vector<int>>> two_edge_components(int n, vector<vector<
             }
 
         if (order[v] == low[v]) {
-            tecs.emplace_back();
+            teccs.emplace_back();
             int u;
             do {
                 u = st.top();
                 st.pop();
-                tec[u] = tecs.size() - 1;
-                tecs.back().emplace_back(u);
+                tecc[u] = teccs.size() - 1;
+                teccs.back().emplace_back(u);
             } while (u != v);
         }
     };
@@ -96,7 +96,7 @@ pair<vector<int>, vector<vector<int>>> two_edge_components(int n, vector<vector<
     for (int v = 0; v < n; v++)
         if (!order[v]) dfs(dfs, v);
 
-    return {tec, tecs};
+    return {tecc, teccs};
 }
 
 vector<int> z_function(const vector<int> &s) {
@@ -138,29 +138,29 @@ int main() {
     }
 
     BlockCutTree bct(n, m, adj_list);
-    auto [tec, tecs] = two_edge_components(n, adj_list);
+    auto [tecc, teccs] = two_edge_connected_components(n, adj_list);
 
-    int ecs = tecs.size();
-    vector<int> tec_edges(ecs, 0);
+    int eccs = teccs.size();
+    vector<int> tecc_edges(eccs, 0);
     for (int i = 0; i < m; i++)
         if (!bct.bridge(i)) {
             auto [u, v] = edges[i];
-            tec_edges[tec[u]]++;
+            tecc_edges[tecc[u]]++;
         }
 
-    vector<int> bcc_blocks(ecs, 0);
-    vector<bool> simple_cycles(ecs, true), even_cycle(ecs, false);
+    vector<int> bcc_blocks(eccs, 0);
+    vector<bool> simple_cycles(eccs, true), even_cycle(eccs, false);
     for (int bcc = 0; bcc < bct.bccs.size(); bcc++) {
         if (bct.bcc_edges[bcc] <= 1) continue;
-        int c = tec[bct.bccs[bcc][0]];
+        int c = tecc[bct.bccs[bcc][0]];
         bcc_blocks[c]++;
         if (bct.bcc_edges[bcc] > bct.bccs[bcc].size()) simple_cycles[c] = false;
         else if (bct.bcc_edges[bcc] == bct.bccs[bcc].size() && !(bct.bccs[bcc].size() & 1)) even_cycle[c] = true;
     }
 
-    vector<int> type(ecs, -1);
-    for (int c = 0; c < ecs; c++) {
-        if (!tec_edges[c]) continue;
+    vector<int> type(eccs, -1);
+    for (int c = 0; c < eccs; c++) {
+        if (!tecc_edges[c]) continue;
         if (!simple_cycles[c]) type[c] = 1;
         else {
             if (bcc_blocks[c] == 1) type[c] = 0;
@@ -172,9 +172,9 @@ int main() {
     }
 
     vector<int> seen(1e6, -1), pos(n), delta(1e6, 0), count(1e6, 0), indices(1e6);
-    for (int c = 0; c < ecs; c++) {
+    for (int c = 0; c < eccs; c++) {
         if (type[c] == -1) {
-            for (int i : tecs[c])
+            for (int i : teccs[c])
                 if (b[i] != e[i]) {
                     cout << "impossible";
                     exit(0);
@@ -182,10 +182,10 @@ int main() {
             continue;
         }
 
-        int k = tecs[c].size();
+        int k = teccs[c].size();
         if (!type[c]) {
             vector<int> order;
-            int v = tecs[c][0], prev = -1;
+            int v = teccs[c][0], prev = -1;
             do {
                 order.emplace_back(v);
                 int t = -1;
@@ -196,7 +196,7 @@ int main() {
                     }
                 prev = v;
                 v = t;
-            } while (v != tecs[c][0]);
+            } while (v != teccs[c][0]);
 
             if (k != order.size()) {
                 cout << "impossible";
@@ -220,7 +220,7 @@ int main() {
 
         vector<int> animals;
         if (type[c] == 1) {
-            for (int i : tecs[c]) {
+            for (int i : teccs[c]) {
                 int begin = b[i], end = e[i];
                 if (seen[begin] != c) {
                     seen[begin] = c;
@@ -245,7 +245,7 @@ int main() {
         }
 
         bool unique = true;
-        for (int i : tecs[c]) {
+        for (int i : teccs[c]) {
             int begin = b[i], end = e[i];
             if (seen[begin] != c) {
                 seen[begin] = c;
@@ -271,10 +271,10 @@ int main() {
             }
         if (!unique) continue;
 
-        for (int i = 0; i < k; i++) pos[tecs[c][i]] = i;
+        for (int i = 0; i < k; i++) pos[teccs[c][i]] = i;
 
         vector<int> p(k);
-        for (int i = 0; i < k; i++) p[pos[indices[e[tecs[c][i]]]]] = i;
+        for (int i = 0; i < k; i++) p[pos[indices[e[teccs[c][i]]]]] = i;
 
         int cycles = 0;
         vector<bool> visited(k, false);

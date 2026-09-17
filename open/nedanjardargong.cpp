@@ -1,9 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-pair<vector<int>, vector<vector<int>>> two_edge_components(int n, vector<vector<pair<int, int>>> &adj_list) {
-    vector<int> order(n, 0), low(n, 0), tec(n, -1);
-    vector<vector<int>> tecs;
+pair<vector<int>, vector<vector<int>>> two_edge_connected_components(int n, vector<vector<pair<int, int>>> &adj_list) {
+    vector<int> order(n, 0), low(n, 0), tecc(n, -1);
+    vector<vector<int>> teccs;
     stack<int> st;
     int count = 0;
 
@@ -20,13 +20,13 @@ pair<vector<int>, vector<vector<int>>> two_edge_components(int n, vector<vector<
             }
 
         if (order[v] == low[v]) {
-            tecs.emplace_back();
+            teccs.emplace_back();
             int u;
             do {
                 u = st.top();
                 st.pop();
-                tec[u] = tecs.size() - 1;
-                tecs.back().emplace_back(u);
+                tecc[u] = teccs.size() - 1;
+                teccs.back().emplace_back(u);
             } while (u != v);
         }
     };
@@ -34,7 +34,7 @@ pair<vector<int>, vector<vector<int>>> two_edge_components(int n, vector<vector<
     for (int v = 0; v < n; v++)
         if (!order[v]) dfs(dfs, v);
 
-    return {tec, tecs};
+    return {tecc, teccs};
 }
 
 int main() {
@@ -56,17 +56,17 @@ int main() {
         adj_list[b].emplace_back(a, i);
     }
 
-    auto [tec, tecs] = two_edge_components(n, adj_list);
-    if (tecs.size() == 1) {
+    auto [tecc, teccs] = two_edge_connected_components(n, adj_list);
+    if (teccs.size() == 1) {
         cout << 0;
         exit(0);
     }
 
-    vector<int> degree(tecs.size(), 0);
+    vector<int> degree(teccs.size(), 0);
     for (auto [a, b] : edges)
-        if (tec[a] != tec[b]) {
-            degree[tec[a]]++;
-            degree[tec[b]]++;
+        if (tecc[a] != tecc[b]) {
+            degree[tecc[a]]++;
+            degree[tecc[b]]++;
         }
 
     int count = 0;
