@@ -14,45 +14,36 @@ int main() {
         cin >> s >> k;
 
         int n = s.size();
-        vector<vector<vector<int>>> dp1(2, vector<vector<int>>(n, vector<int>(k + 1, -1)));
-        vector<vector<int>> dp2(n, vector<int>(3, -1));
-
-        auto convert = [&](auto &&self, int k, int i = 0, bool prev = false) {
-            if (k < 0) return INT_MIN;
-            if (i > n - 3) return 0;
-            if (dp1[prev][i][k] != -1) return dp1[prev][i][k];
-
-            int turned = INT_MIN;
-
-            auto mode = [&](int i, int j) {
-                if (dp2[i][j] != -1) return dp2[i][j];
-
-                vector<int> count(27, 0);
-                for (int k = 0; k < j + 3; k++) count[s[i + k] - 'a' + 1]++;
-
-                int unique = 0, k = 0;
-                for (int c = 1; c <= 26; c++)
-                    if (count[c]) {
-                        unique++;
-                        if (!k || count[k] > count[c]) k = c;
+        k = min(k, n / 3);
+        vector<vector<pair<int, int>>> sweep(n);
+        for (int l = 0; l < n; l++) {
+            vector<int> count(26, 0);
+            for (int r = l; r < min(n, l + 5); r++) {
+                count[s[r] - 'a']++;
+                if (r - l < 2) continue;
+                for (int ch = 0; ch < 26; ch++)
+                    if (count[ch] == r - l) {
+                        sweep[l].emplace_back(r + 1, ch);
+                        break;
                     }
+            }
+        }
 
-                if (unique == 2 && count[k] == 1)
-                    for (int c = 1; c <= 26; c++)
-                        if (count[c] && k != c) return dp2[i][j] = c;
-
-                return dp2[i][j] = 0;
-            };
-
-            for (int j = 3; j <= 5 && i + j <= n; j++) {
-                int c = mode(i, j - 3);
-                if (c && (!prev || (c != s[i - 1] - 'a' + 1 || mode(i - 3, 0) != s[i] - 'a' + 1)))
-                    turned = max(turned, self(self, k - 1, i + j, true) + j);
+        vector<vector<array<int, 3>>> dp(n + 1, vector<array<int, 3>>(k + 1, {INT_MIN, INT_MIN, INT_MIN}));
+        dp[0][0][0] = 0;
+        for (int l = 0; l < n; l++)
+            for (int i = 0; i <= k; i++) {
+                dp[l + 1][i][0] = max({dp[l + 1][i][0], dp[l][i][0], dp[l][i][1]});
+                if (i != k)
+                    for (auto [r, ch] : sweep[l]) {
+                        int turned = dp[l][i][1];
+                        if (!l || s[l - 1] != ch + 'a') turned = max({turned, dp[l][i][0], dp[l][i][2]});
+                        if (turned >= 0) dp[r][i + 1][(r < n && s[r] == ch + 'a') + 1] = max(dp[r][i + 1][(r < n && s[r] == ch + 'a') + 1], turned + r - l);
+                    }
             }
 
-            return dp1[prev][i][k] = max(turned, self(self, k, i + 1));
-        };
-
-        cout << convert(convert, k) << "\n";
+        int turned = 0;
+        for (int j = 0; j <= k; j++) turned = max({turned, dp[n][j][0], dp[n][j][1]});
+        cout << turned << "\n";
     }
 }
