@@ -70,16 +70,14 @@ struct LaminarTree {
         auto it = min_element(cut.begin(), cut.end());
         int min_cut = *it, i = it - cut.begin();
         vector<bool> side(n, false);
-        stack<int> st;
-        st.emplace(LT[i + n][0]);
-        while (!st.empty()) {
-            int v = st.top();
-            st.pop();
-
-            if (v < n) side[v] = true;
-            else
-                for (int u : LT[v]) st.emplace(u);
-        }
+        auto dfs = [&](auto &&self, int v) -> void {
+            if (v < n) {
+                side[v] = true;
+                return;
+            }
+            for (int u : LT[v]) self(self, u);
+        };
+        dfs(dfs, LT[i + n][0]);
         return {min_cut, side};
     }
 };
