@@ -8,75 +8,49 @@ int main() {
     int t, n;
     cin >> t >> n;
 
-    vector<vector<pair<long long, int>>> days(5, vector<pair<long long, int>>(t, {1e18, 0}));
+    vector<vector<long long>> days(t, vector<long long>(5, 1e18));
     while (n--) {
-        int x;
+        int x, p;
         long long l;
-        int p;
         cin >> x >> l >> p;
 
-        if (days[p - 1][x].first > l + x) {
-            days[p - 1][x].first = l + x;
-            days[p - 1][x].second = (l + x + t) % t;
-        }
+        days[x][p - 1] = min(days[x][p - 1], x + l);
     }
 
-    vector<vector<pair<long long, int>>> exact(5, vector<pair<long long, int>>(t, {1e18, 0}));
-    vector<pair<long long, int>> pref(t, {1e18, 0}), suff(t + 1, {1e18, 0});
-    for (int p = 0; p <= 4; p++) {
-        pref[0] = days[p][0];
-        suff[t] = {1e18, 0};
-        for (int x = 1; x < t; x++) pref[x] = min(pref[x - 1], days[p][x]);
-        for (int x = t - 1; ~x; x--) suff[x] = min(suff[x + 1], days[p][x]);
+    vector<long long> pref(t), suff(t + 1);
+    vector<vector<long long>> exact(t, vector<long long>(5, 1e18));
+    for (int p = 0; p < 5; p++) {
+        pref[0] = days[0][p];
+        for (int x = 1; x < t; x++) pref[x] = min(pref[x - 1], days[x][p]);
+        suff[t] = 1e18;
+        for (int x = t - 1; ~x; x--) suff[x] = min(suff[x + 1], days[x][p]);
 
         for (int x = 0; x < t; x++) {
-            if (suff[x].first < 1e18) {
-                suff[x].first -= x;
-                exact[p][x] = min(exact[p][x], suff[x]);
-            }
-
-            if (x && pref[x - 1].first < 1e18) {
-                pref[x - 1].first += t - x;
-                exact[p][x] = min(exact[p][x], pref[x - 1]);
-            }
+            if (suff[x] != 1e18) exact[x][p] = suff[x] - x;
+            if (x && pref[x - 1] != 1e18) exact[x][p] = min(exact[x][p], pref[x - 1] + t - x);
         }
     }
 
-    vector<vector<pair<long long, int>>> f(9, vector<pair<long long, int>>(t, {1e18, 0}));
-    for (int x = 0; x < t; x++) f[0][x] = {0, x};
-    for (int m = 1; m <= 8; m++)
+    vector<vector<long long>> f(t, vector<long long>(5, 1e18));
+    for (int m = 0; m < 5; m++)
         for (int x = 0; x < t; x++)
-            for (int p = 0; p <= 4; p++) {
-                if (exact[p][x].first >= 1e18) continue;
-
-                int k = m - p - 1;
-                if (k <= 0) f[m][x] = min(f[m][x], exact[p][x]);
-                else {
-                    if (f[k][exact[p][x].second].first >= 1e18) continue;
-                    f[m][x] = min(f[m][x], {exact[p][x].first + f[k][exact[p][x].second].first, f[k][exact[p][x].second].second});
-                }
+            for (int p = 0; p < 5; p++) {
+                auto y = exact[x][p];
+                if (y != 1e18)
+                    f[x][m] = min(f[x][m], (p < m ? f[(x + y % t) % t][m - p - 1] : 0) + y);
             }
 
-    int lg = 40;
-    vector<vector<vector<pair<long long, int>>>> g(lg, vector<vector<pair<long long, int>>>(9, vector<pair<long long, int>>(t, {1e18, 0})));
-    for (int o = -4; o <= 4; o++)
-        for (int x = 0; x < t; x++) g[0][o + 4][x] = o + 1 <= 0 ? make_pair(0LL, x) : f[o + 1][x];
+    vector<vector<vector<long long>>> g(40, vector<vector<long long>>(t, vector<long long>(9, 1e18)));
+    for (int x = 0; x < t; x++)
+        for (int o = -4; o <= 4; o++) g[0][x][o + 4] = o + 1 <= 0 ? 0 : f[x][o];
 
-    for (int i = 1; i < lg; i++)
+    for (int k = 1; k < 40; k++)
         for (int x = 0; x < t; x++)
-            for (int o = -4; o <= 4; o++)
-                for (int neg = -4; neg <= 0; neg++)
-                    for (int pos = 0; pos <= 4; pos++) {
-                        int a = neg + pos, b = o - a;
-                        if (a < -4 || a > 4 || b < -4 || b > 4) continue;
-
-                        auto [d1, x1] = g[i - 1][a + 4][x];
-                        if (d1 >= 1e18) continue;
-                        auto [d2, x2] = g[i - 1][b + 4][x1];
-                        if (d2 >= 1e18) continue;
-
-                        g[i][o + 4][x] = min(g[i][o + 4][x], {d1 + d2, x2});
-                    }
+            for (int i = 0; i < 9; i++) {
+                auto y = g[k - 1][x][i];
+                if (y != 1e18)
+                    for (int j = max(0, 4 - i); j <= min(8, 12 - i); j++) g[k][x][i + j - 4] = min(g[k][x][i + j - 4], g[k - 1][(x + y % t) % t][j] + y);
+            }
 
     int q;
     cin >> q;
@@ -85,44 +59,23 @@ int main() {
         long long z;
         cin >> z;
 
+        vector<long long> curr(9, 0), next(9);
+        for (int o = -4; o <= 4; o++) curr[o + 4] = o <= 0 ? 0 : f[0][o - 1];
+
         auto profit = 0LL;
-        vector<pair<long long, int>> curr(9, {1e18, 0});
-        curr[4] = {0, 0};
-        for (int i = lg - 1; ~i; i--) {
-            vector<pair<long long, int>> temp1(5, {1e18, 0});
-            for (int p = 0; p <= 4; p++)
-                for (int o = 0; o <= 8; o++) {
-                    auto [d, x] = curr[o];
-                    if (d >= 1e18) continue;
+        for (int k = 39; ~k; k--) {
+            fill(next.begin(), next.end(), 1e18);
+            for (int i = 0; i < 9; i++) {
+                auto y = curr[i];
+                if (y != 1e18)
+                    for (int j = max(0, 4 - i); j <= min(8, 12 - i); j++) next[i + j - 4] = min(next[i + j - 4], g[k][y % t][j] + y);
+            }
 
-                    int k = p - o + 4;
-                    if (k <= 0) temp1[p] = min(temp1[p], {d, x});
-                    else {
-                        if (f[k][x].first >= 1e18) continue;
-                        temp1[p] = min(temp1[p], {d + f[k][x].first, f[k][x].second});
-                    }
-                }
-
-            vector<pair<long long, int>> temp2(9, {1e18, 0});
-            for (int o = -4; o <= 4; o++)
-                for (int p = 0; p <= 4; p++) {
-                    int c = o - p;
-                    if (c < -4 || c > 4) continue;
-
-                    auto [d1, x1] = temp1[p];
-                    if (d1 >= 1e18) continue;
-                    auto [d2, x2] = g[i][c + 4][x1];
-                    if (d2 >= 1e18) continue;
-
-                    temp2[o + 4] = min(temp2[o + 4], {d1 + d2, x2});
-                }
-
-            if ((*min_element(temp2.begin() + 4, temp2.end())).first <= z) {
-                profit += 1LL << i;
-                curr = temp2;
+            if (z >= next[4]) {
+                profit += 1LL << k;
+                curr = next;
             }
         }
-
         cout << profit << "\n";
     }
 }
