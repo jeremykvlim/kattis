@@ -16,40 +16,33 @@ int main() {
         auto query = [&](int u, int v) -> int {
             if (memo[u][v] != -2) return memo[u][v];
             cout << "? " << u + 1 << " " << v << "\n" << flush;
+            
             int lg;
             cin >> lg;
             return memo[u][v] = lg;
         };
 
-        vector<int> pref(n + 1, 0);
+        vector<int> indices(n + 1), pref(n + 1, 0);
+        iota(indices.begin(), indices.end(), 0);
         auto dfs = [&](auto &&self, const vector<int> &indices, int b = 29) -> void {
             if (indices.size() <= 1) return;
 
-            int u = indices.front(), v = indices.back();
-            vector<int> l, r;
-            l.emplace_back(u);
-            int side = 1;
-            if (query(u, v) < b) {
-                l.emplace_back(v);
-                side = 0;
-            } else r.emplace_back(v);
-
-            for (int i : indices)
-                if (i != u && i != v) {
-                    if (u + v < 2 * i) (query(u, i) < b ? l : r).emplace_back(i);
-                    else (query(i, v) < b ? (!side ? l : r) : (!side ? r : l)).emplace_back(i);
+            int u = indices[0];
+            vector<int> l{u}, r;
+            for (int j = 1; j < indices.size(); j++) {
+                int v = indices[j];
+                if (query(u, v) < b) l.emplace_back(v);
+                else {
+                    r.emplace_back(v);
+                    pref[v] |= 1 << b;
                 }
-            for (int i : r) pref[i] += 1 << b;
+            }
 
             if (b) {
-                sort(l.begin(), l.end());
-                sort(r.begin(), r.end());
                 self(self, l, b - 1);
                 self(self, r, b - 1);
             }
         };
-        vector<int> indices(n + 1);
-        iota(indices.begin(), indices.end(), 0);
         dfs(dfs, indices);
 
         cout << "!\n";
