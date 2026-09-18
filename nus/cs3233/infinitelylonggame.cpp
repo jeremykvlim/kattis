@@ -448,106 +448,91 @@ int main() {
     vector<int> X(n);
     for (int &Xi : X) cin >> Xi;
 
-    vector<pair<int, int>> edges(m);
-    vector<modint> a(m), b(m), c(m);
-    for (int i = 0; i < m; i++) {
-        int u, v;
-        cin >> u >> v >> a[i] >> b[i] >> c[i];
+    int k = 1 << n, all = k - 1;
+    vector<vector<modint>> p_nothing(n, vector<modint>(n, 1)), p_add_edge(n, vector<modint>(n, 0));
+    while (m--) {
+        int u, v, a, b, c;
+        cin >> u >> v >> a >> b >> c;
+        u--;
+        v--;
 
-        edges[i] = {u - 1, v - 1};
+        modint d = a + b + c;
+        p_nothing[u][v] = p_nothing[v][u] = c / d;
+        p_add_edge[u][v] = a / d;
+        p_add_edge[v][u] = b / d;
     }
 
-    vector<vector<modint>> no_in_maybe_out(n, vector<modint>(1 << n)), no_in_yes_out(n, vector<modint>(1 << n));
-    for (int i = 0; i < n; i++)
-        for (int mask = 0; mask < 1 << n; mask++)
-            if (!((mask >> i) & 1)) {
-                modint p1 = 1, p2 = 1, q = 1;
-                for (int j = 0; j < m; j++) {
-                    auto [u, v] = edges[j];
-                    if (i == u && ((mask >> v) & 1)) {
-                        p1 *= a[j] + c[j];
-                        p2 *= c[j];
-                        q *= a[j] + b[j] + c[j];
-                    }
-                    if (i == v && ((mask >> u) & 1)) {
-                        p1 *= b[j] + c[j];
-                        p2 *= c[j];
-                        q *= a[j] + b[j] + c[j];
-                    }
-                }
-                no_in_maybe_out[i][mask] = p1 / q;
-                no_in_yes_out[i][mask] = no_in_maybe_out[i][mask] - p2 / q;
-            }
-
-    vector<modint> alice_losing(1 << n);
-    for (int mask = 1; mask < 1 << n; mask++) {
-        modint p = 1, q = 1;
-        for (int j = 0; j < m; j++) {
-            auto [u, v] = edges[j];
-            if (((mask >> u) & 1) && ((mask >> v) & 1)) {
-                p *= c[j];
-                q *= a[j] + b[j] + c[j];
-            }
-        }
-
-        modint total_ways = 1;
+    vector<modint> zero_nim_sum(k, 1);
+    for (int mask = 1; mask < k; mask++) {
         vector<int> valid;
+        modint total_ways = 1;
         for (int i = 0; i < n; i++)
             if ((mask >> i) & 1) {
-                valid.emplace_back(X[i]);
+                valid.emplace_back(X[i] + 1);
                 total_ways *= X[i] + 1;
             }
 
-        auto ways_0_nim_sum = [&](auto &&self, vector<int> &v) -> modint {
-            int highest = *max_element(v.begin(), v.end());
-            if (!highest) return 1;
-
-            int floor = bit_floor((unsigned) highest);
-            vector<vector<vector<modint>>> dp(v.size() + 1, vector<vector<modint>>(2, vector<modint>(2, 0)));
-            dp[0][0][0] = 1;
-            for (int i = 0; i < v.size(); i++)
-                for (int j = 0; j < 2; j++)
-                    if (v[i] >= floor) {
-                        dp[i + 1][j ^ 1][0] += dp[i][j][0] * (v[i] - floor + 1);
-                        dp[i + 1][j ^ 1][1] += dp[i][j][1] * (v[i] - floor + 1);
-                        dp[i + 1][j][1] += dp[i][j][0];
-                        dp[i + 1][j][1] += dp[i][j][1] * floor;
-                    } else {
-                        dp[i + 1][j][0] += dp[i][j][0] * (v[i] + 1);
-                        dp[i + 1][j][1] += dp[i][j][1] * (v[i] + 1);
-                    }
-
-            int larger = 0;
-            for (int Xi : v)
-                if (Xi >= floor) larger++;
-
-            auto ways = dp.back()[0][1];
-            if (!(larger & 1)) {
-                for (int &Xi : v)
-                    if (Xi >= floor) Xi -= floor;
-                ways += self(self, v);
+        modint ways_0_nim_sum = 0;
+        for (;;) {
+            int highest = *max_element(valid.begin(), valid.end());
+            if (highest == 1) {
+                ways_0_nim_sum++;
+                break;
             }
-            return ways;
-        };
-        alice_losing[mask] = p / q * ways_0_nim_sum(ways_0_nim_sum, valid) / total_ways;
-    }
 
-    vector<vector<int>> submasks(1 << n);
-    for (int m1 = 1; m1 < 1 << n; m1++)
-        for (int m2 = 1; m2 <= m1; m2++)
-            if (!(~m1 & m2)) submasks[m1].emplace_back(m2);
-
-    vector<vector<modint>> dp(1 << n, vector<modint>(1 << n));
-    for (int mask = 1; mask < 1 << n; mask++) dp[mask][mask] = alice_losing[mask];
-    for (int m1 = 1; m1 < 1 << n; m1++)
-        for (int m2 : submasks[m1])
-            if (dp[m1][m2])
-                for (int m3 : submasks[m1 ^ ((1 << n) - 1)]) {
-                    auto temp = dp[m1][m2];
-                    for (int i = 0; i < n; i++)
-                        if ((m3 >> i) & 1) temp *= no_in_maybe_out[i][m1 ^ m2] * no_in_yes_out[i][m2];
-                    dp[m1 ^ m3][m3] += temp * alice_losing[m3];
+            int floor = bit_floor((unsigned) (highest - 1));
+            bool flip = false;
+            modint ways_low = 1, ways_high = 1, plus = 1, minus = 1;
+            for (int &Xi : valid) {
+                if (Xi <= floor) {
+                    ways_low *= Xi;
+                    continue;
                 }
 
-    cout << accumulate(dp.back().begin(), dp.back().end(), (modint) 0);
+                flip = !flip;
+                ways_high *= Xi - floor;
+                plus *= Xi;
+                minus *= 2 * floor - Xi;
+                Xi -= floor;
+            }
+            ways_low /= floor;
+            ways_0_nim_sum += ways_low * (plus + minus) / 2;
+            if (flip) break;
+            ways_0_nim_sum -= ways_low * ways_high;
+        }
+        zero_nim_sum[mask] = ways_0_nim_sum / total_ways;
+    }
+
+    vector<vector<modint>> p_no_in_no_out(n, vector<modint>(k, 1)), p_no_in_maybe_out(n, vector<modint>(k, 1));
+    for (int u = 0; u < n; u++)
+        for (int mask = 1; mask < k; mask++) {
+            int v = countr_zero((unsigned) mask);
+            p_no_in_no_out[u][mask] = p_no_in_no_out[u][mask & (mask - 1)] * p_nothing[u][v];
+            p_no_in_maybe_out[u][mask] = p_no_in_maybe_out[u][mask & (mask - 1)] * (p_nothing[u][v] + p_add_edge[u][v]);
+        }
+
+    vector<modint> alice_losing(k, 1);
+    for (int mask = 1; mask < k; mask++) {
+        int v = countr_zero((unsigned) mask);
+        alice_losing[mask] = alice_losing[mask & (mask - 1)] * p_no_in_no_out[v][mask & (mask - 1)];
+    }
+
+    vector<modint> temp(k);
+    vector<vector<modint>> dp(k, vector<modint>(k));
+    for (int mask = 1; mask < k; mask++) dp[mask][mask] = alice_losing[mask] *= zero_nim_sum[mask];
+    for (int m1 = 1; m1 < all; m1++)
+        for (int m2 = m1; m2; --m2 &= m1) {
+            if (dp[m1][m2]) {
+                temp[0] = dp[m1][m2];
+                int mask = all ^ m1;
+                for (int m3 = 0; m3 != mask;) {
+                    m3 = (m3 - mask) & mask;
+                    int i = countr_zero((unsigned) m3);
+                    temp[m3] = temp[m3 & (m3 - 1)] * p_no_in_maybe_out[i][m1 ^ m2] * (p_no_in_maybe_out[i][m2] - p_no_in_no_out[i][m2]);
+                    dp[m1 | m3][m3] += alice_losing[m3] * temp[m3];
+                }
+            }
+        }
+
+    cout << accumulate(dp[all].begin(), dp[all].end(), (modint) 0);
 }
