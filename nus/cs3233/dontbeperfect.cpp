@@ -1,441 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T, typename U, typename V>
-T mul(U x, V y, T mod) {
-    return (unsigned __int128) x * y % mod;
-}
-
-template <typename T, typename U>
-T pow(T base, U exponent, T mod) {
-    T value = 1;
-    while (exponent) {
-        if (exponent & 1) value = mul(base, value, mod);
-        base = mul(base, base, mod);
-        exponent >>= 1;
-    }
-    return value;
-}
-
-bool isprime(unsigned long long n) {
-    if (n < 2) return false;
-    if (n == 2 || n == 5 || n == 11) return true;
-    if (n % 6 % 4 != 1) return (n | 1) == 3;
-
-    auto miller_rabin = [&](int a) {
-        int s = countr_zero(n - 1);
-        auto d = n >> s, x = pow(a % n, d, n);
-        if (x == 1 || x == n - 1) return true;
-
-        while (s--) {
-            x = mul(x, x, n);
-            if (x == n - 1) return true;
-        }
-        return false;
-    };
-    if (!miller_rabin(2) || !miller_rabin(3)) return false;
-
-    auto lucas_pseudoprime = [&]() {
-        auto normalize = [&](__int128 &x) {
-            if (x < 0) x += ((-x / n) + 1) * n;
-        };
-
-        __int128 D = -3;
-        for (;;) {
-            D += D > 0 ? 2 : -2;
-            D *= -1;
-
-            int jacobi = 1;
-            auto jacobi_symbol = [&](__int128 n) {
-                auto a = D;
-                normalize(a);
-
-                while (a) {
-                    while (!(a & 1)) {
-                        a >>= 1;
-                        if ((n & 7) == 3 || (n & 7) == 5) jacobi = -jacobi;
-                    }
-                    if ((a & 3) == 3 && (n & 3) == 3) jacobi = -jacobi;
-
-                    swap(a, n);
-                    a %= n;
-                }
-                return n == 1;
-            };
-            if (!jacobi_symbol(n)) return false;
-            if (jacobi == -1) break;
-        }
-
-        string bits;
-        auto temp = n + 1;
-        while (temp) {
-            bits += (temp & 1) ? '1' : '0';
-            temp >>= 1;
-        }
-        bits.pop_back();
-        reverse(bits.begin(), bits.end());
-
-        auto div2mod = [&](__int128 x) -> unsigned long long {
-            if (x & 1) x += n;
-            normalize(x >>= 1);
-
-            return x % n;
-        };
-
-        __int128 U = 1, V = 1;
-        for (char b : bits) {
-            auto U_2k = mul(U, V, n), V_2k = div2mod(mul(V, V, n) + D * mul(U, U, n));
-
-            if (b == '0') {
-                U = U_2k;
-                V = V_2k;
-            } else {
-                U = div2mod(U_2k + V_2k);
-                V = div2mod(D * U_2k + V_2k);
-            }
-        }
-
-        return !U;
-    };
-    return lucas_pseudoprime();
-}
-
-template <typename T>
-T brent(T n) {
-    if (!(n & 1)) return 2;
-
-    static mt19937_64 rng(random_device{}());
-    for (;;) {
-        T x = 2, y = 2, g = 1, q = 1, xs = 1, c = rng() % (n - 1) + 1;
-        for (int i = 1; g == 1; i <<= 1, y = x) {
-            for (int j = 1; j < i; j++) x = mul(x, x, n) + c;
-            for (int j = 0; j < i && g == 1; j += 128) {
-                xs = x;
-                for (int k = 0; k < min(128, i - j); k++) {
-                    x = mul(x, x, n) + c;
-                    q = mul(q, max(x, y) - min(x, y), n);
-                }
-                g = __gcd(q, n);
-            }
-        }
-
-        if (g == n) g = 1;
-        while (g == 1) {
-            xs = mul(xs, xs, n) + c;
-            g = __gcd(max(xs, y) - min(xs, y), n);
-        }
-        if (g != n) return isprime(g) ? g : brent(g);
-    }
-}
-
-template <typename T>
-vector<T> factorize(T n) {
-    vector<T> pfs;
-
-    auto dfs = [&](auto &&self, T m) -> void {
-        if (m < 2) return;
-        if (isprime(m)) {
-            pfs.emplace_back(m);
-            return;
-        }
-
-        T pf = brent(m);
-        pfs.emplace_back(pf);
-        self(self, m / pf);
-    };
-    dfs(dfs, n);
-
-    return pfs;
-}
-
-template <typename T>
-T primitive_root_mod_m(T m) {
-    if (m == 1 || m == 2 || m == 4) return m - 1;
-    if (!(m & 3)) return m;
-
-    auto pfs = factorize(m);
-    sort(pfs.begin(), pfs.end());
-    pfs.erase(unique(pfs.begin(), pfs.end()), pfs.end());
-    if (pfs.size() > 2 || (pfs.size() == 2 && (m & 1))) return m;
-
-    auto phi = !(m & 1) ? m / 2 / pfs[1] * (pfs[1] - 1) : m / pfs[0] * (pfs[0] - 1);
-    pfs = factorize(phi);
-    sort(pfs.begin(), pfs.end());
-    pfs.erase(unique(pfs.begin(), pfs.end()), pfs.end());
-    for (auto g = 2LL; g < m; g++)
-        if (gcd(g, m) == 1 && all_of(pfs.begin(), pfs.end(), [&](auto pf) { return pow((T) g, phi / pf, m) != 1; })) return g;
-
-    return m;
-}
-
-template <typename M>
-struct MontgomeryModInt {
-    using T = typename decay<decltype(M::value)>::type;
-    using U = typename conditional<is_same<T, unsigned int>::value, unsigned long long, typename conditional<is_same<T, unsigned long long>::value, unsigned __int128, void>::type>::type;
-    using I = typename conditional<is_same<T, unsigned int>::value, int, typename conditional<is_same<T, unsigned long long>::value, long long, void>::type>::type;
-    using J = typename conditional<is_same<T, unsigned int>::value, long long, typename conditional<is_same<T, unsigned long long>::value, __int128, void>::type>::type;
-
-    T value;
-    static inline int p2;
-    static inline T g;
-    static inline pair<T, U> r;
-    static inline bool prime_mod;
-    static constexpr int bit_length = sizeof(T) * 8;
-
-    static void init() {
-        prime_mod = mod() == 998244353 || mod() == (unsigned long long) 1e9 + 7 || mod() == (unsigned long long) 1e9 + 9 || mod() == (unsigned long long) 1e6 + 69 || mod() == 2524775926340780033 || mod() == 39582418599937 || mod() == 79164837199873 || isprime(mod());
-        r = {mod(), - (U) mod() % mod()};
-        while (mod() * r.first != 1) r.first *= (T) 2 - mod() * r.first;
-        g = primitive_root_mod_m(mod());
-        p2 = 0;
-        for (T t = mod() - 1; !(t & 1); t >>= 1) p2++;
-    }
-
-    constexpr MontgomeryModInt() : value() {}
-
-    MontgomeryModInt(const J &x) {
-        value = reduce((U) x * r.second);
-    }
-
-    template <typename N, typename = enable_if_t<!is_same<M, N>::value && is_same<typename MontgomeryModInt<N>::T, T>::value>>
-    MontgomeryModInt(const MontgomeryModInt<N> &x) {
-        value = reduce((U) x() * r.second);
-    }
-
-    static T reduce(const U &x) {
-        T q = (U) x * r.first, v = (x >> bit_length) + mod() - (((U) q * mod()) >> bit_length);
-        return v >= mod() ? v - mod() : v;
-    }
-
-    T operator()() const {
-        return reduce((U) value);
-    }
-
-    template <typename V>
-    explicit operator V() const {
-        return (V) value;
-    }
-
-    I recover() const {
-        T v = reduce((U) value);
-        return v > mod() / 2 ? v - mod() : v;
-    }
-
-    constexpr static T mod() {
-        return M::value;
-    }
-
-    constexpr static T primitive_root() {
-        return g;
-    }
-
-    constexpr static bool ntt_viable(int n) {
-        if (!prime_mod || (n & (n - 1)) || g == mod()) return false;
-        return __lg(n) <= p2;
-    }
-
-    inline auto & operator+=(const MontgomeryModInt &v) {
-        if ((I) (value += v.value) >= mod()) value -= mod();
-        return *this;
-    }
-
-    inline auto & operator-=(const MontgomeryModInt &v) {
-        if ((I) (value -= v.value) < 0) value += mod();
-        return *this;
-    }
-
-    template <typename U>
-    inline auto & operator+=(const U &v) {
-        return *this += (MontgomeryModInt) v;
-    }
-
-    template <typename U>
-    inline auto & operator-=(const U &v) {
-        return *this -= (MontgomeryModInt) v;
-    }
-
-    auto & operator++() {
-        return *this += 1;
-    }
-
-    auto & operator--() {
-        return *this -= 1;
-    }
-
-    auto operator++(int) {
-        return *this += 1;
-    }
-
-    auto operator--(int) {
-        return *this -= 1;
-    }
-
-    auto operator-() const {
-        return (MontgomeryModInt) 0 - *this;
-    }
-
-    MontgomeryModInt & operator*=(const MontgomeryModInt &v) {
-        if constexpr (is_same_v<T, unsigned int>) value = reduce((unsigned long long) value * v.value);
-        else value = reduce((unsigned __int128) value * v.value);
-        return *this;
-    }
-
-    auto & operator/=(const MontgomeryModInt &v) {
-        return *this *= inv(v);
-    }
-
-    static MontgomeryModInt pow(MontgomeryModInt base, T exponent) {
-        MontgomeryModInt v = 1;
-        while (exponent) {
-            if (exponent & 1) v *= base;
-            base *= base;
-            exponent >>= 1;
-        }
-        return v;
-    }
-
-    static MontgomeryModInt inv(const MontgomeryModInt &v) {
-        if (prime_mod) return pow(v, mod() - 2);
-
-        T x = 0, y = 1, a = v.value, m = mod();
-        while (a) {
-            T t = m / a;
-            m -= t * a;
-            swap(a, m);
-            x -= t * y;
-            swap(x, y);
-        }
-
-        return (MontgomeryModInt) x;
-    }
-};
-
-template <typename T>
-bool operator==(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs.value == rhs.value;
-}
-
-template <typename T, typename U>
-bool operator==(const MontgomeryModInt<T> &lhs, U rhs) {
-    return lhs == MontgomeryModInt<T>(rhs);
-}
-
-template <typename T, typename U>
-bool operator==(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) == rhs;
-}
-
-template <typename T>
-bool operator!=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return !(lhs == rhs);
-}
-
-template <typename T, typename U>
-bool operator!=(const MontgomeryModInt<T> &lhs, U rhs) {
-    return !(lhs == rhs);
-}
-
-template <typename T, typename U>
-bool operator!=(U lhs, const MontgomeryModInt<T> &rhs) {
-    return !(lhs == rhs);
-}
-
-template <typename T>
-bool operator>(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs() > rhs();
-}
-
-template <typename T>
-bool operator<(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs() < rhs();
-}
-
-template <typename T>
-bool operator>=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs > rhs || lhs == rhs;
-}
-
-template <typename T>
-bool operator<=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs < rhs || lhs == rhs;
-}
-
-template <typename T>
-MontgomeryModInt<T> operator+(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) += rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator+(const MontgomeryModInt<T> &lhs, U rhs) {
-    return MontgomeryModInt<T>(lhs) += rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator+(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) += rhs;
-}
-
-template <typename T>
-MontgomeryModInt<T> operator-(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) -= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator-(const MontgomeryModInt<T> &lhs, U rhs) {
-    return MontgomeryModInt<T>(lhs) -= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator-(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) -= rhs;
-}
-
-template <typename T>
-MontgomeryModInt<T> operator*(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) *= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator*(const MontgomeryModInt<T> &lhs, U rhs) {
-    return MontgomeryModInt<T>(lhs) *= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator*(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) *= rhs;
-}
-
-template <typename T>
-MontgomeryModInt<T> operator/(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator/(const MontgomeryModInt<T> &lhs, U rhs) {
-    return MontgomeryModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator/(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-U & operator<<(U &stream, const MontgomeryModInt<T> &v) {
-    return stream << v();
-}
-
-template <typename T, typename U>
-U & operator>>(U &stream, MontgomeryModInt<T> &v) {
-    typename make_signed<typename MontgomeryModInt<T>::T>::type x;
-    stream >> x;
-    v = MontgomeryModInt<T>(x);
-    return stream;
-}
-
-constexpr unsigned long long MOD = 998244353;
-using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
-
 struct Hash {
     template <typename T>
     static inline void combine(size_t &h, const T &v) {
@@ -462,8 +27,6 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    modint::init();
-
     int n;
     cin >> n;
 
@@ -478,117 +41,58 @@ int main() {
         cin >> p;
 
         adj_list[p].emplace_back(i);
+        adj_list[i].emplace_back(p);
     }
 
-    vector<int> subtree_size(n + 1, 1);
-    int even = 0;
-    auto dfs1 = [&](auto &&self, int v = 1, int prev = -1) -> void {
+    auto dfs = [&](auto &&self, int v = 1, int prev = 0) -> vector<vector<int>> {
+        vector<vector<int>> dp{{0}, {1}};
         for (int u : adj_list[v])
             if (u != prev) {
-                self(self, u, v);
-                subtree_size[v] += subtree_size[u];
-            }
-
-        even += !(subtree_size[v] & 1);
-    };
-    dfs1(dfs1);
-
-    if (even == n / 2) {
-        cout << 0;
-        exit(0);
-    }
-
-    vector<vector<pair<pair<int, int>, vector<int>>>> dp(n + 1);
-    auto dfs2 = [&](auto &&self, int v = 1) -> void {
-        for (int u : adj_list[v]) self(self, u);
-
-        vector<pair<pair<int, int>, vector<int>>> added{{{1, 0}, {}}}, unadded{{{0, 1}, {}}};
-        for (int u : adj_list[v]) {
-            vector<pair<pair<int, int>, vector<int>>> temp1, temp2;
-            for (auto [p1, clique_sizes1] : added)
-                for (auto [p2, clique_sizes2] : dp[u]) {
-                    vector<int> clique_sizes;
-                    for (int size : clique_sizes1) clique_sizes.emplace_back(size);
-                    for (int size : clique_sizes2) clique_sizes.emplace_back(size);
-
-                    auto [S_size1, add1] = p1;
-                    auto [S_size2, add2] = p2;
-                    if (add2) clique_sizes.emplace_back(add2);
-                    temp1.emplace_back(make_pair(S_size1 + S_size2, 0), clique_sizes);
-                }
-
-            for (auto [p1, clique_sizes1] : unadded)
-                for (auto [p2, clique_sizes2] : dp[u]) {
-                    vector<int> clique_sizes;
-                    for (int size : clique_sizes1) clique_sizes.emplace_back(size);
-                    for (int size : clique_sizes2) clique_sizes.emplace_back(size);
-
-                    auto [S_size1, add1] = p1;
-                    auto [S_size2, add2] = p2;
-                    temp2.emplace_back(make_pair(S_size1 + S_size2, add1 + add2), clique_sizes);
-                }
-
-            added = temp1;
-            unadded = temp2;
-        }
-        for (auto config : added) {
-            sort(config.second.begin(), config.second.end());
-            dp[v].emplace_back(config);
-        }
-        for (auto config : unadded) {
-            sort(config.second.begin(), config.second.end());
-            dp[v].emplace_back(config);
-        }
-        sort(dp[v].begin(), dp[v].end());
-        dp[v].erase(unique(dp[v].begin(), dp[v].end()), dp[v].end());
-    };
-    dfs2(dfs2);
-
-    modint count = 0;
-    vector<unordered_set<vector<int>, Hash>> visited(n + 1);
-    for (auto [p, clique_sizes] : dp[1]) {
-        auto [S_size, add] = p;
-        if (!S_size) continue;
-
-        auto dfs3 = [&](auto &&self, vector<int> clique_sizes) {
-            sort(clique_sizes.begin(), clique_sizes.end());
-            if (visited[S_size].count(clique_sizes)) return;
-            visited[S_size].emplace(clique_sizes);
-
-            for (int &size : clique_sizes)
-                if (!(size & 1)) {
-                    swap(size, clique_sizes.back());
-
-                    int s = clique_sizes.back();
-                    clique_sizes.pop_back();
-
-                    for (int j = 0; j < clique_sizes.size(); j++) {
-                        clique_sizes[j] += s;
-                        self(self, clique_sizes);
-                        clique_sizes[j] -= s;
+                unordered_set<vector<int>, Hash> temp;
+                for (auto &cs1 : self(self, u, v))
+                    for (auto &cs2 : dp) {
+                        vector<int> component_sizes;
+                        component_sizes.emplace_back(cs2[0] ? cs1[0] + cs2[0] : 0);
+                        merge(cs2.begin() + 1, cs2.end(), cs1.begin() + 1, cs1.end(), back_inserter(component_sizes));
+                        if (cs1[0] && !cs2[0]) component_sizes.insert(lower_bound(component_sizes.begin() + 1, component_sizes.end(), cs1[0]), cs1[0]);
+                        temp.emplace(component_sizes);
                     }
-                    return;
-                }
-
-            int odd = clique_sizes.size();
-            if (odd == S_size + 2) {
-                count++;
-                return;
+                dp = {temp.begin(), temp.end()};
             }
+        return dp;
+    };
 
-            for (int i = 0; i < odd; i++)
-                for (int j = 0; j < i; j++) {
-                    vector<int> merged;
-                    for (int k = 0; k < odd; k++)
-                        if (i != k && j != k) merged.emplace_back(clique_sizes[k]);
-                    merged.emplace_back(clique_sizes[i] + clique_sizes[j]);
+    unordered_set<vector<int>, Hash> good;
+    for (auto component_sizes : dfs(dfs)) {
+        if (!component_sizes[0]) component_sizes.erase(component_sizes.begin());
+        else inplace_merge(component_sizes.begin(), component_sizes.begin() + 1, component_sizes.end());
 
-                    self(self, merged);
+        int m = n - accumulate(component_sizes.begin(), component_sizes.end(), 0);
+        if (!m || component_sizes.size() < m + 2) continue;
+
+        unordered_set<vector<int>, Hash> dp{{}};
+        for (int size : component_sizes) {
+            unordered_set<vector<int>, Hash> temp;
+            for (auto &clique_sizes : dp) {
+                if (clique_sizes.size() < m + 2) {
+                    auto cs = clique_sizes;
+                    cs.insert(lower_bound(cs.begin(), cs.end(), size), size);
+                    temp.emplace(cs);
                 }
-        };
 
-        if (add) clique_sizes.emplace_back(add);
-        dfs3(dfs3, clique_sizes);
+                for (int i = 0; i < clique_sizes.size(); i++) {
+                    if (i && clique_sizes[i] == clique_sizes[i - 1]) continue;
+                    auto cs = clique_sizes;
+                    cs[i] += size;
+                    inplace_merge(cs.begin() + i, cs.begin() + i + 1, cs.end());
+                    temp.emplace(cs);
+                }
+            }
+            dp = temp;
+        }
+
+        for (auto &clique_sizes : dp)
+            if (clique_sizes.size() == m + 2 && all_of(clique_sizes.begin(), clique_sizes.end(), [](int size) { return size & 1; })) good.emplace(clique_sizes);
     }
-    cout << count;
+    cout << good.size();
 }
