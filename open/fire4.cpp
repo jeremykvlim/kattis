@@ -2,22 +2,45 @@
 using namespace std;
 
 template <typename T>
-struct FenwickTree {
-    vector<T> BIT;
-    function<T(T, T)> f;
-    T unit;
+struct JumpTable {
+    int lg;
+    vector<vector<int>> lift;
+    vector<vector<T>> sum;
 
-    void update(int i, T v) {
-        for (; i && i < BIT.size(); i += i & -i) BIT[i] = f(BIT[i], v);
+    JumpTable(int n, int m, const vector<int> &next, const vector<T> &w) {
+        lg = __lg(n) + 1;
+        lift.assign(lg, vector<int>(m));
+        lift[0] = next;
+        sum.assign(lg, vector<T>(m));
+        sum[0] = w;
+
+        for (int b = 1; b < lg; b++)
+            for (int i = 0; i < m; i++) {
+                int j = lift[b - 1][i];
+                lift[b][i] = lift[b - 1][j];
+                sum[b][i] = sum[b - 1][i] + sum[b - 1][j];
+            }
     }
 
-    T range_query(int i) {
-        T v = unit;
-        for (; i; i &= i - 1) v = f(v, BIT[i]);
-        return v;
+    pair<T, int> jump_up(int v, int k) const {
+        T cost = 0;
+        for (int b = 0; b < lg; b++)
+            if ((k >> b) & 1) {
+                cost += sum[b][v];
+                v = lift[b][v];
+            }
+        return {cost, v};
     }
 
-    FenwickTree(int n, function<T(T, T)> func, T unit) : BIT(n, unit), f(move(func)), unit(unit) {}
+    pair<T, int> jump_down(int v, T bound) const {
+        T cost = 0;
+        for (int b = lg - 1; ~b; b--)
+            if (lift[b][v] <= bound) {
+                cost += sum[b][v];
+                v = lift[b][v];
+            }
+        return {cost, v};
+    }
 };
 
 int main() {
@@ -27,43 +50,49 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<int> s(n + 1), e(n + 1), t(2 * n);
-    for (int i = 1; i <= n; i++) {
-        cin >> s[i] >> e[i];
+    vector<pair<int, int>> intervals, overnight;
+    while (n--) {
+        int s, e;
+        cin >> s >> e;
 
-        t[2 * (i - 1)] = s[i];
-        t[2 * (i - 1) + 1] = e[i];
+        if (s < e) intervals.emplace_back(s, e);
+        else overnight.emplace_back(s, e);
     }
-    sort(t.begin(), t.end());
-    t.erase(unique(t.begin(), t.end()), t.end());
-
-    for (int i = 1; i <= n; i++) {
-        s[i] = lower_bound(t.begin(), t.end(), s[i]) - t.begin() + 1;
-        e[i] = lower_bound(t.begin(), t.end(), e[i]) - t.begin() + 1;
+    if (overnight.empty()) {
+        cout << -1;
+        exit(0);
     }
 
-    vector<FenwickTree<int>> fws(__lg(n) + 1, FenwickTree<int>(2 * n + 1, [](int x, int y) { return max(x, y); }, 0));
-    for (int i = 1; i <= n; i++)
-        if (s[i] < e[i]) fws[0].update(s[i], e[i]);
-
-    for (int j = 1; j <= __lg(n); j++)
-        for (int i = 1; i <= 2 * n; i++)
-            fws[j].update(i, fws[j - 1].range_query(fws[j - 1].range_query(i)));
-
-    int least = INT_MAX;
-    for (int i = 1; i <= n; i++)
-        if (s[i] > e[i]) {
-            int r = e[i], curr = 2;
-            for (int j = __lg(n); ~j; j--) {
-                int l = fws[j].range_query(r);
-                if (l >= s[i]) continue;
-
-                r = l;
-                curr += 1 << j;
-            }
-
-            if (fws[0].range_query(r) >= s[i]) least = min(least, curr);
+    sort(intervals.begin(), intervals.end(), [&](auto p1, auto p2) { return p1.first != p2.first ? p1.first < p2.first : p1.second > p2.second; });
+    vector<int> l, r;
+    for (auto [s, e] : intervals)
+        if (r.empty() || e > r.back()) {
+            l.emplace_back(s);
+            r.emplace_back(e);
         }
 
+    int k = l.size();
+    vector<int> next(k + 1, k), w(k + 1, 1);
+    w[k] = 0;
+    for (int i = 0, j = 0; i < k; i++) {
+        j = max(j, i);
+        for (; j + 1 < k && l[j + 1] <= r[i]; j++);
+        if (j > i) next[i] = j;
+    }
+
+    JumpTable<int> jt(k + 1, k + 1, next, w);
+    int least = INT_MAX;
+    for (auto [s, e] : overnight) {
+        int i = upper_bound(l.begin(), l.end(), e) - l.begin() - 1;
+        if (!~i || r[i] <= e) continue;
+        if (r[i] >= s) {
+            least = min(least, 2);
+            continue;
+        }
+
+        auto [cost, v] = jt.jump_down(i, lower_bound(r.begin(), r.end(), s) - r.begin() - 1);
+        int u = next[v];
+        if (u < k && r[u] >= s) least = min(least, cost + 3);
+    }
     cout << (least == INT_MAX ? -1 : least);
 }
