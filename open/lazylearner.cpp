@@ -1,6 +1,38 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+struct FenwickTree {
+    vector<T> BIT;
+
+    void update(int i, T v) {
+        for (; i && i < BIT.size(); i += i & -i) BIT[i] += v;
+    }
+
+    T pref_sum(int i) {
+        T sum = 0;
+        for (; i; i &= i - 1) sum += BIT[i];
+        return sum;
+    }
+
+    T range_sum_query(int l, int r) {
+        if (l >= r) return 0;
+        return pref_sum(r) - pref_sum(l);
+    }
+
+    int lower_bound(T k) {
+        int i = 0;
+        for (int m = bit_ceil(BIT.size()); m; m >>= 1)
+            if (i + m < BIT.size() && BIT[i + m] < k) {
+                i += m;
+                k -= BIT[i];
+            }
+        return i + 1;
+    }
+
+    FenwickTree(int n) : BIT(n, 0) {}
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -34,18 +66,16 @@ int main() {
     };
 
     vector<vector<int>> queries(m * (m + 1) / 2);
-    vector<int> K(Q), r_max(m + 1, 0);
+    vector<int> k(Q), r_max(m + 1, 0);
     for (int q = 0; q < Q; q++) {
         int l, r;
-        cin >> l >> r >> K[q];
+        cin >> l >> r >> k[q];
 
         queries[index(l, r)].emplace_back(q);
         r_max[l] = max(r_max[l], r);
     }
 
-    int size = ceil(sqrt(n)), blocks = (n + size - 1) / size;
-    bitset<(int) 2e4> active;
-    vector<int> count(blocks), indices(Q, -1);
+    vector<int> indices(Q, -1);
     vector<vector<int>> add(m + 1);
     for (int l = 1; l <= m; l++) {
         if (!r_max[l]) continue;
@@ -64,25 +94,13 @@ int main() {
             skip:;
         }
 
-        active.reset();
-        fill(count.begin(), count.end(), 0);
+        FenwickTree<int> fw(n + 1);
         for (int r = l; r <= r_max[l]; r++) {
-            for (int i : add[r]) {
-                active[i] = true;
-                count[i / size]++;
-            }
+            for (int i : add[r]) fw.update(i + 1, 1);
 
-            for (int q : queries[index(l, r)]) {
-                int b = 0, k = K[q];
-                for (; b < blocks && k > count[b]; k -= count[b++]);
-                if (b != blocks)
-                    for (int i = b * size; i < min(n, (b + 1) * size); i++)
-                        if (active[i])
-                            if (!--k) {
-                                indices[q] = i;
-                                break;
-                            }
-            }
+            int total = fw.pref_sum(n);
+            for (int q : queries[index(l, r)])
+                if (k[q] <= total) indices[q] = fw.lower_bound(k[q]) - 1;
         }
 
         for (int r : undo) add[r].clear();
