@@ -2,45 +2,78 @@
 using namespace std;
 
 template <typename T>
-vector<T> min_plus_convolution(const vector<T> &convex, const vector<T> &arbitrary) {
-    if (arbitrary.empty() || convex.empty()) return {0};
-
-    int n = arbitrary.size() + convex.size() - 1, m = arbitrary.size(), lg = __lg(n) + 1;
-    if (n == 1) return {arbitrary[0] + convex[0]};
-
-    vector<int> indices(n);
-    auto cmp = [&] (int i, int j, int k) {
-        if (i < k) return false;
-        if (i - j >= convex.size()) return true;
-        return arbitrary[j] + convex[i - j] >= arbitrary[k] + convex[i - k];
-    };
-
-    vector<vector<int>> candidates(lg);
-    candidates[0].resize(m);
-    iota(candidates[0].begin(), candidates[0].end(), 0);
+vector<pair<T, int>> smawk(int n, int m, auto &&get, auto &&cmp) {
+    int lg = __lg(n);
+    vector<pair<T, int>> dp(n);
+    vector<int> cols(n), offset(lg + 1, 0);
     for (int b = 0; b < lg; b++) {
-        vector<int> temp{candidates[b][0]};
-        for (int i = 1; i < candidates[b].size(); i++) {
-            int j = candidates[b][i], s = temp.size();
-            for (; !temp.empty() && cmp((s - 1) << b, temp.back(), j); s = temp.size()) temp.pop_back();
-            if (s << b < n) temp.emplace_back(j);
-        }
-        swap(candidates[b], temp);
+        int size = 0;
+        auto push = [&](int col, int limit = 0) {
+            int temp = size;
+            for (; size > limit; size--) {
+                int row = (size << (b + 1)) - 1;
+                pair<T, int> p{get(row, col), col};
+                if (!cmp(dp[row], p)) break;
+                dp[row] = p;
+            }
+            if (size == n >> (b + 1)) return;
 
-        if (b + 1 < lg) candidates[b + 1] = candidates[b];
-        else {
-            indices[0] = candidates[b][0];
-            if (candidates[b].size() > 1 && cmp(0, candidates[b][0], candidates[b][1])) indices[0] = candidates[b][1];
-        }
+            if (size == temp) {
+                int row = ((size + 1) << (b + 1)) - 1;
+                dp[row] = {get(row, col), col};
+            }
+            cols[offset[b] + size++] = col;
+        };
+
+        if (!b)
+            for (int col = 0; col < m; col++) push(col);
+        else
+            for (int i = offset[b - 1]; i < offset[b]; i++) push(cols[i], (i - offset[b - 1]) >> 1);
+        offset[b + 1] = offset[b] + size;
     }
 
-    for (int b = lg - 1, p2 = 1 << b; ~b; b--, p2 >>= 1)
-        for (int i = p2, j = 0; i < n; i += p2 << 1, j--)
-            for (int r = i + p2 >= n ? m - 1 : indices[i + p2]; j < candidates[b].size() && candidates[b][j] <= r; j++)
-                if (cmp(i, indices[i], candidates[b][j])) indices[i] = candidates[b][j];
+    for (int b = lg; b; b--)
+        for (int row = (1 << b) - 1, i = offset[b - 1]; row < n; row += 2 << b) {
+            int stop = row + (1 << b) < n ? dp[row + (1 << b)].second : -1, col = cols[i];
+            dp[row] = {get(row, col), col};
+            if (col == stop) continue;
+            for (i++; i < offset[b]; i++) {
+                col = cols[i];
+                pair<T, int> p{get(row, col), col};
+                if (cmp(dp[row], p)) dp[row] = p;
+                if (col == stop) break;
+            }
+        }
+
+    for (int row = 0, col = 0; row < n; row += 2) {
+        int stop = row + 1 < n ? dp[row + 1].second : -1;
+        dp[row] = {get(row, col), col};
+        if (col == stop) continue;
+        for (col++; col < m; col++) {
+            pair<T, int> p{get(row, col), col};
+            if (cmp(dp[row], p)) dp[row] = p;
+            if (col == stop) break;
+        }
+    }
+    return dp;
+}
+
+template <typename T>
+vector<T> max_plus_convolve(const vector<T> &concave, const vector<T> &arbitrary) {
+    int da = concave.size(), db = arbitrary.size(), n = da + db - 1;
+
+    auto get = [&](int row, int col) -> T {
+        if (!(col <= row && row < col + da)) return numeric_limits<T>::lowest();
+        return arbitrary[col] + concave[row - col];
+    };
+
+    auto cmp = [&](const auto &p1, const auto &p2) {
+        return p1.first <= p2.first;
+    };
+    auto dp = smawk<T>(n, db, get, cmp);
 
     vector<T> c(n);
-    for (int i = 0; i < n; i++) c[i] = arbitrary[indices[i]] + convex[i - indices[i]];
+    for (int i = 0; i < n; i++) c[i] = dp[i].first;
     return c;
 }
 
@@ -51,41 +84,41 @@ int main() {
     int n, k;
     cin >> n >> k;
 
+    auto total = 1LL;
     vector<vector<int>> jewels(301);
     while (n--) {
         int s, v;
         cin >> s >> v;
 
-        jewels[s].emplace_back(v);
-    }
-
-    vector<long long> dp(k + 1, -1e18), temp(k + 1, -1e18);
-    dp[0] = 0;
-    for (int s = 1; s <= 300; s++) {
-        int steal = min((int) jewels[s].size(), k / s);
-        if (!steal) continue;
-
-        sort(jewels[s].rbegin(), jewels[s].rend());
-        vector<long long> pref(steal + 1, 0);
-        for (int i = 0; i < steal; i++) pref[i + 1] = pref[i] + jewels[s][i];
-
-        vector<long long> a(steal + 1);
-        for (int i = 0; i <= steal; i++) a[i] = -pref[i];
-
-        fill(temp.begin(), temp.end(), -1e18);
-        for (int r = 0; r < s && r <= k; r++) {
-            int size = (k - r) / s + 1;
-            vector<long long> b(size);
-            for (int i = 0; i < size; i++) b[i] = -dp[i * s + r];
-
-            auto c = min_plus_convolution(a, b);
-            for (int i = 0; i < size; i++) temp[i * s + r] = -c[i];
+        if (s <= k) {
+            jewels[s].emplace_back(v);
+            total += v;
         }
-        dp = temp;
     }
 
-    for (int i = 1; i <= k; i++) {
-        dp[i] = max(dp[i], dp[i - 1]);
-        cout << dp[i] << " ";
+    vector<long long> dp(k + 1, 0), concave, arbitrary(k + 1);
+    for (int s = 1; s <= min(k, 300); s++) {
+        if (jewels[s].empty()) continue;
+
+        int steal = min((int) jewels[s].size(), k / s);
+        partial_sort(jewels[s].begin(), jewels[s].begin() + steal, jewels[s].end(), greater<>());
+        jewels[s].resize(steal);
+        concave.resize(steal + 1);
+        concave[0] = 0;
+        for (int i = 0; i < steal; i++) concave[i + 1] = concave[i] + jewels[s][i];
+
+        for (int r = 0, i = 0; r < s; r++) {
+            auto delta = total * r;
+            for (int j = r; j <= k; j += s) arbitrary[i++] = dp[j] + delta;
+        }
+
+        auto c = max_plus_convolve(concave, arbitrary);
+
+        for (int r = 0, i = 0; r < s; r++) {
+            auto delta = total * r;
+            for (int j = r; j <= k; j += s) dp[j] = c[i++] - delta;
+        }
     }
+
+    for (int i = 1; i <= k; i++) cout << dp[i] << " ";
 }
