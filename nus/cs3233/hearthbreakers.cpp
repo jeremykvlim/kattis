@@ -17,77 +17,58 @@ int main() {
     }
     sort(S.begin(), S.end());
 
+    int biggest = S.back();
+    if (biggest == 1) {
+        cout << n;
+        exit(0);
+    }
+
     vector<int> distinct, freq;
     for (int i = 0, j = 1; i < n; i = j++) {
         for (; j < n && S[i] == S[j]; j++);
         distinct.emplace_back(S[i]);
         freq.emplace_back(j - i);
     }
-    int s = distinct.size();
 
-    S.resize(s);
-    vector<int> f(s);
-    for (int i = 0; i < s; i++) {
-        S[i] = distinct[s - 1 - i];
-        f[i] = freq[s - 1 - i];
-    }
+    auto f = [&](int size) {
+        int i = lower_bound(distinct.begin(), distinct.end(), size) - distinct.begin();
+        return i < distinct.size() && distinct[i] == size ? freq[i] : 0;
+    };
+    int one = f(1), two = f(2), three = f(3);
+    n -= one;
 
-    if (s == 1 && S[0] == 1) {
-        cout << n;
-        exit(0);
-    }
-
-    auto valid = [&](long long m) {
-        int msb = 63 - countl_zero((unsigned long long) m);
-        if (s > 2 * (msb + 1)) return false;
-
-        vector<pair<long long, long long>> rocks{{m, 1}};
-        for (int i = 0, j = 0; i < s; i++) {
-            long long need = f[i];
-            while (need) {
-                if (j >= rocks.size()) return false;
-
-                auto &[size, count] = rocks[j];
-                if (size < S[i]) return false;
-                if (size == S[i]) {
-                    auto used = min(count, need);
-                    count -= used;
-                    need -= used;
-                    if (!count) j++;
+    auto calc = [&](int q) {
+        for (auto d = 1LL; q * d <= 1e18; d *= 2) {
+            int rocks = n;
+            long long l = max(0LL, sum - q * d), r = min(d - 1, (long long) 1e18 - q * d), total = 0, used = 0;
+            for (int x = 1;; x *= 2) {
+                int a = q / x, b = q % x;
+                if (a >= 3) {
+                    int fl = f(a), fr = f(a + 1);
+                    l = max(l, fr - b * d + total - a * used);
+                    r = min(r, (x - b) * d + total - (a + 1) * used - fl);
+                    if (l > r) goto next;
+                    rocks -= fl + fr;
+                    total += (long long) a * fl + (long long) (a + 1) * fr;
+                    used = 2 * (used + fl + fr);
+                } else if (a == 2) {
+                    l = max(l, three - b * d + total - 2 * used);
+                    if (two + three > x * d - used) goto next;
+                    rocks -= two + three;
+                    break;
                 } else {
-                    auto temp = count;
-                    count = 0;
-                    if (size == 1) return false;
-                    if (!(size & 1)) {
-                        auto half = size / 2, c = temp * 2;
-
-                        if (!rocks.empty() && rocks.back().first == half) rocks.back().second += c;
-                        else rocks.emplace_back(half, c);
-                    } else {
-                        auto floor = size / 2, ceil = floor + 1;
-
-                        if (!rocks.empty() && rocks.back().first == ceil) rocks.back().second += temp;
-                        else rocks.emplace_back(ceil, temp);
-
-                        if (!rocks.empty() && rocks.back().first == floor) rocks.back().second += temp;
-                        else rocks.emplace_back(floor, temp);
-                    }
-                    j++;
+                    l = max(l, two - b * d + total - used);
+                    rocks -= two;
+                    break;
                 }
             }
+
+            if (l <= r && !rocks) return q * d + l;
+            next:;
         }
-        return true;
+        return LLONG_MAX;
     };
-
-    auto m = LLONG_MAX;
-    unordered_set<long long> seen;
-    for (int i = 1; i <= n << 1; i <<= 1) {
-        auto l = (long long) (S[0] - 1) * i, r = (long long) S[0] * i;
-        for (int j = 0; j < i; j++)
-            for (auto m0 : {l + j, r + j})
-                if (sum <= m0 && m0 < m && seen.emplace(m0).second && valid(m0)) m = m0;
-    }
-
-    if (m <= 1e18) cout << m;
-    else cout << "IMPOSSIBLE";
+    auto m = min(calc(biggest), calc(biggest - 1));
+    if (m == LLONG_MAX) cout << "IMPOSSIBLE";
+    else cout << m;
 }
