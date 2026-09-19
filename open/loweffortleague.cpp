@@ -2,74 +2,61 @@
 using namespace std;
 
 template <typename T>
-struct AffineFunction {
-    T m, c;
-    int i;
-    mutable T cutoff;
+vector<pair<T, int>> smawk(int n, int m, auto &&get, auto &&cmp) {
+    int lg = __lg(n);
+    vector<pair<T, int>> dp(n);
+    vector<int> cols(n), offset(lg + 1, 0);
+    for (int b = 0; b < lg; b++) {
+        int size = 0;
+        auto push = [&](int col, int limit = 0) {
+            int temp = size;
+            for (; size > limit; size--) {
+                int row = (size << (b + 1)) - 1;
+                pair<T, int> p{get(row, col), col};
+                if (!cmp(dp[row], p)) break;
+                dp[row] = p;
+            }
+            if (size == n >> (b + 1)) return;
 
-    AffineFunction(T m = 0, T c = numeric_limits<T>::lowest() / 4, int i = -1) : m(m), c(c), i(i), cutoff(0) {}
+            if (size == temp) {
+                int row = ((size + 1) << (b + 1)) - 1;
+                dp[row] = {get(row, col), col};
+            }
+            cols[offset[b] + size++] = col;
+        };
 
-    T operator()(T x) const {
-        return m * x + c;
+        if (!b)
+            for (int col = 0; col < m; col++) push(col);
+        else
+            for (int i = offset[b - 1]; i < offset[b]; i++) push(cols[i], (i - offset[b - 1]) >> 1);
+        offset[b + 1] = offset[b] + size;
     }
 
-    bool operator<(const AffineFunction &f) const {
-        return m < f.m;
-    }
-
-    bool operator<(T x) const {
-        return cutoff < x;
-    }
-};
-
-template <typename T>
-struct DynamicHull : multiset<AffineFunction<T>, less<>> {
-    T div(T a, T b) {
-        if constexpr (!is_floating_point_v<T>) return a / b - ((a ^ b) < 0 && a % b);
-        else return a / b;
-    }
-
-    bool update(auto it_l, auto it_r) {
-        if (it_r == this->end()) {
-            it_l->cutoff = numeric_limits<T>::max();
-            return false;
+    for (int b = lg; b; b--)
+        for (int row = (1 << b) - 1, i = offset[b - 1]; row < n; row += 2 << b) {
+            int stop = row + (1 << b) < n ? dp[row + (1 << b)].second : -1, col = cols[i];
+            dp[row] = {get(row, col), col};
+            if (col == stop) continue;
+            for (i++; i < offset[b]; i++) {
+                col = cols[i];
+                pair<T, int> p{get(row, col), col};
+                if (cmp(dp[row], p)) dp[row] = p;
+                if (col == stop) break;
+            }
         }
 
-        if (it_l->m == it_r->m) it_l->cutoff = it_l->c > it_r->c ? numeric_limits<T>::max() : numeric_limits<T>::lowest();
-        else it_l->cutoff = div(it_r->c - it_l->c, it_l->m - it_r->m);
-        return it_l->cutoff >= it_r->cutoff;
-    }
-
-    void add(const AffineFunction<T> &f) {
-        auto it = this->insert(f);
-        for (auto it_r = next(it); update(it, it_r); it_r = this->erase(it_r));
-
-        if (it != this->begin()) {
-            auto it_l = prev(it);
-            if (update(it_l, it)) {
-                this->erase(it);
-                it = it_l;
-                update(it, next(it));
-            } else it = it_l;
-        }
-
-        while (it != this->begin()) {
-            auto it_l = prev(it);
-            if (it_l->cutoff < it->cutoff) break;
-            update(it_l, this->erase(it));
-            it = it_l;
+    for (int row = 0, col = 0; row < n; row += 2) {
+        int stop = row + 1 < n ? dp[row + 1].second : -1;
+        dp[row] = {get(row, col), col};
+        if (col == stop) continue;
+        for (col++; col < m; col++) {
+            pair<T, int> p{get(row, col), col};
+            if (cmp(dp[row], p)) dp[row] = p;
+            if (col == stop) break;
         }
     }
-
-    void add(T m, T c, int i = -1) {
-        add(AffineFunction<T>(m, c, i));
-    }
-
-    pair<T, int> query(T x) {
-        auto f = *this->lower_bound(x);
-        return {f(x), f.i};
-    }
-};
+    return dp;
+}
 
 int main() {
     ios::sync_with_stdio(false);
@@ -89,16 +76,17 @@ int main() {
         int m = l + (r - l) / 2;
         auto left = self(self, l, m), right = self(self, m, r);
 
-        auto update = [&](const auto &v1, const auto &v2) {
-            vector<long long> pref(v1.size() + 1, 1e18);
-            for (int i = 0; i < v1.size(); i++) pref[i + 1] = min(pref[i], dp[v1[i]]);
+        auto update = [&](const vector<int> &v1, const vector<int> &v2) {
+            auto get = [&](int row, int col) {
+                int d = max(0, s[v1[col]] - s[v2[row]]);
+                return dp[v1[col]] + (long long) d * d;
+            };
 
-            DynamicHull<long long> dh;
-            dh.add(0, -1e18);
-            for (int i = v1.size() - 1, j = v2.size() - 1; ~j; j--) {
-                for (; ~i && s[v1[i]] > s[v2[j]]; i--) dh.add(2 * s[v1[i]], -dp[v1[i]] - (long long) s[v1[i]] * s[v1[i]]);
-                temp[v2[j]] = dp[v2[j]] + min(pref[i + 1], (long long) s[v2[j]] * s[v2[j]] - dh.query(s[v2[j]]).first);
-            }
+            auto cmp = [&](const auto &p1, const auto &p2) {
+                return p1 > p2;
+            };
+            auto rows = smawk<long long>(v2.size(), v1.size(), get, cmp);
+            for (int i = 0; i < v2.size(); i++) temp[v2[i]] = dp[v2[i]] + rows[i].first;
         };
         update(right, left);
         update(left, right);
