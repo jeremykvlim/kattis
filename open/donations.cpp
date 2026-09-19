@@ -6,15 +6,31 @@ int main() {
     cin.tie(nullptr);
 
     int n;
-    double x, y, z, c, r;
+    long long x, y, z, c, r;
     cin >> n >> x >> y >> z >> c >> r;
 
-    vector<vector<double>> dp(2, vector<double>(n + 1, 0));
-    dp[0][0] = x;
+    int limit = z / y;
+    auto credit = c / 100.L, interest = 1 + r / 100.L;
+    vector<long double> dp(n + 1, -1e20), temp(n + 1);
+    dp[0] = x;
     for (int i = 0; i < n; i++) {
-        dp[(i & 1) ^ 1] = vector<double>(n + 1, 0);
-        for (int j = i; j <= n; j++)
-            for (int k = j; k <= n; k++) dp[(i & 1) ^ 1][k] = max(dp[(i & 1) ^ 1][k], (dp[i & 1][j] - (k - j) * y + max(0., (k - j) * y - z) * c / 100.) * (1 + r / 100.));
+        fill(temp.begin(), temp.end(), -1e20);
+        deque<int> mono;
+        auto most = -1e20L;
+        for (int j = i; j <= n; j++) {
+            int k = j - limit - 1;
+            if (k >= i) most = max(most, dp[k] + (1 - credit) * k * y);
+            while (!mono.empty() && mono.front() < j - limit) mono.pop_front();
+
+            auto value = dp[j] + j * y;
+            while (!mono.empty() && dp[mono.back()] + mono.back() * y <= value) mono.pop_back();
+            mono.emplace_back(j);
+
+            auto curr = dp[mono.front()] + (mono.front() - j) * y;
+            if (most != -1e20) curr = max(curr, most - (1 - credit) * j * y - credit * z);
+            temp[j] = curr * interest;
+        }
+        dp = temp;
     }
-    cout << fixed << setprecision(6) << dp[n & 1][n];
+    cout << fixed << setprecision(6) << dp[n];
 }
