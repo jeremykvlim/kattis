@@ -5,71 +5,68 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    vector<string> lines;
-    unordered_map<int, int> p1, p2;
-    vector<int> match;
-    int total = 0, second = 0;
-    auto read = [&](unordered_map<int, int> &program, int l, int &r) {
-        string s;
-        while (getline(cin, s)) {
-            if (s.empty()) {
-                lines.emplace_back(s);
-                match.emplace_back(0);
-                second = total++;
-                break;
-            }
+    auto read = [&]() -> pair<vector<string>, vector<int>> {
+        vector<string> lines;
+        vector<int> labels;
+        unordered_map<int, int> indices;
+        string line;
+        while (getline(cin, line) && !line.empty()) {
+            if (line.substr(0, 5) != "     ") indices[stoi(line.substr(0, 5))] = lines.size();
 
-            if (s.substr(0, 5) != "     ") program[stoi(s.substr(0, 5))] = total;
-            s = s.substr(6);
+            auto s = line.substr(6);
             s.erase(remove_if(s.begin(), s.end(), ::isspace), s.end());
 
-            int i = s.size() - 1;
-            while (i && isdigit(s[i])) i--;
-            int label = (isdigit(s[++i]) ? stoi(s.substr(i)) : 0);
+            int i = s.size();
+            for (; i && isdigit(s[i - 1]); i--);
 
+            int label = i < s.size() ? stoi(s.substr(i)) : -1;
             if (s.substr(0, i) == "goto" || s.substr(0, 3) == "if(" && s.substr(i - 5, 5) == ")goto") {
                 s.resize(i);
-                match.emplace_back(label);
-            } else match.emplace_back(0);
+                labels.emplace_back(label);
+            } else labels.emplace_back(-1);
 
             lines.emplace_back(s);
-            if (lines[total++] == "stop" && second) break;
         }
+        for (int &label : labels)
+            if (~label) label = indices[label];
 
-        for (int i = l; i < r; i++)
-            if (match[i]) match[i] = program[match[i]];
+        return {lines, labels};
     };
-    read(p1, 0, second);
-    read(p2, second, total);
+    auto [lines1, labels1] = read();
+    auto [lines2, labels2] = read();
 
-    vector<bool> cycle(total, false);
-    auto dfs = [&](auto &&self, int v) -> bool {
-        if (cycle[v]) return true;
-        if (lines[v] != "goto") return false;
+    auto resolve = [&](const auto &lines, const auto &labels) {
+        int n = lines.size();
+        vector<int> state(n, 0), dest(n, -2);
+        auto dfs = [&](auto &&self, int v) -> int {
+            if (lines[v] != "goto") return dest[v] = v;
+            if (state[v] == 1) return -1;
+            if (state[v] == 2) return dest[v];
 
-        cycle[v] = true;
-        if (self(self, match[v])) return true;
-        return cycle[v] = false;
+            state[v] = 1;
+            dest[v] = self(self, labels[v]);
+            state[v] = 2;
+            return dest[v];
+        };
+        for (int i = 0; i < n; i++)
+            if (dest[i] == -2) dfs(dfs, i);
+
+        return dest;
     };
-    for (int i = 0; i < total; i++) dfs(dfs, i);
+    auto dest1 = resolve(lines1, labels1), dest2 = resolve(lines2, labels2);
 
-    vector<vector<bool>> visited(total, vector<bool>(total, false));
-    auto equiv = [&](auto &&self, int v, int u) {
-        if (visited[v][u]) return true;
-        visited[v][u] = true;
+    vector<vector<bool>> visited(lines1.size(), vector<bool>(lines2.size(), false));
+    auto equiv = [&](auto &&self, int u = 0, int v = 0) -> bool {
+        u = ~u ? dest1[u] : -1;
+        v = ~v ? dest2[v] : -1;
 
-        if (cycle[v] && cycle[u]) return true;
-        if (cycle[v] != cycle[u]) return false;
-
-        if (lines[v] == "goto") return self(self, match[v], u);
-        if (lines[u] == "goto") return self(self, v, match[u]);
-
-        if (lines[v] != lines[u]) return false;
-        if (lines[v] == "stop") return true;
-
-        if (!self(self, v + 1, u + 1) || match[v] && !self(self, match[v], match[u])) return false;
+        if (!~u || !~v) return u == v;
+        if (visited[u][v]) return true;
+        if (lines1[u] != lines2[v]) return false;
+        visited[u][v] = true;
+        if (lines1[u] == "stop") return true;
+        if (!self(self, u + 1, v + 1) || (~labels1[u] && !self(self, labels1[u], labels2[v]))) return false;
         return true;
     };
-
-    cout << (equiv(equiv, 0, second + 1) ? "The programs are equivalent." : "The programs are not equivalent.");
+    cout << (equiv(equiv) ? "The programs are equivalent." : "The programs are not equivalent.");
 }
