@@ -1,6 +1,83 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+pair<T, vector<T>> linear_program_solution(const vector<vector<T>> &A, const vector<T> &b, const vector<T> &c) {
+    int m = b.size(), n = c.size();
+
+    vector<vector<T>> tableau(m + 2, vector<T>(n + 2));
+    vector<int> basic(m), non_basic(n + 1);
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) tableau[i][j] = A[i][j];
+        basic[i] = n + i;
+        tableau[i][n] = -1;
+        tableau[i][n + 1] = b[i];
+    }
+
+    iota(non_basic.begin(), non_basic.end(), 0);
+    for (int j = 0; j < n; j++) tableau[m][j] = -c[j];
+    non_basic[n] = -1;
+    tableau[m + 1][n] = 1;
+
+    auto pivot = [&](int row, int col) {
+        T inv = 1 / tableau[row][col];
+        for (int i = 0; i < m + 2; i++)
+            if (i != row && fabs(tableau[i][col]) > 1e-8) {
+                T temp = tableau[i][col] * inv;
+                for (int j = 0; j < n + 2; j++) tableau[i][j] -= tableau[row][j] * temp;
+                tableau[i][col] = tableau[row][col] * temp;
+            }
+        for (int i = 0; i < m + 2; i++)
+            if (i != row) tableau[i][col] *= -inv;
+        for (int j = 0; j < n + 2; j++)
+            if (j != col) tableau[row][j] *= inv;
+        tableau[row][col] = inv;
+        swap(basic[row], non_basic[col]);
+    };
+
+    auto simplex = [&](int phase) -> bool {
+        for (int r = m + (phase == 1);;) {
+            int col = -1;
+            for (int j = 0; j <= n; j++) {
+                if (phase == 2 && non_basic[j] == -1) continue;
+                if (col == -1 || make_pair(tableau[r][j], non_basic[j]) < make_pair(tableau[r][col], non_basic[col])) col = j;
+            }
+            if (tableau[r][col] >= -1e-8) return true;
+
+            int row = -1;
+            for (int i = 0; i < m; i++) {
+                if (tableau[i][col] <= 1e-8) continue;
+                if (row == -1 || make_pair(tableau[i][n + 1] / tableau[i][col], basic[i]) < make_pair(tableau[row][n + 1] / tableau[row][col], basic[row])) row = i;
+            }
+            if (row == -1) return false;
+
+            pivot(row, col);
+        }
+    };
+
+    int row = 0;
+    for (int i = 1; i < m; i++)
+        if (tableau[i].back() < tableau[row].back()) row = i;
+
+    if (tableau[row][n + 1] <= -1e-8) {
+        pivot(row, n);
+        if (!simplex(1) || tableau[m + 1][n + 1] < -1e-8) return {-numeric_limits<T>::infinity(), {}};
+        for (int i = 0; i < m; i++)
+            if (basic[i] == -1) {
+                int col = -1;
+                for (int j = 0; j <= n; j++)
+                    if (col == -1 || make_pair(tableau[i][j], non_basic[j]) < make_pair(tableau[i][col], non_basic[col])) col = j;
+                pivot(i, col);
+            }
+    }
+    if (!simplex(2)) return {numeric_limits<T>::infinity(), {}};
+
+    vector<T> solution(n, 0);
+    for (int i = 0; i < m; i++)
+        if (basic[i] < n) solution[basic[i]] = tableau[i][n + 1];
+    return {tableau[m][n + 1], solution};
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -12,37 +89,23 @@ int main() {
         int n;
         cin >> n;
 
-        vector<double> x(n), y(n), z(n), p(n);
-        for (int i = 0; i < n; i++) cin >> x[i] >> y[i] >> z[i] >> p[i];
+        vector<array<double, 4>> ships(n);
+        for (auto &[x, y, z, p] : ships) cin >> x >> y >> z >> p;
 
-        double l = 0, r = INT_MAX, m;
-        while (l + 1e-13 < r && l + l * 1e-13 < r) {
-            m = l + (r - l) / 2;
-
-            vector<vector<vector<double>>> ships(2, vector<vector<double>>(2, vector<double>(2, DBL_MAX)));
-            for (int i = 0; i < n; i++)
-                for (int X = 0; X < 2; X++)
-                    for (int Y = 0; Y < 2; Y++)
-                        for (int Z = 0; Z < 2; Z++) ships[X][Y][Z] = min(ships[X][Y][Z], m * p[i] + (X ? x[i] : -x[i]) + (Y ? y[i] : -y[i]) + (Z ? z[i] : -z[i]));
-
-            double even = 0, odd = 0;
-            for (int X = 0; X < 2; X++)
-                for (int Y = 0; Y < 2; Y++)
-                    for (int Z = 0; Z < 2; Z++)
-                        if (!((X + Y + Z) & 1)) {
-                            if (ships[X][Y][Z] + ships[!X][!Y][!Z] < 0) goto next;
-
-                            even += ships[X][Y][Z];
-                            odd += ships[!X][!Y][!Z];
-                        }
-
-            if (even >= 0 && odd >= 0) r = m;
-            else {
-                next:;
-                l = m;
+        int m = 8 * n;
+        vector<vector<double>> A(4, vector<double>(m, 0));
+        vector<double> b{0, 0, 0, 1}, c(m, 0);
+        for (int i = 0; i < n; i++) {
+            auto [x, y, z, p] = ships[i];
+            for (int mask = 0; mask < 8; mask++) {
+                int j = 8 * i + mask, sx = (mask & 1) ? 1 : -1, sy = (mask & 2) ? 1 : -1, sz = (mask & 4) ? 1 : -1;
+                A[0][j] = sx;
+                A[1][j] = sy;
+                A[2][j] = sz;
+                A[3][j] = p;
+                c[j] = sx * x + sy * y + sz * z;
             }
         }
-
-        cout << fixed << setprecision(6) << "Case #" << t << ": " << l << "\n";
+        cout << fixed << setprecision(6) << "Case #" << t << ": " << linear_program_solution(A, b, c).first << "\n";
     }
 }

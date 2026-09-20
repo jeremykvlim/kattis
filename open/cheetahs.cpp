@@ -1,6 +1,83 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+pair<T, vector<T>> linear_program_solution(const vector<vector<T>> &A, const vector<T> &b, const vector<T> &c) {
+    int m = b.size(), n = c.size();
+
+    vector<vector<T>> tableau(m + 2, vector<T>(n + 2));
+    vector<int> basic(m), non_basic(n + 1);
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n; j++) tableau[i][j] = A[i][j];
+        basic[i] = n + i;
+        tableau[i][n] = -1;
+        tableau[i][n + 1] = b[i];
+    }
+
+    iota(non_basic.begin(), non_basic.end(), 0);
+    for (int j = 0; j < n; j++) tableau[m][j] = -c[j];
+    non_basic[n] = -1;
+    tableau[m + 1][n] = 1;
+
+    auto pivot = [&](int row, int col) {
+        T inv = 1 / tableau[row][col];
+        for (int i = 0; i < m + 2; i++)
+            if (i != row && fabs(tableau[i][col]) > 1e-8) {
+                T temp = tableau[i][col] * inv;
+                for (int j = 0; j < n + 2; j++) tableau[i][j] -= tableau[row][j] * temp;
+                tableau[i][col] = tableau[row][col] * temp;
+            }
+        for (int i = 0; i < m + 2; i++)
+            if (i != row) tableau[i][col] *= -inv;
+        for (int j = 0; j < n + 2; j++)
+            if (j != col) tableau[row][j] *= inv;
+        tableau[row][col] = inv;
+        swap(basic[row], non_basic[col]);
+    };
+
+    auto simplex = [&](int phase) -> bool {
+        for (int r = m + (phase == 1);;) {
+            int col = -1;
+            for (int j = 0; j <= n; j++) {
+                if (phase == 2 && non_basic[j] == -1) continue;
+                if (col == -1 || make_pair(tableau[r][j], non_basic[j]) < make_pair(tableau[r][col], non_basic[col])) col = j;
+            }
+            if (tableau[r][col] >= -1e-8) return true;
+
+            int row = -1;
+            for (int i = 0; i < m; i++) {
+                if (tableau[i][col] <= 1e-8) continue;
+                if (row == -1 || make_pair(tableau[i][n + 1] / tableau[i][col], basic[i]) < make_pair(tableau[row][n + 1] / tableau[row][col], basic[row])) row = i;
+            }
+            if (row == -1) return false;
+
+            pivot(row, col);
+        }
+    };
+
+    int row = 0;
+    for (int i = 1; i < m; i++)
+        if (tableau[i].back() < tableau[row].back()) row = i;
+
+    if (tableau[row][n + 1] <= -1e-8) {
+        pivot(row, n);
+        if (!simplex(1) || tableau[m + 1][n + 1] < -1e-8) return {-numeric_limits<T>::infinity(), {}};
+        for (int i = 0; i < m; i++)
+            if (basic[i] == -1) {
+                int col = -1;
+                for (int j = 0; j <= n; j++)
+                    if (col == -1 || make_pair(tableau[i][j], non_basic[j]) < make_pair(tableau[i][col], non_basic[col])) col = j;
+                pivot(i, col);
+            }
+    }
+    if (!simplex(2)) return {numeric_limits<T>::infinity(), {}};
+
+    vector<T> solution(n, 0);
+    for (int i = 0; i < m; i++)
+        if (basic[i] < n) solution[basic[i]] = tableau[i][n + 1];
+    return {tableau[m][n + 1], solution};
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -8,35 +85,23 @@ int main() {
     int n;
     cin >> n;
 
-    if (n == 1) {
-        cout << "0\n";
-        exit(0);
-    }
-
-    vector<int> t(n), v(n);
-    int last = 0;
+    double last = 0;
+    vector<double> t(n), v(n);
     for (int i = 0; i < n; i++) {
         cin >> t[i] >> v[i];
 
         last = max(last, t[i]);
     }
 
-    auto len = [&](auto time) {
-        double longest = 0, shortest = 1e20;
-        for (int i = 0; i < n; i++) {
-            longest = max(longest, (double) (time - t[i]) * v[i]);
-            shortest = min(shortest, (double) (time - t[i]) * v[i]);
-        }
-        return longest - shortest;
-    };
-
-    double l = last, r = 1e11, mid1, mid2;
-    while (l + 1e-12 < r && l + l * 1e-12 < r) {
-        mid1 = l + (r - l) / 3, mid2 = r - (r - l) / 3;
-
-        if (len(mid1) < len(mid2)) r = mid2;
-        else l = mid1;
+    vector<vector<double>> A(3, vector<double>(2 * n, 0));
+    vector<double> b{0, 1, -1}, c(2 * n);
+    for (int i = 0; i < n; i++) {
+        A[0][i] = -v[i];
+        A[0][i + n] = v[i];
+        A[1][i] = 1;
+        A[2][i + n] = -1;
+        c[i] = v[i] * (last - t[i]);
+        c[i + n] = v[i] * (t[i] - last);
     }
-
-    cout << fixed << setprecision(3) << len((mid1 + mid2) / 2);
+    cout << fixed << setprecision(2) << linear_program_solution(A, b, c).first;
 }

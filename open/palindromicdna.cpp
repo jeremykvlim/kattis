@@ -26,8 +26,9 @@ struct TwoSATSystem {
 
     void add_at_most_one(const vector<int> &literals) {
         if (literals.size() < 2) return;
+
         int prev = ~literals[0];
-        for (int i = 2; i < (int)literals.size(); i++) {
+        for (int i = 2; i < literals.size(); i++) {
             int curr = add_variable();
             add_clause(prev, ~literals[i]);
             add_clause(prev, curr);
@@ -43,17 +44,17 @@ struct TwoSATSystem {
         auto bfs = [&](int s) {
             q = {s};
             assignment[s >> 1] = !(s & 1);
-            for (int i = 0; i < (int)q.size(); i++) {
+            for (int i = 0; i < q.size(); i++) {
                 int v = q[i];
-                for (int u : adj_list[v]) {
+                for (int u : adj_list[v])
                     if (assignment[u >> 1] == -1) {
                         assignment[u >> 1] = !(u & 1);
                         q.emplace_back(u);
                     } else if (assignment[u >> 1] == (u & 1)) return false;
-                }
             }
             return true;
         };
+
         for (int i = 0; i < n; i++) {
             if (assignment[i] != -1 || bfs(i << 1 | 1)) continue;
             for (int v : q) assignment[v >> 1] = -1;

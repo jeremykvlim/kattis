@@ -1,6 +1,69 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+struct TwoSATSystem {
+    int n;
+    vector<vector<int>> adj_list;
+
+    TwoSATSystem(int n = 0) : n(n), adj_list(2 * n) {}
+
+    int add_variable() {
+        adj_list.emplace_back();
+        adj_list.emplace_back();
+        return n++;
+    }
+
+    void add_clause(int i, int j) {
+        i = max(i << 1, -(i << 1 | 1));
+        j = max(j << 1, -(j << 1 | 1));
+        adj_list[i ^ 1].emplace_back(j);
+        adj_list[j ^ 1].emplace_back(i);
+    }
+
+    void assign(int i) {
+        add_clause(i, i);
+    }
+
+    void add_at_most_one(const vector<int> &literals) {
+        if (literals.size() < 2) return;
+
+        int prev = ~literals[0];
+        for (int i = 2; i < literals.size(); i++) {
+            int curr = add_variable();
+            add_clause(prev, ~literals[i]);
+            add_clause(prev, curr);
+            add_clause(~literals[i], curr);
+            prev = ~curr;
+        }
+        add_clause(prev, ~literals[1]);
+    }
+
+    pair<bool, vector<int>> solve() {
+        deque<int> q;
+        vector<int> assignment(n, -1);
+        auto bfs = [&](int s) {
+            q = {s};
+            assignment[s >> 1] = !(s & 1);
+            for (int i = 0; i < q.size(); i++) {
+                int v = q[i];
+                for (int u : adj_list[v])
+                    if (assignment[u >> 1] == -1) {
+                        assignment[u >> 1] = !(u & 1);
+                        q.emplace_back(u);
+                    } else if (assignment[u >> 1] == (u & 1)) return false;
+            }
+            return true;
+        };
+
+        for (int i = 0; i < n; i++) {
+            if (assignment[i] != -1 || bfs(i << 1 | 1)) continue;
+            for (int v : q) assignment[v >> 1] = -1;
+            if (!bfs(i << 1)) return {false, {}};
+        }
+        return {true, assignment};
+    }
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -8,63 +71,64 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<array<bool, 3>> types(n, {true, true, true});
-    vector<vector<int>> adj_list(n);
+    auto index = [&](int i) {
+        return 2 * i;
+    };
+
+    TwoSATSystem sat(2 * n);
     while (m--) {
         int i, j;
         char c;
         cin >> i >> j >> c;
+        i--;
+        j--;
 
-        if (c != 'x') types[i - 1][0] = types[j - 1][0] = false;
+        int ui = index(i), vi = index(i) + 1, uj = index(j), vj = index(j) + 1;
+        if (i == j) {
+            if (c == 'x') {
+                sat.assign(~ui);
+                sat.assign(~vi);
+            } else if (c == '-') {
+                sat.assign(~ui);
+                sat.assign(vi);
+            } else if (c == '=') {
+                sat.assign(ui);
+                sat.assign(vi);
+            } else {
+                sat.assign(ui);
+                sat.assign(~vi);
+            }
+            continue;
+        }
 
-        if (c == '-') types[i - 1][1] = types[j - 1][1] = false;
-        else if (c == '+') types[i - 1][2] = types[j - 1][2] = false;
-        else if (c == '=') {
-            adj_list[i - 1].emplace_back(j - 1);
-            adj_list[j - 1].emplace_back(i - 1);
+        if (c == 'x') {
+            sat.add_clause(~ui, ~uj);
+            sat.add_clause(~ui, ~vj);
+            sat.add_clause(~vi, ~uj);
+            sat.add_clause(~vi, ~vj);
+        } else if (c == '-') {
+            sat.assign(vi);
+            sat.assign(vj);
+            sat.add_clause(~ui, ~uj);
+        } else if (c == '=') {
+            sat.add_clause(~ui, vj);
+            sat.add_clause(ui, ~vj);
+            sat.add_clause(~vi, uj);
+            sat.add_clause(vi, ~uj);
+            sat.add_clause(ui, vi);
+        } else {
+            sat.assign(ui);
+            sat.assign(uj);
+            sat.add_clause(~vi, ~vj);
         }
     }
 
-    auto dfs = [&](auto &&self, int i, bool plus) -> void {
-        types[i][plus ? 1 : 2] = false;
-        for (int j : adj_list[i])
-            if (types[j][plus ? 2 : 1]) self(self, j, !plus);
-    };
-
-    vector<int> colour(n, -1);
-    auto bipartite = [&](auto &&self, int i) -> bool {
-        for (int j : adj_list[i]) {
-            if (colour[j] == -1) {
-                colour[j] = colour[i] ^ 1;
-                if (!self(self, j)) return false;
-            }
-            if (colour[i] == colour[j]) return false;
-        }
-
-        return true;
-    };
-
+    auto assignment = sat.solve().second;
     for (int i = 0; i < n; i++) {
-        auto [x, plus, minus] = types[i];
-        if (x) continue;
-
-        if (!plus) dfs(dfs, i, true);
-        if (!minus) dfs(dfs, i, false);
-
-        if (colour[i] == -1) {
-            colour[i] = 0;
-
-            if (!bipartite(bipartite, i)) {
-                dfs(dfs, i, true);
-                dfs(dfs, i, false);
-            }
-        }
-    }
-
-    for (auto [x, plus, minus] : types) {
-        if (x) cout << 'x';
-        else if (plus && minus || !plus && !minus) cout << '=';
-        else if (plus) cout << '+';
-        else cout << '-';
+        int a = assignment[index(i)], b = assignment[index(i) + 1];
+        if (!a && !b) cout << 'x';
+        else if (!a) cout << '-';
+        else if (b) cout << '=';
+        else cout << '+';
     }
 }
