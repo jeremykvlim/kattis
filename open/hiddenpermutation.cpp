@@ -217,14 +217,12 @@ vector<int> totients(int n) {
     return phis;
 }
 
-istream & operator>>(istream &stream, __int128 &v) {
+istream & operator>>(istream &stream, __int128 &x) {
     string s;
     stream >> s;
 
-    v = 0;
-    for (char c : s)
-        if (isdigit(c)) v = v * 10 + c - '0';
-    if (s[0] == '-') v *= -1;
+    x = 0;
+    for (int sgn = s[0] == '-' ? -1 : 1, i = sgn < 0; i < s.size(); i++) x = x * 10 + sgn * (s[i] - '0');
     return stream;
 }
 
