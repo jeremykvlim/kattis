@@ -59,12 +59,12 @@ vector<pair<T, int>> smawk(int n, int m, auto &&get, auto &&cmp) {
 }
 
 template <typename T>
-vector<T> min_plus_convolve(const vector<T> &concave, const vector<T> &arbitrary) {
-    int da = concave.size(), db = arbitrary.size(), n = da + db - 1;
+vector<T> min_plus_convolve(const vector<T> &convex, const vector<T> &arbitrary) {
+    int da = convex.size(), db = arbitrary.size(), n = da + db - 1;
 
     auto get = [&](int row, int col) -> T {
         if (!(col <= row && row < col + da)) return numeric_limits<T>::max();
-        return arbitrary[col] + concave[row - col];
+        return arbitrary[col] + convex[row - col];
     };
 
     auto cmp = [&](const auto &p1, const auto &p2) {
