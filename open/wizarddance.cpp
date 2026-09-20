@@ -1,6 +1,55 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+tuple<vector<int>, vector<int>, int> hopcroft_karp(int n, int m, const vector<pair<int, int>> &edges) {
+    vector<int> adj_list(edges.size()), l(n, -1), r(m, -1), degree(n + 1, 0);
+    for (auto [u, v] : edges) degree[u]++;
+    for (int i = 1; i <= n; i++) degree[i] += degree[i - 1];
+    for (auto [u, v] : edges) adj_list[--degree[u]] = v;
+
+    int matches = 0;
+    vector<int> src(n), prev(n);
+    queue<int> q;
+    for (;;) {
+        fill(src.begin(), src.end(), -1);
+        fill(prev.begin(), prev.end(), -1);
+
+        for (int i = 0; i < n; i++)
+            if (!~l[i]) q.emplace(src[i] = prev[i] = i);
+
+        int temp = matches;
+        while (!q.empty()) {
+            int v = q.front();
+            q.pop();
+
+            if (~l[src[v]]) continue;
+
+            for (int j = degree[v]; j < degree[v + 1]; j++) {
+                int u = adj_list[j];
+
+                if (!~r[u]) {
+                    while (~u) {
+                        r[u] = v;
+                        swap(l[v], u);
+                        v = prev[v];
+                    }
+
+                    matches++;
+                    break;
+                }
+
+                if (!~prev[r[u]]) {
+                    q.emplace(u = r[u]);
+                    prev[u] = v;
+                    src[u] = src[v];
+                }
+            }
+        }
+
+        if (temp == matches) return {l, r, matches};
+    }
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -8,75 +57,60 @@ int main() {
     int n;
     cin >> n;
 
-    vector<int> p(n), cw(n), ccw(n), degree(n, 0);
-    vector<vector<pair<int, int>>> adj_list(n);
+    vector<int> p(n);
+    for (int &pi : p) cin >> pi;
+
+    vector<int> cw(n), ccw(n);
+    vector<pair<int, int>> edges;
     for (int i = 0; i < n; i++) {
-        cin >> p[i];
+        cw[i] = (i + p[i]) % n;
+        ccw[i] = (i - p[i] + n) % n;
 
-        int l = (i + p[i]) % n, r = (i - p[i] + n) % n;
-        cw[i] = l;
-        ccw[i] = r;
-        if (l != r) {
-            adj_list[l].emplace_back(r, i);
-            adj_list[r].emplace_back(l, i);
-            degree[l]++;
-            degree[r]++;
-        } else {
-            adj_list[l].emplace_back(l, i);
-            degree[l]++;
-        }
+        edges.emplace_back(i, cw[i]);
+        edges.emplace_back(i, ccw[i]);
     }
+    auto [l, r, matches] = hopcroft_karp(n, n, edges);
 
-    queue<int> q;
-    for (int i = 0; i < n; i++)
-        if (degree[i] == 1) q.emplace(i);
-
-    vector<int> teleport(n, -1);
-    while (!q.empty()) {
-        int v = q.front();
-        q.pop();
-
-        if (degree[v] <= 0) continue;
-
-        for (auto [u, i] : adj_list[v]) {
-            if (degree[u] <= 0) continue;
-
-            teleport[i] = v;
-            if (--degree[u] == 1) q.emplace(u);
-            break;
-        }
-        degree[v]--;
-    }
-
-    for (int i = 0; i < n; i++)
-        if (!~teleport[i]) {
-            int l = cw[i], r = ccw[i];
-            if (degree[l] > 0) q.emplace(l);
-            else if (degree[r] > 0) q.emplace(r);
-        }
-
-    while (!q.empty()) {
-        int v = q.front();
-        q.pop();
-
-        if (degree[v]) 
-            for (int u = v;;) {
-                auto it = find_if(adj_list[u].begin(), adj_list[u].end(), [&](auto p) { return !~teleport[p.second]; });
-                if (it == adj_list[u].end()) break;
-
-                auto [t, i] = *it;
-                teleport[i] = u;
-                degree[u] = 0;
-
-                if (u == t || v == t) break;
-                u = t;
-            }
-    }
-
-    if (any_of(teleport.begin(), teleport.end(), [&](int p) { return !~p; })) {
+    if (matches != n) {
         cout << "no dance";
         exit(0);
     }
 
-    for (int i = 0; i < n; i++) cout << (teleport[i] == cw[i] ? 'L' : 'R');
+    string s(n, 'L');
+    vector<int> order(n);
+    iota(order.begin(), order.end(), 0);
+    for (int i = 0; i < n; i++)
+        if (l[i] == cw[i]) order[i] = r[ccw[i]];
+        else {
+            s[i] = 'R';
+            order[i] = r[cw[i]];
+        }
+
+    vector<int> state(n, 0);
+    for (int t = 0; t < n; t++)
+        if (!state[t]) {
+            vector<int> path;
+            int v = t;
+            while (~v && !state[v]) {
+                state[v] = 1;
+                path.emplace_back(v);
+                v = order[v];
+            }
+
+            if (~v && state[v] == 1) {
+                int i = v;
+                for (int u = order[v]; u != v; u = order[u]) i = min(i, u);
+
+                if (s[i] == 'R') {
+                    int u = v;
+                    do {
+                        s[u] = s[u] == 'L' ? 'R' : 'L';
+                        u = order[u];
+                    } while (u != v);
+                }
+            }
+
+            for (int u : path) state[u] = 2;
+        }
+    cout << s;
 }
