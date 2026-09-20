@@ -444,6 +444,88 @@ T binomial_coefficient_mod_p(long long n, long long k, int p, vector<T> &fact, v
     return fact[n] * fact_inv[k] * fact_inv[n - k];
 }
 
+template <typename T>
+auto rerooting_dp(int n, const vector<tuple<int, int, T>> &edges, const vector<bool> &auxiliary) {
+    vector<vector<pair<int, T>>> adj_list(n);
+    for (auto [u, v, w] : edges) {
+        adj_list[u].emplace_back(v, w);
+        adj_list[v].emplace_back(u, w);
+    }
+
+    vector<int> order, parent(n, -1);
+    vector<T> parent_w(n, 0);
+    auto dfs = [&](auto &&self, int v = 0) -> void {
+        order.emplace_back(v);
+        for (auto [u, w] : adj_list[v])
+            if (u != parent[v]) {
+                parent[u] = v;
+                parent_w[u] = w;
+                self(self, u);
+            }
+    };
+    parent[0] = -2;
+    dfs(dfs);
+
+    using State = array<int, 2>;
+    auto base = [&]() -> State {
+        return {0, n + 1};
+    };
+
+    auto merge = [&](const State &s1, const State &s2) -> State {
+        return {s1[0] + s2[0], min(s1[1], s2[1])};
+    };
+
+    auto finalize = [&](const vector<pair<State, int>> &states, int v) -> State {
+        auto t = base();
+        for (auto [s, _] : states) t = merge(t, s);
+        t[0] += !auxiliary[v];
+        if (adj_list[v].size() > 2) t[1] = 0;
+        return t;
+    };
+
+    auto climb = [&](State s, int w) -> State {
+        if (s[1] <= n) s[1]++;
+        return s;
+    };
+
+    auto arrange = [&](vector<pair<State, int>> &states) -> void {};
+
+    reverse(order.begin(), order.end());
+    vector<State> up(n, base());
+    for (int v : order) {
+        vector<pair<State, int>> states;
+        for (auto [u, w] : adj_list[v])
+            if (u != parent[v]) states.emplace_back(climb(up[u], w), u);
+        arrange(states);
+        up[v] = finalize(states, v);
+    }
+
+    reverse(order.begin(), order.end());
+    vector<State> down(n, base()), dp(n, base());
+    for (int v : order) {
+        vector<pair<State, int>> states;
+        if (parent[v] != -2) states.emplace_back(climb(down[v], parent_w[v]), -1);
+        for (auto [u, w] : adj_list[v])
+            if (u != parent[v]) states.emplace_back(climb(up[u], w), u);
+        arrange(states);
+        dp[v] = finalize(states, v);
+
+        int m = states.size();
+        vector<State> pref(m), suff(m);
+        for (int i = 0; i < m; i++) pref[i] = (!i ? states[i].first : merge(pref[i - 1], states[i].first));
+        for (int i = m - 1; ~i; i--) suff[i] = (i == m - 1 ? states[i].first : merge(suff[i + 1], states[i].first));
+
+        for (int k = 0; k < m; k++)
+            if (~states[k].second) {
+                vector<pair<State, int>> s;
+                if (k) s.emplace_back(pref[k - 1], -1);
+                if (k + 1 < m) s.emplace_back(suff[k + 1], -1);
+                down[states[k].second] = finalize(s, v);
+            }
+    }
+    return tuple{dp, up, down, parent};
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -470,17 +552,20 @@ int main() {
         cin >> n >> m;
 
         vector<int> p(m);
-        vector<bool> seen(n + 1, false);
+        vector<bool> seen(n, false);
         for (int &pi : p) {
             cin >> pi;
 
-            seen[pi] = true;
+            seen[--pi] = true;
         }
 
-        vector<vector<int>> adj_list(n + 1);
-        for (int _ = 0; _ < n - 1; _++) {
-            int u, v;
+        vector<vector<int>> adj_list(n);
+        vector<tuple<int, int, int>> edges(n - 1);
+        for (auto &[u, v, w] : edges) {
             cin >> u >> v;
+            u--;
+            v--;
+            w = 0;
 
             adj_list[u].emplace_back(v);
             adj_list[v].emplace_back(u);
@@ -491,34 +576,58 @@ int main() {
             continue;
         }
 
+        auto [dp, up, down, parent] = rerooting_dp(n, edges, seen);
+        auto component = [&](int u, int v) -> const array<int, 2> & {
+            if (parent[v] == u) return up[v];
+            return down[u];
+        };
+
+        auto unseen = [&](int u, int v) {
+            return component(u, v)[0];
+        };
+
+        auto dist = [&](int u, int v) {
+            return component(u, v)[1] + 1;
+        };
+
         int root = p[0];
-        vector<int> parent(n + 1, 0);
+        vector<int> prev(n, -1), order;
+        prev[root] = -2;
         auto dfs1 = [&](auto &&self, int v) -> void {
+            order.emplace_back(v);
             for (int u : adj_list[v])
-                if (u != parent[v]) {
-                    parent[u] = v;
+                if (u != prev[v]) {
+                    prev[u] = v;
                     self(self, u);
                 }
         };
         dfs1(dfs1, root);
 
-        vector<vector<int>> unseen(n + 1, vector<int>(n + 1, 0)), dist(n + 1, vector<int>(n + 1, 1e9));
-        for (int u = 1; u <= n; u++)
-            for (int v : adj_list[u]) {
-                int count = 0, shortest = 1e9;
-                auto dfs = [&](auto &&self, int v, int prev, int d = 1) -> void {
-                    if (!seen[v]) count++;
-                    if (adj_list[v].size() > 2) shortest = min(shortest, d);
-                    for (int u : adj_list[v])
-                        if (u != prev) self(self, u, v, d + 1);
-                };
-                dfs(dfs, v, u);
-                unseen[u][v] = count;
-                dist[u][v] = shortest;
+        vector<int> count1(n, 0), count2(n, 0), sum(n, 0);
+        for (int v = 0; v < n; v++)
+            for (int u : adj_list[v]) {
+                int c = unseen(v, u);
+                count1[v] += !!c;
+                count2[v] += c >= (dist(v, u) + 2);
+                sum[v] += c;
             }
 
-        vector<pair<int, int>> orb(n + 1);
-        vector<vector<int>> adj_list_orb(n + 1);
+        vector<bool> swappable(n, false);
+        for (int v = 0; v < n; v++)
+            if (v != root) {
+                int u = prev[v];
+                if (u != root) {
+                    int c1 = unseen(u, prev[u]), c2 = unseen(u, v);
+                    swappable[v] = adj_list[u].size() > 2 && ((c1 && c2) || count1[u] - !!c1 - !!c2 > 0);
+                }
+            }
+
+        vector<int> pref(n, 0);
+        for (int v : order)
+            if (v != root) pref[v] = pref[prev[v]] + swappable[v];
+
+        vector<pair<int, int>> orb(n, {-1, -1});
+        vector<vector<int>> adj_list_orb(n);
         auto dfs2 = [&](auto &&self, int v, int prev, int s, int t) -> void {
             for (int u : adj_list[v])
                 if (u != prev) {
@@ -529,9 +638,15 @@ int main() {
                     } else self(self, u, v, s, s == v ? u : t);
                 }
         };
-        dfs2(dfs2, root, 0, root, 0);
+        dfs2(dfs2, root, -1, root, -1);
 
-        vector<int> label(n + 1, -1);
+        auto check = [&](int u, int v) {
+            int c = unseen(u, v);
+            if (count2[u] - (c >= (dist(u, v) + 2))) return true;
+            return adj_list[u].size() > 2 && count1[u] >= 2 && sum[u] - c >= 2;
+        };
+
+        vector<int> label(n, -1);
         label[root] = 0;
         int id = 1;
         queue<int> q;
@@ -540,38 +655,11 @@ int main() {
             int v = q.front();
             q.pop();
 
-            vector<vector<int>> relabel(n + 1);
+            vector<vector<int>> relabel(n);
             bool found = false;
             for (int u : adj_list_orb[v]) {
-                auto same = [&]() {
-                    vector<int> path{u};
-                    for (int t = u; t != v; t = parent[t]) path.emplace_back(parent[t]);
-
-                    for (int i = 1; i + 1 < path.size(); i++) {
-                        int s = path[i];
-                        if (adj_list[s].size() > 2) {
-                            if (unseen[s][path[i - 1]] && unseen[s][path[i + 1]]) return true;
-                            for (int t : adj_list[s])
-                                if (t != path[i - 1] && t != path[i + 1])
-                                    if (unseen[s][t]) return true;
-                        }
-                    }
-
-                    auto check = [&](int s, int skip) {
-                        for (int t : adj_list[s])
-                            if (t != skip && unseen[s][t] >= dist[s][t] + 2) return true;
-
-                        int count = 0, sum = 0;
-                        for (int t : adj_list[s]) {
-                            if (unseen[s][t]) count++;
-                            if (t != skip) sum += unseen[s][t];
-                        }
-                        return adj_list[s].size() > 2 && count >= 2 && sum >= 2;
-                    };
-                    return check(v, orb[u].second) || check(u, parent[u]);
-                };
-
-                if (same()) label[u] = label[v];
+                bool same = pref[u] != pref[orb[u].second] || check(v, orb[u].second) || check(u, prev[u]);
+                if (same) label[u] = label[v];
                 else {
                     relabel[orb[u].second].emplace_back(u);
                     found = true;
@@ -582,8 +670,8 @@ int main() {
 
             vector<int> open;
             for (int u : adj_list[v])
-                if (unseen[v][u]) open.emplace_back(u);
-            
+                if (unseen(v, u)) open.emplace_back(u);
+
             auto assign = [&](int o) {
                 for (int t : relabel[o]) label[t] = id;
                 id++;
@@ -597,7 +685,7 @@ int main() {
                             for (int t : relabel[u]) label[t] = id;
                     id++;
                     assign(o);
-                } else if (o != parent[v]) {
+                } else if (o != prev[v]) {
                     for (int u : adj_list[v])
                         if (u != o)
                             for (int t : relabel[u]) label[t] = label[orb[v].first];
@@ -608,24 +696,24 @@ int main() {
                     id++;
                 }
             } else {
-                if (unseen[v][open[0]] == 1 && unseen[v][open[1]] == 1) {
+                if (unseen(v, open[0]) == 1 && unseen(v, open[1]) == 1) {
                     for (int o : open)
-                        if (o != parent[v]) assign(o);
+                        if (o != prev[v]) assign(o);
                 } else {
-                    if (unseen[v][open[0]] > 1) swap(open[0], open[1]);
+                    if (unseen(v, open[0]) > 1) swap(open[0], open[1]);
                     if (adj_list[v].size() == 2) {
                         for (int o : open)
-                            if (o != parent[v]) assign(o);
-                    } else if (open[1] != parent[v] && !relabel[open[1]].empty()) assign(open[1]);
+                            if (o != prev[v]) assign(o);
+                    } else if (open[1] != prev[v] && !relabel[open[1]].empty()) assign(open[1]);
                 }
             }
         }
 
-        vector<int> count(id, 0);
-        for (int pi : p) count[label[pi]]++;
+        vector<int> count3(id, 0);
+        for (int pi : p) count3[label[pi]]++;
 
         modint ways = 1;
-        for (int c : count) ways *= fact[c];
+        for (int c : count3) ways *= fact[c];
         cout << binomial_coefficient_mod_p(n, m, MOD, fact, fact_inv) * ways << "\n";
     }
 }
