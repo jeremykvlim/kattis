@@ -9,7 +9,7 @@ int main() {
     cin >> n >> k;
 
     auto bit = [&](int b) {
-        return ((__int128) 1) << b;
+        return (__int128) 1 << b;
     };
 
     auto set = [&](__int128 &mask, int i) {
@@ -60,7 +60,7 @@ int main() {
         }
     };
 
-    __int128 used = 0, all = (((__int128) 1) << n) - 1;
+    __int128 used = 0, all = ((__int128) 1 << n) - 1;
     vector<__int128> adj_masks(n, 0);
     while (used != all) {
         auto node = [&]() {

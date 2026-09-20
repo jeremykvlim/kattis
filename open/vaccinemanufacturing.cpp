@@ -531,8 +531,8 @@ pair<__int128, __int128> manacher(const string &s) {
         int i = (k + 1) >> 1, j = k >> 1, p = (i >= r ? 0 : min(r - i, dp[2 * (l + r) - k]));
         while (j + p + 1 < n && i - p - 1 >= 0 && s[j + p + 1] == s[i - p - 1]) p++;
 
-        if (i == p) pref_mask |= ((__int128) 1) << (j + p + 1);
-        if (j + p == n - 1) suff_mask |= ((__int128) 1) << (i - p);
+        if (i == p) pref_mask |= (__int128) 1 << (j + p + 1);
+        if (j + p == n - 1) suff_mask |= (__int128) 1 << (i - p);
 
         if (r < j + p) {
             r = j + p;
@@ -575,7 +575,7 @@ int main() {
     for (int i = 0; i < n; i++) {
         auto [pref, suff] = manacher(m[i]);
         for (int b = 0; b <= m[i].size(); b++)
-            if ((pref >> b) & 1) pref_mask[i] |= ((__int128) 1) << (m[i].size() - b);
+            if ((pref >> b) & 1) pref_mask[i] |= (__int128) 1 << (m[i].size() - b);
         suff_mask[i] = suff;
     }
 
