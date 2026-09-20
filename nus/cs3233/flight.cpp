@@ -1,6 +1,103 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+auto rerooting_dp(int n, const vector<tuple<int, int, T>> &edges) {
+    vector<vector<pair<int, T>>> adj_list(n);
+    for (auto [u, v, w] : edges) {
+        adj_list[u].emplace_back(v, w);
+        adj_list[v].emplace_back(u, w);
+    }
+
+    vector<int> order, parent(n, -1);
+    vector<T> parent_w(n, 0);
+    auto dfs = [&](auto &&self, int v = 0) -> void {
+        order.emplace_back(v);
+        for (auto [u, w] : adj_list[v])
+            if (u != parent[v]) {
+                parent[u] = v;
+                parent_w[u] = w;
+                self(self, u);
+            }
+    };
+    parent[0] = -2;
+    dfs(dfs);
+
+    using State = array<int, 3>;
+    auto base = [&]() -> State {
+        return {-1, 0, INT_MAX};
+    };
+
+    auto merge = [&](const State &s1, const State &s2) -> State {
+        return {max(s1[0], s2[0]), max({s1[1], s2[1], s1[0] + s2[0]}), INT_MAX};
+    };
+
+    auto finalize = [&](const vector<pair<State, int>> &states) -> State {
+        State t{0, 0, INT_MAX};
+        for (auto [s, _] : states) t = merge(t, s);
+
+        int p = -1;
+        for (int i = 0; i < states.size(); i++)
+            if (!~states[i].second) {
+                p = i;
+                break;
+            }
+
+        if (~p) {
+            State temp{0, 0, INT_MAX};
+            for (int i = 0; i < states.size(); i++)
+                if (i != p) temp = merge(temp, states[i].first);
+
+            int d1 = states[p].first[1], d2 = temp[1];
+            t[2] = max({d1, d2, (d1 + 1) / 2 + (d2 + 1) / 2 + 1});
+        }
+        return t;
+    };
+
+    auto climb = [&](State s, int w) -> State {
+        s[0]++;
+        s[2] = INT_MAX;
+        return s;
+    };
+
+    auto arrange = [&](vector<pair<State, int>> &states) -> void {};
+
+    reverse(order.begin(), order.end());
+    vector<State> up(n, base());
+    for (int v : order) {
+        vector<pair<State, int>> states;
+        for (auto [u, w] : adj_list[v])
+            if (u != parent[v]) states.emplace_back(climb(up[u], w), u);
+        arrange(states);
+        up[v] = finalize(states);
+    }
+
+    reverse(order.begin(), order.end());
+    vector<State> down(n, base()), dp(n, base());
+    for (int v : order) {
+        vector<pair<State, int>> states;
+        if (parent[v] != -2) states.emplace_back(climb(down[v], parent_w[v]), -1);
+        for (auto [u, w] : adj_list[v])
+            if (u != parent[v]) states.emplace_back(climb(up[u], w), u);
+        arrange(states);
+        dp[v] = finalize(states);
+
+        int m = states.size();
+        vector<State> pref(m), suff(m);
+        for (int i = 0; i < m; i++) pref[i] = (!i ? states[i].first : merge(pref[i - 1], states[i].first));
+        for (int i = m - 1; ~i; i--) suff[i] = (i == m - 1 ? states[i].first : merge(suff[i + 1], states[i].first));
+
+        for (int k = 0; k < m; k++)
+            if (~states[k].second) {
+                vector<pair<State, int>> s;
+                if (k) s.emplace_back(pref[k - 1], -1);
+                if (k + 1 < m) s.emplace_back(suff[k + 1], -1);
+                down[states[k].second] = finalize(s);
+            }
+    }
+    return dp;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -8,58 +105,66 @@ int main() {
     int n;
     cin >> n;
 
-    vector<vector<int>> adj_list(n + 1);
-    for (int i = 0; i < n - 1; i++) {
-        int a, b;
-        cin >> a >> b;
+    vector<vector<int>> adj_list(n);
+    vector<tuple<int, int, int>> edges(n - 1);
+    for (auto &[u, v, w] : edges) {
+        cin >> u >> v;
+        u--;
+        v--;
+        w = 0;
 
-        adj_list[a].emplace_back(b);
-        adj_list[b].emplace_back(a);
+        adj_list[u].emplace_back(v);
+        adj_list[v].emplace_back(u);
     }
 
-    vector<int> next(n + 1);
-    iota(next.begin(), next.end(), 0);
-    pair<int, int> flight{-1, -1}, cancel, add;
-
-    auto dfs = [&](auto &&self, int v = 1, int prev = -1) -> int {
-        int depth = 0;
+    vector<int> prev(n, -1);
+    auto dfs = [&](auto &&self, int v = 0) -> void {
         for (int u : adj_list[v])
-            if (u != prev && make_pair(v, u) != flight && make_pair(u, v) != flight) {
-                int d = self(self, u, v) + 1;
-
-                if (depth < d) {
-                    depth = d;
-                    next[v] = u;
-                }
+            if (u != prev[v]) {
+                prev[u] = v;
+                self(self, u);
             }
-
-        return depth;
     };
+    prev[0] = -2;
     dfs(dfs);
 
-    int least = INT_MAX;
-    for (int a = 1; a <= n; a++)
-        for (int b : adj_list[a])
-            if (b > a) {
-                flight = {a, b};
-                
-                auto city = [&](int v, int dist) -> int {
-                    for (; dist; dist--) v = next[v];
-                    return v;
-                };
-                
-                int furthest1 = city(a, dfs(dfs, a)),
-                    furthest2 = city(b, dfs(dfs, b)),
-                    dist1 = dfs(dfs, furthest1),
-                    dist2 = dfs(dfs, furthest2),
-                    curr = max(max(dist1, dist2), (dist1 + 1) / 2 + (dist2 + 1) / 2 + 1);
+    auto dp = rerooting_dp(n, edges);
+    int flights = INT_MAX, cut_u = -1, cut_v = -1;
+    for (int v = 1; v < n; v++)
+        if (flights > dp[v][2]) {
+            flights = dp[v][2];
+            cut_u = v;
+            cut_v = prev[v];
+        }
+    cout << flights << "\n" << cut_u + 1 << " " << cut_v + 1 << "\n";
 
-                if (least > curr) {
-                    least = curr;
-                    cancel = flight;
-                    add = {city(furthest1, dist1 / 2), city(furthest2, dist2 / 2)};
+    vector<int> dist(n);
+    auto center = [&](int cut) {
+        auto bfs = [&](int s) {
+            fill(dist.begin(), dist.end(), -1);
+            fill(prev.begin(), prev.end(), -1);
+            dist[s] = 0;
+            int furthest = s;
+            queue<int> q;
+            q.emplace(s);
+            while (!q.empty()) {
+                int v = q.front();
+                q.pop();
+
+                if (dist[furthest] < dist[v]) furthest = v;
+
+                for (int u : adj_list[v]) {
+                    if ((v == cut_u && u == cut_v) || (v == cut_v && u == cut_u) || ~dist[u]) continue;
+                    dist[u] = dist[v] + 1;
+                    prev[u] = v;
+                    q.emplace(u);
                 }
             }
-
-    cout << least << "\n" << cancel.first << " " << cancel.second << "\n" << add.first << " " << add.second << "\n";
+            return furthest;
+        };
+        int farthest = bfs(bfs(cut)), diameter = dist[farthest];
+        for (int i = 0; i < diameter / 2; i++) farthest = prev[farthest];
+        return farthest;
+    };
+    cout << center(cut_u) + 1 << " " << center(cut_v) + 1;
 }

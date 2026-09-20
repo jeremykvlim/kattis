@@ -148,6 +148,91 @@ struct Fraction : array<T, 2> {
     }
 };
 
+template <typename T>
+auto rerooting_dp(int n, const vector<tuple<int, int, T>> &edges, const vector<int> &auxiliary) {
+    vector<vector<pair<int, T>>> adj_list(n);
+    for (auto [u, v, w] : edges) {
+        adj_list[u].emplace_back(v, w);
+        adj_list[v].emplace_back(u, w);
+    }
+
+    vector<int> order, parent(n, -1);
+    vector<T> parent_w(n, 0);
+    auto dfs = [&](auto &&self, int v = 0) -> void {
+        order.emplace_back(v);
+        for (auto [u, w] : adj_list[v])
+            if (u != parent[v]) {
+                parent[u] = v;
+                parent_w[u] = w;
+                self(self, u);
+            }
+    };
+    parent[0] = -2;
+    dfs(dfs);
+
+    using State = array<int, 2>;
+    auto base = [&]() -> State {
+        return {0, 0};
+    };
+
+    auto merge = [&](const State &s1, const State &s2) -> State {
+        State t{0, 0};
+        for (int x : {s1[0], s1[1], s2[0], s2[1]})
+            if (x > t[0]) {
+                t[1] = t[0];
+                t[0] = x;
+            } else if (t[1] < x) t[1] = x;
+        return t;
+    };
+
+    auto finalize = [&](const vector<pair<State, int>> &states, int v) -> State {
+        auto t = base();
+        for (auto [s, _] : states) t = merge(t, s);
+        return {auxiliary[v] == 1 ? t[0] + 1 : 0, t[0] + t[1] + 1};
+    };
+
+    auto climb = [&](State s, int w) -> State {
+        return {s[0], 0};
+    };
+
+    auto arrange = [&](vector<pair<State, int>> &states) -> void {};
+
+    reverse(order.begin(), order.end());
+    vector<State> up(n, base());
+    for (int v : order) {
+        vector<pair<State, int>> states;
+        for (auto [u, w] : adj_list[v])
+            if (u != parent[v]) states.emplace_back(climb(up[u], w), u);
+        arrange(states);
+        up[v] = finalize(states, v);
+    }
+
+    reverse(order.begin(), order.end());
+    vector<State> down(n, base()), dp(n, base());
+    for (int v : order) {
+        vector<pair<State, int>> states;
+        if (parent[v] != -2) states.emplace_back(climb(down[v], parent_w[v]), -1);
+        for (auto [u, w] : adj_list[v])
+            if (u != parent[v]) states.emplace_back(climb(up[u], w), u);
+        arrange(states);
+        dp[v] = finalize(states, v);
+
+        int m = states.size();
+        vector<State> pref(m), suff(m);
+        for (int i = 0; i < m; i++) pref[i] = (!i ? states[i].first : merge(pref[i - 1], states[i].first));
+        for (int i = m - 1; ~i; i--) suff[i] = (i == m - 1 ? states[i].first : merge(suff[i + 1], states[i].first));
+
+        for (int k = 0; k < m; k++)
+            if (~states[k].second) {
+                vector<pair<State, int>> s;
+                if (k) s.emplace_back(pref[k - 1], -1);
+                if (k + 1 < m) s.emplace_back(suff[k + 1], -1);
+                down[states[k].second] = finalize(s, v);
+            }
+    }
+    return dp;
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -155,47 +240,22 @@ int main() {
     int n;
     cin >> n;
 
-    vector<vector<int>> adj_list(n);
-    for (int i = 0; i < n - 1; i++) {
-        int a, b;
-        cin >> a >> b;
-
-        adj_list[a - 1].emplace_back(b - 1);
-        adj_list[b - 1].emplace_back(a - 1);
+    vector<tuple<int, int, int>> edges(n - 1);
+    for (auto &[u, v, w] : edges) {
+        cin >> u >> v;
+        u--;
+        v--;
+        w = 0;
     }
 
     vector<int> x(n);
     for (int &xi : x) cin >> xi;
 
-    vector<int> dp1(n), dp2(n);
-    auto dfs = [&](auto &&self, int v, int prev, bool first) -> void {
-        auto update = [&](int i, int j) -> void {
-            dp2[i] = max(dp2[i], j);
-            if (dp2[i] > dp1[i]) swap(dp1[i], dp2[i]);
-        };
+    auto dp = rerooting_dp(n, edges, x);
+    int i = 0;
+    for (int j = 1; j < n; j++)
+        if ((long long) x[j] * dp[i][1] < (long long) x[i] * dp[j][1]) i = j;
 
-        for (int u : adj_list[v])
-            if (u != prev) {
-                if (first) {
-                    self(self, u, v, first);
-                    if (!~-x[u]) update(v, dp1[u] + 1);
-                } else {
-                    if (!~-x[v]) update(u, (dp1[u] + 1 == dp1[v] ? dp2[v] : dp1[v]) + 1);
-                    self(self, u, v, first);
-                }
-            }
-    };
-    dfs(dfs, 0, -1, true);
-    dfs(dfs, 0, -1, false);
-
-    auto p = 1LL, q = 0LL;
-    for (int i = 0; i < n; i++) {
-        int a = x[i], b = dp1[i] + dp2[i] + 1;
-        if ((long long) a * q < (long long) b * p) {
-            p = a;
-            q = b;
-        }
-    }
-    Fraction<long long> f(p, q);
+    Fraction<long long> f(x[i], dp[i][1]);
     cout << f.numer() << "/" << f.denom();
 }
