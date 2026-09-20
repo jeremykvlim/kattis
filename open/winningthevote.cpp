@@ -1,43 +1,50 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int swaps(vector<int> &ally, int t) {
-    if (ally.empty()) return INT_MAX;
-    auto pos = upper_bound(ally.begin(), ally.end(), t) - ally.begin();
-    return min((pos < ally.size() ? ally[pos] - t : INT_MAX), (pos ? t - ally[pos - 1] : INT_MAX));
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     int n;
-    string s;
-    cin >> n >> s;
+    string S;
+    cin >> n >> S;
 
-    int favor = 0;
-    vector<int> tellers, signums{0};
-    for (char c : s)
-        if (c == '0') tellers.emplace_back(signums.size() - 1);
+    string voters;
+    vector<int> tellers;
+    for (int count = 0; char &c : S) {
+        if (c == '0') tellers.emplace_back(count);
         else {
-            favor += c == '1' ? 1 : -1;
-            signums.emplace_back((favor > 0) - (favor < 0));
+            voters += c;
+            count++;
         }
-
-    vector<vector<int>> allies(4);
-    for (int i = 0; i < signums.size(); i++) {
-        if (!signums[i]) allies[0].emplace_back(i);
-        else if (signums[i] == 1) allies[1].emplace_back(i);
+    }
+    if (tellers.empty()) {
+        cout << "impossible";
+        exit(0);
     }
 
-    int required = max(1 - accumulate(tellers.begin(), tellers.end(), 0, [&](int i, int j) { return i + signums[j]; }), 0);
+    int m = voters.size();
+    vector<int> delta(m + 1, 0);
+    for (int i = 0; i < m; i++) delta[i + 1] = delta[i] + (voters[i] == '1' ? 1 : -1);
 
-    vector<long long> dp(required + 2, INT_MAX);
-    dp[0] = dp[required + 1] = 0;
-    for (int t : tellers) {
-        auto costs = make_pair(swaps(allies[signums[t] + 1], t), swaps(allies[signums[t] + 2], t));
-        for (int i = required; i; i--) dp[i] = min({dp[i], dp[i - 1] + costs.first, (i > 1 ? dp[i - 2] + costs.second : INT_MAX)});
+    vector<vector<int>> dist(3, vector<int>(m + 1, 1e9));
+    for (int i = 0; i <= m; i++) dist[(delta[i] > 0) - (delta[i] < 0) + 1][i] = 0;
+    for (int s = 0; s < 3; s++) {
+        for (int i = 1; i <= m; i++) dist[s][i] = min(dist[s][i], dist[s][i - 1] + 1);
+        for (int i = m - 1; ~i; i--) dist[s][i] = min(dist[s][i], dist[s][i + 1] + 1);
     }
 
-    cout << (dp[required] < INT_MAX ? to_string(dp[required]) : "impossible");
+    int k = tellers.size();
+    vector<int> dp(2 * k + 1, 1e9), temp(2 * k + 1, 1e9);
+    dp[k] = 0;
+    for (int i = 0; i < k; i++) {
+        fill(temp.begin(), temp.end(), 1e9);
+        for (int j = -i; j <= i; j++)
+            for (int s = -1; s <= 1; s++) temp[j + k + s] = min(temp[j + k + s], dp[j + k] + dist[s + 1][tellers[i]]);
+        dp = temp;
+    }
+
+    int swaps = *min_element(dp.begin() + k + 1, dp.end());
+    if (swaps == 1e9) cout << "impossible";
+    else cout << swaps;
 }
