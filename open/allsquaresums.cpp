@@ -205,41 +205,36 @@ vector<pair<T, T>> sum_of_two_squares(T n) {
     if (!n) return {{0, 0}};
 
     auto pfs = factorize(n);
-
-    auto gaussian_integer_factors = [&](T p, int exponent) -> vector<complex<T>> {
-        if (p % 4 == 3) {
-            T value = 1;
-            for (int i = 0; i < exponent / 2; i++) value *= p;
-            return {{value}};
-        }
-
-        if (p == 2) {
-            auto pow = [&](complex<T> base, auto exponent) {
-                complex<T> value(1, 0);
-                while (exponent) {
-                    if (exponent & 1) value *= base;
-                    base *= base;
-                    exponent >>= 1;
-                }
-                return value;
-            };
-            return {pow({1, 1}, exponent)};
-        }
-
-        auto [a, b] = cornacchia((T) 1, p);
-        complex<T> Z(a, b);
-        vector<complex<T>> pZ(exponent + 1, {1, 0}), forms(exponent + 1);
-        for (int i = 1; i <= exponent; i++) pZ[i] = pZ[i - 1] * Z;
-        for (int i = 0; i <= exponent; i++) forms[i] = pZ[i] * conj(pZ[exponent - i]);
-        return forms;
-    };
-
     vector<complex<T>> pairs{{1, 0}};
-    for (auto [pf, pow] : pfs) {
-        if (pf % 4 == 3 && pow & 1) return {};
-        vector<complex<T>> temp, forms = gaussian_integer_factors(pf, pow);
+    for (auto [pf, exponent] : pfs) {
+        if (pf % 4 == 3 && exponent & 1) return {};
+
+        vector<complex<T>> pps;
+        if (pf % 4 == 3) {
+            T pp = 1;
+            for (int i = 0; i < exponent / 2; i++) pp *= pf;
+            pps.emplace_back(pp);
+        } else if (pf == 2) {
+            complex<T> base(1, 1), value(1, 0);
+            while (exponent) {
+                if (exponent & 1) value *= base;
+                base *= base;
+                exponent >>= 1;
+            }
+            pps.emplace_back(value);
+        } else {
+            auto [a, b] = cornacchia((T) 1, pf);
+            complex<T> Z(a, b);
+            vector<complex<T>> pZ(exponent + 1, {1, 0});
+            for (int i = 1; i <= exponent; i++) pZ[i] = pZ[i - 1] * Z;
+
+            pps.resize(exponent + 1);
+            for (int i = 0; i <= exponent; i++) pps[i] = pZ[i] * conj(pZ[exponent - i]);
+        }
+
+        vector<complex<T>> temp;
         for (auto Z1 : pairs)
-            for (auto Z2 : forms) temp.emplace_back(Z1 * Z2);
+            for (auto Z2 : pps) temp.emplace_back(Z1 * Z2);
         pairs = temp;
     }
 
