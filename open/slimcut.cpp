@@ -462,9 +462,8 @@ template <typename T>
 struct AntiMonopolyTree {
     vector<int> parent, size;
     vector<T> weight;
-    long long sum;
 
-    AntiMonopolyTree(int n) : parent(n, -1), size(n, 1), weight(n, numeric_limits<T>::max()), sum(0) {}
+    AntiMonopolyTree(int n) : parent(n, -1), size(n, 1), weight(n, numeric_limits<T>::max()) {}
 
     pair<T, int> path_max(int u, int v) {
         upward_maintain(u);
@@ -525,7 +524,7 @@ struct AntiMonopolyTree {
         if (!merged) {
             if (w >= max_w) return false;
             cut(t);
-        } else sum += (long long) size[root(u)] * size[root(v)];
+        }
 
         int du = 0, dv = 0;
         while (~u && ~v) {
@@ -561,7 +560,6 @@ struct AntiMonopolyTree {
         auto [max_w, t] = path_max(u, v);
         if (max_w != w) return false;
 
-        sum -= (long long) size[t] * (size[root(t)] - size[t]);
         cut(t);
         return true;
     }
