@@ -124,9 +124,9 @@ int main() {
     }
 
     auto count = 0LL;
-    stack<int> mono_inc, mono_dec;
-    mono_inc.emplace(0);
+    stack<int> mono_dec, mono_inc;
     mono_dec.emplace(0);
+    mono_inc.emplace(0);
     vector<int> indices_both(c + 1, -1);
     RURQSegmentTree st(bit_ceil((unsigned) c + 1), vector<int>(c + 1, 0));
     for (int i = 1, l = 0; i <= c; i++) {
@@ -138,15 +138,6 @@ int main() {
 
         st.range_update(i, i + 1, i);
 
-        while (mono_inc.size() > 1 && indices_both[mono_inc.top()] >= indices_both[i]) {
-            int v = mono_inc.top();
-            mono_inc.pop();
-
-            int u = mono_inc.top();
-            st.range_update(u + 1, v + 1, indices_both[v] - indices_both[i]);
-        }
-        mono_inc.emplace(i);
-
         while (mono_dec.size() > 1 && indices_both[mono_dec.top()] <= indices_both[i]) {
             int v = mono_dec.top();
             mono_dec.pop();
@@ -155,6 +146,15 @@ int main() {
             st.range_update(u + 1, v + 1, indices_both[i] - indices_both[v]);
         }
         mono_dec.emplace(i);
+
+        while (mono_inc.size() > 1 && indices_both[mono_inc.top()] >= indices_both[i]) {
+            int v = mono_inc.top();
+            mono_inc.pop();
+
+            int u = mono_inc.top();
+            st.range_update(u + 1, v + 1, indices_both[v] - indices_both[i]);
+        }
+        mono_inc.emplace(i);
 
         auto [v, f] = st.range_query(l + 1, i + 1);
         if (v == i) count += f;
