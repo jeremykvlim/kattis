@@ -14,6 +14,22 @@ struct Point {
     template <typename U>
     Point(const Point<U> &p) : x((T) p.x), y((T) p.y) {}
 
+    const auto begin() const {
+        return &x;
+    }
+
+    const auto end() const {
+        return &y + 1;
+    }
+
+    Point operator-() const {
+        return {-x, -y};
+    }
+
+    Point operator!() const {
+        return {y, x};
+    }
+
     Point operator~() const {
         return {-y, x};
     }
@@ -22,24 +38,84 @@ struct Point {
         return x != p.x ? x < p.x : y < p.y;
     }
 
+    bool operator>(const Point &p) const {
+        return x != p.x ? x > p.x : y > p.y;
+    }
+
     bool operator==(const Point &p) const {
         return x == p.x && y == p.y;
+    }
+
+    bool operator!=(const Point &p) const {
+        return x != p.x || y != p.y;
+    }
+
+    bool operator<=(const Point &p) const {
+        return *this < p || *this == p;
+    }
+
+    bool operator>=(const Point &p) const {
+        return *this > p || *this == p;
     }
 
     Point operator+(const Point &p) const {
         return {x + p.x, y + p.y};
     }
 
+    Point operator+(const T &v) const {
+        return {x + v, y + v};
+    }
+
+    Point & operator+=(const Point &p) {
+        x += p.x;
+        y += p.y;
+        return *this;
+    }
+
+    Point & operator+=(const T &v) {
+        x += v;
+        y += v;
+        return *this;
+    }
+
     Point operator-(const Point &p) const {
         return {x - p.x, y - p.y};
+    }
+
+    Point operator-(const T &v) const {
+        return {x - v, y - v};
+    }
+
+    Point & operator-=(const Point &p) {
+        x -= p.x;
+        y -= p.y;
+        return *this;
+    }
+
+    Point & operator-=(const T &v) {
+        x -= v;
+        y -= v;
+        return *this;
     }
 
     Point operator*(const T &v) const {
         return {x * v, y * v};
     }
 
+    Point & operator*=(const T &v) {
+        x *= v;
+        y *= v;
+        return *this;
+    }
+
     Point operator/(const T &v) const {
         return {x / v, y / v};
+    }
+
+    Point & operator/=(const T &v) {
+        x /= v;
+        y /= v;
+        return *this;
     }
 };
 
