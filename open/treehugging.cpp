@@ -1,6 +1,88 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+struct TwoSATSystem {
+    int n;
+    vector<vector<int>> adj_list;
+
+    TwoSATSystem(int n = 0) : n(n), adj_list(2 * n) {}
+
+    int add_variable() {
+        adj_list.emplace_back();
+        adj_list.emplace_back();
+        return n++;
+    }
+
+    void add_clause(int i, int j) {
+        i = max(i << 1, -(i << 1 | 1));
+        j = max(j << 1, -(j << 1 | 1));
+        adj_list[i ^ 1].emplace_back(j);
+        adj_list[j ^ 1].emplace_back(i);
+    }
+
+    void assign(int i) {
+        add_clause(i, i);
+    }
+
+    void add_at_most_one(const vector<int> &literals) {
+        if (literals.size() < 2) return;
+
+        int prev = ~literals[0];
+        for (int i = 2; i < literals.size(); i++) {
+            int curr = add_variable();
+            add_clause(prev, ~literals[i]);
+            add_clause(prev, curr);
+            add_clause(~literals[i], curr);
+            prev = ~curr;
+        }
+        add_clause(prev, ~literals[1]);
+    }
+
+    vector<int> tarjan() {
+        vector<int> order(2 * n, 0), low(2 * n, 0), component(2 * n, 0);
+        vector<bool> stacked(2 * n, false);
+        stack<int> st;
+        int count = 0, sccs = 0;
+
+        auto dfs = [&](auto &&self, int v) -> void {
+            order[v] = low[v] = ++count;
+            st.emplace(v);
+            stacked[v] = true;
+
+            for (int u : adj_list[v])
+                if (!order[u]) {
+                    self(self, u);
+                    low[v] = min(low[v], low[u]);
+                } else if (stacked[u]) low[v] = min(low[v], order[u]);
+
+            if (order[v] == low[v]) {
+                sccs++;
+                int u;
+                do {
+                    u = st.top();
+                    st.pop();
+                    stacked[u] = false;
+                    component[u] = sccs;
+                } while (u != v);
+            }
+        };
+
+        for (int v = 0; v < 2 * n; v++)
+            if (!order[v]) dfs(dfs, v);
+
+        return component;
+    }
+
+    pair<bool, vector<int>> solve() {
+        vector<int> assignment(n), component = tarjan();
+        for (int i = 0; i < n; i++) {
+            if (component[i << 1] == component[i << 1 | 1]) return {false, {}};
+            assignment[i] = component[i << 1] < component[i << 1 | 1];
+        }
+        return {true, assignment};
+    }
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -8,51 +90,21 @@ int main() {
     int n;
     cin >> n;
 
-    vector<set<pair<int, int>>> adj_list(2 * n);
-    stack<int> leaves;
-
-    for (int e = 0; e < 2 * (n - 1); e++) {
+    int m = 2 * (n - 1);
+    TwoSATSystem sat(m);
+    vector<vector<int>> l(n), r(n);
+    for (int i = 0; i < m; i++) {
         int u, v;
         cin >> u >> v;
-        
-        adj_list[v].emplace(n + u, e);
-        adj_list[n + u].emplace(v, e);
+
+        l[v - 1].emplace_back(i);
+        r[u - 1].emplace_back(~i);
     }
+    for (int v = 1; v < n; v++) sat.add_at_most_one(l[v]);
+    for (int u = 0; u + 1 < n; u++) sat.add_at_most_one(r[u]);
 
-    for (int u = 2; u < 2 * n; u++) {
-        if (adj_list[u].empty()) {
-            cout << "impossible";
-            exit(0);
-        }
-        if (adj_list[u].size() == 1) leaves.emplace(u);
-    }
-
-    string s(2 * (n - 1), ' ');
-
-    while (!leaves.empty()) {
-        int u = leaves.top();
-        leaves.pop();
-        
-        if (adj_list[u].empty()) {
-            cout << "impossible";
-            exit(0);
-        }
-
-        auto [v, e] = *adj_list[u].begin();
-        adj_list[u].erase(adj_list[u].begin());
-        adj_list[v].erase({u, e});
-        s[e] = u <= n ? 'L' : 'R';
-        if (adj_list[v].size() == 1) leaves.emplace(v);
-    }
-
-    for (int u = 2; u < 2 * n; u++)
-        while (!adj_list[u].empty()) {
-            auto [v, e] = *adj_list[u].begin();
-            adj_list[u].erase(adj_list[u].begin());
-            adj_list[v].erase({u, e});
-            s[e] = u <= n ? 'L' : 'R';
-            u = v;
-        }
-
-    cout << s;
+    auto [satisfiable, assignment] = sat.solve();
+    if (!satisfiable) cout << "impossible";
+    else
+        for (int i = 0; i < m; i++) cout << (assignment[i] ? 'L' : 'R');
 }

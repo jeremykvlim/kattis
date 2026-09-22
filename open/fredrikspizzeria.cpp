@@ -100,27 +100,46 @@ struct TwoSATSystem {
         add_clause(prev, ~literals[1]);
     }
 
-    pair<bool, vector<int>> solve() {
-        deque<int> q;
-        vector<int> assignment(n, -1);
-        auto bfs = [&](int s) {
-            q = {s};
-            assignment[s >> 1] = !(s & 1);
-            for (int i = 0; i < q.size(); i++) {
-                int v = q[i];
-                for (int u : adj_list[v])
-                    if (assignment[u >> 1] == -1) {
-                        assignment[u >> 1] = !(u & 1);
-                        q.emplace_back(u);
-                    } else if (assignment[u >> 1] == (u & 1)) return false;
+    vector<int> tarjan() {
+        vector<int> order(2 * n, 0), low(2 * n, 0), component(2 * n, 0);
+        vector<bool> stacked(2 * n, false);
+        stack<int> st;
+        int count = 0, sccs = 0;
+
+        auto dfs = [&](auto &&self, int v) -> void {
+            order[v] = low[v] = ++count;
+            st.emplace(v);
+            stacked[v] = true;
+
+            for (int u : adj_list[v])
+                if (!order[u]) {
+                    self(self, u);
+                    low[v] = min(low[v], low[u]);
+                } else if (stacked[u]) low[v] = min(low[v], order[u]);
+
+            if (order[v] == low[v]) {
+                sccs++;
+                int u;
+                do {
+                    u = st.top();
+                    st.pop();
+                    stacked[u] = false;
+                    component[u] = sccs;
+                } while (u != v);
             }
-            return true;
         };
 
+        for (int v = 0; v < 2 * n; v++)
+            if (!order[v]) dfs(dfs, v);
+
+        return component;
+    }
+
+    pair<bool, vector<int>> solve() {
+        vector<int> assignment(n), component = tarjan();
         for (int i = 0; i < n; i++) {
-            if (assignment[i] != -1 || bfs(i << 1 | 1)) continue;
-            for (int v : q) assignment[v >> 1] = -1;
-            if (!bfs(i << 1)) return {false, {}};
+            if (component[i << 1] == component[i << 1 | 1]) return {false, {}};
+            assignment[i] = component[i << 1] < component[i << 1 | 1];
         }
         return {true, assignment};
     }

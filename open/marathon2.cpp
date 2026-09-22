@@ -126,5 +126,5 @@ int main() {
     }
 
     int seconds = dp[p - 1] / m;
-    cout << setfill('0') << setw(2) << seconds / 3600 << ":" << setw(2) << (seconds % 3600) / 60 << ":" << setw(2) << seconds % 60;
+    cout << setw(2) << setfill('0') << seconds / 3600 << ":" << setw(2) << (seconds % 3600) / 60 << ":" << setw(2) << seconds % 60;
 }
