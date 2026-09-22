@@ -22,27 +22,25 @@ int main() {
     }
     sort(enemies.begin(), enemies.end());
 
-    deque<pair<int, int>> mono_inc;
+    vector<pair<int, int>> intervals;
     for (auto [u, v] : enemies) {
-        while (mono_inc.size() && mono_inc.back().second >= v) mono_inc.pop_back();
-        if (mono_inc.empty() || mono_inc.back().first < u) mono_inc.emplace_back(u, v);
+        while (!intervals.empty() && intervals.back().second >= v) intervals.pop_back();
+        if (intervals.empty() || intervals.back().first < u) intervals.emplace_back(u, v);
     }
 
-    vector<int> dp(mono_inc.size(), 1e9);
-    multiset<int> ms;
-    for (int i = 0, l = 0, r = 0; i < n - 1; i++) {
-        if (r < mono_inc.size() && mono_inc[r].first == i) ms.emplace(dp[r++]);
-        if (l < r) {
-            ms.erase(ms.find(dp[r - 1]));
-            dp[r - 1] = min(dp[r - 1], c[i] + (!l ? 0 : dp[l - 1]));
-            ms.emplace(dp[r - 1]);
+    int k = intervals.size();
+    vector<int> dp(k, 0);
+    deque<pair<int, int>> mono;
+    for (int i = 0, j = 0; i < n - 1; i++) {
+        for (; j < k && intervals[j].second <= i; j++);
 
-            if (mono_inc[l].second == i + 1) {
-                ms.erase(ms.find(dp[l]));
-                if (!ms.empty()) dp[l] = min(dp[l], *ms.begin());
-                l++;
-            }
+        int value = c[i] + (j ? dp[j - 1] : 0);
+        while (!mono.empty() && mono.back().second >= value) mono.pop_back();
+        mono.emplace_back(i, value);
+        if (j < k && intervals[j].second == i + 1) {
+            while (mono.front().first < intervals[j].first) mono.pop_front();
+            dp[j] = mono.front().second;
         }
     }
-    cout << dp.back();
+    cout << dp[k - 1];
 }
