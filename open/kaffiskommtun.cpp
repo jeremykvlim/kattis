@@ -12,25 +12,23 @@ int main() {
     for (int &ti : times) cin >> ti;
     sort(times.begin(), times.end());
 
-    vector<long long> dp1(n + 1, 0), dp2(n + 1, 0);
-    dp2[0] = n;
+    vector<long long> dp(n + 1, 0);
+    dp[0] = n;
     deque<int> dq;
     auto count = 0LL;
-    for (int j = 1, k = 0; j <= n; j++) {
-        int i = n - j;
-
-        int start = lower_bound(times.begin() + i + 1, times.end(), times[i] + t) - times.begin(), end = min(start + c, n);
-
-        for (; k <= n - start; k++) {
-            while (!dq.empty() && dp2[dq.back()] <= dp2[k]) dq.pop_back();
-            dq.emplace_back(k);
+    for (int i = 1, j = 0, l = n; i <= n; i++) {
+        for (; l - 1 > n - i && times[l - 1] - times[n - i] >= t; l--);
+        for (; j <= n - l; j++) {
+            while (!dq.empty() && dp[dq.back()] <= dp[j]) dq.pop_back();
+            dq.emplace_back(j);
         }
 
-        while (!dq.empty() && dq.front() <= n - end) dq.pop_front();
+        while (!dq.empty() && dq.front() <= n - min(l + c, n)) dq.pop_front();
 
-        if (start + 1 <= end && !dq.empty()) dp1[j] = dp2[dq.front()] + 1 - start;
-        dp2[j] = dp1[j] + n - j;
-        count = max(count, dp1[j]);
+        auto curr = 0LL;
+        if (!dq.empty()) curr = dp[dq.front()] + 1 - l;
+        dp[i] = curr + n - i;
+        count = max(count, curr);
     }
     cout << count;
 }
