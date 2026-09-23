@@ -42,7 +42,7 @@ auto rerooting_dp(int n, const vector<tuple<int, int, T>> &edges, const vector<a
         return t;
     };
 
-    auto climb = [&](State s, int w) -> State {
+    auto climb = [&](State s, T w) -> State {
         for (int d = 0; d < 4; d++) s[d] = s[d + 1];
         s[4] = 0;
         return s;

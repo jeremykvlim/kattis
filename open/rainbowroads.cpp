@@ -39,7 +39,7 @@ auto rerooting_dp(int n, const vector<tuple<int, int, T>> &edges, const vector<v
         return t;
     };
 
-    auto climb = [&](State s, int w) -> State {
+    auto climb = [&](State s, T w) -> State {
         if (s.first && binary_search(auxiliary[s.second].begin(), auxiliary[s.second].end(), w)) s.first = false;
         return s;
     };
