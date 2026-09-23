@@ -1,6 +1,39 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+struct Hash {
+    template <typename T>
+    static inline void combine(size_t &h, const T &v) {
+        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
+    }
+
+    template <typename T>
+    size_t operator()(const T &v) const {
+        if constexpr (requires { tuple_size<T>::value; })
+            return apply([](const auto &...e) {
+                size_t h = 0;
+                (combine(h, e), ...);
+                return h;
+            }, v);
+        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
+            size_t h = 0;
+            for (const auto &e : v) combine(h, e);
+            return h;
+        } else return hash<T>{}(v);
+    }
+};
+
+template <typename T>
+bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
+    return fabs(v1 - v2) <= epsilon;
+}
+
+template <typename T>
+int sgn(const T &v) {
+    if constexpr (!is_floating_point_v<T>) return (v > 0) - (v < 0);
+    else return approximately_equal(v, (T) 0) ? 0 : (v > 0) - (v < 0);
+}
+
 template <typename T>
 struct Point {
     T x, y;
@@ -124,6 +157,372 @@ double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
 }
 
+template <typename T>
+T squared_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
+    return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
+}
+
+template <typename T>
+T dot(const Point<T> &a, const Point<T> &b) {
+    return (a.x * b.x) + (a.y * b.y);
+}
+
+template <typename T>
+T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
+    return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+}
+
+template <typename T>
+Point<T> midpoint(const Point<T> &a, const Point<T> &b) {
+    return {a.x + (b.x - a.x) / 2, a.y + (b.y - a.y) / 2};
+}
+
+template <typename T, typename W>
+Point<T> circumcenter(const array<pair<Point<T>, int>, 3> &triangle, W &&weight) {
+    auto [a, b, c] = triangle;
+    Point<T> ab = a.first - b.first, bc = b.first - c.first, ca = c.first - a.first;
+
+    T A = squared_dist(a.first) - weight(a), B = squared_dist(b.first) - weight(b), C = squared_dist(c.first) - weight(c), d = 2 * cross(a.first, b.first, c.first);
+    return {(A * bc.y + B * ca.y + C * ab.y) / d, (A * (-bc.x) + B * (-ca.x) + C * (-ab.x)) / d};
+}
+
+template <typename T, typename W>
+pair<bool, bool> point_in_circumcircle(const array<pair<Point<T>, int>, 3> &triangle, const pair<Point<T>, int> &p, W &&weight) {
+    auto [a, b, c] = triangle;
+    T det = cross(a.first, b.first, p.first) * weight(c, p) + cross(b.first, c.first, p.first) * weight(a, p) + cross(c.first, a.first, p.first) * weight(b, p);
+    if (sgn(det) >= 0) return {sgn(det) > 0, !sgn(det)};
+    return {false, false};
+}
+
+template <typename T>
+struct Line {
+    Point<T> a, b;
+
+    Line() {}
+    Line(Point<T> a, Point<T> b) : a(a), b(b) {}
+};
+
+template <typename T>
+Line<T> perpendicular_bisector(const Point<T> &a, const Point<T> &b) {
+    Point<T> mp = midpoint(a, b), dir{a.y - b.y, b.x - a.x};
+    return {mp, dir + mp};
+}
+
+template <typename T>
+struct DelaunayTriangulation {
+    struct QuadEdge {
+        int dest, onext, oprev, symm;
+        bool valid;
+
+        QuadEdge() : dest(-1), onext(-1), oprev(-1), symm(-1), valid(false) {}
+    };
+
+    int start;
+    vector<QuadEdge> edges;
+    vector<pair<int, int>> delaunay_edges;
+    vector<Point<T>> points, voronoi_vertices;
+    vector<Line<T>> voronoi_edges;
+    vector<int> vertex_match, edge_match;
+
+    DelaunayTriangulation(vector<Point<T>> p) : start(0) {
+        T xl = p[0].x, xr = p[0].x, yl = p[0].y, yr = p[0].y;
+        for (auto [x, y] : p) {
+            xl = min(xl, x);
+            xr = max(xr, x);
+            yl = min(yl, y);
+            yr = max(yr, y);
+        }
+
+        T delta = 20 * max(xr - xl, yr - yl), xm = xl + (xr - xl) / 2, ym = yl + (yr - yl) / 2;
+        p.emplace_back(xm + delta, ym - delta);
+        p.emplace_back(xm, ym + delta);
+        p.emplace_back(xm - delta, ym);
+
+        int n = p.size();
+        vector<int> indices(n);
+        iota(indices.begin(), indices.end(), 0);
+        sort(indices.begin(), indices.end(), [&](int i, int j) { return p[i] < p[j]; });
+
+        int count = 0;
+        vector<int> compress(n, 0);
+        for (int i : indices)
+            if (i == indices[0] || p[i] != p[indices[count - 1]]) {
+                indices[count++] = i;
+                points.emplace_back(p[i]);
+                compress[i] = i;
+            } else compress[i] = indices[count - 1];
+
+        if (count >= 2) guibas_stolfi(count);
+
+        points = p;
+        edges.erase(remove_if(edges.begin(), edges.end(), [&](auto e) { return !e.valid; }), edges.end());
+        for (auto &e : edges) e.dest = indices[e.dest];
+        for (int i = 0; i < edges.size(); i++)
+            if (i >= edges[i].symm) delaunay_edges.emplace_back(edges[i].dest, edges[edges[i].symm].dest);
+
+        for (int v = 0; v < n; v++)
+            if (v != compress[v]) delaunay_edges.emplace_back(v, compress[v]);
+    }
+
+    void guibas_stolfi(int count) {
+        stack<int> recycled;
+        auto edge_id = [&]() -> int {
+            if (!recycled.empty()) {
+                int i = recycled.top();
+                recycled.pop();
+                return i;
+            }
+
+            edges.emplace_back();
+            return edges.size() - 1;
+        };
+
+        auto unlink = [&](int i) {
+            int j = edges[i].onext, k = edges[i].oprev;
+            edges[j].oprev = k;
+            edges[k].onext = j;
+            edges[i].valid = false;
+        };
+
+        auto splice_next = [&](int i, int j) {
+            int k = edges[j].onext;
+            edges[i].onext = k;
+            edges[i].oprev = j;
+            edges[j].onext = edges[k].oprev = i;
+        };
+
+        auto splice_prev = [&](int i, int j) {
+            int k = edges[j].oprev;
+            edges[i].oprev = k;
+            edges[i].onext = j;
+            edges[j].oprev = edges[k].onext = i;
+        };
+
+        auto add_edge = [&](int u, int v) -> pair<int, int> {
+            int i = edge_id(), j = edge_id();
+            edges[i].onext = edges[i].oprev = edges[j].symm = i;
+            edges[j].onext = edges[j].oprev = edges[i].symm = j;
+            edges[i].dest = v;
+            edges[j].dest = u;
+            edges[i].valid = edges[j].valid = true;
+            return {i, j};
+        };
+
+        auto delete_edge = [&](int i) {
+            int j = edges[i].symm;
+            unlink(i);
+            unlink(j);
+            recycled.emplace(i);
+            recycled.emplace(j);
+        };
+
+        auto connect = [&](int src, int dest, int c, int d) -> pair<int, int> {
+            auto [a, b] = add_edge(src, dest);
+            splice_prev(a, c);
+            splice_next(b, d);
+            return {a, b};
+        };
+
+        auto lnext = [&](int i) -> pair<int, int> {
+            return {edges[edges[i].oprev].dest, edges[edges[i].oprev].symm};
+        };
+
+        auto rprev = [&](int i) -> pair<int, int> {
+            return {edges[i].dest, edges[edges[i].symm].onext};
+        };
+
+        auto min_walk = [&](pair<int, int> &p) {
+            int start = p.second;
+            auto q = p;
+            do {
+                q = rprev(q.second);
+                p = min(p, q);
+            } while (q.second != start);
+        };
+
+        auto max_walk = [&](pair<int, int> &p) {
+            int start = p.second;
+            auto q = p;
+            do {
+                q = rprev(q.second);
+                p = max(p, q);
+            } while (q.second != start);
+        };
+
+        auto left_of = [&](int a, int b, int c) {
+            return cross(points[a], points[b], points[c]) > 0;
+        };
+
+        auto right_of = [&](int a, int b, int c) {
+            return cross(points[a], points[b], points[c]) < 0;
+        };
+
+        auto lower_common_tangent = [&](int i, int base_i, int j, int base_j) -> array<int, 4> {
+            for (;;) {
+                auto [i_src, i_d] = lnext(base_i);
+                if (left_of(j, i, i_src)) {
+                    tie(i, base_i) = {i_src, i_d};
+                    continue;
+                }
+                auto [j_src, j_d] = rprev(base_j);
+                if (right_of(i, j, j_src)) {
+                    tie(j, base_j) = {j_src, j_d};
+                    continue;
+                }
+                break;
+            }
+            return {i, base_i, j, base_j};
+        };
+
+        auto in_circle = [&](int a, int b, int c, int d) {
+            return point_in_circumcircle<T>({{{points[a], -1}, {points[b], -1}, {points[c], -1}}}, {points[d], -1},
+                                            [&](auto p1, auto p2) { return dot(p1.first - p2.first, p1.first - p2.first); }).first;
+        };
+
+        auto dnc = [&](auto &&self, int l, int r) -> pair<int, int> {
+            if (r - l == 2) {
+                auto [i, j] = add_edge(l, l + 1);
+                return {l, i};
+            }
+
+            if (r - l == 3) {
+                auto [a, b] = add_edge(l, l + 1);
+                auto [c, d] = add_edge(l + 1, l + 2);
+
+                if (left_of(l, l + 1, l + 2)) {
+                    auto [e, f] = add_edge(l, l + 2);
+                    splice_prev(a, e);
+                    splice_prev(c, b);
+                    splice_prev(f, d);
+                    return {l, a};
+                } else if (right_of(l, l + 1, l + 2)) {
+                    auto [e, f] = add_edge(l, l + 2);
+                    splice_next(a, e);
+                    splice_next(c, b);
+                    splice_next(f, d);
+                    return {l + 1, b};
+                } else {
+                    splice_next(b, c);
+                    return {l, a};
+                }
+            }
+
+            int m = l + (r - l) / 2;
+            auto pl = self(self, l, m), pr = self(self, m, r);
+            max_walk(pl);
+            min_walk(pr);
+            auto [i, base_i] = pl;
+            auto [j, base_j] = pr;
+
+            auto [ldi_src, ldi, rdi_src, rdi] = lower_common_tangent(i, base_i, j, base_j);
+            auto [rdo_src, rdo, ldo_src, ldo] = lower_common_tangent(j, base_j, i, base_i);
+            rdi = edges[rdi].oprev;
+            rdo = edges[rdo].oprev;
+
+            auto [base_symm, base] = connect(ldi_src, rdi_src, ldi, rdi);
+            if (ldi_src == ldo_src) ldo = base_symm;
+            if (rdi_src == rdo_src) rdo = base;
+
+            while (ldi_src != ldo_src || rdi_src != rdo_src) {
+                int l_dest = edges[ldi].dest, r_dest = edges[rdi].dest;
+
+                bool vl = ldi != ldo, vr = rdi != rdo;
+                if (vl && edges[ldi].onext != base_symm)
+                    if (in_circle(ldi_src, rdi_src, l_dest, edges[edges[ldi].onext].dest)) {
+                        int temp = edges[ldi].onext;
+                        delete_edge(ldi);
+                        ldi = temp;
+                        continue;
+                    }
+
+                if (vr && edges[rdi].oprev != base)
+                    if (in_circle(r_dest, ldi_src, rdi_src, edges[edges[rdi].oprev].dest)) {
+                        int temp = edges[rdi].oprev;
+                        delete_edge(rdi);
+                        rdi = temp;
+                        continue;
+                    }
+
+                bool v = !vr;
+                if (vl && vr) {
+                    if (right_of(ldi_src, rdi_src, r_dest)) v = true;
+                    else if (right_of(l_dest, ldi_src, rdi_src)) v = false;
+                    else v = in_circle(ldi_src, rdi_src, r_dest, l_dest);
+                }
+
+                if (v) {
+                    int temp = edges[edges[ldi].symm].onext;
+                    connect(l_dest, rdi_src, temp, rdi);
+                    ldi = temp;
+                    ldi_src = l_dest;
+                } else {
+                    int temp = edges[edges[rdi].symm].oprev;
+                    connect(ldi_src, r_dest, ldi, temp);
+                    rdi = temp;
+                    rdi_src = r_dest;
+                }
+            }
+            return {ldi_src, base_symm};
+        };
+        start = dnc(dnc, 0, count).second;
+    }
+
+    void build_voronoi_diagram() {
+        if (edges.empty()) return;
+
+        int m = edges.size();
+        unordered_set<pair<int, int>, Hash> seen;
+        vector<int> indices(m, -1);
+        auto left_from_edge = [&](int s, int i = -1) {
+            int e = s;
+            do {
+                if (!~i) {
+                    e = edges[e].symm;
+                    indices[e] = -2;
+                } else {
+                    auto [u, v] = minmax(indices[edges[e].symm], indices[e]);
+                    vertex_match[u] = vertex_match[v] = i;
+                    if (!seen.count({u, v})) {
+                        seen.emplace(u, v);
+                        voronoi_edges.emplace_back(voronoi_vertices[u], voronoi_vertices[v]);
+                        edge_match.emplace_back(i);
+                    }
+                }
+                e = edges[e].onext;
+            } while (e != s);
+        };
+        left_from_edge(start);
+        for (int e = 0; e < m; e++)
+            if (indices[e] == -1) {
+                int f = edges[edges[e].symm].oprev, g = edges[edges[f].symm].oprev;
+                voronoi_vertices.emplace_back(circumcenter<T>({{{points[edges[e].dest], -1}, {points[edges[f].dest], -1}, {points[edges[g].dest], -1}}}, [&](auto p) { return 0; }));
+                indices[e] = indices[f] = indices[g] = voronoi_vertices.size() - 1;
+            }
+        for (int e = 0; e < m; e++)
+            if (indices[e] == -2) {
+                int f = edges[e].symm;
+                if (indices[f] == -2) {
+                    auto [a, b] = perpendicular_bisector(points[edges[f].dest], points[edges[e].dest]);
+                    auto dir = b - a;
+                    voronoi_vertices.emplace_back(a + (dir / 2));
+                    voronoi_vertices.emplace_back(a - (dir / 2));
+                    indices[e] = voronoi_vertices.size() - 2;
+                    indices[f] = voronoi_vertices.size() - 1;
+                } else {
+                    auto v = points[edges[e].dest] - points[edges[f].dest];
+                    voronoi_vertices.emplace_back(voronoi_vertices[indices[f]] + ~v);
+                    indices[e] = voronoi_vertices.size() - 1;
+                }
+            }
+        vector<int> starts(points.size(), -1);
+        for (int e = 0; e < m; e++) starts[edges[e].dest] = edges[e].symm;
+
+        vertex_match.resize(voronoi_vertices.size());
+        for (int i = 0; i < points.size(); i++)
+            if (starts[i] >= 0) left_from_edge(starts[i], i);
+    }
+};
+
 struct DisjointSets {
     vector<int> sets;
 
@@ -136,14 +535,14 @@ struct DisjointSets {
         return v;
     }
 
-    pair<int, int> unite(int u, int v) {
+    bool unite(int u, int v) {
         int u_set = find(u), v_set = find(v);
-        if (u_set == v_set) return {u_set, -1};
+        if (u_set == v_set) return false;
 
         if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
         sets[u_set] += sets[v_set];
         sets[v_set] = u_set;
-        return {u_set, v_set};
+        return true;
     }
 
     int size(int v) {
@@ -153,51 +552,72 @@ struct DisjointSets {
     DisjointSets(int n) : sets(n, -1) {}
 };
 
+template <typename T>
+pair<T, vector<pair<int, int>>> kruskal(int n, vector<tuple<T, int, int>> edges) {
+    DisjointSets dsu(n);
+    sort(edges.begin(), edges.end());
+
+    T len = 0;
+    vector<pair<int, int>> mst;
+    for (auto [w, u, v] : edges)
+        if (dsu.unite(u, v)) {
+            len += w;
+            mst.emplace_back(u, v);
+            if (mst.size() == n - 1) break;
+        }
+
+    return {len, mst};
+}
+
+template <typename T>
+pair<T, vector<pair<int, int>>> euclidean_mst(int n, const vector<Point<T>> &points) {
+    DelaunayTriangulation dt(points);
+
+    vector<tuple<T, int, int>> edges;
+    for (auto [u, v] : dt.delaunay_edges)
+        if (u < n && v < n) edges.emplace_back(euclidean_dist(points[u], points[v]), u, v);
+
+    return kruskal(n, edges);
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n, k;
-    cin >> n >> k;
+    int n, K;
+    cin >> n >> K;
 
-    vector<pair<Point<double>, int>> cities(n);
+    vector<int> masks(n);
+    vector<Point<double>> points(n);
     for (int i = 0; i < n; i++) {
-        cin >> cities[i].first.x >> cities[i].first.y >> cities[i].second;
-        cities[i].second %= k;
+        int k;
+        cin >> points[i].x >> points[i].y >> k;
+
+        k %= K;
+        if (!k) {
+            cout << 0;
+            exit(0);
+        } else masks[i] = 1 << k;
     }
-    sort(cities.begin(), cities.end());
 
-    double l = 0, r = 1e9, m;
-    while (l + 1e-12 < r && l + l * 1e-12 < r) {
-        m = l + (r - l) / 2;
+    vector<tuple<double, int, int>> edges;
+    for (auto [u, v] : euclidean_mst(n, points).second) edges.emplace_back(euclidean_dist(points[u], points[v]), u, v);
+    sort(edges.begin(), edges.end());
 
-        auto vaild = [&](auto d) {
-            vector<vector<bool>> dp(n, vector<bool>(k + 1, false));
-            for (int i = 0; i < n; i++) dp[i][cities[i].second] = true;
+    DisjointSets dsu(n);
+    for (auto [dist, u, v] : edges) {
+        int u_set = dsu.find(u), v_set = dsu.find(v);
+        if (u_set == v_set) continue;
 
-            DisjointSets dsu(n);
-            for (int i = 0; i < n; i++)
-                for (int j = i + 1; j < n; j++) {
-                    if (cities[j].first.x - cities[i].first.x > d) break;
-                    if (euclidean_dist(cities[i].first, cities[j].first) > d) continue;
+        int mu = masks[u_set], mv = masks[v_set], muv = mu | mv;
+        for (int k = 0; k < K; k++)
+            if ((mu >> k) & 1) muv |= ((mv << k) | (mv >> (K - k))) & ((1 << K) - 1);
 
-                    auto [big, small] = dsu.unite(i, j);
-                    if (small != -1) {
-                        vector<bool> temp(2 * k + 1, false);
-                        for (int k1 = 0; k1 <= k; k1++)
-                            if (dp[big][k1])
-                                for (int k2 = 0; k2 <= k; k2++)
-                                    if (dp[small][k2]) temp[k1 + k2] = true;
-                        for (int k1 = 0; k1 <= 2 * k; k1++)
-                            if (temp[k1] || dp[small][k1 % k]) dp[big][k1 % k] = true;
-                        if (dp[big][0]) return true;
-                    }
-                }
-            return false;
-        };
-
-        if (vaild(m)) r = m;
-        else l = m;
+        dsu.unite(u, v);
+        masks[dsu.find(u_set)] = muv;
+        if (muv & 1) {
+            cout << fixed << setprecision(3) << dist;
+            exit(0);
+        }
     }
-    cout << fixed << setprecision(3) << l;
 }
