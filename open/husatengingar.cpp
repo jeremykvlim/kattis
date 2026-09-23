@@ -281,45 +281,35 @@ struct AntiMonopolyTree {
 
 struct OfflineDynamicGraph {
     AntiMonopolyTree<int> amt;
-    vector<array<int, 3>> events;
+    vector<array<int, 3>> edges;
     vector<pair<int, function<void(AntiMonopolyTree<int> &)>>> queries;
-    unordered_map<pair<int, int>, int, Hash> active;
 
     OfflineDynamicGraph(int n) : amt(n) {}
 
-    bool add_edge(int u, int v) {
-        if (u > v) swap(u, v);
-
-        auto [it, inserted] = active.try_emplace({u, v}, events.size());
-        if (!inserted) return false;
-        events.push_back({u, v, 0});
-        return true;
+    int add_edge(int u, int v) {
+        edges.push_back({u, v, 0});
+        return edges.size() - 1;
     }
 
-    bool delete_edge(int u, int v) {
-        if (u > v) swap(u, v);
-
-        auto it = active.find({u, v});
-        if (it == active.end()) return false;
-        events.push_back({u, v, 1});
-        events[it->second][2] = 1 - events.size();
-        active.erase(it);
-        return true;
+    void delete_edge(int e) {
+        auto [u, v, w] = edges[e];
+        edges[e][2] = -edges.size();
+        edges.push_back({u, v, 1});
     }
 
     template <typename F>
     void query(F &&f) {
-        queries.emplace_back(events.size(), f);
+        queries.emplace_back(edges.size(), f);
     }
 
     void process() {
         int q = 0;
-        for (int i = 0; i < events.size(); i++) {
+        for (int i = 0; i < edges.size(); i++) {
             for (; q < queries.size() && queries[q].first == i; q++) queries[q].second(amt);
 
-            auto [u, v, w] = events[i];
+            auto [u, v, w] = edges[i];
             if (w == 1) amt.remove(u, v, -i);
-            else amt.add(u, v, w ? w : -events.size() - 1);
+            else amt.add(u, v, w ? w : -edges.size() - 1);
         }
         for (; q < queries.size(); q++) queries[q].second(amt);
     }
@@ -333,11 +323,29 @@ int main() {
     cin >> n >> m;
 
     OfflineDynamicGraph odg(n);
-    for (int _ = 0; _ < m; _++) {
+    unordered_map<pair<int, int>, int, Hash> active;
+
+    auto add = [&](int u, int v) {
+        auto [it, inserted] = active.try_emplace(minmax(u, v), -1);
+        if (!inserted) return false;
+        it->second = odg.add_edge(u, v);
+        return true;
+    };
+
+    auto remove = [&](int u, int v) {
+        auto it = active.find(minmax(u, v));
+        if (it == active.end()) return false;
+        odg.delete_edge(it->second);
+        active.erase(it);
+        return true;
+    };
+
+    int edges = 0;
+    while (m--) {
         int u, v;
         cin >> u >> v;
 
-        odg.add_edge(u - 1, v - 1);
+        edges += add(u - 1, v - 1);
     }
 
     int q;
@@ -351,12 +359,14 @@ int main() {
         if (t == 1 || t == 2) {
             int u, v;
             cin >> u >> v;
+            u--;
+            v--;
 
-            if (t == 1) m += odg.add_edge(u - 1, v - 1);
-            else m -= odg.delete_edge(u - 1, v - 1);
+            if (t == 1) edges += add(u, v);
+            else edges -= remove(u, v);
         } else {
-            odg.query([total, m](auto &amt) {
-                Fraction<long long> f(total - amt.sum, total - m);
+            odg.query([total, edges](auto &amt) {
+                Fraction<long long> f(total - amt.sum, total - edges);
                 if (!f.numer()) cout << "0/1\n";
                 else cout << f.numer() << "/" << f.denom() << "\n";
             });

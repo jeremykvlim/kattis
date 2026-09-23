@@ -1,28 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct Hash {
-    template <typename T>
-    static inline void combine(size_t &h, const T &v) {
-        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
-    }
-
-    template <typename T>
-    size_t operator()(const T &v) const {
-        if constexpr (requires { tuple_size<T>::value; })
-            return apply([](const auto &...e) {
-                size_t h = 0;
-                (combine(h, e), ...);
-                return h;
-            }, v);
-        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
-            size_t h = 0;
-            for (const auto &e : v) combine(h, e);
-            return h;
-        } else return hash<T>{}(v);
-    }
-};
-
 template <typename T>
 struct AntiMonopolyTree {
     vector<int> parent, size;
@@ -132,46 +110,35 @@ struct AntiMonopolyTree {
 
 struct OfflineDynamicGraph {
     AntiMonopolyTree<int> amt;
-    vector<array<int, 3>> events;
+    vector<array<int, 3>> edges;
     vector<pair<int, function<void(AntiMonopolyTree<int> &)>>> queries;
-    unordered_map<pair<int, int>, pair<int, int>, Hash> active;
 
     OfflineDynamicGraph(int n) : amt(n) {}
 
-    void add_edge(int u, int v) {
-        if (u > v) swap(u, v);
-
-        auto [it, inserted] = active.try_emplace({u, v}, events.size(), 1);
-        if (!inserted) {
-            it->second.second++;
-            return;
-        }
-        events.push_back({u, v, 0});
+    int add_edge(int u, int v) {
+        edges.push_back({u, v, 0});
+        return edges.size() - 1;
     }
 
-    void delete_edge(int u, int v) {
-        if (u > v) swap(u, v);
-
-        auto it = active.find({u, v});
-        if (--it->second.second) return;
-        events.push_back({u, v, 1});
-        events[it->second.first][2] = 1 - events.size();
-        active.erase(it);
+    void delete_edge(int e) {
+        auto [u, v, w] = edges[e];
+        edges[e][2] = -edges.size();
+        edges.push_back({u, v, 1});
     }
 
     template <typename F>
     void query(F &&f) {
-        queries.emplace_back(events.size(), f);
+        queries.emplace_back(edges.size(), f);
     }
 
     void process() {
         int q = 0;
-        for (int i = 0; i < events.size(); i++) {
+        for (int i = 0; i < edges.size(); i++) {
             for (; q < queries.size() && queries[q].first == i; q++) queries[q].second(amt);
 
-            auto [u, v, w] = events[i];
+            auto [u, v, w] = edges[i];
             if (w == 1) amt.remove(u, v, -i);
-            else amt.add(u, v, w ? w : -events.size() - 1);
+            else amt.add(u, v, w ? w : -edges.size() - 1);
         }
         for (; q < queries.size(); q++) queries[q].second(amt);
     }
@@ -195,16 +162,16 @@ int main() {
     }
 
     OfflineDynamicGraph odg(2 * n);
+    vector<array<int, 2>> edge_id(m);
     auto link = [&](int i) {
         auto [u, v, x] = edges[i];
-        odg.add_edge(u, v + x * n);
-        odg.add_edge(u + n, v + (x ^ 1) * n);
+        edge_id[i][0] = odg.add_edge(u, v + x * n);
+        edge_id[i][1] = odg.add_edge(u + n, v + (x ^ 1) * n);
     };
 
     auto cut = [&](int i) {
-        auto [u, v, x] = edges[i];
-        odg.delete_edge(u, v + x * n);
-        odg.delete_edge(u + n, v + (x ^ 1) * n);
+        odg.delete_edge(edge_id[i][0]);
+        odg.delete_edge(edge_id[i][1]);
     };
     for (int i = t; i < m; i++) link(i);
 
