@@ -33,9 +33,10 @@ struct DisjointSets {
 template <typename T>
 struct ReachabilityTree {
     int n;
-    vector<int> parent;
+    vector<int> parent, depth, in, inlabel, ascendant, head;
     vector<vector<int>> adj_list;
     vector<T> weight;
+    vector<pair<int, int>> tour;
 
     ReachabilityTree(int m, vector<tuple<int, int, T>> &edges) : n(m), parent(2 * m), adj_list(2 * m), weight(2 * m, 0) {
         DisjointSets dsu(2 * m);
@@ -54,6 +55,48 @@ struct ReachabilityTree {
                 rep[big] = n;
             }
         }
+
+        auto lsb = [&](int x) {
+            return x & -x;
+        };
+
+        in.resize(n + 1);
+        inlabel.resize(n + 1);
+        depth.resize(n + 1);
+        ascendant.resize(n + 1);
+        head.resize(n + 2);
+        int count = 0;
+        auto dfs = [&](auto &&self, int v, int prev) -> void {
+            tour.emplace_back(v, prev);
+            inlabel[v] = tour.size();
+            in[v] = count++;
+
+            for (int u : adj_list[v])
+                if (u != prev) {
+                    depth[u] = depth[v] + 1;
+                    self(self, u, v);
+                    head[inlabel[u]] = v;
+                    if (lsb(inlabel[v]) < lsb(inlabel[u])) inlabel[v] = inlabel[u];
+                }
+        };
+        dfs(dfs, n, n);
+        for (auto [v, p] : tour) ascendant[v] = ascendant[p] | lsb(inlabel[v]);
+    }
+
+    int lca(int u, int v) {
+        if (unsigned above = inlabel[u] ^ inlabel[v]; above) {
+            above = (ascendant[u] & ascendant[v]) & -bit_floor(above);
+            if (unsigned below = ascendant[u] ^ above; below) {
+                below = bit_floor(below);
+                u = head[(inlabel[u] & -below) | below];
+            }
+            if (unsigned below = ascendant[v] ^ above; below) {
+                below = bit_floor(below);
+                v = head[(inlabel[v] & -below) | below];
+            }
+        }
+
+        return depth[u] < depth[v] ? u : v;
     }
 };
 
@@ -81,48 +124,8 @@ int main() {
     vector<tuple<int, int, int>> edges(n - 1);
     for (auto &[a, b, w] : edges) cin >> a >> b >> w;
     sort(edges.begin(), edges.end(), [&](auto e1, auto e2) { return get<2>(e1) < get<2>(e2); });
-
     ReachabilityTree rt(n, edges);
     int m = rt.n + 1;
-
-    auto lsb = [&](int x) {
-        return x & -x;
-    };
-
-    vector<pair<int, int>> tour;
-    vector<int> depth(m, 0), in(m), inlabel(m), ascendant(m, 0), head(m + 1);
-    int count = 0;
-    auto dfs1 = [&](auto &&self, int v, int prev) -> void {
-        tour.emplace_back(v, prev);
-        inlabel[v] = tour.size();
-        in[v] = count++;
-
-        for (int u : rt.adj_list[v])
-            if (u != prev) {
-                depth[u] = depth[v] + 1;
-                self(self, u, v);
-                head[inlabel[u]] = v;
-                if (lsb(inlabel[v]) < lsb(inlabel[u])) inlabel[v] = inlabel[u];
-            }
-    };
-    dfs1(dfs1, rt.n, rt.n);
-    for (auto [v, p] : tour) ascendant[v] = ascendant[p] | lsb(inlabel[v]);
-
-    auto lca = [&](int u, int v) -> int {
-        if (unsigned above = inlabel[u] ^ inlabel[v]; above) {
-            above = (ascendant[u] & ascendant[v]) & -bit_floor(above);
-            if (unsigned below = ascendant[u] ^ above; below) {
-                below = bit_floor(below);
-                u = head[(inlabel[u] & -below) | below];
-            }
-            if (unsigned below = ascendant[v] ^ above; below) {
-                below = bit_floor(below);
-                v = head[(inlabel[v] & -below) | below];
-            }
-        }
-
-        return depth[u] < depth[v] ? u : v;
-    };
 
     int q;
     cin >> q;
@@ -159,14 +162,14 @@ int main() {
             continue;
         }
 
-        build_virtual_tree(vt, cities, in, lca);
+        build_virtual_tree(vt, cities, rt.in, [&](int u, int v) { return rt.lca(u, v); });
 
         vector<int> order;
-        auto dfs2 = [&](auto &&self, int v) -> void {
+        auto dfs = [&](auto &&self, int v) -> void {
             for (int u : vt[v]) self(self, u);
             order.emplace_back(v);
         };
-        dfs2(dfs2, cities[0]);
+        dfs(dfs, cities[0]);
 
         auto cost = 0LL;
         for (int v : order) {

@@ -13,14 +13,14 @@ struct DisjointSets {
         return v;
     }
 
-    bool unite(int u, int v) {
+    pair<int, int> unite(int u, int v) {
         int u_set = find(u), v_set = find(v);
-        if (u_set == v_set) return false;
+        if (u_set == v_set) return {u_set, -1};
 
         if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
         sets[u_set] += sets[v_set];
         sets[v_set] = u_set;
-        return true;
+        return {u_set, v_set};
     }
 
     int size(int v) {
@@ -30,6 +30,82 @@ struct DisjointSets {
     DisjointSets(int n) : sets(n, -1) {}
 };
 
+template <typename T>
+struct ReachabilityTree {
+    int n;
+    vector<int> parent, depth, inlabel, ascendant, head, size, top;
+    vector<vector<int>> adj_list;
+    vector<T> weight;
+    vector<pair<int, int>> tour;
+
+    ReachabilityTree(int m, vector<tuple<int, int, T>> &edges) : n(m), parent(2 * m), adj_list(2 * m), weight(2 * m, 0) {
+        DisjointSets dsu(2 * m);
+        vector<int> rep(2 * m);
+        iota(rep.begin(), rep.end(), 0);
+
+        for (auto [u, v, w] : edges) {
+            int u_set = dsu.find(u), v_set = dsu.find(v);
+            if (u_set != v_set) {
+                n++;
+                weight[n] = w;
+                parent[rep[u_set]] = parent[rep[v_set]] = n;
+                adj_list[n].emplace_back(rep[u_set]);
+                adj_list[n].emplace_back(rep[v_set]);
+                auto [big, small] = dsu.unite(u_set, v_set);
+                rep[big] = n;
+            }
+        }
+
+        auto lsb = [&](int x) {
+            return x & -x;
+        };
+
+        inlabel.resize(n + 1);
+        depth.resize(n + 1);
+        ascendant.resize(n + 1);
+        head.resize(n + 2);
+        size.resize(n + 1);
+        top.resize(n + 1);
+        int count = 0;
+        auto dfs = [&](auto &&self, int v, int prev) -> void {
+            tour.emplace_back(v, prev);
+            inlabel[v] = tour.size();
+            size[v] = v < m;
+
+            for (int u : adj_list[v])
+                if (u != prev) {
+                    depth[u] = depth[v] + 1;
+                    self(self, u, v);
+                    size[v] += size[u];
+                    head[inlabel[u]] = v;
+                    if (lsb(inlabel[v]) < lsb(inlabel[u])) inlabel[v] = inlabel[u];
+                }
+        };
+        dfs(dfs, n, n);
+        for (auto [v, p] : tour) {
+            ascendant[v] = ascendant[p] | lsb(inlabel[v]);
+            if (v == n || weight[v] != weight[p]) top[v] = v;
+            else top[v] = top[p];
+        }
+    }
+
+    int lca(int u, int v) {
+        if (unsigned above = inlabel[u] ^ inlabel[v]; above) {
+            above = (ascendant[u] & ascendant[v]) & -bit_floor(above);
+            if (unsigned below = ascendant[u] ^ above; below) {
+                below = bit_floor(below);
+                u = head[(inlabel[u] & -below) | below];
+            }
+            if (unsigned below = ascendant[v] ^ above; below) {
+                below = bit_floor(below);
+                v = head[(inlabel[v] & -below) | below];
+            }
+        }
+
+        return depth[u] < depth[v] ? u : v;
+    }
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -37,50 +113,20 @@ int main() {
     int n, m, q;
     cin >> n >> m >> q;
 
-    int t = 0;
-    vector<array<int, 3>> edges(m);
-    for (auto &[u, v, w] : edges) {
-        cin >> u >> v >> w;
+    vector<tuple<int, int, int>> edges(m);
+    for (auto &[u, v, t] : edges) {
+        cin >> u >> v >> t;
         u--;
         v--;
-
-        t = max(t, w);
     }
+    sort(edges.begin(), edges.end(), [&](auto e1, auto e2) { return get<2>(e1) < get<2>(e2); });
 
-    vector<pair<int, int>> queries(q);
-    for (auto &[a, b] : queries) {
+    ReachabilityTree rt(n, edges);
+    while (q--) {
+        int a, b;
         cin >> a >> b;
-        a--;
-        b--;
+
+        int v = rt.lca(a - 1, b - 1);
+        cout << rt.weight[v] << " " << rt.size[rt.top[v]] << "\n";
     }
-
-    vector<vector<int>> indices1(t + 1);
-    for (int i = 0; i < m; i++) indices1[edges[i][2]].emplace_back(i);
-
-    vector<int> l(q, 0), r(q, t + 1), mid(q), k(q);
-    bool change;
-    do {
-        change = false;
-        vector<vector<int>> indices2(t + 1);
-        for (int i = 0; i < q; i++) {
-            mid[i] = l[i] + (r[i] - l[i]) / 2;
-
-            indices2[mid[i]].emplace_back(i);
-            if (l[i] + 1 < r[i]) change = true;
-        }
-
-        DisjointSets dsu(n);
-        for (int w = 0; w <= t; w++) {
-            for (int i : indices1[w]) dsu.unite(edges[i][0], edges[i][1]);
-            for (int i : indices2[w]) {
-                auto [a, b] = queries[i];
-                if (dsu.find(a) == dsu.find(b)) {
-                    r[i] = mid[i];
-                    k[i] = dsu.size(a);
-                } else l[i] = mid[i];
-            }
-        }
-    } while (change);
-
-    for (int i = 0; i < q; i++) cout << r[i] << " " << k[i] << "\n";
 }
