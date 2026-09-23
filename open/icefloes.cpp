@@ -199,6 +199,35 @@ T dist_between_polygons(const vector<Point<T>> &P, const vector<Point<T>> &Q) {
     return dist;
 }
 
+struct DisjointSets {
+    vector<int> sets;
+
+    int find(int v) {
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
+        }
+        return v;
+    }
+
+    bool unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set == v_set) return false;
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return true;
+    }
+
+    int size(int v) {
+        return -sets[find(v)];
+    }
+
+    DisjointSets(int n) : sets(n, -1) {}
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -235,8 +264,11 @@ int main() {
 
         int s1 = -1, s2 = -1;
         for (int i = 0; i < f; i++) {
-            if (point_in_polygon(polygons[i], p1).first) s1 = i;
-            if (point_in_polygon(polygons[i], p2).first) s2 = i;
+            auto [in1, on1] = point_in_polygon(polygons[i], p1);
+            auto [in2, on2] = point_in_polygon(polygons[i], p2);
+
+            if (in1 || on1) s1 = i;
+            if (in2 || on2) s2 = i;
         }
 
         if (!~s1 || !~s2) {
@@ -244,12 +276,7 @@ int main() {
             continue;
         }
 
-        if (s1 == s2) {
-            cout << fixed << setprecision(7) << areas[s1] << "\n";
-            continue;
-        }
-
-        vector<vector<bool>> adj_matrix(f, vector<bool>(f, false));
+        vector<vector<int>> adj_list(f);
         for (int i = 0; i < f; i++)
             for (int j = i + 1; j < f; j++) {
                 double x = 0, y = 0;
@@ -258,52 +285,30 @@ int main() {
                 if (yl[j] > yr[i]) y = yl[j] - yr[i];
                 else if (yl[i] > yr[j]) y = yl[i] - yr[j];
 
-                if (euclidean_dist(Point(x, y)) <= d && dist_between_polygons(polygons[i], polygons[j]) <= d) adj_matrix[i][j] = adj_matrix[j][i] = true;
+                if (euclidean_dist(Point(x, y)) <= d && dist_between_polygons(polygons[i], polygons[j]) <= d) {
+                    adj_list[i].emplace_back(j);
+                    adj_list[j].emplace_back(i);
+                }
             }
 
-        vector<double> possible;
-        for (int i = 0; i < f; i++)
-            if (areas[i] <= min(areas[s1], areas[s2])) possible.emplace_back(areas[i]);
+        vector<int> order(f);
+        iota(order.begin(), order.end(), 0);
+        sort(order.begin(), order.end(), [&](int i, int j) { return areas[i] > areas[j]; });
 
-        if (possible.empty()) {
-            cout << "Scientists cannot meet\n";
-            continue;
+        DisjointSets dsu(f);
+        vector<bool> active(f, false);
+        for (int v : order) {
+            active[v] = true;
+            for (int u : adj_list[v])
+                if (active[u]) dsu.unite(u, v);
+
+            if (active[s1] && active[s2] && dsu.find(s1) == dsu.find(s2)) {
+                cout << fixed << setprecision(7) << areas[v] << "\n";
+                goto next;
+                break;
+            }
         }
-
-        sort(possible.begin(), possible.end());
-        possible.erase(unique(possible.begin(), possible.end()), possible.end());
-
-        int l = -1, r = possible.size(), m;
-        while (l + 1 < r) {
-            m = l + (r - l) / 2;
-
-            auto bfs = [&]() -> bool {
-                if (areas[s1] < possible[m] || areas[s2] < possible[m]) return false;
-
-                vector<bool> visited(f, false);
-                visited[s1] = true;
-                queue<int> q;
-                q.emplace(s1);
-                while (!q.empty()) {
-                    int v = q.front();
-                    q.pop();
-
-                    for (int u = 0; u < f; u++)
-                        if (!visited[u] && adj_matrix[v][u])
-                            if (areas[u] >= possible[m]) {
-                                if (u == s2) return true;
-                                visited[u] = true;
-                                q.emplace(u);
-                            }
-                }
-                return false;
-            };
-
-            if (bfs()) l = m;
-            else r = m;
-        }
-
-        if (!~l) cout << "Scientists cannot meet\n";
-        else cout << fixed << setprecision(7) << possible[l] << "\n";
+        cout << "Scientists cannot meet\n";
+        next:;
     }
 }
