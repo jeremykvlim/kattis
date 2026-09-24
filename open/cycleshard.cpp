@@ -436,15 +436,12 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned int MOD = 9901;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
-struct DisjointSets {
+struct RollbackDisjointSets {
     vector<int> sets;
+    vector<pair<int, int>> history;
 
     int find(int v) {
-        while (sets[v] >= 0) {
-            int p = sets[v];
-            if (sets[p] >= 0) sets[v] = sets[p];
-            v = p;
-        }
+        while (sets[v] >= 0) v = sets[v];
         return v;
     }
 
@@ -453,6 +450,7 @@ struct DisjointSets {
         if (u_set == v_set) return false;
 
         if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        history.emplace_back(v_set, sets[v_set]);
         sets[u_set] += sets[v_set];
         sets[v_set] = u_set;
         return true;
@@ -462,7 +460,26 @@ struct DisjointSets {
         return -sets[find(v)];
     }
 
-    DisjointSets(int n) : sets(n, -1) {}
+    int record() {
+        return history.size();
+    }
+
+    void rollback(int version) {
+        while (record() > version) {
+            auto [v_set, s] = history.back();
+            history.pop_back();
+
+            int u_set = sets[v_set];
+            sets[u_set] -= s;
+            sets[v_set] = s;
+        }
+    }
+
+    void delete_history(int version = 0) {
+        history.resize(version);
+    }
+
+    RollbackDisjointSets(int n) : sets(n, -1) {}
 };
 
 int main() {
@@ -485,31 +502,41 @@ int main() {
         for (auto &[u, v] : edges) cin >> u >> v;
 
         auto y = fact[n - 1] * (MOD / 2 + 1);
-        for (int mask = 1; mask < 1 << k; mask++) {
-            DisjointSets dsu(n + 1);
-            vector<int> degree(n + 1, 0), degree_count(4, 0);
+        RollbackDisjointSets dsu(n + 1);
+        vector<int> degree(n + 1);
+        int count1 = 0, count2 = 0;
+        auto dfs = [&](auto &&self, int i = 0, int f = 0) -> void {
+            for (; i < k; i++) {
+                auto [u, v] = edges[i];
 
-            int cycles = 0;
-            for (int i = 0; i < k; i++)
-                if ((mask >> i) & 1) {
-                    auto [u, v] = edges[i];
-                    degree[u]++;
-                    degree[v]++;
+                int version = dsu.record(), temp1 = count1, temp2 = count2;
+                auto count = [&](int w) {
+                    if (!degree[w]) count1++;
+                    else if (degree[w] == 1) count1--;
+                    else if (degree[w] == 2) count2++;
+                    degree[w]++;
+                };
+                count(u);
+                count(v);
 
-                    if (!dsu.unite(u, v)) cycles++;
+                int forbidden = f + 1;
+                if (!count2) {
+                    if (!dsu.unite(u, v)) {
+                        if (forbidden == n) y += forbidden & 1 ? -1 : 1;
+                    } else {
+                        y += (forbidden & 1 ? -1 : 1) * fact[n - 1 - forbidden] * (1 << (count1 / 2 - 1));
+                        self(self, i + 1, forbidden);
+                    }
                 }
 
-            int forbidden = popcount((unsigned) mask);
-            for (int j = 1; j <= n; j++) degree_count[min(degree[j], 3)]++;
-
-            if (degree_count[3]) continue;
-            else if (cycles) {
-                if (cycles == 1 && forbidden == n) y += forbidden & 1 ? -1 : 1;
-                continue;
+                degree[u]--;
+                degree[v]--;
+                count1 = temp1;
+                count2 = temp2;
+                dsu.rollback(version);
             }
-
-            y += (forbidden & 1 ? -1 : 1) * fact[n - 1 - forbidden] * (1 << (degree_count[1] / 2 - 1));
-        }
+        };
+        dfs(dfs);
 
         cout << "Case #" << x << ": " << y << "\n";
     }
