@@ -502,14 +502,14 @@ int main() {
         for (auto &[u, v] : edges) cin >> u >> v;
 
         auto y = fact[n - 1] * (MOD / 2 + 1);
-        RollbackDisjointSets dsu(n + 1);
+        RollbackDisjointSets rdsu(n + 1);
         vector<int> degree(n + 1);
         int count1 = 0, count2 = 0;
         auto dfs = [&](auto &&self, int i = 0, int f = 0) -> void {
             for (; i < k; i++) {
                 auto [u, v] = edges[i];
 
-                int version = dsu.record(), temp1 = count1, temp2 = count2;
+                int version = rdsu.record(), temp1 = count1, temp2 = count2;
                 auto count = [&](int w) {
                     if (!degree[w]) count1++;
                     else if (degree[w] == 1) count1--;
@@ -521,7 +521,7 @@ int main() {
 
                 int forbidden = f + 1;
                 if (!count2) {
-                    if (!dsu.unite(u, v)) {
+                    if (!rdsu.unite(u, v)) {
                         if (forbidden == n) y += forbidden & 1 ? -1 : 1;
                     } else {
                         y += (forbidden & 1 ? -1 : 1) * fact[n - 1 - forbidden] * (1 << (count1 / 2 - 1));
@@ -533,7 +533,7 @@ int main() {
                 degree[v]--;
                 count1 = temp1;
                 count2 = temp2;
-                dsu.rollback(version);
+                rdsu.rollback(version);
             }
         };
         dfs(dfs);
