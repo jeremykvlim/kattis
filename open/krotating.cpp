@@ -1,13 +1,13 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T>
+template <typename T, typename U>
 struct AntiMonopolyTree {
     vector<int> parent, size;
     vector<T> weight;
-    vector<long long> sum;
+    vector<U> sum;
 
-    AntiMonopolyTree(const vector<long long> &a) : parent(a.size(), -1), size(a.size(), 1), weight(a.size(), numeric_limits<T>::max()), sum(a) {}
+    AntiMonopolyTree(const vector<U> &a) : parent(a.size(), -1), size(a.size(), 1), weight(a.size(), numeric_limits<T>::max()), sum(a) {}
 
     pair<T, int> path_max(int u, int v) {
         upward_maintain(u);
@@ -76,7 +76,7 @@ struct AntiMonopolyTree {
         }
 
         int du = 0, dv = 0;
-        long long su = 0, sv = 0;
+        U su = 0, sv = 0;
         while (~u && ~v) {
             if (w >= weight[u]) {
                 int p = parent[u];
@@ -130,18 +130,19 @@ struct AntiMonopolyTree {
         return true;
     }
 
-    long long component_sum(int v) {
+    U component_sum(int v) {
         upward_maintain(v);
         return sum[root(v)];
     }
 };
 
+template <typename V>
 struct OfflineDynamicGraph {
-    AntiMonopolyTree<int> amt;
+    AntiMonopolyTree<int, V> amt;
     vector<array<int, 3>> edges;
-    vector<pair<int, function<void(AntiMonopolyTree<int> &)>>> queries;
+    vector<pair<int, function<void(AntiMonopolyTree<int, V> &)>>> queries;
 
-    OfflineDynamicGraph(const vector<long long> &a) : amt(a) {}
+    OfflineDynamicGraph(const vector<V> &a) : amt(a) {}
 
     int add_edge(int u, int v) {
         edges.push_back({u, v, 0});
@@ -217,7 +218,7 @@ int main() {
 
     vector<long long> a(nodes + 1, 0);
     iota(a.begin(), a.begin() + n + 1, 0);
-    OfflineDynamicGraph odg(a);
+    OfflineDynamicGraph<long long> odg(a);
     vector<int> edge_id(nodes + 1);
     for (int pi = 1; pi <= n; pi++)
         for (int j = 0; j < id[pi].size(); j++) {

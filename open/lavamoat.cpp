@@ -144,119 +144,175 @@ double euclidean_dist(const Point3D<T> &a, const Point3D<T> &b = {0, 0, 0}) {
     return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y) + (double) (a.z - b.z) * (a.z - b.z));
 }
 
-struct ImplicitTreap {
-    static inline mt19937_64 rng{random_device{}()};
+template <typename T, typename U>
+struct AntiMonopolyTree {
+    vector<int> parent, size;
+    vector<T> weight;
+    vector<U> sum;
 
-    struct TreapNode {
-        array<int, 3> family;
-        unsigned long long prio;
-        int size;
-        double base_A, base_B, aggregate_A, aggregate_B;
+    AntiMonopolyTree(const vector<U> &a) : parent(a.size(), -1), size(a.size(), 1), weight(a.size(), numeric_limits<T>::max()), sum(a) {}
 
-        TreapNode() : family{0, 0, 0}, prio(rng()), size(1),
-                      base_A(0), base_B(0), aggregate_A(0), aggregate_B(0) {}
+    pair<T, int> path_max(int u, int v) {
+        upward_maintain(u);
+        upward_maintain(v);
 
-        auto & operator=(const pair<double, double> &v) {
-            tie(base_A, base_B) = v;
-            return *this;
+        T max_w = numeric_limits<T>::min();
+        int t = -1;
+        while (u != v) {
+            if (size[u] > size[v]) swap(u, v);
+            if (weight[u] == numeric_limits<T>::max()) return {numeric_limits<T>::max(), -1};
+            if (max_w < weight[u]) {
+                max_w = weight[u];
+                t = u;
+            }
+            u = parent[u];
         }
-    };
-
-    vector<TreapNode> T;
-
-    ImplicitTreap(int n) : T(n + 1) {}
-
-    int size(int i) const {
-        return i ? T[i].size : 0;
+        return {max_w, t};
     }
 
-    double base_A(int i) const {
-        return i ? T[i].base_A : 0;
+    bool connected(int u, int v) {
+        return u == v || path_max(u, v).second != -1;
     }
 
-    double base_B(int i) const {
-        return i ? T[i].base_B : 0;
-    }
+    void upward_maintain(int v) {
+        while (~parent[v]) {
+            int p = parent[v];
+            if (3 * size[v] <= 2 * size[p]) {
+                v = p;
+                continue;
+            }
 
-    double aggregate_A(int i) const {
-        return i ? T[i].aggregate_A : 0;
-    }
-
-    double aggregate_B(int i) const {
-        return i ? T[i].aggregate_B : 0;
-    }
-
-    void pull(int i) {
-        if (!i) return;
-        auto [l, r, p] = T[i].family;
-        T[i].size = size(l) + size(r) + 1;
-        T[i].aggregate_A = aggregate_A(l) + aggregate_A(r) + base_A(i);
-        T[i].aggregate_B = aggregate_B(l) + aggregate_B(r) + base_B(i);
-    }
-
-    void attach(int i, int c, int j) {
-        T[i].family[c] = j;
-        if (j) T[j].family[2] = i;
-        pull(i);
-    }
-
-    pair<int, int> split(int i, int k) {
-        if (!i) return {0, 0};
-        auto [l, r, p] = T[i].family;
-        int sl = size(l);
-        if (k <= sl) {
-            auto [ll, lr] = split(l, k);
-            attach(i, 0, lr);
-            if (ll) T[ll].family[2] = 0;
-            T[i].family[2] = 0;
-            return {ll, i};
-        } else {
-            auto [rl, rr] = split(r, k - sl - 1);
-            attach(i, 1, rl);
-            if (rr) T[rr].family[2] = 0;
-            T[i].family[2] = 0;
-            return {i, rr};
+            sum[p] -= sum[v];
+            size[p] -= size[v];
+            parent[v] = parent[p];
+            if (weight[v] < weight[p]) {
+                sum[v] += sum[p];
+                size[v] += size[p];
+                swap(weight[v], weight[p]);
+                parent[p] = v;
+            }
         }
     }
 
-    int meld(int i, int j) {
-        if (!i || !j) {
-            int k = i ^ j;
-            if (k) T[k].family[2] = 0;
-            return k;
+    int root(int v) {
+        while (~parent[v]) v = parent[v];
+        return v;
+    }
+
+    void cut(int v) {
+        for (int p = parent[v]; ~p; p = parent[p]) {
+            size[p] -= size[v];
+            sum[p] -= sum[v];
         }
-        if (T[i].prio < T[j].prio) {
-            attach(i, 1, meld(T[i].family[1], j));
-            T[i].family[2] = 0;
-            return i;
-        } else {
-            attach(j, 0, meld(i, T[j].family[0]));
-            T[j].family[2] = 0;
-            return j;
+        parent[v] = -1;
+        weight[v] = numeric_limits<T>::max();
+    }
+
+    bool add(int u, int v, T w) {
+        if (u == v) return false;
+
+        auto [max_w, t] = path_max(u, v);
+        bool merged = max_w == numeric_limits<T>::max();
+        if (!merged) {
+            if (w >= max_w) return false;
+            cut(t);
         }
-    }
 
-    int node_root(int i) {
-        for (; T[i].family[2]; i = T[i].family[2]);
-        return i;
-    }
+        int du = 0, dv = 0;
+        U su = 0, sv = 0;
+        while (~u && ~v) {
+            if (w >= weight[u]) {
+                int p = parent[u];
+                if (~p) {
+                    size[p] += du;
+                    sum[p] += su;
+                }
+                u = p;
+            } else if (w >= weight[v]) {
+                int p = parent[v];
+                if (~p) {
+                    size[p] += dv;
+                    sum[p] += sv;
+                }
+                v = p;
+            } else {
+                if (size[u] > size[v]) {
+                    swap(u, v);
+                    swap(du, dv);
+                    swap(su, sv);
+                }
 
-    int rank(int i) {
-        int r = size(T[i].family[0]);
-        while (T[i].family[2]) {
-            int p = T[i].family[2];
-            if (T[p].family[1] == i) r += size(T[p].family[0]) + 1;
-            i = p;
+                du -= size[u];
+                su -= sum[u];
+                dv += size[u];
+                sv += sum[u];
+                size[v] += size[u];
+                sum[v] += sum[u];
+                w = exchange(weight[u], w);
+                u = exchange(parent[u], v);
+                if (~u) {
+                    size[u] += du;
+                    sum[u] += su;
+                }
+            }
         }
-        return r;
+
+        if (~v)
+            for (v = parent[v]; ~v; v = parent[v]) {
+                size[v] += dv;
+                sum[v] += sv;
+            }
+        return merged;
     }
 
-    void point_update(int i, const pair<double, double> &v) {
-        for (T[i] = v; i; i = T[i].family[2]) pull(i);
+    bool remove(int u, int v, T w) {
+        auto [max_w, t] = path_max(u, v);
+        if (max_w != w) return false;
+
+        cut(t);
+        return true;
     }
 
-    auto & operator[](int i) {
-        return T[i];
+    U component_sum(int v) {
+        upward_maintain(v);
+        return sum[root(v)];
+    }
+};
+
+template <typename V>
+struct OfflineDynamicGraph {
+    AntiMonopolyTree<int, V> amt;
+    vector<array<int, 3>> edges;
+    vector<pair<int, function<void(AntiMonopolyTree<int, V> &)>>> queries;
+
+    OfflineDynamicGraph(const vector<V> &a) : amt(a) {}
+
+    int add_edge(int u, int v) {
+        edges.push_back({u, v, 0});
+        return edges.size() - 1;
+    }
+
+    void delete_edge(int e) {
+        auto [u, v, w] = edges[e];
+        edges[e][2] = -edges.size();
+        edges.push_back({u, v, 1});
+    }
+
+    template <typename F>
+    void query(F &&f) {
+        queries.emplace_back(edges.size(), f);
+    }
+
+    void process() {
+        int q = 0;
+        for (int i = 0; i < edges.size(); i++) {
+            for (; q < queries.size() && queries[q].first == i; q++) queries[q].second(amt);
+
+            auto [u, v, w] = edges[i];
+            if (w == 1) amt.remove(u, v, -i);
+            else amt.add(u, v, w ? w : -edges.size() - 1);
+        }
+        for (; q < queries.size(); q++) queries[q].second(amt);
     }
 };
 
@@ -283,15 +339,14 @@ int main() {
             if (x == W && y == L) NE = i;
         }
 
-        int edges = 0;
+        int nodes = 0;
         unordered_map<pair<int, int>, int, Hash> indices;
-        auto edge_index = [&](int u, int v) {
-            if (u > v) swap(u, v);
-            auto it = indices.find({u, v});
-            if (it != indices.end()) return it->second;
-            return indices[{u, v}] = edges++;
+        auto node_id = [&](int u, int v) {
+            auto [it, inserted] = indices.try_emplace(minmax(u, v), nodes);
+            if (inserted) nodes++;
+            return it->second;
         };
-        int west_border = edge_index(SW, NW), east_border = edge_index(SE, NE);
+        int west_border = node_id(SW, NW), east_border = node_id(SE, NE);
 
         vector<int> order(n);
         iota(order.begin(), order.end(), 0);
@@ -300,9 +355,9 @@ int main() {
         vector<int> pos(n);
         for (int i = 0; i < n; i++) pos[order[i]] = i;
 
-        vector<pair<array<int, 2>, array<double, 2>>> contours;
+        vector<pair<array<int, 2>, complex<double>>> contours;
         vector<vector<int>> adds(n), deletes(n);
-        vector<vector<pair<int, double>>> edge_lengths(n);
+        vector<vector<pair<int, double>>> node_lengths(n);
         while (m--) {
             int a, b, c;
             cin >> a >> b >> c;
@@ -310,14 +365,14 @@ int main() {
             b--;
             c--;
 
-            auto add = [&](int i, int j, int k, int e) {
+            auto add = [&](int i, int j, int k, int t) {
                 auto u = coords[i] - coords[j], v = coords[k] - coords[j];
                 if (u.z * (coords[k].z - coords[i].z) < 0) return;
-                edge_lengths[i].emplace_back(e, euclidean_dist(coords[j] + v * (u.z / v.z), coords[i]));
+                node_lengths[i].emplace_back(t, euclidean_dist(coords[j] + v * (u.z / v.z), coords[i]));
             };
-            add(a, b, c, edge_index(b, c));
-            add(b, c, a, edge_index(c, a));
-            add(c, a, b, edge_index(a, b));
+            add(a, b, c, node_id(b, c));
+            add(b, c, a, node_id(c, a));
+            add(c, a, b, node_id(a, b));
 
             while (coords[a].z > coords[b].z || coords[a].z > coords[c].z) {
                 swap(a, b);
@@ -340,91 +395,64 @@ int main() {
                 auto a = euclidean_dist(slope(coords[i], coords[j]) - slope(coords[i], coords[k])) * (neg ? -1 : 1), b = -coords[i].z * a;
 
                 if (swapped) swap(u, v);
-                contours.emplace_back(make_pair(array{u, v}, array{a, b}));
+                contours.emplace_back(make_pair(array{u, v}, complex{a, b}));
                 adds[l].emplace_back(contours.size() - 1);
                 deletes[r].emplace_back(contours.size() - 1);
             };
             int p = pos[a], q = pos[b], r = pos[c];
-            add_contour(p + 1, q, edge_index(a, b), edge_index(a, c), a, b, c, false);
-            add_contour(q + 1, r, edge_index(b, c), edge_index(a, c), c, a, b, true);
+            add_contour(p + 1, q, node_id(a, b), node_id(a, c), a, b, c, false);
+            add_contour(q + 1, r, node_id(b, c), node_id(a, c), c, a, b, true);
         }
 
-        ImplicitTreap treap(edges);
+        vector<complex<double>> c(contours.size() + nodes);
+        for (int e = 0; e < contours.size(); e++) c[e + nodes] = contours[e].second;
+
         auto len = 1e20;
-        vector<int> state(contours.size(), 0), cycle_edge(edges + 1, -1);
+        OfflineDynamicGraph<complex<double>> odg(c);
+        vector<array<int, 2>> edge_id(contours.size());
         for (int l = 0; l < n; l++) {
             for (int e : deletes[l]) {
-                if (!state[e]) continue;
-
-                auto [u1, v1] = contours[e].first;
-                int component = treap.node_root(u1 + 1);
-                if (state[e] == 2) {
-                    if (cycle_edge[component] == e) cycle_edge[component] = -1;
-                    state[e] = 0;
-                } else {
-                    int f = cycle_edge[component];
-                    cycle_edge[component] = -1;
-
-                    auto [tl, tr] = treap.split(component, treap.rank(u1 + 1) + 1);
-                    if (tl) cycle_edge[tl] = -1;
-                    if (tr) cycle_edge[tr] = -1;
-                    treap.point_update(u1 + 1, {0, 0});
-                    state[e] = 0;
-                    if (f != -1) {
-                        auto [u2, v2] = contours[f].first;
-                        auto [a, b] = contours[f].second;
-                        treap.point_update(u2 + 1, {a, b});
-                        state[f] = 1;
-                        treap.meld(tr, tl);
-                    }
-                }
+                odg.delete_edge(edge_id[e][0]);
+                odg.delete_edge(edge_id[e][1]);
             }
 
             for (int e : adds[l]) {
-                if (state[e]) continue;
-
                 auto [u, v] = contours[e].first;
-                int cu = treap.node_root(u + 1), cv = treap.node_root(v + 1);
-                if (cu == cv) {
-                    cycle_edge[cu] = e;
-                    state[e] = 2;
-                } else {
-                    auto [a, b] = contours[e].second;
-                    treap.point_update(u + 1, {a, b});
-                    treap.meld(cu, cv);
-                    state[e] = 1;
-                }
+                edge_id[e][0] = odg.add_edge(u, e + nodes);
+                edge_id[e][1] = odg.add_edge(e + nodes, v);
             }
 
-            int i = order[l];
-            double west_len = (i == SW || i == NW) ? 0 : 1e20, east_len = (i == SE || i == NE) ? 0 : 1e20,
-                   west_base = -1, east_base = -1;
-            int west = treap.node_root(west_border + 1), east = treap.node_root(east_border + 1);
-            for (auto [e, d] : edge_lengths[i]) {
-                int component = treap.node_root(e + 1);
-                auto relax = [&](auto &length, auto &base, int border) {
-                    if (e == border) {
-                        length = min(length, d);
-                        return;
-                    }
-                    if (base < 0) {
-                        auto A = treap[component].aggregate_A, B = treap[component].aggregate_B;
-                        int f = cycle_edge[component];
-                        if (f != -1) {
-                            auto [a, b] = contours[f].second;
-                            A += a;
-                            B += b;
+            odg.query([&, l](auto &amt) {
+                int i = order[l];
+                double west_len = (i == SW || i == NW) ? 0 : 1e20, east_len = (i == SE || i == NE) ? 0 : 1e20,
+                       west_base = -1, east_base = -1;
+
+                for (auto [v, d] : node_lengths[i]) amt.upward_maintain(v);
+                amt.upward_maintain(west_border);
+                amt.upward_maintain(east_border);
+                int west = amt.root(west_border), east = amt.root(east_border);
+                for (auto [v, d] : node_lengths[i]) {
+                    int component = amt.root(v);
+                    auto relax = [&](double &length, double &base, int border) {
+                        if (v == border) {
+                            length = min(length, d);
+                            return;
                         }
-                        base = A * coords[i].z + B;
-                    }
-                    length = min(length, base + d);
-                };
-                if (component == west) relax(west_len, west_base, west_border);
-                if (component == east) relax(east_len, east_base, east_border);
-            }
 
-            if (west_len != 1e20 && east_len != 1e20) len = min(len, west_len + east_len);
+                        if (base < 0) {
+                            auto sum = amt.sum[component];
+                            base = sum.real() * coords[i].z + sum.imag();
+                        }
+                        length = min(length, base + d);
+                    };
+                    if (component == west) relax(west_len, west_base, west_border);
+                    if (component == east) relax(east_len, east_base, east_border);
+                }
+
+                if (west_len != 1e20 && east_len != 1e20) len = min(len, west_len + east_len);
+            });
         }
+        odg.process();
 
         if (len == 1e20) cout << "impossible\n";
         else cout << fixed << setprecision(6) << len << "\n";
