@@ -16,53 +16,46 @@ struct Matrix {
 };
 
 template <typename T>
-T rref(Matrix<T> &matrix) {
-    int n = matrix.r, m = matrix.c;
+Matrix<T> I(int n) {
+    Matrix<T> I(n);
+    for (int i = 0; i < n; i++) I[i][i] = 1;
+    return I;
+}
 
-    T det = 1;
+template <typename T>
+Matrix<T> rref(Matrix<T> &matrix) {
+    int n = matrix.r, m = matrix.c;
+    auto matrix_inv = I<T>(n);
+
     int rank = 0;
     for (int c = 0; c < m && rank < n; c++) {
         int pivot = rank;
         for (int i = rank + 1; i < n; i++)
-            if (fabs(matrix[i][c]) > fabs(matrix[pivot][c])) pivot = i;
+            if (matrix[i][c] > matrix[pivot][c]) pivot = i;
 
-        if (fabs(matrix[pivot][c]) < 1e-9) continue;
+        if (!matrix[pivot][c]) continue;
         swap(matrix[pivot], matrix[rank]);
-        if (pivot != rank) det *= -1;
+        swap(matrix_inv[pivot], matrix_inv[rank]);
 
-        det *= matrix[rank][c];
         auto temp = 1 / matrix[rank][c];
-        for (int j = 0; j < m; j++) matrix[rank][j] *= temp;
+        for (int j = 0; j < m; j++) {
+            matrix[rank][j] *= temp;
+            matrix_inv[rank][j] *= temp;
+        }
 
         for (int i = 0; i < n; i++)
-            if (i != rank && fabs(matrix[i][c]) > 1e-9) {
+            if (i != rank && matrix[i][c]) {
                 temp = matrix[i][c];
-                for (int j = 0; j < m; j++) matrix[i][j] -= temp * matrix[rank][j];
+                for (int j = 0; j < m; j++) {
+                    matrix[i][j] -= temp * matrix[rank][j];
+                    matrix_inv[i][j] -= temp * matrix_inv[rank][j];
+                }
             }
 
         rank++;
     }
 
-    return rank < n ? 0 : det;
-}
-
-template <typename T>
-T kirchoffs_theorem(int n, const vector<pair<int, int>> &edges) {
-    vector<int> degree(n, 0);
-    for (auto [u, v] : edges) {
-        degree[u]++;
-        degree[v]++;
-    }
-
-    Matrix<T> laplacian(n - 1);
-    for (int i = 0; i < n - 1; i++) laplacian[i][i] = degree[i];
-    for (auto [u, v] : edges)
-        if (u != n - 1 && v != n - 1) {
-            laplacian[u][v]--;
-            laplacian[v][u]--;
-        }
-
-    return rref(laplacian);
+    return matrix_inv;
 }
 
 int main() {
@@ -72,29 +65,24 @@ int main() {
     int v, e;
     cin >> v >> e;
 
-    vector<pair<int, int>> edges(e);
-    vector<int> weights(e);
-    for (int i = 0; i < e; i++) {
-        int a, b, w;
+    vector<array<int, 3>> edges(e);
+    Matrix<double> laplacian(v - 1);
+    for (auto &[a, b, w] : edges) {
         cin >> a >> b >> w;
+        a--;
+        b--;
 
-        edges[i] = {a - 1, b - 1};
-        weights[i] = w;
+        if (a != v - 1) laplacian[a][a]++;
+        if (b != v - 1) laplacian[b][b]++;
+
+        if (a != v - 1 && b != v - 1) {
+            laplacian[a][b]--;
+            laplacian[b][a]--;
+        }
     }
 
-    double total = 0;
-    for (int i = 0; i < e; i++) {
-        vector<pair<int, int>> temp;
-        auto [a1, b1] = edges[i];
-        for (int j = 0; j < e; j++)
-            if (i != j) {
-                auto [a2, b2] = edges[j];
-                if (b2 == b1) b2 = a1;
-                if (a2 == b1) a2 = a1;
-                temp.emplace_back(a2 - (a2 > b1), b2 - (b2 > b1));
-            }
-
-        total += weights[i] * kirchoffs_theorem<double>(v - 1, temp);
-    }
-    cout << fixed << setprecision(5) << total / kirchoffs_theorem<double>(v, edges);
+    auto inv = rref(laplacian);
+    auto average = 0.;
+    for (auto [a, b, w] : edges) average += w * (a == v - 1 ? inv[b][b] : (b == v - 1 ? inv[a][a] : inv[a][a] + inv[b][b] - 2 * inv[a][b]));
+    cout << fixed << setprecision(5) << average;
 }
