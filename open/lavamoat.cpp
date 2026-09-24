@@ -427,9 +427,6 @@ int main() {
                 double west_len = (i == SW || i == NW) ? 0 : 1e20, east_len = (i == SE || i == NE) ? 0 : 1e20,
                        west_base = -1, east_base = -1;
 
-                for (auto [v, d] : node_lengths[i]) amt.upward_maintain(v);
-                amt.upward_maintain(west_border);
-                amt.upward_maintain(east_border);
                 int west = amt.root(west_border), east = amt.root(east_border);
                 for (auto [v, d] : node_lengths[i]) {
                     int component = amt.root(v);
