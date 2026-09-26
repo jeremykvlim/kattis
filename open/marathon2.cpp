@@ -109,8 +109,7 @@ int main() {
     s = m / s;
     vector<int> dp(p, 0);
     auto get = [&](int row, int col) {
-        int j = row + 1;
-        int d = positions[j] - positions[col];
+        int d = positions[row + 1] - positions[col];
         if (d <= x) return dp[col] + h * d;
         return dp[col] + h * x + s * (d - x);
     };
