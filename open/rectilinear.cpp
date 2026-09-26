@@ -1,124 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T>
-struct Point {
-    T x, y;
-
-    Point() {}
-    Point(T x, T y) : x(x), y(y) {}
-
-    template <typename U>
-    Point(U x, U y) : x(x), y(y) {}
-
-    template <typename U>
-    Point(const Point<U> &p) : x((T) p.x), y((T) p.y) {}
-
-    const auto begin() const {
-        return &x;
-    }
-
-    const auto end() const {
-        return &y + 1;
-    }
-
-    Point operator-() const {
-        return {-x, -y};
-    }
-
-    Point operator!() const {
-        return {y, x};
-    }
-
-    Point operator~() const {
-        return {-y, x};
-    }
-
-    bool operator<(const Point &p) const {
-        return x != p.x ? x < p.x : y < p.y;
-    }
-
-    bool operator>(const Point &p) const {
-        return x != p.x ? x > p.x : y > p.y;
-    }
-
-    bool operator==(const Point &p) const {
-        return x == p.x && y == p.y;
-    }
-
-    bool operator!=(const Point &p) const {
-        return x != p.x || y != p.y;
-    }
-
-    bool operator<=(const Point &p) const {
-        return *this < p || *this == p;
-    }
-
-    bool operator>=(const Point &p) const {
-        return *this > p || *this == p;
-    }
-
-    Point operator+(const Point &p) const {
-        return {x + p.x, y + p.y};
-    }
-
-    Point operator+(const T &v) const {
-        return {x + v, y + v};
-    }
-
-    Point & operator+=(const Point &p) {
-        x += p.x;
-        y += p.y;
-        return *this;
-    }
-
-    Point & operator+=(const T &v) {
-        x += v;
-        y += v;
-        return *this;
-    }
-
-    Point operator-(const Point &p) const {
-        return {x - p.x, y - p.y};
-    }
-
-    Point operator-(const T &v) const {
-        return {x - v, y - v};
-    }
-
-    Point & operator-=(const Point &p) {
-        x -= p.x;
-        y -= p.y;
-        return *this;
-    }
-
-    Point & operator-=(const T &v) {
-        x -= v;
-        y -= v;
-        return *this;
-    }
-
-    Point operator*(const T &v) const {
-        return {x * v, y * v};
-    }
-
-    Point & operator*=(const T &v) {
-        x *= v;
-        y *= v;
-        return *this;
-    }
-
-    Point operator/(const T &v) const {
-        return {x / v, y / v};
-    }
-
-    Point & operator/=(const T &v) {
-        x /= v;
-        y /= v;
-        return *this;
-    }
-};
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -130,13 +12,13 @@ int main() {
         int n;
         cin >> n;
 
-        vector<Point<int>> points(n);
+        vector<pair<int, int>> points(n);
         vector<int> X(n), Y(n);
         for (int i = 0; i < n; i++) {
-            cin >> points[i].x >> points[i].y;
+            cin >> points[i].first >> points[i].second;
 
-            X[i] = points[i].x;
-            Y[i] = points[i].y;
+            X[i] = points[i].first;
+            Y[i] = points[i].second;
         }
         sort(X.begin(), X.end());
         sort(Y.begin(), Y.end());
@@ -169,7 +51,7 @@ int main() {
         auto len = 0LL;
         vector<bool> visited(n, false);
         for (bool dir = false;; dir = !dir) {
-            int v = lower_bound(sorted.begin(), sorted.end(), Point(x, y)) - sorted.begin();
+            int v = lower_bound(sorted.begin(), sorted.end(), make_pair(x, y)) - sorted.begin();
             if (v >= n || visited[v]) break;
 
             visited[v] = true;

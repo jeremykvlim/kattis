@@ -202,8 +202,8 @@ int main() {
     vector<vector<pair<Point<int>, int>>> sweep(l + 1);
     for (int x1 : row[x0])
         for (int y1 : col[y0]) {
-            int t = manhattan_dist(Point(x0, y0), Point(x1, y1)) + 1;
-            if (t <= l) sweep[t].emplace_back(Point(x1, y1), 0);
+            int t = manhattan_dist(Point{x0, y0}, Point{x1, y1}) + 1;
+            if (t <= l) sweep[t].emplace_back(Point{x1, y1}, 0);
         }
 
     vector<vector<int>> dp(r, vector<int>(c, -1));
@@ -241,7 +241,7 @@ int main() {
             int count = -1;
             for (int x2 : row[x1])
                 for (int y2 : col[y1]) {
-                    int t2 = t1 - manhattan_dist(Point(x1, y1), Point(x2, y2)) + 1;
+                    int t2 = t1 - manhattan_dist(Point{x1, y1}, Point{x2, y2}) + 1;
                     if (t2 > 0) {
                         int i = upper_bound(time[x2][y2].begin(), time[x2][y2].end(), t2) - time[x2][y2].begin() - 1;
                         count = max(count, i < 0 ? -1 : pref_max[x2][y2][i]);
@@ -256,7 +256,7 @@ int main() {
             int m1 = 0;
             for (int dx = -2; dx <= 2; dx++)
                 for (int dy = -2; dy <= 2; dy++) {
-                    int dt = manhattan_dist(Point(dx, dy)), x2 = x1 + dx, y2 = y1 + dy, t2 = t1 + dt;
+                    int dt = manhattan_dist(Point{dx, dy}), x2 = x1 + dx, y2 = y1 + dy, t2 = t1 + dt;
                     if (dt <= 2 && 0 <= x2 && x2 < r && 0 <= y2 && y2 < c && t2 - K < times[x2][y2] && times[x2][y2] <= t2) m1 |= encode(dx, dy);
                 }
 
@@ -278,14 +278,14 @@ int main() {
                 if (!m3) {
                     for (int x2 : row[x1])
                         for (int y2 : col[y1]) {
-                            int t2 = t1 + manhattan_dist(Point(x1, y1), Point(x2, y2));
-                            if (t1 < t2 && t2 <= l) sweep[t2].emplace_back(Point(x2, y2), count);
+                            int t2 = t1 + manhattan_dist(Point{x1, y1}, Point{x2, y2});
+                            if (t1 < t2 && t2 <= l) sweep[t2].emplace_back(Point{x2, y2}, count);
                         }
 
                     check(p, count);
                 } else if (t1 < l) {
                     states[t1 + 1][p][m3] = max(states[t1 + 1][p][m3], count);
-                    Point<int> pu = p + Point(-1, 0), pd = p + Point(1, 0), pl = p + Point(0, -1), pr = p + Point(0, 1);
+                    auto pu = p + Point{-1, 0}, pd = p + Point{1, 0}, pl = p + Point{0, -1}, pr = p + Point{0, 1};
                     int m4 = (m3 & up) << 5, m5 = (m3 & down) >> 5, m6 = (m3 & left) << 1, m7 = (m3 & right) >> 1;
                     for (auto [q, mask] : vector<pair<Point<int>, int>>{{pu, m4}, {pd, m5}, {pl, m6}, {pr, m7}})
                         if (0 <= q.x && q.x < r && 0 <= q.y && q.y < c) states[t1 + 1][q][mask] = max(states[t1 + 1][q][mask], count);

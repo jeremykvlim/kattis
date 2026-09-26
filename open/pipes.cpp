@@ -17,8 +17,8 @@ int main() {
             int s, t;
             cin >> s >> t;
 
-            connect[s] = t;
-            connect[t] = s;
+            connect[s - 1] = t - 1;
+            connect[t - 1] = s - 1;
         }
 
 
@@ -64,7 +64,7 @@ int main() {
                     };
                     auto [s, a] = pos(j);
                     auto [t, b] = pos(i);
-                    if (!visited[s] || !visited[t] || !dfs(dfs, s, a, t, b)) possible = false;
+                    if (visited[s] || visited[t] || !dfs(dfs, s, a, t, b)) possible = false;
                 }
             }
 

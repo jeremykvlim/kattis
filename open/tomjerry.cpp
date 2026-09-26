@@ -576,9 +576,9 @@ int main() {
         exit(0);
     }
 
-    vector<Point<int>> cheeses(n);
-    for (auto &[x, y] : cheeses) cin >> x >> y;
-    sort(cheeses.begin(), cheeses.end());
+    vector<Point<int>> coords(n);
+    for (auto &[x, y] : coords) cin >> x >> y;
+    sort(coords.begin(), coords.end());
 
     vector<modint> fact(w + h + 1, 1), fact_inv(w + h + 1, 1);
     auto prepare = [&]() {
@@ -607,11 +607,11 @@ int main() {
         modint count = 1;
         Point<int> prev{1, 1};
         for (int i : indices) {
-            auto c = cheeses[i];
-            if (c < prev) goto next;
+            auto curr = coords[i];
+            if (prev > curr) goto next;
 
-            count *= ways(prev, c);
-            prev = c;
+            count *= ways(prev, curr);
+            prev = curr;
         }
         count *= ways(prev, {w, h});
 

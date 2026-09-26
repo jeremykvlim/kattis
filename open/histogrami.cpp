@@ -2,124 +2,6 @@
 using namespace std;
 
 template <typename T>
-struct Point {
-    T x, y;
-
-    Point() {}
-    Point(T x, T y) : x(x), y(y) {}
-
-    template <typename U>
-    Point(U x, U y) : x(x), y(y) {}
-
-    template <typename U>
-    Point(const Point<U> &p) : x((T) p.x), y((T) p.y) {}
-
-    const auto begin() const {
-        return &x;
-    }
-
-    const auto end() const {
-        return &y + 1;
-    }
-
-    Point operator-() const {
-        return {-x, -y};
-    }
-
-    Point operator!() const {
-        return {y, x};
-    }
-
-    Point operator~() const {
-        return {-y, x};
-    }
-
-    bool operator<(const Point &p) const {
-        return x != p.x ? x < p.x : y < p.y;
-    }
-
-    bool operator>(const Point &p) const {
-        return x != p.x ? x > p.x : y > p.y;
-    }
-
-    bool operator==(const Point &p) const {
-        return x == p.x && y == p.y;
-    }
-
-    bool operator!=(const Point &p) const {
-        return x != p.x || y != p.y;
-    }
-
-    bool operator<=(const Point &p) const {
-        return *this < p || *this == p;
-    }
-
-    bool operator>=(const Point &p) const {
-        return *this > p || *this == p;
-    }
-
-    Point operator+(const Point &p) const {
-        return {x + p.x, y + p.y};
-    }
-
-    Point operator+(const T &v) const {
-        return {x + v, y + v};
-    }
-
-    Point & operator+=(const Point &p) {
-        x += p.x;
-        y += p.y;
-        return *this;
-    }
-
-    Point & operator+=(const T &v) {
-        x += v;
-        y += v;
-        return *this;
-    }
-
-    Point operator-(const Point &p) const {
-        return {x - p.x, y - p.y};
-    }
-
-    Point operator-(const T &v) const {
-        return {x - v, y - v};
-    }
-
-    Point & operator-=(const Point &p) {
-        x -= p.x;
-        y -= p.y;
-        return *this;
-    }
-
-    Point & operator-=(const T &v) {
-        x -= v;
-        y -= v;
-        return *this;
-    }
-
-    Point operator*(const T &v) const {
-        return {x * v, y * v};
-    }
-
-    Point & operator*=(const T &v) {
-        x *= v;
-        y *= v;
-        return *this;
-    }
-
-    Point operator/(const T &v) const {
-        return {x / v, y / v};
-    }
-
-    Point & operator/=(const T &v) {
-        x /= v;
-        y /= v;
-        return *this;
-    }
-};
-
-template <typename T>
 struct FenwickTree {
     vector<T> BIT;
 
@@ -149,7 +31,7 @@ int main() {
     cin >> n >> m >> g;
 
     int max_x_h = -1, max_y_h = -1, max_x_s = -1, max_y_s = -1;
-    vector<Point<int>> h(n), s(m);
+    vector<pair<int, int>> h(n), s(m);
     for (auto &[x, y] : h) {
         cin >> x >> y;
 
@@ -165,15 +47,15 @@ int main() {
 
     vector<int> y_h(max_x_h + 1, 0);
     for (int i = 1; i < n; i += 2)
-        for (int x = h[i - 1].x + 1; x <= h[i].x; x++) y_h[x] = h[i].y;
+        for (int x = h[i - 1].first + 1; x <= h[i].first; x++) y_h[x] = h[i].second;
 
     vector<vector<int>> y_s(max_x_s + 1);
-    for (int i = 0; i < m; i++) y_s[s[i].x].emplace_back(s[i].y);
+    for (int i = 0; i < m; i++) y_s[s[i].first].emplace_back(s[i].second);
 
-    int w = h[n - 1].x;
+    int w = h[n - 1].first;
     FenwickTree<int> fw_count(max(max_y_h, max_y_s) + 1);
     FenwickTree<long long> fw_sum(max(max_y_h, max_y_s) + 1);
-    vector<Point<int>> p(w + 1);
+    vector<pair<int, int>> p(w + 1);
     vector<int> indices(max_y_s + 1, -1), lower_count(max_y_s + 1, 0), upper_count(max_y_s + 1, 0);
     vector<long long> d(w + 1, 1e18), lower_sum(max_y_s + 1, 0), upper_sum(max_y_s + 1, 0);
     d[0] = 0;
@@ -202,13 +84,12 @@ int main() {
     }
 
     cout << d[w] << "\n";
-    vector<Point<int>> h_;
-    for (Point<int> curr{w, 0}, prev; curr.x; curr = prev) {
-        prev = p[curr.x];
-
-        if (curr.y == prev.y) h_.back().x = prev.x;
+    vector<pair<int, int>> h_;
+    for (pair<int, int> curr{w, 0}, prev; curr.first; curr = prev) {
+        prev = p[curr.first];
+        if (curr.second == prev.second) h_.back().first = prev.first;
         else {
-            h_.emplace_back(curr.x, prev.y);
+            h_.emplace_back(curr.first, prev.second);
             h_.emplace_back(prev);
         }
     }

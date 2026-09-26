@@ -349,141 +349,26 @@ struct DynamicMod {
 auto &MOD = DynamicMod<unsigned int>::value;
 using modint = BarrettModInt<DynamicMod<unsigned int>>;
 
-template <typename T>
-struct Point {
-    T x, y;
-
-    Point() {}
-    Point(T x, T y) : x(x), y(y) {}
-
-    template <typename U>
-    Point(U x, U y) : x(x), y(y) {}
-
-    template <typename U>
-    Point(const Point<U> &p) : x((T) p.x), y((T) p.y) {}
-
-    const auto begin() const {
-        return &x;
-    }
-
-    const auto end() const {
-        return &y + 1;
-    }
-
-    Point operator-() const {
-        return {-x, -y};
-    }
-
-    Point operator!() const {
-        return {y, x};
-    }
-
-    Point operator~() const {
-        return {-y, x};
-    }
-
-    bool operator<(const Point &p) const {
-        return x != p.x ? x < p.x : y < p.y;
-    }
-
-    bool operator>(const Point &p) const {
-        return x != p.x ? x > p.x : y > p.y;
-    }
-
-    bool operator==(const Point &p) const {
-        return x == p.x && y == p.y;
-    }
-
-    bool operator!=(const Point &p) const {
-        return x != p.x || y != p.y;
-    }
-
-    bool operator<=(const Point &p) const {
-        return *this < p || *this == p;
-    }
-
-    bool operator>=(const Point &p) const {
-        return *this > p || *this == p;
-    }
-
-    Point operator+(const Point &p) const {
-        return {x + p.x, y + p.y};
-    }
-
-    Point operator+(const T &v) const {
-        return {x + v, y + v};
-    }
-
-    Point & operator+=(const Point &p) {
-        x += p.x;
-        y += p.y;
-        return *this;
-    }
-
-    Point & operator+=(const T &v) {
-        x += v;
-        y += v;
-        return *this;
-    }
-
-    Point operator-(const Point &p) const {
-        return {x - p.x, y - p.y};
-    }
-
-    Point operator-(const T &v) const {
-        return {x - v, y - v};
-    }
-
-    Point & operator-=(const Point &p) {
-        x -= p.x;
-        y -= p.y;
-        return *this;
-    }
-
-    Point & operator-=(const T &v) {
-        x -= v;
-        y -= v;
-        return *this;
-    }
-
-    Point operator*(const T &v) const {
-        return {x * v, y * v};
-    }
-
-    Point & operator*=(const T &v) {
-        x *= v;
-        y *= v;
-        return *this;
-    }
-
-    Point operator/(const T &v) const {
-        return {x / v, y / v};
-    }
-
-    Point & operator/=(const T &v) {
-        x /= v;
-        y /= v;
-        return *this;
-    }
-};
-
 template <typename T, typename U>
-Point<T> add(Point<T> p, Point<T> q, U a) {
-    if (p == Point<T>{-1, -1}) return q;
-    if (q == Point<T>{-1, -1}) return p;
+pair<T, T> elliptic_curve_point_add(const pair<T, T> &p, const pair<T, T> &q, U a) {
+    if (p == pair<T, T>{-1, -1}) return q;
+    if (q == pair<T, T>{-1, -1}) return p;
 
-    if (p.x == q.x && (p.y == -q.y || p.y == q.y && p.y == 0)) return {-1, -1};
+    auto [xp, yp] = p;
+    auto [xq, yq] = q;
+    if (xp == xq && yp == -yq) return {-1, -1};
 
-    T lambda = p == q ? (3 * p.x * p.x + a) / (2 * p.y) : (q.y - p.y) / (q.x - p.x), xr = lambda * lambda - p.x - q.x, yr = lambda * (p.x - xr) - p.y;
-    return {xr, yr};
+    T lambda = p == q ? (3 * xp * xp + a) / (2 * yp) : (yq - yp) / (xq - xp),
+      x = lambda * lambda - xp - xq, y = lambda * (xp - x) - yp;
+    return {x, y};
 }
 
 template <typename T, typename U>
-Point<T> multiply(Point<T> base, U exponent, U a) {
-    Point<T> p{-1, -1};
+pair<T, T> elliptic_curve_scalar_multiply(pair<T, T> base, U exponent, U a) {
+    pair<T, T> p{-1, -1};
     while (exponent) {
-        if (exponent & 1) p = add(p, base, a);
-        base = add(base, base, a);
+        if (exponent & 1) p = elliptic_curve_point_add(p, base, a);
+        base = elliptic_curve_point_add(base, base, a);
         exponent >>= 1;
     }
     return p;
@@ -503,7 +388,7 @@ int main() {
 
     modint::init();
 
-    auto np = multiply(Point<modint>{x2, y2}, n, a);
-    if (np == Point<modint>{-1, -1}) cout << "-1 -1";
-    else cout << np.x << " " << np.y;
+    auto [x, y] = elliptic_curve_scalar_multiply(pair<modint, modint>{x2, y2}, n, a);
+    if (x == -1 && y == -1) cout << "-1 -1";
+    else cout << x << " " << y;
 }

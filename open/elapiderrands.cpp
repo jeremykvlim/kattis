@@ -179,11 +179,11 @@ int main() {
             if (flip) swap(P.x, P.y);
 
             vector<Point<int>> border;
-            auto start = curr + Point(dx[curr_k], dy[curr_k]);
+            auto start = curr + Point{dx[curr_k], dy[curr_k]};
             int k = (curr_k + 3) % 4;
             for (auto p = start;; k = (k + 3) % 4) {
                 border.emplace_back(p);
-                for (int i = 0; visited.count(p + Point(dx[k], dy[k])); i++) {
+                for (int i = 0; visited.count(p + Point{dx[k], dy[k]}); i++) {
                     if (i > 4) {
                         moves.clear();
                         return false;

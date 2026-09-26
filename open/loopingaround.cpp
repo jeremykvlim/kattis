@@ -1,122 +1,33 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T>
-struct Point {
-    T x, y;
+struct DisjointSets {
+    vector<int> sets;
 
-    Point() {}
-    Point(T x, T y) : x(x), y(y) {}
-
-    template <typename U>
-    Point(U x, U y) : x(x), y(y) {}
-
-    template <typename U>
-    Point(const Point<U> &p) : x((T) p.x), y((T) p.y) {}
-
-    const auto begin() const {
-        return &x;
+    int find(int v) {
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
+        }
+        return v;
     }
 
-    const auto end() const {
-        return &y + 1;
+    bool unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set == v_set) return false;
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return true;
     }
 
-    Point operator-() const {
-        return {-x, -y};
+    int size(int v) {
+        return -sets[find(v)];
     }
 
-    Point operator!() const {
-        return {y, x};
-    }
-
-    Point operator~() const {
-        return {-y, x};
-    }
-
-    bool operator<(const Point &p) const {
-        return x != p.x ? x < p.x : y < p.y;
-    }
-
-    bool operator>(const Point &p) const {
-        return x != p.x ? x > p.x : y > p.y;
-    }
-
-    bool operator==(const Point &p) const {
-        return x == p.x && y == p.y;
-    }
-
-    bool operator!=(const Point &p) const {
-        return x != p.x || y != p.y;
-    }
-
-    bool operator<=(const Point &p) const {
-        return *this < p || *this == p;
-    }
-
-    bool operator>=(const Point &p) const {
-        return *this > p || *this == p;
-    }
-
-    Point operator+(const Point &p) const {
-        return {x + p.x, y + p.y};
-    }
-
-    Point operator+(const T &v) const {
-        return {x + v, y + v};
-    }
-
-    Point & operator+=(const Point &p) {
-        x += p.x;
-        y += p.y;
-        return *this;
-    }
-
-    Point & operator+=(const T &v) {
-        x += v;
-        y += v;
-        return *this;
-    }
-
-    Point operator-(const Point &p) const {
-        return {x - p.x, y - p.y};
-    }
-
-    Point operator-(const T &v) const {
-        return {x - v, y - v};
-    }
-
-    Point & operator-=(const Point &p) {
-        x -= p.x;
-        y -= p.y;
-        return *this;
-    }
-
-    Point & operator-=(const T &v) {
-        x -= v;
-        y -= v;
-        return *this;
-    }
-
-    Point operator*(const T &v) const {
-        return {x * v, y * v};
-    }
-
-    Point & operator*=(const T &v) {
-        x *= v;
-        y *= v;
-        return *this;
-    }
-
-    Point operator/(const T &v) const {
-        return {x / v, y / v};
-    }
-
-    Point & operator/=(const T &v) {
-        x /= v;
-        y /= v;
-        return *this;
-    }
+    DisjointSets(int n) : sets(n, -1) {}
 };
 
 int main() {
@@ -130,63 +41,64 @@ int main() {
         int n;
         cin >> n;
 
-        vector<Point<int>> points(n);
+        vector<pair<int, int>> points(n);
         for (auto &[x, y] : points) cin >> x >> y;
-        sort(points.begin(), points.end());
 
-        unordered_map<int, set<Point<int>>> X, Y;
-        for (int i = 0; i < n; i++) {
-            auto [x, y] = points[i];
-            X[y].emplace(x, i);
-            Y[x].emplace(y, i);
-        }
+        bool possible = true;
+        DisjointSets dsu(n);
+        vector<int> hori(n), order(n);
+        iota(order.begin(), order.end(), 0);
+        sort(order.begin(), order.end(), [&](int i, int j) { return points[i].second != points[j].second ? points[i].second < points[j].second : points[i].first < points[j].first; });
+        for (int i = 0, j = 1; i < n; i = j++) {
+            for (; j < n && points[order[i]].second == points[order[j]].second; j++);
+            if ((j - i) & 1) {
+                possible = false;
+                break;
+            }
 
-        vector<int> hori(n, -1), verti(n, -1);
-        vector<bool> visited(n, false);
-
-        auto dfs = [&](auto &&self, int v = 0) -> void {
-            visited[v] = true;
-            if (!visited[hori[v]]) self(self, hori[v]);
-            if (!visited[verti[v]]) self(self, verti[v]);
-        };
-
-        multiset<int> active;
-        for (int i = 0; i < n; i++) {
-            auto [x, y] = points[i];
-
-            if (!~hori[i]) {
-                auto it1 = X[y].upper_bound({x, n});
-
-                if (it1 == X[y].end()) goto next;
-                else {
-                    hori[i] = it1->y;
-                    hori[it1->y] = i;
-                    active.emplace(y);
-                }
-            } else active.erase(active.find(y));
-
-            if (!~verti[i]) {
-                auto it1 = Y[x].upper_bound({y, n});
-
-                if (it1 == Y[x].end()) goto next;
-                else {
-                    auto it2 = active.upper_bound(y);
-
-                    if (it2 != active.end() && *it2 < it1->x) goto next;
-                    else {
-                        verti[i] = it1->y;
-                        verti[it1->y] = i;
-                    }
-                }
+            for (int k = i; k < j; k += 2) {
+                int u = order[k], v = order[k + 1];
+                hori[u] = v;
+                hori[v] = u;
+                dsu.unite(u, v);
             }
         }
-        dfs(dfs);
 
-        if (all_of(visited.begin(), visited.end(), [&](bool b) { return b; })) {
-            cout << "YES\n";
+        if (!possible) {
+            cout << "NO\n";
             continue;
         }
-        next:;
-        cout << "NO\n";
+
+        sort(order.begin(), order.end(), [&](int i, int j) { return points[i].first != points[j].first ? points[i].first < points[j].first : points[i].second < points[j].second; });
+        set<int> active;
+        for (int i = 0, j = 1; i < n; i = j++) {
+            for (; j < n && points[order[i]].second == points[order[j]].second; j++);
+            if ((j - i) & 1) {
+                possible = false;
+                break;
+            }
+
+            for (int k = i; k < j; k++) {
+                int v = order[k];
+                if (points[order[i]].first < points[hori[v]].first) active.emplace(points[v].second);
+            }
+
+            for (int k = i; k < j; k += 2) {
+                int u = order[k], v = order[k + 1];
+                dsu.unite(u, v);
+                auto it = active.upper_bound(points[u].second);
+                if (it != active.end() && *it < points[v].second) {
+                    possible = false;
+                    break;
+                }
+            }
+            if (!possible) break;
+
+            for (int k = i; k < j; k++) {
+                int v = order[k];
+                if (points[order[i]].first > points[hori[v]].first) active.erase(points[v].second);
+            }
+        }
+        cout << (possible && dsu.size(0) == n ? "YES\n" : "NO\n");
     }
 }
