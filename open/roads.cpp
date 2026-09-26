@@ -1,28 +1,24 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-pair<int, int> process(int &i, string &decree) {
-    i += 2;
-    pair<int, int> roads;
-    if (decree[i - 2] == 'V') return {1, 1};
-    else if (decree[i - 2] == 'U') {
-        auto r1 = process(i, decree), r2 = process(i, decree);
-        roads = {r1.first + r2.first, max(r1.second, r2.second)};
-    } else if (decree[i - 2] == 'C') {
-        roads = process(i, decree);
-        swap(roads.first, roads.second);
-    }
-
-    return roads;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    string decree;
-    while (getline(cin, decree)) {
-        int i = 0;
-        cout << process(i, decree).first << "\n";
+    string s;
+    while (getline(cin, s)) {
+        stack<pair<int, int>> st;
+        for (int i = s.size() - 1; ~i; i--)
+            if (s[i] == 'V') st.emplace(1, 1);
+            else if (s[i] == 'C') swap(st.top().first, st.top().second);
+            else if (s[i] == 'U') {
+                auto [a1, w1] = st.top();
+                st.pop();
+                auto [a2, w2] = st.top();
+                st.pop();
+
+                st.emplace(a1 + a2, max(w1, w2));
+            }
+        cout << st.top().first << "\n";
     }
 }
