@@ -169,49 +169,64 @@ vector<T> divisors(T n) {
     return divs;
 }
 
-long long rearrange(long long d, long long total, vector<int> crates) {
-    auto actions = 0LL, average = total / d;
-    for (int c : crates) actions += abs(c - average);
-    actions += average * (d - crates.size());
+struct PURQSegmentTree {
+    struct Monoid {
+        long long minimum;
+        int sum;
 
-    auto last = d - 1;
-    if (d == crates.size()) {
-        while (~last && crates[last] == average) last--;
-        if (last == -1) return 0;
-    }
+        Monoid() : minimum(0), sum(0) {}
 
-    vector<long long> diff(min((long long) crates.size(), last), -average);
-    for (int i = 0; i < diff.size(); i++) {
-        diff[i] += crates[i];
-        if (i) diff[i] += diff[i - 1];
-    }
-
-    if (crates.size() < last) actions += (diff.back() - average) * ((diff.back() - average) / average + 1) - last + crates.size();
-
-    for (auto &di : diff) {
-        actions += abs(di);
-        if (di > 1) {
-            actions += di - 1;
-            di = 1;
-        } else if (!di) {
-            actions++;
-            di = 1;
-        } else if (di < 0) {
-            actions -= di;
-            di = 0;
+        auto & operator=(const int &v) {
+            minimum = min(0, v);
+            sum = v;
+            return *this;
         }
+
+        auto & operator+=(const Monoid &monoid) {
+            minimum = min(minimum, sum + monoid.minimum);
+            sum += monoid.sum;
+            return *this;
+        }
+
+        friend auto operator+(Monoid ml, const Monoid &mr) {
+            ml += mr;
+            return ml;
+        }
+    };
+
+    int n;
+    vector<Monoid> ST;
+
+    void pull(int i) {
+        ST[i] = ST[i << 1] + ST[i << 1 | 1];
     }
 
-    long long remaining1 = count(diff.begin(), diff.end(), 0), remaining2 = last - remaining1;
-    remaining1 = min(remaining1, remaining2);
-    for (auto di : diff) {
-        remaining2 += !di - (di == 1);
-        remaining1 = min(remaining1, remaining2);
+    void build() {
+        for (int i = n - 1; i; i--) pull(i);
     }
 
-    actions += remaining1;
-    return actions;
-}
+    void point_update(int i, const int &v) {
+        for (ST[i += n] = v; i > 1; i >>= 1) pull(i >> 1);
+    }
+
+    Monoid range_query(int l, int r) {
+        Monoid ml, mr;
+        for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+            if (l & 1) ml = ml + ST[l++];
+            if (r & 1) mr = ST[--r] + mr;
+        }
+        return ml + mr;
+    }
+
+    auto & operator[](int i) {
+        return ST[i];
+    }
+
+    PURQSegmentTree(int n, const vector<int> &a) : n(n), ST(2 * n) {
+        for (int i = 0; i < a.size(); i++) ST[i + n] = a[i];
+        build();
+    }
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -221,12 +236,61 @@ int main() {
     cin >> n;
 
     vector<int> crates(n);
-    for (int &c : crates) cin >> c;
+    vector<long long> pref(n + 1, 0);
+    for (int i = 0; i < n; i++) {
+        cin >> crates[i];
 
-    auto total = accumulate(crates.begin(), crates.end(), 0LL), actions = LLONG_MAX;
-    auto divs = divisors(total);
-    for (auto d : divs)
-        if (d >= n) actions = min(actions, rearrange(d, total, crates));
+        pref[i + 1] = pref[i] + crates[i];
+    }
 
+    auto total = pref[n];
+    vector<int> qs;
+    for (auto d : divisors(total))
+        if (d >= n) qs.emplace_back(total / d);
+    sort(qs.begin(), qs.end());
+
+    auto sorted = crates;
+    sort(sorted.begin(), sorted.end());
+    vector<long long> pref_sorted(n + 1,0);
+    for (int i = 0; i < n; i++) pref_sorted[i + 1] = pref_sorted[i] + sorted[i];
+
+    int index_add = 0, index_sub = 0;
+    long long pref_add = 0, pref_sub = 0;
+    vector<int> count(total / n + 1, 0);
+    vector<pair<int, int>> sweep;
+    for (int i = 1; i < n; i++) {
+        pref_add += pref[i];
+        index_add += i;
+        sweep.emplace_back(pref[i] / i + 1, i);
+        if (!(pref[i] % i) && pref[i] / i <= total / n) count[pref[i] / i]++;
+    }
+    sort(sweep.begin(), sweep.end());
+
+    PURQSegmentTree st(n - 1, vector<int>(n - 1, -1));
+    auto actions = LLONG_MAX;
+    for (int j = 0; int q : qs) {
+        for (; j < sweep.size() && sweep[j].first <= q; j++) {
+            int i = sweep[j].second;
+            pref_sub += pref[i];
+            index_sub += i;
+            st.point_update(i - 1, 1);
+        }
+        int pos = upper_bound(sorted.begin(), sorted.end(), q) - sorted.begin();
+        auto k = total / q - n, delta = pref_add - (long long) q * index_add - 2 * (pref_sub - (long long) q * index_sub) +
+                                        total - pref_sorted[pos] - (long long) q * (n - pos) + count[q];
+
+        int r = n - 1;
+        if (!k) {
+            for (; r && crates[r] == q; r--);
+            if (!r && crates[r] == q) {
+                cout << 0;
+                exit(0);
+            }
+            delta -= n - 1 - r;
+        }
+        auto [minimum, sum] = st.range_query(0, r);
+        if (k) minimum = min(minimum, sum - k);
+        actions = min(actions, minimum + 2 * delta + q * k * (k + 1));
+    }
     cout << actions;
 }
