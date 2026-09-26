@@ -72,7 +72,7 @@ int main() {
         sort(order.begin(), order.end(), [&](int i, int j) { return points[i].first != points[j].first ? points[i].first < points[j].first : points[i].second < points[j].second; });
         set<int> active;
         for (int i = 0, j = 1; i < n; i = j++) {
-            for (; j < n && points[order[i]].second == points[order[j]].second; j++);
+            for (; j < n && points[order[i]].first == points[order[j]].first; j++);
             if ((j - i) & 1) {
                 possible = false;
                 break;
