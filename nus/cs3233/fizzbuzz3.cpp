@@ -1,36 +1,26 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-const string F0 = "F_in_Finals_stands_for_Fizz_Buzz!";
-
-char c(vector<long long> &p3, long long i, long long pos) {
-    if (!i) return 'F';
-    auto len = 16 * p3[i - 1] - 15;
-
-    if (pos < len) return c(p3, i - 1, pos);
-    pos -= len;
-
-    if (pos < 4) return F0[1 + pos];
-    pos -= 4;
-
-    if (pos < len) return c(p3, i - 1, pos);
-    pos -= len;
-
-    if (pos < 17) return F0[6 + pos];
-    pos -= 17;
-
-    if (pos < len) return c(p3, i - 1, pos);
-    pos -= len;
-
-    return pos < 9 ? F0[24 + pos] : '?';
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    vector<long long> p3(36, 1);
-    for (int i = 1; i < 36; i++) p3[i] = 3 * p3[i - 1];
+    vector<string> s{"_in_", "inals_stands_for_", "izz_Buzz!"};
+    vector<long long> lens{1};
+    while (lens.back() <= 1e18) lens.emplace_back(3 * lens.back() + 30);
+
+    auto dfs = [&](auto &&self, int y, long long x) -> char {
+        if (x >= lens[y]) return '?';
+        if (!y) return 'F';
+
+        for (auto &t : s) {
+            if (x < lens[y - 1]) return self(self, y - 1, x);
+            x -= lens[y - 1];
+            if (x < t.size()) return t[x];
+            x -= t.size();
+        }
+        return '?';
+    };
 
     int q;
     cin >> q;
@@ -38,7 +28,6 @@ int main() {
     while (q--) {
         long long x, y;
         cin >> x >> y;
-
-        cout << c(p3, min(36LL, y + 1), x - 1);
+        cout << dfs(dfs, min(y + 1, (long long) lens.size() - 1), x - 1);
     }
 }
