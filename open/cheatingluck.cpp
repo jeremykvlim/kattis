@@ -1,24 +1,61 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int play(int d, int n, int r, long long total, vector<vector<vector<int>>> &bets, vector<vector<vector<int>>> &dp) {
-    if (d >= total) return (int) total;
-    if (!d || !n || !r) return (int) min(total, d * (1LL << n));
-    if (dp[d][n][r]) return dp[d][n][r];
+template <typename T>
+vector<pair<T, int>> smawk(int n, int m, auto &&get, auto &&cmp) {
+    int lg = __lg(n);
+    vector<pair<T, int>> dp(n);
+    vector<int> cols(n), offset(lg + 1, 0);
+    for (int b = 0; b < lg; b++) {
+        int size = 0;
+        auto push = [&](int col, int limit = 0) {
+            int temp = size;
+            for (; size > limit; size--) {
+                int row = (size << (b + 1)) - 1;
+                pair<T, int> p{get(row, col), col};
+                if (!cmp(dp[row], p)) break;
+                dp[row] = p;
+            }
+            if (size == n >> (b + 1)) return;
 
-    dp[d][n][r] = d;
-    play(d - 1, n, r, total, bets, dp);
+            if (size == temp) {
+                int row = ((size + 1) << (b + 1)) - 1;
+                dp[row] = {get(row, col), col};
+            }
+            cols[offset[b] + size++] = col;
+        };
 
-    int bet = min(d, (int) (total - d)), least = min(bets[d - 1][n][r], bet);
-    bets[d][n][r] = least;
-    for (int b = least; b <= bet; b++) {
-        int most = min(play(d - b, n - 1, r - 1, total, bets, dp), play(d + b, n - 1, r, total, bets, dp));
-        if (dp[d][n][r] > most) break;
-        dp[d][n][r] = most;
-        bets[d][n][r] = b;
+        if (!b)
+            for (int col = 0; col < m; col++) push(col);
+        else
+            for (int i = offset[b - 1]; i < offset[b]; i++) push(cols[i], (i - offset[b - 1]) >> 1);
+        offset[b + 1] = offset[b] + size;
     }
 
-    return dp[d][n][r];
+    for (int b = lg; b; b--)
+        for (int row = (1 << b) - 1, i = offset[b - 1]; row < n; row += 2 << b) {
+            int stop = row + (1 << b) < n ? dp[row + (1 << b)].second : -1, col = cols[i];
+            dp[row] = {get(row, col), col};
+            if (col == stop) continue;
+            for (i++; i < offset[b]; i++) {
+                col = cols[i];
+                pair<T, int> p{get(row, col), col};
+                if (cmp(dp[row], p)) dp[row] = p;
+                if (col == stop) break;
+            }
+        }
+
+    for (int row = 0, col = 0; row < n; row += 2) {
+        int stop = row + 1 < n ? dp[row + 1].second : -1;
+        dp[row] = {get(row, col), col};
+        if (col == stop) continue;
+        for (col++; col < m; col++) {
+            pair<T, int> p{get(row, col), col};
+            if (cmp(dp[row], p)) dp[row] = p;
+            if (col == stop) break;
+        }
+    }
+    return dp;
 }
 
 int main() {
@@ -27,7 +64,32 @@ int main() {
 
     int d, g, n, k;
     cin >> d >> g >> n >> k;
+    int m = d + g;
+    
+    vector<vector<int>> dp(k + 1, vector<int>(m + 1, 0));
+    iota(dp[0].begin(), dp[0].end(), 0);
+    for (int rounds = 1; rounds <= n; rounds++) {
+        vector<vector<int>> temp(min(rounds, k) + 1, vector<int>(m + 1, 0));
+        for (int i = 0; i <= min(rounds, k); i++) {
+            auto value = [&](int x, int y) {
+                return min(i ? dp[i - 1][y] : m, i < rounds ? dp[i][2 * x - y] : m);
+            };
 
-    vector<vector<vector<int>>> bets(d + g, vector<vector<int>>(n + 1, vector<int>(n + 1, 0))), dp(d + g, vector<vector<int>>(n + 1, vector<int>(n + 1, 0)));
-    cout << play(d, n, n - k, d + g, bets, dp);
+            auto get = [&](int x, int y) -> int {
+                int z = min(2 * x, m);
+                if (x > y) return -1e9 - x + y;
+                if (y > z) return -1e9 - y + z;
+                return value(x, y) * (m + 1) - y;
+            };
+
+            auto cmp = [&](const auto &p1, const auto &p2) {
+                return p1.first < p2.first;
+            };
+
+            auto rows = smawk<int>(m + 1, m + 1, get, cmp);
+            for (int j = 0; j <= m; j++) temp[i][j] = value(j, rows[j].second);
+        }
+        dp = temp;
+    }
+    cout << dp[k][d];
 }
