@@ -436,15 +436,6 @@ U & operator>>(U &stream, MontgomeryModInt<T> &v) {
 constexpr unsigned long long MOD = 1e9 + 7;
 using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
 
-modint f(long long x, unordered_map<long long, modint> &dp) {
-    if (!dp.count(x)) {
-        auto even = x / 2, odd = (x + 1) / 2;
-        dp[x] = even + 2 * (odd - 1) + f(odd, dp) + f(even, dp);
-    }
-
-    return dp[x];
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -454,6 +445,15 @@ int main() {
     long long l, r;
     cin >> l >> r;
 
-    unordered_map<long long, modint> dp{{0, 0}, {1, 0}};
-    cout << f(r, dp) - f(l - 1, dp);
+    unordered_map<long long, modint> dp;
+    auto f = [&](auto &&self, long long x) -> modint {
+        if (x <= 1) return 0;
+        
+        if (!dp.count(x)) {
+            auto even = x / 2, odd = (x + 1) / 2;
+            dp[x] = even + 2 * (odd - 1) + self(self, odd) + self(self, even);
+        }
+        return dp[x];
+    };
+    cout << f(f, r) - f(f, l - 1);
 }
