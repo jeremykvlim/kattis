@@ -1,22 +1,330 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-vector<int> sieve(int n) {
-    vector<int> spf(n + 1, 0), primes;
-    for (int i = 2; i <= n; i++) {
-        if (!spf[i]) {
-            spf[i] = i;
-            primes.emplace_back(i);
+template <typename T, typename U, typename V>
+T mul(U x, V y, T mod) {
+    return (unsigned __int128) x * y % mod;
+}
+
+template <typename T, typename U>
+T pow(T base, U exponent, T mod) {
+    T value = 1;
+    while (exponent) {
+        if (exponent & 1) value = mul(base, value, mod);
+        base = mul(base, base, mod);
+        exponent >>= 1;
+    }
+    return value;
+}
+
+bool isprime(unsigned long long n) {
+    if (n < 2) return false;
+    if (n == 2 || n == 5 || n == 11) return true;
+    if (n % 6 % 4 != 1) return (n | 1) == 3;
+
+    auto miller_rabin = [&](int a) {
+        int s = countr_zero(n - 1);
+        auto d = n >> s, x = pow(a % n, d, n);
+        if (x == 1 || x == n - 1) return true;
+
+        while (s--) {
+            x = mul(x, x, n);
+            if (x == n - 1) return true;
+        }
+        return false;
+    };
+    if (!miller_rabin(2) || !miller_rabin(3)) return false;
+
+    auto lucas_pseudoprime = [&]() {
+        auto normalize = [&](__int128 &x) {
+            if (x < 0) x += ((-x / n) + 1) * n;
+        };
+
+        __int128 D = -3;
+        for (;;) {
+            D += D > 0 ? 2 : -2;
+            D *= -1;
+
+            int jacobi = 1;
+            auto jacobi_symbol = [&](__int128 n) {
+                auto a = D;
+                normalize(a);
+
+                while (a) {
+                    while (!(a & 1)) {
+                        a >>= 1;
+                        if ((n & 7) == 3 || (n & 7) == 5) jacobi = -jacobi;
+                    }
+                    if ((a & 3) == 3 && (n & 3) == 3) jacobi = -jacobi;
+
+                    swap(a, n);
+                    a %= n;
+                }
+                return n == 1;
+            };
+            if (!jacobi_symbol(n)) return false;
+            if (jacobi == -1) break;
         }
 
-        for (int p : primes) {
-            auto j = (long long) i * p;
-            if (j > n) break;
-            spf[j] = p;
-            if (p == spf[i]) break;
+        string bits;
+        auto temp = n + 1;
+        while (temp) {
+            bits += (temp & 1) ? '1' : '0';
+            temp >>= 1;
         }
+        bits.pop_back();
+        reverse(bits.begin(), bits.end());
+
+        auto div2mod = [&](__int128 x) -> unsigned long long {
+            if (x & 1) x += n;
+            normalize(x >>= 1);
+
+            return x % n;
+        };
+
+        __int128 U = 1, V = 1;
+        for (char b : bits) {
+            auto U_2k = mul(U, V, n), V_2k = div2mod(mul(V, V, n) + D * mul(U, U, n));
+
+            if (b == '0') {
+                U = U_2k;
+                V = V_2k;
+            } else {
+                U = div2mod(U_2k + V_2k);
+                V = div2mod(D * U_2k + V_2k);
+            }
+        }
+
+        return !U;
+    };
+    return lucas_pseudoprime();
+}
+
+template <typename T>
+T brent(T n) {
+    if (!(n & 1)) return 2;
+
+    static mt19937_64 rng(random_device{}());
+    for (;;) {
+        T x = 2, y = 2, g = 1, q = 1, xs = 1, c = rng() % (n - 1) + 1;
+        for (int i = 1; g == 1; i <<= 1, y = x) {
+            for (int j = 1; j < i; j++) x = mul(x, x, n) + c;
+            for (int j = 0; j < i && g == 1; j += 128) {
+                xs = x;
+                for (int k = 0; k < min(128, i - j); k++) {
+                    x = mul(x, x, n) + c;
+                    q = mul(q, max(x, y) - min(x, y), n);
+                }
+                g = __gcd(q, n);
+            }
+        }
+
+        if (g == n) g = 1;
+        while (g == 1) {
+            xs = mul(xs, xs, n) + c;
+            g = __gcd(max(xs, y) - min(xs, y), n);
+        }
+        if (g != n) return isprime(g) ? g : brent(g);
     }
-    return spf;
+}
+
+template <typename T>
+vector<pair<T, int>> factorize(T n) {
+    unordered_map<T, int> pfs;
+
+    auto dfs = [&](auto &&self, T m) -> void {
+        if (m < 2) return;
+        if (isprime(m)) {
+            pfs[m]++;
+            return;
+        }
+
+        T pf = brent(m);
+        pfs[pf]++;
+        self(self, m / pf);
+    };
+    dfs(dfs, n);
+
+    return {pfs.begin(), pfs.end()};
+}
+
+template <typename T>
+T tonelli_shanks(T n, T p) {
+    if (p == 2) return n;
+    if (p % 4 == 3) return pow(n, (p + 1) / 4, p);
+
+    T q = p - 1;
+    int s = 0;
+    while (!(q & 1)) {
+        q >>= 1;
+        s++;
+    }
+
+    auto legendre = [&](T a, T p) -> int {
+        if (!a) return 0;
+        return pow(a, (p - 1) / 2, p) != p - 1 ? 1 : -1;
+    };
+
+    T z = 2;
+    while (legendre(z, p) != -1) z++;
+
+    int m = s;
+    T c = pow(z, q, p), t = pow(n, q, p), r = pow(n, (q + 1) / 2, p);
+    while (t != 1) {
+        auto temp = t;
+
+        int i = 0;
+        while (temp != 1 && i < m) {
+            temp = mul(temp, temp, p);
+            i++;
+        }
+
+        T b = pow(c, 1LL << (m - i - 1), p);
+        m = i;
+        c = mul(b, b, p);
+        t = mul(t, mul(b, b, p), p);
+        r = mul(r, b, p);
+    }
+    return r;
+}
+
+template <typename T>
+pair<T, T> cornacchia(T d, T m) {
+    T r0 = m, r1 = tonelli_shanks(m - d % m, m);
+    for (; r1 > sqrt(m); r0 = exchange(r1, r0 % r1));
+
+    T x = r1;
+    if (!d) return {x, 0};
+
+    T y = sqrt((m - d * x * x) / d);
+    return {x, y};
+}
+
+template <typename T>
+struct GaussianInteger {
+    T a, b;
+
+    GaussianInteger(T a = 0, T b = 0) : a(a), b(b) {}
+
+    GaussianInteger operator-() const {
+        return {-a, -b};
+    }
+
+    GaussianInteger operator~() const {
+        return {-b, a};
+    }
+
+    GaussianInteger operator+(const GaussianInteger &z) const {
+        return {a + z.a, b + z.b};
+    }
+
+    GaussianInteger operator-(const GaussianInteger &z) const {
+        return {a - z.a, b - z.b};
+    }
+
+    GaussianInteger operator*(const GaussianInteger &z) const {
+        return {a * z.a - b * z.b, a * z.b + b * z.a};
+    }
+
+    GaussianInteger operator/(const GaussianInteger &z) const {
+        T N = z.norm(), x = a * z.a + b * z.b, y = b * z.a - a * z.b;
+        auto round_div = [N](T a) {
+            T q = a / N, r = a % N;
+            if (r >= (N + 1) / 2) q++;
+            if (r <= -(N + 1) / 2) q--;
+            return q;
+        };
+        return {round_div(x), round_div(y)};
+    }
+
+    GaussianInteger operator%(const GaussianInteger &z) const {
+        return *this - *this / z * z;
+    }
+
+    GaussianInteger & operator+=(const GaussianInteger &z) {
+        return *this = *this + z;
+    }
+
+    GaussianInteger & operator-=(const GaussianInteger &z) {
+        return *this = *this - z;
+    }
+
+    GaussianInteger & operator*=(const GaussianInteger &z) {
+        return *this = *this * z;
+    }
+
+    GaussianInteger & operator/=(const GaussianInteger &z) {
+        return *this = *this / z;
+    }
+
+    GaussianInteger & operator%=(const GaussianInteger &z) {
+        return *this = *this % z;
+    }
+
+    bool operator==(const GaussianInteger &) const = default;
+
+    GaussianInteger conj() const {
+        return {a, -b};
+    }
+
+    T norm() const {
+        return a * a + b * b;
+    }
+
+    template <typename U>
+    static GaussianInteger pow(GaussianInteger base, U exponent) {
+        GaussianInteger value = 1;
+        while (exponent) {
+            if (exponent & 1) value *= base;
+            base *= base;
+            exponent >>= 1;
+        }
+        return value;
+    }
+};
+
+template <typename T>
+vector<pair<T, T>> sum_of_two_squares(T n) {
+    if (!n) return {{0, 0}};
+
+    auto pfs = factorize(n);
+    vector<GaussianInteger<T>> pairs{{1, 0}};
+    for (auto [pf, exponent] : pfs) {
+        if (pf % 4 == 3 && exponent & 1) return {};
+
+        vector<GaussianInteger<T>> pps;
+        if (pf % 4 == 3) {
+            T pp = 1;
+            for (int i = 0; i < exponent / 2; i++) pp *= pf;
+            pps.emplace_back(pp);
+        } else if (pf == 2) pps.emplace_back(GaussianInteger<T>::pow({1, 1}, exponent));
+        else {
+            auto [a, b] = cornacchia((T) 1, pf);
+            GaussianInteger<T> z{a, b};
+            vector<GaussianInteger<T>> pZ(exponent + 1, {1, 0});
+            for (int i = 1; i <= exponent; i++) pZ[i] = pZ[i - 1] * z;
+
+            pps.resize(exponent + 1);
+            for (int i = 0; i <= exponent; i++) pps[i] = pZ[i] * pZ[exponent - i].conj();
+        }
+
+        vector<GaussianInteger<T>> temp;
+        for (auto z1 : pairs)
+            for (auto z2 : pps) temp.emplace_back(z1 * z2);
+        pairs = temp;
+    }
+
+    vector<pair<T, T>> sums;
+    unordered_set<T> seen;
+    for (auto z : pairs) {
+        while (z.a <= 0 || z.b < 0) z = ~z;
+        if (seen.count(z.a) || seen.count(z.b)) continue;
+
+        seen.emplace(z.a);
+        seen.emplace(z.b);
+        sums.emplace_back(z.a, z.b);
+    }
+    return sums;
 }
 
 int main() {
@@ -26,25 +334,7 @@ int main() {
     int n;
     cin >> n;
 
-    auto spf = sieve(n + 1);
-    vector<int> pairs(n + 2, 0);
-    pairs[1] = 1;
-    for (int c = 2; c <= n + 1; c++) {
-        int p = 1;
-        for (int d = c; d > 1;) {
-            int pf = spf[d], pow = 0;
-            for (; !(d % pf); d /= pf, pow++);
-            if (pf % 4 == 1) p *= pow + 1;
-            else if (pf % 4 == 3 && pow & 1) goto next;
-        }
-        pairs[c] = p;
-        next:;
-    }
-
     int count = 1;
-    for (int c = 1; c <= n; c++) {
-        auto s = (long long) c * (c + 1) / 2;
-        count += (pairs[c] * pairs[c + 1] + (pow(sqrt(s), 2) == s)) / 2;
-    }
+    for (int c = 1; c <= n; c++) count += sum_of_two_squares((long long) c * (c + 1)).size();
     cout << count;
 }

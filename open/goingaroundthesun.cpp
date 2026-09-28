@@ -152,22 +152,93 @@ template <typename T>
 array<T, 3> extended_gcd(const T &a, const T &b) {
     if (b == (T) 0) return {a, (T) 1, (T) 0};
 
-    auto div = [&](const T &x, const T &y) {
-        if constexpr (!requires(T z) { z.real(); z.imag(); }) return x / y;
-        else {
-            T numer = x * conj(y);
-            auto denom = norm(y);
-            auto round_div = [&](auto part) {
-                return (part >= 0) ? (part + denom / 2) / denom : (part - denom / 2) / denom;
-            };
-            return (T) {round_div(numer.real()), round_div(numer.imag())};
-        }
-    };
-
-    T q = div(a, b), r = a - q * b;
+    T q = a / b, r = a - q * b;
     auto [g, s, t] = extended_gcd(b, r);
     return {g, t, s - t * q};
 }
+
+template <typename T>
+struct GaussianInteger {
+    T a, b;
+
+    GaussianInteger(T a = 0, T b = 0) : a(a), b(b) {}
+
+    GaussianInteger operator-() const {
+        return {-a, -b};
+    }
+
+    GaussianInteger operator~() const {
+        return {-b, a};
+    }
+
+    GaussianInteger operator+(const GaussianInteger &z) const {
+        return {a + z.a, b + z.b};
+    }
+
+    GaussianInteger operator-(const GaussianInteger &z) const {
+        return {a - z.a, b - z.b};
+    }
+
+    GaussianInteger operator*(const GaussianInteger &z) const {
+        return {a * z.a - b * z.b, a * z.b + b * z.a};
+    }
+
+    GaussianInteger operator/(const GaussianInteger &z) const {
+        T N = z.norm(), x = a * z.a + b * z.b, y = b * z.a - a * z.b;
+        auto round_div = [N](T a) {
+            T q = a / N, r = a % N;
+            if (r >= (N + 1) / 2) q++;
+            if (r <= -(N + 1) / 2) q--;
+            return q;
+        };
+        return {round_div(x), round_div(y)};
+    }
+
+    GaussianInteger operator%(const GaussianInteger &z) const {
+        return *this - *this / z * z;
+    }
+
+    GaussianInteger & operator+=(const GaussianInteger &z) {
+        return *this = *this + z;
+    }
+
+    GaussianInteger & operator-=(const GaussianInteger &z) {
+        return *this = *this - z;
+    }
+
+    GaussianInteger & operator*=(const GaussianInteger &z) {
+        return *this = *this * z;
+    }
+
+    GaussianInteger & operator/=(const GaussianInteger &z) {
+        return *this = *this / z;
+    }
+
+    GaussianInteger & operator%=(const GaussianInteger &z) {
+        return *this = *this % z;
+    }
+
+    bool operator==(const GaussianInteger &) const = default;
+
+    GaussianInteger conj() const {
+        return {a, -b};
+    }
+
+    T norm() const {
+        return a * a + b * b;
+    }
+
+    template <typename U>
+    static GaussianInteger pow(GaussianInteger base, U exponent) {
+        GaussianInteger value = 1;
+        while (exponent) {
+            if (exponent & 1) value *= base;
+            base *= base;
+            exponent >>= 1;
+        }
+        return value;
+    }
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -176,7 +247,7 @@ int main() {
     int n;
     cin >> n;
 
-    complex<long long> g{0, 0};
+    GaussianInteger<long long> g{0, 0};
     while (n--) {
         int x, y;
         cin >> x >> y;
@@ -185,7 +256,7 @@ int main() {
     }
 
     int times = 4;
-    for (auto [pf, pow] : factorize(norm(g)))
+    for (auto [pf, pow] : factorize(g.norm()))
         if (pf % 4 == 1) times *= pow + 1;
     cout << times;
 }

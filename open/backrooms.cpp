@@ -5,22 +5,93 @@ template <typename T>
 array<T, 3> extended_gcd(const T &a, const T &b) {
     if (b == (T) 0) return {a, (T) 1, (T) 0};
 
-    auto div = [&](const T &x, const T &y) {
-        if constexpr (!requires(T z) { z.real(); z.imag(); }) return x / y;
-        else {
-            T numer = x * conj(y);
-            auto denom = norm(y);
-            auto round_div = [&](auto part) {
-                return (part >= 0) ? (part + denom / 2) / denom : (part - denom / 2) / denom;
-            };
-            return (T) {round_div(numer.real()), round_div(numer.imag())};
-        }
-    };
-
-    T q = div(a, b), r = a - q * b;
+    T q = a / b, r = a - q * b;
     auto [g, s, t] = extended_gcd(b, r);
     return {g, t, s - t * q};
 }
+
+template <typename T>
+struct GaussianInteger {
+    T a, b;
+
+    GaussianInteger(T a = 0, T b = 0) : a(a), b(b) {}
+
+    GaussianInteger operator-() const {
+        return {-a, -b};
+    }
+
+    GaussianInteger operator~() const {
+        return {-b, a};
+    }
+
+    GaussianInteger operator+(const GaussianInteger &z) const {
+        return {a + z.a, b + z.b};
+    }
+
+    GaussianInteger operator-(const GaussianInteger &z) const {
+        return {a - z.a, b - z.b};
+    }
+
+    GaussianInteger operator*(const GaussianInteger &z) const {
+        return {a * z.a - b * z.b, a * z.b + b * z.a};
+    }
+
+    GaussianInteger operator/(const GaussianInteger &z) const {
+        T N = z.norm(), x = a * z.a + b * z.b, y = b * z.a - a * z.b;
+        auto round_div = [N](T a) {
+            T q = a / N, r = a % N;
+            if (r >= (N + 1) / 2) q++;
+            if (r <= -(N + 1) / 2) q--;
+            return q;
+        };
+        return {round_div(x), round_div(y)};
+    }
+
+    GaussianInteger operator%(const GaussianInteger &z) const {
+        return *this - *this / z * z;
+    }
+
+    GaussianInteger & operator+=(const GaussianInteger &z) {
+        return *this = *this + z;
+    }
+
+    GaussianInteger & operator-=(const GaussianInteger &z) {
+        return *this = *this - z;
+    }
+
+    GaussianInteger & operator*=(const GaussianInteger &z) {
+        return *this = *this * z;
+    }
+
+    GaussianInteger & operator/=(const GaussianInteger &z) {
+        return *this = *this / z;
+    }
+
+    GaussianInteger & operator%=(const GaussianInteger &z) {
+        return *this = *this % z;
+    }
+
+    bool operator==(const GaussianInteger &) const = default;
+
+    GaussianInteger conj() const {
+        return {a, -b};
+    }
+
+    T norm() const {
+        return a * a + b * b;
+    }
+
+    template <typename U>
+    static GaussianInteger pow(GaussianInteger base, U exponent) {
+        GaussianInteger value = 1;
+        while (exponent) {
+            if (exponent & 1) value *= base;
+            base *= base;
+            exponent >>= 1;
+        }
+        return value;
+    }
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -37,105 +108,80 @@ int main() {
     };
 
     int n = R * C;
-    vector<int> component(n, -2);
-    for (int y = 0; y < R; y++)
-        for (int x = 0; x < C; x++)
-            if (grid[y][x] == '.') component[index(y, x)] = -1;
-
-    auto cross = [&](auto &a, auto &b) {
-        return (conj(a) * b).imag();
-    };
-
-    auto normalize = [&](complex<long long> &Z) {
-        if (Z == complex<long long>{0, 0}) return Z;
-        if (Z.real() < 0 || !Z.real() && Z.imag() < 0) Z = -Z;
-        return Z;
-    };
-
-    int count = 0;
-    complex<long long> zero{0, 0};
-    vector<array<complex<long long>, 2>> states;
-    vector<complex<long long>> base(n, zero);
+    vector<int> basis_id(n, -1);
+    vector<array<long long, 3>> bases;
+    vector<GaussianInteger<long long>> dist(n);
     vector<int> dr{1, 0, -1, 0}, dc{0, 1, 0, -1};
     queue<int> q;
-    for (int s = 0; s < n; s++) {
-        if (~component[s]) continue;
-        component[s] = count;
-        states.push_back({{zero, zero}});
-        q.emplace(s);
-        while (!q.empty()) {
-            int v = q.front();
-            q.pop();
+    for (int src = 0; src < n; src++) {
+        int sr = src / C, sc = src % C;
+        if (grid[sr][sc] != '#' && !~basis_id[src]) {
+            bases.push_back({0, 0, 0});
+            int i = bases.size() - 1;
+            basis_id[src] = i;
+            q.emplace(src);
+            while (!q.empty()) {
+                int v = q.front();
+                q.pop();
 
-            int r = v / C, c = v % C;
-            for (int k = 0; k < 4; k++) {
-                int y = r + dr[k], x = c + dc[k], a = 0, b = 0;
-                if (y < 0) {
-                    y += R;
-                    b--;
-                } else if (y >= R) {
-                    y -= R;
-                    b++;
-                }
-                if (x < 0) {
-                    x += C;
-                    a--;
-                } else if (x >= C) {
-                    x -= C;
-                    a++;
-                }
-                if (grid[y][x] != '.') continue;
+                int r = v / C, c = v % C;
+                for (int k = 0; k < 4; k++) {
+                    int y = r + dr[k], x = c + dc[k];
+                    GaussianInteger<long long> step{0, 0};
+                    if (y < 0) {
+                        y += R;
+                        step.b--;
+                    } else if (y >= R) {
+                        y -= R;
+                        step.b++;
+                    }
+                    if (x < 0) {
+                        x += C;
+                        step.a--;
+                    } else if (x >= C) {
+                        x -= C;
+                        step.a++;
+                    }
 
-                int u = index(y, x);
-                complex<long long> step(a, b);
-                if (!~component[u]) {
-                    component[u] = count;
-                    base[u] = base[v] + step;
-                    q.emplace(u);
-                } else {
-                    auto cycle = base[v] - base[u] + step;
-                    if (cycle != zero) {
-                        auto &[z1, z2] = states[count];
-
-                        if (z1 == zero) {
-                            z1 = cycle;
-                            normalize(z1);
-                        } else if (z2 == zero) {
-                            if (!cross(z1, cycle)) {
-                                z1 = extended_gcd(z1, cycle)[0];
-                                normalize(z1);
-                            } else {
-                                z2 = cycle;
-                                if (cross(z1, z2) < 0) z2 = -z2;
-                            }
+                    if (grid[y][x] != '#') {
+                        int u = index(y, x);
+                        if (!~basis_id[u]) {
+                            basis_id[u] = i;
+                            q.emplace(u);
+                            dist[u] = dist[v] + step;
                         } else {
-                            auto det = cross(z1, z2);
+                            auto &[d, e, f] = bases[i];
+                            auto [a, b] = dist[v] + step - dist[u];
 
-                            auto [g1, x1, y1] = extended_gcd(det, cross(z1, cycle));
-                            z2 = z2 * x1 + cycle * y1;
-                            if (cross(z1, z2) < 0) z2 = -z2;
+                            if (!a) {
+                                f = gcd(f, b);
+                                continue;
+                            }
 
-                            auto det1 = cross(z1, z2);
-                            if (det1 < 0) det1 = -det1;
-                            if (det1 != g1)
-                                if (det1) z2 /= det1 / g1;
+                            if (a < 0) {
+                                a = -a;
+                                b = -b;
+                            }
+                            if (!d) {
+                                d = a;
+                                e = b;
+                                continue;
+                            }
 
-                            auto [g2, x2, y2] = extended_gcd(g1, cross(cycle, z2));
-                            z1 = z1 * x2 + cycle * y2;
-                            if (cross(z1, z2) < 0) z2 = -z2;
+                            auto [g, s, t] = extended_gcd(d, a);
+                            f = gcd(f, (b * d - e * a) / g);
+                            e = s * e + t * b;
+                            d = g;
 
-                            auto det2 = cross(z1, z2);
-                            if (det2 < 0) det2 = -det2;
-                            if (det2 != g2)
-                                if (det2) z2 /= det2 / g2;
-
-                            if (cross(z1, z2) < 0) z2 = -z2;
+                            if (f) {
+                                f = abs(f);
+                                e = (e % f + f) % f;
+                            }
                         }
                     }
                 }
             }
         }
-        count++;
     }
 
     int Q;
@@ -145,37 +191,28 @@ int main() {
         long long sx, sy, gx, gy;
         cin >> sx >> sy >> gx >> gy;
 
-        auto convert = [&](long long x, long long y) {
-            return make_pair(index(y % R, x % C), complex<long long>(x / C, y / R));
-        };
-        auto [c_s, cell_s] = convert(sx, sy);
-        auto [c_g, cell_g] = convert(gx, gy);
-        if (component[c_s] != component[c_g]) {
+        int s = index(sy % R, sx % C), g = index(gy % R, gx % C);
+        if (basis_id[s] != basis_id[g]) {
             cout << "No\n";
             continue;
         }
 
-        auto shift = cell_g - cell_s - base[c_g] + base[c_s];
-        auto [z1, z2] = states[component[c_s]];
-        bool reach;
-        if (z1 == zero) reach = shift == zero;
-        else if (z2 == zero) {
-            if (cross(shift, z1)) reach = false;
-            else {
-                if (z1.real()) {
-                    if (shift.real() % z1.real()) reach = false;
-                    else reach = shift.imag() == z1.imag() * shift.real() / z1.real();
-                } else {
-                    if (shift.imag() % z1.imag()) reach = false;
-                    else reach = shift.real() == z1.real() * shift.imag() / z1.imag();
-                }
-            }
-        } else {
-            auto det = cross(z1, z2);
-            reach = !(cross(z1, shift) % det) && !(cross(shift, z2) % det);
+        GaussianInteger<long long> shift{gx / C - sx / C, gy / R - sy / R};
+        shift += dist[s] - dist[g];
+        auto [d, e, f] = bases[basis_id[s]];
+        if (!d) {
+            if (!shift.a && (f ? !(shift.b % f) : !shift.b)) cout << "Yes\n";
+            else cout << "No\n";
+            continue;
         }
 
-        if (reach) cout << "Yes\n";
+        if (shift.a % d) {
+            cout << "No\n";
+            continue;
+        }
+
+        shift.b -= shift.a / d * e;
+        if (f ? !(shift.b % f) : !shift.b) cout << "Yes\n";
         else cout << "No\n";
     }
 }

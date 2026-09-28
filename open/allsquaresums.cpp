@@ -201,52 +201,128 @@ pair<T, T> cornacchia(T d, T m) {
 }
 
 template <typename T>
+struct GaussianInteger {
+    T a, b;
+
+    GaussianInteger(T a = 0, T b = 0) : a(a), b(b) {}
+
+    GaussianInteger operator-() const {
+        return {-a, -b};
+    }
+
+    GaussianInteger operator~() const {
+        return {-b, a};
+    }
+
+    GaussianInteger operator+(const GaussianInteger &z) const {
+        return {a + z.a, b + z.b};
+    }
+
+    GaussianInteger operator-(const GaussianInteger &z) const {
+        return {a - z.a, b - z.b};
+    }
+
+    GaussianInteger operator*(const GaussianInteger &z) const {
+        return {a * z.a - b * z.b, a * z.b + b * z.a};
+    }
+
+    GaussianInteger operator/(const GaussianInteger &z) const {
+        T N = z.norm(), x = a * z.a + b * z.b, y = b * z.a - a * z.b;
+        auto round_div = [N](T a) {
+            T q = a / N, r = a % N;
+            if (r >= (N + 1) / 2) q++;
+            if (r <= -(N + 1) / 2) q--;
+            return q;
+        };
+        return {round_div(x), round_div(y)};
+    }
+
+    GaussianInteger operator%(const GaussianInteger &z) const {
+        return *this - *this / z * z;
+    }
+
+    GaussianInteger & operator+=(const GaussianInteger &z) {
+        return *this = *this + z;
+    }
+
+    GaussianInteger & operator-=(const GaussianInteger &z) {
+        return *this = *this - z;
+    }
+
+    GaussianInteger & operator*=(const GaussianInteger &z) {
+        return *this = *this * z;
+    }
+
+    GaussianInteger & operator/=(const GaussianInteger &z) {
+        return *this = *this / z;
+    }
+
+    GaussianInteger & operator%=(const GaussianInteger &z) {
+        return *this = *this % z;
+    }
+
+    bool operator==(const GaussianInteger &) const = default;
+
+    GaussianInteger conj() const {
+        return {a, -b};
+    }
+
+    T norm() const {
+        return a * a + b * b;
+    }
+
+    template <typename U>
+    static GaussianInteger pow(GaussianInteger base, U exponent) {
+        GaussianInteger value = 1;
+        while (exponent) {
+            if (exponent & 1) value *= base;
+            base *= base;
+            exponent >>= 1;
+        }
+        return value;
+    }
+};
+
+template <typename T>
 vector<pair<T, T>> sum_of_two_squares(T n) {
     if (!n) return {{0, 0}};
 
     auto pfs = factorize(n);
-    vector<complex<T>> pairs{{1, 0}};
+    vector<GaussianInteger<T>> pairs{{1, 0}};
     for (auto [pf, exponent] : pfs) {
         if (pf % 4 == 3 && exponent & 1) return {};
 
-        vector<complex<T>> pps;
+        vector<GaussianInteger<T>> pps;
         if (pf % 4 == 3) {
             T pp = 1;
             for (int i = 0; i < exponent / 2; i++) pp *= pf;
             pps.emplace_back(pp);
-        } else if (pf == 2) {
-            complex<T> base(1, 1), value(1, 0);
-            while (exponent) {
-                if (exponent & 1) value *= base;
-                base *= base;
-                exponent >>= 1;
-            }
-            pps.emplace_back(value);
-        } else {
+        } else if (pf == 2) pps.emplace_back(GaussianInteger<T>::pow({1, 1}, exponent));
+        else {
             auto [a, b] = cornacchia((T) 1, pf);
-            complex<T> Z(a, b);
-            vector<complex<T>> pZ(exponent + 1, {1, 0});
-            for (int i = 1; i <= exponent; i++) pZ[i] = pZ[i - 1] * Z;
+            GaussianInteger<T> z{a, b};
+            vector<GaussianInteger<T>> pZ(exponent + 1, {1, 0});
+            for (int i = 1; i <= exponent; i++) pZ[i] = pZ[i - 1] * z;
 
             pps.resize(exponent + 1);
-            for (int i = 0; i <= exponent; i++) pps[i] = pZ[i] * conj(pZ[exponent - i]);
+            for (int i = 0; i <= exponent; i++) pps[i] = pZ[i] * pZ[exponent - i].conj();
         }
 
-        vector<complex<T>> temp;
-        for (auto Z1 : pairs)
-            for (auto Z2 : pps) temp.emplace_back(Z1 * Z2);
+        vector<GaussianInteger<T>> temp;
+        for (auto z1 : pairs)
+            for (auto z2 : pps) temp.emplace_back(z1 * z2);
         pairs = temp;
     }
 
     vector<pair<T, T>> sums;
     unordered_set<T> seen;
-    for (auto &Z : pairs) {
-        while (Z.real() <= 0 || Z.imag() < 0) Z = {-Z.imag(), Z.real()};
-        auto a = Z.real(), b = Z.imag();
-        if (seen.count(a) || seen.count(b)) continue;
-        seen.emplace(a);
-        seen.emplace(b);
-        sums.emplace_back(a, b);
+    for (auto z : pairs) {
+        while (z.a <= 0 || z.b < 0) z = ~z;
+        if (seen.count(z.a) || seen.count(z.b)) continue;
+
+        seen.emplace(z.a);
+        seen.emplace(z.b);
+        sums.emplace_back(z.a, z.b);
     }
     return sums;
 }
