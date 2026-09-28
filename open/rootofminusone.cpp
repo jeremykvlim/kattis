@@ -48,7 +48,7 @@ T tonelli_shanks(T n, T p) {
             i++;
         }
 
-        T b = pow(c, 1LL << (m - i - 1), p);
+        T b = pow(c, (T) 1 << (m - i - 1), p);
         m = i;
         c = mul(b, b, p);
         t = mul(t, mul(b, b, p), p);
