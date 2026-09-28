@@ -1,90 +1,167 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-inline char readchar() {
-    static const int size = 1 << 20;
-    static array<char, size> buf;
-    static int pos = 0, len = 0;
-    if (pos >= len) {
+struct Scanner {
+    static constexpr int size = 1 << 20;
+    array<char, size + 1> buf{};
+    int pos = 0, len = 0;
+    bool valid = true;
+
+    inline bool reload() {
         pos = 0;
         len = fread(buf.data(), 1, size, stdin);
-        if (!len) return EOF;
+        buf[len] = 0;
+        return len;
     }
-    return buf[pos++];
-}
 
-template <typename T>
-inline bool read(T &v) {
-    char c;
-    do {
-        c = readchar();
-        if (c == EOF) return false;
-    } while (c == ' ' || c == '\n' || c == '\r' || c == '\t');
-
-    if constexpr (is_integral_v<T> && !is_same_v<T, char>) {
-        bool neg = false;
-        if (c == '+' || c == '-') {
-            neg = (c == '-');
-            c = readchar();
+    inline bool skip_space() {
+        for (;;) {
+            for (; buf[pos] == ' ' || buf[pos] == '\n' || buf[pos] == '\r' || buf[pos] == '\t'; pos++);
+            if (pos < len) return true;
+            if (!reload()) return false;
         }
+    }
 
-        v = 0;
-        for (; '0' <= c && c <= '9'; c = readchar()) v = v * 10 + (c - '0');
-        if (neg) v = -v;
-        return true;
-    } else if constexpr (is_floating_point_v<T>) {
-        bool neg = false;
-        if (c == '+' || c == '-') {
-            neg = (c == '-');
-            c = readchar();
-        }
+    template <typename T>
+    inline bool read(T &v) {
+        if (!skip_space()) return false;
 
-        v = 0;
-        for (; '0' <= c && c <= '9'; c = readchar()) v = v * 10 + (c - '0');
-        if (c == '.') {
-            T place = 1;
-            for (c = readchar(); '0' <= c && c <= '9'; c = readchar()) {
-                place *= 0.1;
-                v += (c - '0') * place;
+        if constexpr (is_integral_v<T> && !is_same_v<T, char>) {
+            bool neg = false;
+            if (buf[pos] == '+' || buf[pos] == '-') {
+                neg = buf[pos] == '-';
+                if (++pos == len && !reload()) return false;
             }
+
+            v = 0;
+            for (;;) {
+                for (; '0' <= buf[pos] && buf[pos] <= '9'; pos++) v = v * 10 + (buf[pos] - '0');
+                if (pos < len || !reload()) break;
+            }
+            if (neg) v = -v;
+            return true;
+        } else if constexpr (is_floating_point_v<T>) {
+            bool neg = false;
+            if (buf[pos] == '+' || buf[pos] == '-') {
+                neg = buf[pos] == '-';
+                if (++pos == len && !reload()) return false;
+            }
+
+            v = 0;
+            for (;;) {
+                for (; '0' <= buf[pos] && buf[pos] <= '9'; pos++) v = v * 10 + (buf[pos] - '0');
+                if (pos < len || !reload()) break;
+            }
+            if (buf[pos] == '.') {
+                if (++pos == len) reload();
+                T place = 1;
+                for (;;) {
+                    for (; '0' <= buf[pos] && buf[pos] <= '9'; pos++) {
+                        place *= (T) 0.1;
+                        v += (buf[pos] - '0') * place;
+                    }
+                    if (pos < len || !reload()) break;
+                }
+            }
+            if (neg) v = -v;
+            return true;
+        } else if constexpr (is_same_v<T, char>) {
+            v = buf[pos++];
+            return true;
+        } else if constexpr (is_same_v<T, string>) {
+            v.clear();
+            for (;;) {
+                int prev = pos;
+                for (; buf[pos] && buf[pos] != ' ' && buf[pos] != '\n' && buf[pos] != '\r' && buf[pos] != '\t'; pos++)
+                    v.append(buf.begin() + prev, buf.begin() + pos);
+                if (pos < len || !reload()) break;
+            }
+            return true;
         }
-        if (neg) v = -v;
-        return true;
-    } else if constexpr (is_same_v<T, char>) {
-        v = c;
-        return true;
-    } else if constexpr (is_same_v<T, string>) {
-        v.clear();
-        do {
-            v += c;
-            c = readchar();
-        } while (c != EOF && c != ' ' && c != '\n' && c != '\r' && c != '\t');
+
+        return false;
+    }
+
+    template <typename T>
+    inline bool read(vector<T> &v) {
+        for (auto &x : v)
+            if (!read(x)) return false;
         return true;
     }
 
-    return false;
-}
+    template <typename T, typename U>
+    inline bool read(pair<T, U> &p) {
+        return read(p.first) && read(p.second);
+    }
 
-template <typename... T>
-inline bool read(T &... xs) requires (sizeof...(T) > 1) {
-    return (read(xs) && ...);
-}
+    template <typename... T>
+    inline bool read(tuple<T...> &t) {
+        return apply([&](auto &...x) {
+            return (read(x) && ...);
+        }, t);
+    }
+
+    template <typename... T>
+    inline bool read(T &...x) requires (sizeof...(T) > 1) {
+        return (read(x) && ...);
+    }
+
+    template <typename T>
+    inline Scanner & operator>>(T &v) {
+        if (valid) valid = read(v);
+        return *this;
+    }
+
+    explicit operator bool() const {
+        return valid;
+    }
+};
 
 template <typename T>
-vector<T> conjugate_gradient(const vector<vector<T>> &A, const vector<T> &b) {
+struct Matrix {
+    int r, c;
+    vector<vector<T>> mat;
+
+    Matrix(int n = 0) : Matrix(n, n) {}
+    Matrix(int rows, int cols, T v = 0) : r(rows), c(cols), mat(rows, vector<T>(cols, v)) {}
+    Matrix(const vector<vector<T>> &mat) : r(mat.size()), c(mat[0].size()), mat(mat) {}
+
+    auto & operator[](int i) {
+        return mat[i];
+    }
+
+    auto & operator[](int i) const {
+        return mat[i];
+    }
+};
+
+template <typename T>
+vector<T> conjugate_gradient(const Matrix<T> &A, const vector<T> &b, T x0 = 0) {
     int n = b.size();
 
-    vector<T> p = b, r = b, Ap(n), x(n, 0);
-    T squared_norm = inner_product(r.begin(), r.end(), r.begin(), (T) 0);
-    for (int _ = 0; _ < n; _++) {
+    vector<T> x(n, x0), r = b;
+    if (x0 != (T) 0)
         for (int i = 0; i < n; i++) {
-            Ap[i] = 0;
-            for (int j = 0; j < n; j++) Ap[i] += A[i][j] * p[j];
+            T sum = 0;
+            for (int j = 0; j < n; j++) sum += A[i][j];
+            r[i] -= x0 * sum;
         }
 
+    vector<T> p = r, Ap(n);
+    T squared_norm = inner_product(r.begin(), r.end(), r.begin(), (T) 0), epsilon = numeric_limits<T>::epsilon();
+    for (int _ = 0; _ < n && squared_norm > epsilon; _++) {
         T pAp = 0;
-        for (int i = 0; i < n; i++) pAp += p[i] * Ap[i];
-        if (fabs(pAp) < 1e-10) break;
+        for (int i = 0; i < n; i++) {
+            T pi = p[i], sum = A[i][i] * pi;
+            pAp += sum * pi;
+            for (int j = 0; j < i; j++) {
+                T a = A[i][j], pj = p[j];
+                sum += a * pj;
+                Ap[j] += a * pi;
+                pAp += 2 * a * pi * pj;
+            }
+            Ap[i] = sum;
+        }
 
         T alpha = squared_norm / pAp;
         for (int i = 0; i < n; i++) {
@@ -93,7 +170,7 @@ vector<T> conjugate_gradient(const vector<vector<T>> &A, const vector<T> &b) {
         }
 
         T temp = inner_product(r.begin(), r.end(), r.begin(), (T) 0);
-        if (sqrt(temp) < 1e-5) return x;
+        if (temp <= epsilon) return x;
 
         T beta = temp / squared_norm;
         for (int i = 0; i < n; i++) p[i] = r[i] + beta * p[i];
@@ -105,35 +182,37 @@ vector<T> conjugate_gradient(const vector<vector<T>> &A, const vector<T> &b) {
 
 int main() {
     ios::sync_with_stdio(false);
+    Scanner scan;
 
     int n;
-    read(n);
+    scan >> n;
 
     vector<double> b(n), s(n);
-    for (auto &bi : b) read(bi);
-    for (auto &si : s) read(si);
+    scan >> b >> s;
 
-    vector<vector<double>> A(n, vector<double>(n)), F(n, vector<double>(n));
+    Matrix<double> A(n);
     for (int i = 0; i < n; i++)
         for (int j = 0; j <= i; j++) {
-            read(A[i][j]);
+            scan >> A[i][j];
 
             A[j][i] = A[i][j];
         }
 
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j <= i; j++) {
-            read(F[i][j]);
+    auto x = conjugate_gradient(A, b);
+    auto m = inner_product(s.begin(), s.end(), x.begin(), 0.);
+    for (int i = 0; i < n; i++) {
+        auto fx = 0.;
+        for (int j = 0; j < i; j++) {
+            double fij;
+            scan >> fij;
 
-            F[j][i] = F[i][j];
+            fx += fij * x[j];
         }
 
-    auto x = conjugate_gradient(A, b);
-    vector<double> Fx(n);
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < n; j++) Fx[i] += F[i][j] * x[j];
+        double fii;
+        scan >> fii;
 
-    double m = 0;
-    for (int i = 0; i < n; i++) m += x[i] * Fx[i] + s[i] * x[i];
+        m += 2 * x[i] * fx + fii * x[i] * x[i];
+    }
     cout << fixed << setprecision(5) << m;
 }

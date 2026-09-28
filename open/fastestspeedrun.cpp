@@ -1,74 +1,121 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-inline char readchar() {
-    static const int size = 1 << 20;
-    static array<char, size> buf;
-    static int pos = 0, len = 0;
-    if (pos >= len) {
+struct Scanner {
+    static constexpr int size = 1 << 20;
+    array<char, size + 1> buf{};
+    int pos = 0, len = 0;
+    bool valid = true;
+
+    inline bool reload() {
         pos = 0;
         len = fread(buf.data(), 1, size, stdin);
-        if (!len) return EOF;
+        buf[len] = 0;
+        return len;
     }
-    return buf[pos++];
-}
 
-template <typename T>
-inline bool read(T &v) {
-    char c;
-    do {
-        c = readchar();
-        if (c == EOF) return false;
-    } while (c == ' ' || c == '\n' || c == '\r' || c == '\t');
-
-    if constexpr (is_integral_v<T> && !is_same_v<T, char>) {
-        bool neg = false;
-        if (c == '+' || c == '-') {
-            neg = (c == '-');
-            c = readchar();
+    inline bool skip_space() {
+        for (;;) {
+            for (; buf[pos] == ' ' || buf[pos] == '\n' || buf[pos] == '\r' || buf[pos] == '\t'; pos++);
+            if (pos < len) return true;
+            if (!reload()) return false;
         }
+    }
 
-        v = 0;
-        for (; '0' <= c && c <= '9'; c = readchar()) v = v * 10 + (c - '0');
-        if (neg) v = -v;
-        return true;
-    } else if constexpr (is_floating_point_v<T>) {
-        bool neg = false;
-        if (c == '+' || c == '-') {
-            neg = (c == '-');
-            c = readchar();
-        }
+    template <typename T>
+    inline bool read(T &v) {
+        if (!skip_space()) return false;
 
-        v = 0;
-        for (; '0' <= c && c <= '9'; c = readchar()) v = v * 10 + (c - '0');
-        if (c == '.') {
-            T place = 1;
-            for (c = readchar(); '0' <= c && c <= '9'; c = readchar()) {
-                place *= 0.1;
-                v += (c - '0') * place;
+        if constexpr (is_integral_v<T> && !is_same_v<T, char>) {
+            bool neg = false;
+            if (buf[pos] == '+' || buf[pos] == '-') {
+                neg = buf[pos] == '-';
+                if (++pos == len && !reload()) return false;
             }
+
+            v = 0;
+            for (;;) {
+                for (; '0' <= buf[pos] && buf[pos] <= '9'; pos++) v = v * 10 + (buf[pos] - '0');
+                if (pos < len || !reload()) break;
+            }
+            if (neg) v = -v;
+            return true;
+        } else if constexpr (is_floating_point_v<T>) {
+            bool neg = false;
+            if (buf[pos] == '+' || buf[pos] == '-') {
+                neg = buf[pos] == '-';
+                if (++pos == len && !reload()) return false;
+            }
+
+            v = 0;
+            for (;;) {
+                for (; '0' <= buf[pos] && buf[pos] <= '9'; pos++) v = v * 10 + (buf[pos] - '0');
+                if (pos < len || !reload()) break;
+            }
+            if (buf[pos] == '.') {
+                if (++pos == len) reload();
+                T place = 1;
+                for (;;) {
+                    for (; '0' <= buf[pos] && buf[pos] <= '9'; pos++) {
+                        place *= (T) 0.1;
+                        v += (buf[pos] - '0') * place;
+                    }
+                    if (pos < len || !reload()) break;
+                }
+            }
+            if (neg) v = -v;
+            return true;
+        } else if constexpr (is_same_v<T, char>) {
+            v = buf[pos++];
+            return true;
+        } else if constexpr (is_same_v<T, string>) {
+            v.clear();
+            for (;;) {
+                int prev = pos;
+                for (; buf[pos] && buf[pos] != ' ' && buf[pos] != '\n' && buf[pos] != '\r' && buf[pos] != '\t'; pos++)
+                    v.append(buf.begin() + prev, buf.begin() + pos);
+                if (pos < len || !reload()) break;
+            }
+            return true;
         }
-        if (neg) v = -v;
-        return true;
-    } else if constexpr (is_same_v<T, char>) {
-        v = c;
-        return true;
-    } else if constexpr (is_same_v<T, string>) {
-        v.clear();
-        do {
-            v += c;
-            c = readchar();
-        } while (c != EOF && c != ' ' && c != '\n' && c != '\r' && c != '\t');
+
+        return false;
+    }
+
+    template <typename T>
+    inline bool read(vector<T> &v) {
+        for (auto &x : v)
+            if (!read(x)) return false;
         return true;
     }
 
-    return false;
-}
+    template <typename T, typename U>
+    inline bool read(pair<T, U> &p) {
+        return read(p.first) && read(p.second);
+    }
 
-template <typename... T>
-inline bool read(T &... xs) requires (sizeof...(T) > 1) {
-    return (read(xs) && ...);
-}
+    template <typename... T>
+    inline bool read(tuple<T...> &t) {
+        return apply([&](auto &...x) {
+            return (read(x) && ...);
+        }, t);
+    }
+
+    template <typename... T>
+    inline bool read(T &...x) requires (sizeof...(T) > 1) {
+        return (read(x) && ...);
+    }
+
+    template <typename T>
+    inline Scanner & operator>>(T &v) {
+        if (valid) valid = read(v);
+        return *this;
+    }
+
+    explicit operator bool() const {
+        return valid;
+    }
+};
 
 struct RollbackDisjointSets {
     vector<int> sets;
@@ -214,18 +261,19 @@ pair<T, vector<int>> edmonds_dense(int n, vector<vector<T>> &adj_matrix_transpos
 
 int main() {
     ios::sync_with_stdio(false);
+    Scanner scan;
 
     int n;
-    read(n);
+    scan >> n;
 
     vector<vector<long long>> adj_matrix_transpose(n + 1, vector<long long>(n + 1, LLONG_MAX));
     for (int i = 1; i <= n; i++) {
         int x, s;
-        read(x, s);
+        scan >> x >> s;
 
         for (int j = 0; j <= n; j++) {
             int a;
-            read(a);
+            scan >> a;
 
             if (i != j) adj_matrix_transpose[i][j] = j == x ? min(a, s) : a;
         }
