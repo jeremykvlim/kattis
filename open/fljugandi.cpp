@@ -320,12 +320,15 @@ struct PowerTriangulation {
 
     void bowyer_watson(const vector<int> &order) {
         int n = points.size(), k = 0;
-        deque<int> q;
+        queue<int> q;
         vector<int> cavity;
-        vector<int> next(n, -1), visited_t(1, -1), visited_v1(n, -1), visited_v2(n, -1), indices(n, -1);
+        vector<int> next(n, -1), seen(1, -1), visited_t(1, -1), visited_v1(n, -1), visited_v2(n, -1), indices(n, -1);
         vector<pair<int, int>> boundary_edges, boundary_triangles;
         for (int p : order) {
-            if (visited_t.size() < triangles.size()) visited_t.resize(triangles.size(), -1);
+            if (seen.size() < triangles.size()) {
+                seen.resize(triangles.size(), -1);
+                visited_t.resize(triangles.size(), -1);
+            }
 
             if (!triangles.empty())
                 for (int _ = 0; _ <= triangles.size(); _++) {
@@ -351,11 +354,11 @@ struct PowerTriangulation {
                 }
 
             cavity.clear();
-            q.clear();
-            q.emplace_back(k);
+            q.emplace(k);
+            seen[k] = p;
             while (!q.empty()) {
                 int i = q.front();
-                q.pop_front();
+                q.pop();
 
                 auto in_circle = [&](int a, int b, int c, int d) {
                     return point_in_circumcircle<U>({{{points[a], a}, {points[b], b}, {points[c], c}}}, {points[d], d},
@@ -363,12 +366,16 @@ struct PowerTriangulation {
                 };
 
                 auto [a, b, c, valid] = triangles[i];
-                if (!(0 <= i && i < triangles.size()) || !valid || visited_t[i] == p || !in_circle(a, b, c, p)) continue;
+                if (!valid || !in_circle(a, b, c, p)) continue;
 
                 visited_t[i] = p;
                 cavity.emplace_back(i);
+
                 for (int j : adj_list[i])
-                    if (j != -1 && triangles[j].valid && visited_t[j] != p) q.emplace_back(j);
+                    if (j != -1 && triangles[j].valid && seen[j] != p) {
+                        seen[j] = p;
+                        q.emplace(j);
+                    }
             }
             if (cavity.empty()) continue;
 
@@ -390,71 +397,62 @@ struct PowerTriangulation {
                             }
                     } else boundary_triangles.emplace_back(-1, -1);
 
-                    if (visited_v1[u] != p) {
-                        visited_v1[u] = p;
-                        next[u] = -1;
-                    }
-                    if (visited_v1[v] != p) {
-                        visited_v1[v] = p;
-                        next[v] = -1;
-                    }
-
                     next[u] = v;
                     indices[u] = boundary_edges.size() - 1;
-                    q.emplace_back(u);
                 }
 
-            while (!q.empty()) {
-                int s = q.front();
-                q.pop_front();
-
-                if (visited_v1[s] != p || visited_v2[s] == p) continue;
-
-                int t = s, j = -1, l = -1, prev_vp = -1, prev_pu = -1;
-                do {
-                    visited_v2[t] = p;
-                    auto [u, v] = boundary_edges[indices[t]];
-
-                    int uv, vp = 0, pu;
-                    if (sgn(cross(points[u], points[v], points[p])) == -1) {
-                        triangles.emplace_back(u, p, v, true);
-                        uv = 1;
-                        pu = 2;
-                    } else {
-                        triangles.emplace_back(u, v, p, true);
-                        uv = 2;
-                        pu = 1;
-                    }
+            int recycle = 0;
+            auto add_triangle = [&](int a, int b, int c) {
+                int i;
+                if (recycle < cavity.size()) {
+                    i = cavity[recycle++];
+                    triangles[i] = Triangle(a, b, c, true);
+                    adj_list[i] = {-1, -1, -1};
+                } else {
+                    i = triangles.size();
+                    triangles.emplace_back(a, b, c, true);
                     adj_list.push_back({-1, -1, -1});
-
-                    k = triangles.size() - 1;
-                    auto [i, e] = boundary_triangles[indices[t]];
-
-                    if (i != -1 && visited_t[i] != p && triangles[i].valid) {
-                        adj_list[k][uv] = i;
-                        if (e != -1) adj_list[i][e] = k;
-                    }
-
-                    if (j != -1) {
-                        adj_list[j][prev_vp] = k;
-                        adj_list[k][pu] = j;
-                    } else {
-                        l = k;
-                        prev_pu = pu;
-                    }
-
-                    j = k;
-                    prev_vp = vp;
-                    t = next[t];
-                } while (t != s && t != -1);
-
-                if (l != -1 && j != -1) {
-                    adj_list[j][prev_vp] = l;
-                    adj_list[l][prev_pu] = j;
                 }
-            }
+                return i;
+            };
 
-            for (int i : cavity) triangles[i].valid = false;
+            int s = boundary_edges[0].first, t = s, j = -1, l = -1, prev_vp = -1, prev_pu = -1;
+            do {
+                auto [u, v] = boundary_edges[indices[t]];
+
+                int uv, vp = 0, pu;
+                if (sgn(cross(points[u], points[v], points[p])) == -1) {
+                    k = add_triangle(u, p, v);
+                    uv = 1;
+                    pu = 2;
+                } else {
+                    k = add_triangle(u, v, p);
+                    uv = 2;
+                    pu = 1;
+                }
+
+                auto [i, e] = boundary_triangles[indices[t]];
+                if (i != -1 && visited_t[i] != p && triangles[i].valid) {
+                    adj_list[k][uv] = i;
+                    if (e != -1) adj_list[i][e] = k;
+                }
+
+                if (j != -1) {
+                    adj_list[j][prev_vp] = k;
+                    adj_list[k][pu] = j;
+                } else {
+                    l = k;
+                    prev_pu = pu;
+                }
+
+                j = k;
+                prev_vp = vp;
+                t = next[t];
+            } while (t != s);
+
+            adj_list[j][prev_vp] = l;
+            adj_list[l][prev_pu] = j;
+            for (; recycle < cavity.size(); recycle++) triangles[cavity[recycle]].valid = false;
         }
     }
 
