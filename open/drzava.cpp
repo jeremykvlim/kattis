@@ -570,10 +570,10 @@ pair<T, vector<pair<int, int>>> kruskal(int n, vector<tuple<T, int, int>> edges)
 }
 
 template <typename T>
-pair<T, vector<pair<int, int>>> euclidean_mst(int n, const vector<Point<T>> &points) {
+pair<double, vector<pair<int, int>>> euclidean_mst(int n, const vector<Point<T>> &points) {
     DelaunayTriangulation dt(points);
 
-    vector<tuple<T, int, int>> edges;
+    vector<tuple<double, int, int>> edges;
     for (auto [u, v] : dt.delaunay_edges)
         if (u < n && v < n) edges.emplace_back(euclidean_dist(points[u], points[v]), u, v);
 
