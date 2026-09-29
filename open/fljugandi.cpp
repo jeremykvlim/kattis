@@ -253,8 +253,32 @@ struct PowerTriangulation {
     PowerTriangulation(vector<Point<T>> p, vector<T> w) {
         int n = p.size();
 
-        T xl = p[0].x, xr = p[0].x, yl = p[0].y, yr = p[0].y;
-        for (auto [x, y] : p) {
+        vector<int> indices(n);
+        iota(indices.begin(), indices.end(), 0);
+        sort(indices.begin(), indices.end(), [&](int i, int j) { return p[i] != p[j] ? p[i] < p[j] : i < j; });
+
+        vector<int> order;
+        for (int l = 0, r = 1; l < n; l = r++) {
+            for (; r < n && p[indices[l]] == p[indices[r]]; r++);
+
+            T w_max = w[indices[l]];
+            for (int i = l + 1; i < r; i++) w_max = max(w_max, w[indices[i]]);
+
+            int j = -1;
+            for (int i = l; i < r; i++)
+                if (w[indices[i]] == w_max) {
+                    j = indices[i];
+                    break;
+                }
+
+            order.emplace_back(j);
+            for (int i = l; i < r; i++)
+                if (indices[i] != j && w[indices[i]] == w_max) delaunay_edges.emplace_back(indices[i], j);
+        }
+
+        T xl = p[order[0]].x, xr = p[order[0]].x, yl = p[order[0]].y, yr = p[order[0]].y;
+        for (int i : order) {
+            auto [x, y] = p[i];
             xl = min(xl, x);
             xr = max(xr, x);
             yl = min(yl, y);
@@ -280,9 +304,6 @@ struct PowerTriangulation {
         triangles.emplace_back(a, b, c, true);
         adj_list.push_back({-1, -1, -1});
 
-        vector<int> order(n);
-        iota(order.begin(), order.end(), 0);
-
         vector<T> hilbert_order(n);
         for (int i = 0; i < n; i++) hilbert_order[i] = hilbert_index(p[i].x - xl, p[i].y - yl);
         sort(order.begin(), order.end(), [&](int i, int j) { return hilbert_order[i] < hilbert_order[j]; });
@@ -292,25 +313,25 @@ struct PowerTriangulation {
         bowyer_watson(order);
 
         int count = 0;
-        vector<int> indices(triangles.size(), -1);
+        vector<int> triangle_ids(triangles.size(), -1);
         for (int i = 0; i < triangles.size(); i++) {
             if (!triangles[i].valid) continue;
             for (int e = 0; e < 3; e++) {
                 int j = adj_list[i][e];
                 if (j != -1 && i >= j) continue;
-                auto [u, v] = triangle_edge(i, e);
+                auto [u, v] = triangle_edge(i,e);
                 if (u < n && v < n) delaunay_edges.emplace_back(u, v);
             }
-            if (triangles[i].a < n && triangles[i].b < n && triangles[i].c < n) indices[i] = count++;
+            if (triangles[i].a < n && triangles[i].b < n && triangles[i].c < n) triangle_ids[i] = count++;
         }
 
         vector<Triangle> temp_t(count);
         vector<array<int, 3>> temp_a(count, {-1, -1, -1});
         for (int i = 0, k = 0; i < triangles.size() && k < count; i++)
-            if (indices[i] != -1) {
+            if (~triangle_ids[i]) {
                 for (int e = 0; e < 3; e++) {
                     int j = adj_list[i][e];
-                    if (0 <= j && j < triangles.size()) temp_a[k][e] = indices[j];
+                    if (0 <= j && j < triangles.size()) temp_a[k][e] = triangle_ids[j];
                 }
                 temp_t[k++] = triangles[i];
             }
