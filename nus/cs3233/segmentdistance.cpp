@@ -192,7 +192,7 @@ Point<T> non_collinear_intersection(const Line<T> &l1, const Line<T> &l2) {
 template <typename T>
 double point_line_dist(const Point<T> &p, const Line<T> &l) {
     auto v = l.b - l.a;
-    return euclidean_dist(l.a + v * clamp((double) dot(p - l.a, v) / dot(v, v), 0., 1.), p);
+    return euclidean_dist(l.a + v * clamp(dot(p - l.a, v) / dot(v, v), (T) 0, (T) 1), p);
 }
 
 int main() {
