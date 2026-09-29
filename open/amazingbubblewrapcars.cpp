@@ -350,7 +350,7 @@ int main() {
     for (auto &[x, y, z] : points) cin >> x >> y >> z;
 
     double area = 0;
-    ConvexHull3D<double> convex_hull(points);
+    ConvexHull3D convex_hull(points);
     for (int f : convex_hull.valid_faces) {
         auto [a, b, c] = convex_hull.face_vertices(f);
         area += 0.5 * euclidean_dist(cross(points[a], points[b], points[c]));
