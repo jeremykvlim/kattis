@@ -2,8 +2,9 @@
 using namespace std;
 
 template <typename... I>
-auto hilbert_index(I... c) {
+unsigned long long hilbert_index(I... c) {
     using T = common_type_t<I...>;
+
     constexpr int D = sizeof...(I);
     array<T, D> coords{(T) c...};
     T c_max = max({c...});
@@ -26,7 +27,7 @@ auto hilbert_index(I... c) {
         if (coords[D - 1] & mask) m ^= mask - 1;
     for (int i = 0; i < D; i++) coords[i] ^= m;
 
-    T h = 0;
+    auto h = 0ULL;
     for (; ~b; b--)
         for (int i = 0; i < D; i++) h = (h << 1) | ((coords[i] >> b) & 1);
     return h;
@@ -40,7 +41,8 @@ struct QueryDecomposition {
 
     vector<int> mo(vector<int> a, const vector<array<int, 3>> &updates, int k) {
         int Q = queries.size();
-        vector<int> answers(Q), freq(a.size() + 1, 0), hilbert_order(Q);
+        vector<int> answers(Q), freq(a.size() + 1, 0);
+        vector<unsigned long long> hilbert_order(Q);
         for (int q = 0; q < Q; q++) {
             auto [l, r, t, i] = queries[q];
             hilbert_order[q] = hilbert_index(l / size, r / size, t / size);

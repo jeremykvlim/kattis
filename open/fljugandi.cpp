@@ -199,8 +199,9 @@ Line<T> power_bisector(const Point<T> &a, const Point<T> &b, T za, T zb) {
 }
 
 template <typename... I>
-auto hilbert_index(I... c) {
+unsigned long long hilbert_index(I... c) {
     using T = common_type_t<I...>;
+
     constexpr int D = sizeof...(I);
     array<T, D> coords{(T) c...};
     T c_max = max({c...});
@@ -223,7 +224,7 @@ auto hilbert_index(I... c) {
         if (coords[D - 1] & mask) m ^= mask - 1;
     for (int i = 0; i < D; i++) coords[i] ^= m;
 
-    T h = 0;
+    auto h = 0ULL;
     for (; ~b; b--)
         for (int i = 0; i < D; i++) h = (h << 1) | ((coords[i] >> b) & 1);
     return h;
@@ -231,7 +232,7 @@ auto hilbert_index(I... c) {
 
 template <typename T>
 struct PowerTriangulation {
-    using U = typename conditional<(is_same<T, int>::value || is_same<T, long long>::value), double, typename conditional<is_same<T, __int128>::value, long double, void>::type>::type;
+    using U = conditional_t<is_same_v<T, int> || is_same_v<T, long long>, double, conditional_t<is_same_v<T, __int128>, long double, T>>;
 
     struct Triangle {
         int a, b, c;
@@ -304,8 +305,13 @@ struct PowerTriangulation {
         triangles.emplace_back(a, b, c, true);
         adj_list.push_back({-1, -1, -1});
 
-        vector<T> hilbert_order(n);
-        for (int i = 0; i < n; i++) hilbert_order[i] = hilbert_index(p[i].x - xl, p[i].y - yl);
+        vector<unsigned long long> hilbert_order(n);
+        if constexpr (is_integral_v<T>)
+            for (int i = 0; i < n; i++) hilbert_order[i] = hilbert_index(p[i].x - xl, p[i].y - yl);
+        else {
+            T scale = numeric_limits<unsigned>::max() / max(xr - xl, yr - yl);
+            for (int i = 0; i < n; i++) hilbert_order[i] = hilbert_index((unsigned) ((p[i].x - xl) * scale), (unsigned) ((p[i].y - yl) * scale));
+        }
         sort(order.begin(), order.end(), [&](int i, int j) { return hilbert_order[i] < hilbert_order[j]; });
 
         points = p;

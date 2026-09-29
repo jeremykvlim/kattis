@@ -2,8 +2,9 @@
 using namespace std;
 
 template <typename... I>
-auto hilbert_index(I... c) {
+unsigned long long hilbert_index(I... c) {
     using T = common_type_t<I...>;
+
     constexpr int D = sizeof...(I);
     array<T, D> coords{(T) c...};
     T c_max = max({c...});
@@ -26,7 +27,7 @@ auto hilbert_index(I... c) {
         if (coords[D - 1] & mask) m ^= mask - 1;
     for (int i = 0; i < D; i++) coords[i] ^= m;
 
-    T h = 0;
+    auto h = 0ULL;
     for (; ~b; b--)
         for (int i = 0; i < D; i++) h = (h << 1) | ((coords[i] >> b) & 1);
     return h;
@@ -46,7 +47,7 @@ int main() {
     }
 
     int m = bit_ceil((unsigned) n);
-    vector<int> hilbert_order(n);
+    vector<unsigned long long> hilbert_order(n);
     for (int i = 0; i < n; i++) hilbert_order[i] = hilbert_index(i + m, p[i] + m);
 
     vector<int> order(n);
