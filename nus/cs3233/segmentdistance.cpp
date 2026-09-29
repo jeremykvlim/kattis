@@ -141,8 +141,10 @@ T cross(const Point<T> &a, const Point<T> &b) {
 }
 
 template <typename T>
-double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
-    return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
+auto euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
+    using U = common_type_t<T, double>;
+    U x = (U) a.x - b.x, y = (U) a.y - b.y;
+    return sqrt(x * x + y * y);
 }
 
 template <typename T>
@@ -190,7 +192,7 @@ Point<T> non_collinear_intersection(const Line<T> &l1, const Line<T> &l2) {
 }
 
 template <typename T>
-double point_line_dist(const Point<T> &p, const Line<T> &l) {
+auto point_line_dist(const Point<T> &p, const Line<T> &l) {
     auto v = l.b - l.a;
     return euclidean_dist(l.a + v * clamp(dot(p - l.a, v) / dot(v, v), (T) 0, (T) 1), p);
 }

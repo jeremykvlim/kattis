@@ -120,7 +120,7 @@ struct Point {
 };
  
 template <typename T>
-double angle(const Point<T> &p) {
+auto angle(const Point<T> &p) {
     return atan2(p.y, p.x);
 }
  

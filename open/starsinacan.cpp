@@ -136,8 +136,10 @@ T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
 }
 
 template <typename T>
-double euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
-    return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y));
+auto euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
+    using U = common_type_t<T, double>;
+    U x = (U) a.x - b.x, y = (U) a.y - b.y;
+    return sqrt(x * x + y * y);
 }
 
 template <typename T>
