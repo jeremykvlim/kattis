@@ -7,7 +7,7 @@ int main() {
 
     int n, m, t = 0;
     vector<int> visited(1 << 21, -1), prev(1 << 21), indices(1 << 21);
-    while (cin >> n >> m && n || m) {
+    while (cin >> n >> m && (n || m)) {
         vector<int> adj_masks(n, 0);
         while (m--) {
             int u, v;

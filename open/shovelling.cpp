@@ -20,9 +20,9 @@ pair<T, vector<int>> dreyfus_wagner(int n, const vector<array<int, 3>> &edges, c
         for (int m2 = (m1 - 1) & m1; m2; --m2 &= m1)
             if ((m1 ^ m2) >= m2)
                 for (int v = 0; v < n; v++) {
-                    T d = dist[m2][v] + dist[m1 ^ m2][v] - cost[v];
-                    if (dist[m1][v] > d) {
-                        dist[m1][v] = d;
+                    T d = dp[m2][v] + dp[m1 ^ m2][v] - cost[v];
+                    if (dp[m1][v] > d) {
+                        dp[m1][v] = d;
                         prev[m1][v] = {m2, -1};
                     }
                 }
@@ -102,7 +102,7 @@ int main() {
         for (int i = 0; i < m; i++)
             for (int j = 0; j < n; j++) {
                 if (grid[i][j] == '#') continue;
-                
+
                 int u = index(i, j);
                 for (int k = 0; k < 4; k++) {
                     int x = i + dx[k], y = j + dy[k];

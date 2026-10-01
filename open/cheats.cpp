@@ -601,7 +601,7 @@ int main() {
     modint::init();
 
     int n, k;
-    while (cin >> n >> k && n || k) {
+    while (cin >> n >> k && (n || k)) {
         vector<vector<int>> adj_list(n + 1);
         for (int i = 2; i <= n; i++) {
             int p;

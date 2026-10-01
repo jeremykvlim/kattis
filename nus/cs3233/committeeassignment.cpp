@@ -6,7 +6,7 @@ int main() {
     cin.tie(nullptr);
 
     int n, m;
-    while (cin >> n >> m && n || m) {
+    while (cin >> n >> m && (n || m)) {
         unordered_map<string, int> compress;
         vector<int> hostile(n, 0);
         while (m--) {
