@@ -96,9 +96,7 @@ struct Scanner {
 
     template <typename... T>
     inline bool read(tuple<T...> &t) {
-        return apply([&](auto &...x) {
-            return (read(x) && ...);
-        }, t);
+        return apply([&](auto &...x) { return (read(x) && ...); }, t);
     }
 
     template <typename... T>
@@ -107,6 +105,7 @@ struct Scanner {
     }
 
     template <typename T>
+    requires (!requires(Scanner &s, T &v) { operator>>(s, v); })
     inline Scanner & operator>>(T &v) {
         if (valid) valid = read(v);
         return *this;

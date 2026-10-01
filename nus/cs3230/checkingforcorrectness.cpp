@@ -100,27 +100,27 @@ bool isprime(unsigned long long n) {
     return lucas_pseudoprime();
 }
 
-template <typename M>
+template <auto M>
 struct BarrettModInt {
-    using G = int;
     using H = long long;
     using I = unsigned int;
     using J = unsigned long long;
     using K = unsigned __int128;
 
     I value;
-    static inline bool prime_mod;
-    static inline J inv_mod;
-    static constexpr int bit_length = sizeof(J) * 8;
 
-    static void init() {
-        prime_mod = mod() == 998244353 || mod() == 1e9 + 7 || mod() == 1e9 + 9 || mod() == 1e6 + 69 || isprime(mod());
-        inv_mod = (J) -1 / mod();
+    constexpr static H mod() {
+        return M;
     }
+
+    static constexpr J inv_mod = (J) -1 / mod();
+    static constexpr int bit_length = sizeof(J) * 8;
+    static inline bool prime_mod = isprime(mod());
 
     constexpr BarrettModInt() : value() {}
 
     template <typename V>
+    requires is_integral_v<V>
     BarrettModInt(const V &x) {
         value = normalize(x);
     }
@@ -146,10 +146,6 @@ struct BarrettModInt {
         return (V) value;
     }
 
-    constexpr static H mod() {
-        return M::value;
-    }
-
     inline auto & operator+=(const BarrettModInt &v) {
         H t = (H) value + v.value;
         value = t >= mod() ? t - mod() : t;
@@ -163,11 +159,13 @@ struct BarrettModInt {
     }
 
     template <typename V>
+    requires is_integral_v<V>
     inline auto & operator+=(const V &v) {
         return *this += BarrettModInt(v);
     }
 
     template <typename V>
+    requires is_integral_v<V>
     inline auto & operator-=(const V &v) {
         return *this -= BarrettModInt(v);
     }
@@ -181,25 +179,145 @@ struct BarrettModInt {
     }
 
     auto operator++(int) {
-        return *this += 1;
+        auto t = *this;
+        *this += 1;
+        return t;
     }
 
     auto operator--(int) {
-        return *this -= 1;
+        auto t = *this;
+        *this -= 1;
+        return t;
     }
 
     auto operator-() const {
         return (BarrettModInt) 0 - *this;
     }
 
-    template <typename V = M>
-    typename enable_if<is_same<typename BarrettModInt<V>::I, unsigned int>::value, BarrettModInt>::type & operator*=(const BarrettModInt &v) {
+    auto & operator*=(const BarrettModInt &v) {
         value = reduce((J) value * v.value);
         return *this;
     }
 
     auto & operator/=(const BarrettModInt &v) {
         return *this *= inv(v);
+    }
+
+    friend bool operator==(const BarrettModInt &lhs, const BarrettModInt &rhs) {
+        return lhs.value == rhs.value;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend bool operator==(const BarrettModInt &lhs, V rhs) {
+        return lhs == BarrettModInt(rhs);
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend bool operator==(V lhs, const BarrettModInt &rhs) {
+        return BarrettModInt(lhs) == rhs;
+    }
+
+    friend bool operator!=(const BarrettModInt &lhs, const BarrettModInt &rhs) {
+        return !(lhs == rhs);
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend bool operator!=(const BarrettModInt &lhs, V rhs) {
+        return !(lhs == rhs);
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend bool operator!=(V lhs, const BarrettModInt &rhs) {
+        return !(lhs == rhs);
+    }
+
+    friend bool operator>(const BarrettModInt &lhs, const BarrettModInt &rhs) {
+        return lhs.value > rhs.value;
+    }
+
+    friend bool operator<(const BarrettModInt &lhs, const BarrettModInt &rhs) {
+        return lhs.value < rhs.value;
+    }
+
+    friend BarrettModInt operator+(const BarrettModInt &lhs, const BarrettModInt &rhs) {
+        return BarrettModInt(lhs) += rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend BarrettModInt operator+(const BarrettModInt &lhs, V rhs) {
+        return BarrettModInt(lhs) += rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend BarrettModInt operator+(V lhs, const BarrettModInt &rhs) {
+        return BarrettModInt(lhs) += rhs;
+    }
+
+    friend BarrettModInt operator-(const BarrettModInt &lhs, const BarrettModInt &rhs) {
+        return BarrettModInt(lhs) -= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend BarrettModInt operator-(const BarrettModInt &lhs, V rhs) {
+        return BarrettModInt(lhs) -= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend BarrettModInt operator-(V lhs, const BarrettModInt &rhs) {
+        return BarrettModInt(lhs) -= rhs;
+    }
+
+    friend BarrettModInt operator*(const BarrettModInt &lhs, const BarrettModInt &rhs) {
+        return BarrettModInt(lhs) *= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend BarrettModInt operator*(const BarrettModInt &lhs, V rhs) {
+        return BarrettModInt(lhs) *= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend BarrettModInt operator*(V lhs, const BarrettModInt &rhs) {
+        return BarrettModInt(lhs) *= rhs;
+    }
+
+    friend BarrettModInt operator/(const BarrettModInt &lhs, const BarrettModInt &rhs) {
+        return BarrettModInt(lhs) /= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend BarrettModInt operator/(const BarrettModInt &lhs, V rhs) {
+        return BarrettModInt(lhs) /= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend BarrettModInt operator/(V lhs, const BarrettModInt &rhs) {
+        return BarrettModInt(lhs) /= rhs;
+    }
+
+    template <typename S>
+    friend S & operator<<(S &stream, const BarrettModInt &v) {
+        return stream << v();
+    }
+
+    template <typename S>
+    friend S & operator>>(S &stream, BarrettModInt &v) {
+        H x;
+        stream >> x;
+        v = BarrettModInt(x);
+        return stream;
     }
 
     static BarrettModInt pow(BarrettModInt base, J exponent) {
@@ -215,7 +333,7 @@ struct BarrettModInt {
     static BarrettModInt inv(const BarrettModInt &v) {
         if (prime_mod) return pow(v, mod() - 2);
 
-        H x = 0, y = 1, a = v.value, m = mod();
+        H x = 0, y = 1, a = v(), m = mod();
         while (a) {
             H t = m / a;
             m -= t * a;
@@ -228,133 +346,18 @@ struct BarrettModInt {
     }
 };
 
-template <typename T>
-bool operator==(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
-    return lhs.value == rhs.value;
-}
-
-template <typename T, typename U>
-bool operator==(const BarrettModInt<T> &lhs, U rhs) {
-    return lhs == BarrettModInt<T>(rhs);
-}
-
-template <typename T, typename U>
-bool operator==(U lhs, const BarrettModInt<T> &rhs) {
-    return BarrettModInt<T>(lhs) == rhs;
-}
-
-template <typename T>
-bool operator!=(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
-    return !(lhs == rhs);
-}
-
-template <typename T, typename U>
-bool operator!=(const BarrettModInt<T> &lhs, U rhs) {
-    return !(lhs == rhs);
-}
-
-template <typename T, typename U>
-bool operator!=(U lhs, const BarrettModInt<T> &rhs) {
-    return !(lhs == rhs);
-}
-
-template <typename T>
-bool operator>(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
-    return lhs.value > rhs.value;
-}
-
-template <typename T>
-bool operator<(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
-    return lhs.value < rhs.value;
-}
-
-template <typename T>
-BarrettModInt<T> operator+(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
-    return BarrettModInt<T>(lhs) += rhs;
-}
-
-template <typename T, typename U>
-BarrettModInt<T> operator+(const BarrettModInt<T> &lhs, U rhs) {
-    return BarrettModInt<T>(lhs) += rhs;
-}
-
-template <typename T, typename U>
-BarrettModInt<T> operator+(U lhs, const BarrettModInt<T> &rhs) {
-    return BarrettModInt<T>(lhs) += rhs;
-}
-
-template <typename T>
-BarrettModInt<T> operator-(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
-    return BarrettModInt<T>(lhs) -= rhs;
-}
-
-template <typename T, typename U>
-BarrettModInt<T> operator-(const BarrettModInt<T> &lhs, U rhs) {
-    return BarrettModInt<T>(lhs) -= rhs;
-}
-
-template <typename T, typename U>
-BarrettModInt<T> operator-(U lhs, const BarrettModInt<T> &rhs) {
-    return BarrettModInt<T>(lhs) -= rhs;
-}
-
-template <typename T>
-BarrettModInt<T> operator*(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
-    return BarrettModInt<T>(lhs) *= rhs;
-}
-
-template <typename T, typename U>
-BarrettModInt<T> operator*(const BarrettModInt<T> &lhs, U rhs) {
-    return BarrettModInt<T>(lhs) *= rhs;
-}
-
-template <typename T, typename U>
-BarrettModInt<T> operator*(U lhs, const BarrettModInt<T> &rhs) {
-    return BarrettModInt<T>(lhs) *= rhs;
-}
-
-template <typename T>
-BarrettModInt<T> operator/(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
-    return BarrettModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-BarrettModInt<T> operator/(const BarrettModInt<T> &lhs, U rhs) {
-    return BarrettModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-BarrettModInt<T> operator/(U lhs, const BarrettModInt<T> &rhs) {
-    return BarrettModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-U & operator<<(U &stream, const BarrettModInt<T> &v) {
-    return stream << v();
-}
-
-template <typename T, typename U>
-U & operator>>(U &stream, BarrettModInt<T> &v) {
-    typename make_signed<typename BarrettModInt<T>::I>::type x;
-    stream >> x;
-    v = BarrettModInt<T>(x);
-    return stream;
-}
-
-constexpr unsigned int MOD = 1e4;
-using modint = BarrettModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
+constexpr int MOD = 1e4;
+using modint = BarrettModInt<MOD>;
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    modint::init();
-
     modint a;
     long long b;
     char op;
     while (cin >> a >> op >> b) {
-        if (op == '^') cout << pow((long long) a.value, b, (long long) MOD) << "\n";
+        if (op == '^') cout << modint::pow(a, b) << "\n";
         else cout << (op == '+' ? a + b : a * b) << "\n";
     }
 }

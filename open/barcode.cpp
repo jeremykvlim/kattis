@@ -100,28 +100,34 @@ bool isprime(unsigned long long n) {
     return lucas_pseudoprime();
 }
 
-template <typename M>
-struct BarrettModInt {
-    using G = int;
+struct DynamicBarrettModInt {
     using H = long long;
     using I = unsigned int;
     using J = unsigned long long;
     using K = unsigned __int128;
 
     I value;
+    static inline I modulus;
+
+    static H mod() {
+        return modulus;
+    }
+
     static inline bool prime_mod;
     static inline J inv_mod;
     static constexpr int bit_length = sizeof(J) * 8;
 
-    static void init() {
+    static void init(I m) {
+        modulus = m;
         prime_mod = mod() == 998244353 || mod() == 1e9 + 7 || mod() == 1e9 + 9 || mod() == 1e6 + 69 || isprime(mod());
         inv_mod = (J) -1 / mod();
     }
 
-    constexpr BarrettModInt() : value() {}
+    constexpr DynamicBarrettModInt() : value() {}
 
     template <typename V>
-    BarrettModInt(const V &x) {
+    requires is_integral_v<V>
+    DynamicBarrettModInt(const V &x) {
         value = normalize(x);
     }
 
@@ -146,30 +152,28 @@ struct BarrettModInt {
         return (V) value;
     }
 
-    constexpr static H mod() {
-        return M::value;
-    }
-
-    inline auto & operator+=(const BarrettModInt &v) {
+    inline auto & operator+=(const DynamicBarrettModInt &v) {
         H t = (H) value + v.value;
         value = t >= mod() ? t - mod() : t;
         return *this;
     }
 
-    inline auto & operator-=(const BarrettModInt &v) {
+    inline auto & operator-=(const DynamicBarrettModInt &v) {
         H t = (H) value - v.value;
         value = t < 0 ? t + mod() : t;
         return *this;
     }
 
     template <typename V>
+    requires is_integral_v<V>
     inline auto & operator+=(const V &v) {
-        return *this += BarrettModInt(v);
+        return *this += DynamicBarrettModInt(v);
     }
 
     template <typename V>
+    requires is_integral_v<V>
     inline auto & operator-=(const V &v) {
-        return *this -= BarrettModInt(v);
+        return *this -= DynamicBarrettModInt(v);
     }
 
     auto & operator++() {
@@ -181,29 +185,150 @@ struct BarrettModInt {
     }
 
     auto operator++(int) {
-        return *this += 1;
+        auto t = *this;
+        *this += 1;
+        return t;
     }
 
     auto operator--(int) {
-        return *this -= 1;
+        auto t = *this;
+        *this -= 1;
+        return t;
     }
 
     auto operator-() const {
-        return (BarrettModInt) 0 - *this;
+        return (DynamicBarrettModInt) 0 - *this;
     }
 
-    template <typename V = M>
-    typename enable_if<is_same<typename BarrettModInt<V>::I, unsigned int>::value, BarrettModInt>::type & operator*=(const BarrettModInt &v) {
+    auto & operator*=(const DynamicBarrettModInt &v) {
         value = reduce((J) value * v.value);
         return *this;
     }
 
-    auto & operator/=(const BarrettModInt &v) {
+    auto & operator/=(const DynamicBarrettModInt &v) {
         return *this *= inv(v);
     }
 
-    static BarrettModInt pow(BarrettModInt base, J exponent) {
-        BarrettModInt v = 1;
+    friend bool operator==(const DynamicBarrettModInt &lhs, const DynamicBarrettModInt &rhs) {
+        return lhs.value == rhs.value;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend bool operator==(const DynamicBarrettModInt &lhs, V rhs) {
+        return lhs == DynamicBarrettModInt(rhs);
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend bool operator==(V lhs, const DynamicBarrettModInt &rhs) {
+        return DynamicBarrettModInt(lhs) == rhs;
+    }
+
+    friend bool operator!=(const DynamicBarrettModInt &lhs, const DynamicBarrettModInt &rhs) {
+        return !(lhs == rhs);
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend bool operator!=(const DynamicBarrettModInt &lhs, V rhs) {
+        return !(lhs == rhs);
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend bool operator!=(V lhs, const DynamicBarrettModInt &rhs) {
+        return !(lhs == rhs);
+    }
+
+    friend bool operator>(const DynamicBarrettModInt &lhs, const DynamicBarrettModInt &rhs) {
+        return lhs.value > rhs.value;
+    }
+
+    friend bool operator<(const DynamicBarrettModInt &lhs, const DynamicBarrettModInt &rhs) {
+        return lhs.value < rhs.value;
+    }
+
+    friend DynamicBarrettModInt operator+(const DynamicBarrettModInt &lhs, const DynamicBarrettModInt &rhs) {
+        return DynamicBarrettModInt(lhs) += rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicBarrettModInt operator+(const DynamicBarrettModInt &lhs, V rhs) {
+        return DynamicBarrettModInt(lhs) += rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicBarrettModInt operator+(V lhs, const DynamicBarrettModInt &rhs) {
+        return DynamicBarrettModInt(lhs) += rhs;
+    }
+
+    friend DynamicBarrettModInt operator-(const DynamicBarrettModInt &lhs, const DynamicBarrettModInt &rhs) {
+        return DynamicBarrettModInt(lhs) -= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicBarrettModInt operator-(const DynamicBarrettModInt &lhs, V rhs) {
+        return DynamicBarrettModInt(lhs) -= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicBarrettModInt operator-(V lhs, const DynamicBarrettModInt &rhs) {
+        return DynamicBarrettModInt(lhs) -= rhs;
+    }
+
+    friend DynamicBarrettModInt operator*(const DynamicBarrettModInt &lhs, const DynamicBarrettModInt &rhs) {
+        return DynamicBarrettModInt(lhs) *= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicBarrettModInt operator*(const DynamicBarrettModInt &lhs, V rhs) {
+        return DynamicBarrettModInt(lhs) *= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicBarrettModInt operator*(V lhs, const DynamicBarrettModInt &rhs) {
+        return DynamicBarrettModInt(lhs) *= rhs;
+    }
+
+    friend DynamicBarrettModInt operator/(const DynamicBarrettModInt &lhs, const DynamicBarrettModInt &rhs) {
+        return DynamicBarrettModInt(lhs) /= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicBarrettModInt operator/(const DynamicBarrettModInt &lhs, V rhs) {
+        return DynamicBarrettModInt(lhs) /= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicBarrettModInt operator/(V lhs, const DynamicBarrettModInt &rhs) {
+        return DynamicBarrettModInt(lhs) /= rhs;
+    }
+
+    template <typename S>
+    friend S & operator<<(S &stream, const DynamicBarrettModInt &v) {
+        return stream << v();
+    }
+
+    template <typename S>
+    friend S & operator>>(S &stream, DynamicBarrettModInt &v) {
+        H x;
+        stream >> x;
+        v = DynamicBarrettModInt(x);
+        return stream;
+    }
+
+    template <typename V>
+    static DynamicBarrettModInt pow(DynamicBarrettModInt base, V exponent) {
+        DynamicBarrettModInt v = 1;
         while (exponent) {
             if (exponent & 1) v *= base;
             base *= base;
@@ -212,10 +337,10 @@ struct BarrettModInt {
         return v;
     }
 
-    static BarrettModInt inv(const BarrettModInt &v) {
+    static DynamicBarrettModInt inv(const DynamicBarrettModInt &v) {
         if (prime_mod) return pow(v, mod() - 2);
 
-        H x = 0, y = 1, a = v.value, m = mod();
+        H x = 0, y = 1, a = v(), m = mod();
         while (a) {
             H t = m / a;
             m -= t * a;
@@ -224,130 +349,11 @@ struct BarrettModInt {
             swap(x, y);
         }
 
-        return (BarrettModInt) x;
+        return (DynamicBarrettModInt) x;
     }
 };
 
-template <typename T>
-bool operator==(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
-    return lhs.value == rhs.value;
-}
-
-template <typename T, typename U>
-bool operator==(const BarrettModInt<T> &lhs, U rhs) {
-    return lhs == BarrettModInt<T>(rhs);
-}
-
-template <typename T, typename U>
-bool operator==(U lhs, const BarrettModInt<T> &rhs) {
-    return BarrettModInt<T>(lhs) == rhs;
-}
-
-template <typename T>
-bool operator!=(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
-    return !(lhs == rhs);
-}
-
-template <typename T, typename U>
-bool operator!=(const BarrettModInt<T> &lhs, U rhs) {
-    return !(lhs == rhs);
-}
-
-template <typename T, typename U>
-bool operator!=(U lhs, const BarrettModInt<T> &rhs) {
-    return !(lhs == rhs);
-}
-
-template <typename T>
-bool operator>(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
-    return lhs.value > rhs.value;
-}
-
-template <typename T>
-bool operator<(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
-    return lhs.value < rhs.value;
-}
-
-template <typename T>
-BarrettModInt<T> operator+(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
-    return BarrettModInt<T>(lhs) += rhs;
-}
-
-template <typename T, typename U>
-BarrettModInt<T> operator+(const BarrettModInt<T> &lhs, U rhs) {
-    return BarrettModInt<T>(lhs) += rhs;
-}
-
-template <typename T, typename U>
-BarrettModInt<T> operator+(U lhs, const BarrettModInt<T> &rhs) {
-    return BarrettModInt<T>(lhs) += rhs;
-}
-
-template <typename T>
-BarrettModInt<T> operator-(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
-    return BarrettModInt<T>(lhs) -= rhs;
-}
-
-template <typename T, typename U>
-BarrettModInt<T> operator-(const BarrettModInt<T> &lhs, U rhs) {
-    return BarrettModInt<T>(lhs) -= rhs;
-}
-
-template <typename T, typename U>
-BarrettModInt<T> operator-(U lhs, const BarrettModInt<T> &rhs) {
-    return BarrettModInt<T>(lhs) -= rhs;
-}
-
-template <typename T>
-BarrettModInt<T> operator*(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
-    return BarrettModInt<T>(lhs) *= rhs;
-}
-
-template <typename T, typename U>
-BarrettModInt<T> operator*(const BarrettModInt<T> &lhs, U rhs) {
-    return BarrettModInt<T>(lhs) *= rhs;
-}
-
-template <typename T, typename U>
-BarrettModInt<T> operator*(U lhs, const BarrettModInt<T> &rhs) {
-    return BarrettModInt<T>(lhs) *= rhs;
-}
-
-template <typename T>
-BarrettModInt<T> operator/(const BarrettModInt<T> &lhs, const BarrettModInt<T> &rhs) {
-    return BarrettModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-BarrettModInt<T> operator/(const BarrettModInt<T> &lhs, U rhs) {
-    return BarrettModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-BarrettModInt<T> operator/(U lhs, const BarrettModInt<T> &rhs) {
-    return BarrettModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-U & operator<<(U &stream, const BarrettModInt<T> &v) {
-    return stream << v();
-}
-
-template <typename T, typename U>
-U & operator>>(U &stream, BarrettModInt<T> &v) {
-    typename make_signed<typename BarrettModInt<T>::I>::type x;
-    stream >> x;
-    v = BarrettModInt<T>(x);
-    return stream;
-}
-
-template <typename T>
-struct DynamicMod {
-    static inline T value;
-};
-
-auto &MOD = DynamicMod<unsigned int>::value;
-using modint = BarrettModInt<DynamicMod<unsigned int>>;
+using modint = DynamicBarrettModInt;
 
 template <typename T>
 T binomial_coefficient_mod_p(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
@@ -379,17 +385,17 @@ int main() {
     cin >> t;
 
     while (t--) {
-        int n;
-        cin >> n >> MOD;
+        int n, m;
+        cin >> n >> m;
 
-        modint::init();
+        modint::init(m);
 
         vector<modint> fact(n + 1, 1), fact_inv(n / 2 + 1, 1);
         auto prepare = [&]() {
             auto inv = fact;
 
             for (int i = 1; i <= n / 2; i++) {
-                if (i > 1) inv[i] = (MOD - MOD / i) * inv[MOD % i];
+                if (i > 1) inv[i] = (m - m / i) * inv[m % i];
                 fact_inv[i] = inv[i] * fact_inv[i - 1];
             }
 
@@ -397,11 +403,11 @@ int main() {
         };
         prepare();
 
-        auto [fib1, fib2] = fib(n, MOD);
+        auto [fib1, fib2] = fib(n, m);
         modint count = fib1 + fib2;
         if (!(n & 1)) {
             count -= n / 2 + 1;
-            count += binomial_coefficient_mod_p(n, n / 2, MOD, fact, fact_inv);
+            count += binomial_coefficient_mod_p(n, n / 2, m, fact, fact_inv);
         }
 
         cout << count << "\n";

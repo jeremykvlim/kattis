@@ -1,6 +1,15 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+istream & operator>>(istream &stream, __int128 &x) {
+    string s;
+    stream >> s;
+
+    x = 0;
+    for (int sgn = s[0] == '-' ? -1 : 1, i = sgn < 0; i < s.size(); i++) x = x * 10 + sgn * (s[i] - '0');
+    return stream;
+}
+
 template <typename T, typename U, typename V>
 T mul(U x, V y, T mod) {
     return (unsigned __int128) x * y % mod;
@@ -168,38 +177,40 @@ T primitive_root_mod_m(T m) {
     return m;
 }
 
-template <typename M>
-struct MontgomeryModInt {
-    using T = typename decay<decltype(M::value)>::type;
-    using U = typename conditional<is_same<T, unsigned int>::value, unsigned long long, typename conditional<is_same<T, unsigned long long>::value, unsigned __int128, void>::type>::type;
-    using I = typename conditional<is_same<T, unsigned int>::value, int, typename conditional<is_same<T, unsigned long long>::value, long long, void>::type>::type;
-    using J = typename conditional<is_same<T, unsigned int>::value, long long, typename conditional<is_same<T, unsigned long long>::value, __int128, void>::type>::type;
+template <typename T>
+struct DynamicMontgomeryModInt {
+    using U = conditional_t<is_same_v<T, unsigned int>, unsigned long long, unsigned __int128>;
+    using I = conditional_t<is_same_v<T, unsigned int>, int, long long>;
+    using J = conditional_t<is_same_v<T, unsigned int>, long long, __int128>;
 
     T value;
+    static inline T modulus;
+
+    static T mod() {
+        return modulus;
+    }
+
     static inline int p2;
     static inline T g;
     static inline pair<T, U> r;
     static inline bool prime_mod;
     static constexpr int bit_length = sizeof(T) * 8;
 
-    static void init() {
-        prime_mod = mod() == 998244353 || mod() == (unsigned long long) 1e9 + 7 || mod() == (unsigned long long) 1e9 + 9 || mod() == (unsigned long long) 1e6 + 69 || mod() == 2524775926340780033 || mod() == 39582418599937 || mod() == 79164837199873 || isprime(mod());
-        r = {mod(), - (U) mod() % mod()};
+    static void init(T m) {
+        modulus = m;
+        prime_mod = mod() == 998244353 || mod() == 1e9 + 7 || mod() == 1e9 + 9 || mod() == 1e6 + 69 || mod() == 2524775926340780033 || mod() == 39582418599937 || mod() == 79164837199873 || isprime(mod());
+        r = {mod(), -(U) mod() % mod()};
         while (mod() * r.first != 1) r.first *= (T) 2 - mod() * r.first;
+        p2 = countr_zero((T) (mod() - 1));
         g = primitive_root_mod_m(mod());
-        p2 = 0;
-        for (T t = mod() - 1; !(t & 1); t >>= 1) p2++;
     }
 
-    constexpr MontgomeryModInt() : value() {}
+    constexpr DynamicMontgomeryModInt() : value() {}
 
-    MontgomeryModInt(const J &x) {
-        value = reduce((U) x * r.second);
-    }
-
-    template <typename N, typename = enable_if_t<!is_same<M, N>::value && is_same<typename MontgomeryModInt<N>::T, T>::value>>
-    MontgomeryModInt(const MontgomeryModInt<N> &x) {
-        value = reduce((U) x() * r.second);
+    DynamicMontgomeryModInt(const J &x) {
+        J v = x % mod();
+        if (v < 0) v += mod();
+        value = reduce((U) v * r.second);
     }
 
     static T reduce(const U &x) {
@@ -213,7 +224,7 @@ struct MontgomeryModInt {
 
     template <typename V>
     explicit operator V() const {
-        return (V) value;
+        return (V) (*this)();
     }
 
     I recover() const {
@@ -221,37 +232,34 @@ struct MontgomeryModInt {
         return v > mod() / 2 ? v - mod() : v;
     }
 
-    constexpr static T mod() {
-        return M::value;
-    }
-
     constexpr static T primitive_root() {
         return g;
     }
 
-    constexpr static bool ntt_viable(int n) {
-        if (!prime_mod || (n & (n - 1)) || g == mod()) return false;
-        return __lg(n) <= p2;
+    static bool ntt_viable(int n) {
+        return prime_mod && !(n & (n - 1)) && __lg(n) <= p2;
     }
 
-    inline auto & operator+=(const MontgomeryModInt &v) {
+    inline auto & operator+=(const DynamicMontgomeryModInt &v) {
         if ((I) (value += v.value) >= mod()) value -= mod();
         return *this;
     }
 
-    inline auto & operator-=(const MontgomeryModInt &v) {
+    inline auto & operator-=(const DynamicMontgomeryModInt &v) {
         if ((I) (value -= v.value) < 0) value += mod();
         return *this;
     }
 
-    template <typename U>
-    inline auto & operator+=(const U &v) {
-        return *this += (MontgomeryModInt) v;
+    template <typename V>
+    requires is_integral_v<V>
+    inline auto & operator+=(const V &v) {
+        return *this += (DynamicMontgomeryModInt) v;
     }
 
-    template <typename U>
-    inline auto & operator-=(const U &v) {
-        return *this -= (MontgomeryModInt) v;
+    template <typename V>
+    requires is_integral_v<V>
+    inline auto & operator-=(const V &v) {
+        return *this -= (DynamicMontgomeryModInt) v;
     }
 
     auto & operator++() {
@@ -263,29 +271,159 @@ struct MontgomeryModInt {
     }
 
     auto operator++(int) {
-        return *this += 1;
+        auto t = *this;
+        *this += 1;
+        return t;
     }
 
     auto operator--(int) {
-        return *this -= 1;
+        auto t = *this;
+        *this -= 1;
+        return t;
     }
 
     auto operator-() const {
-        return (MontgomeryModInt) 0 - *this;
+        return (DynamicMontgomeryModInt) 0 - *this;
     }
 
-    MontgomeryModInt & operator*=(const MontgomeryModInt &v) {
+    auto & operator*=(const DynamicMontgomeryModInt &v) {
         if constexpr (is_same_v<T, unsigned int>) value = reduce((unsigned long long) value * v.value);
         else value = reduce((unsigned __int128) value * v.value);
         return *this;
     }
 
-    auto & operator/=(const MontgomeryModInt &v) {
+    auto & operator/=(const DynamicMontgomeryModInt &v) {
         return *this *= inv(v);
     }
 
-    static MontgomeryModInt pow(MontgomeryModInt base, T exponent) {
-        MontgomeryModInt v = 1;
+    friend bool operator==(const DynamicMontgomeryModInt &lhs, const DynamicMontgomeryModInt &rhs) {
+        return lhs.value == rhs.value;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend bool operator==(const DynamicMontgomeryModInt &lhs, V rhs) {
+        return lhs == DynamicMontgomeryModInt(rhs);
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend bool operator==(V lhs, const DynamicMontgomeryModInt &rhs) {
+        return DynamicMontgomeryModInt(lhs) == rhs;
+    }
+
+    friend bool operator!=(const DynamicMontgomeryModInt &lhs, const DynamicMontgomeryModInt &rhs) {
+        return !(lhs == rhs);
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend bool operator!=(const DynamicMontgomeryModInt &lhs, V rhs) {
+        return !(lhs == rhs);
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend bool operator!=(V lhs, const DynamicMontgomeryModInt &rhs) {
+        return !(lhs == rhs);
+    }
+
+    friend bool operator>(const DynamicMontgomeryModInt &lhs, const DynamicMontgomeryModInt &rhs) {
+        return lhs() > rhs();
+    }
+
+    friend bool operator<(const DynamicMontgomeryModInt &lhs, const DynamicMontgomeryModInt &rhs) {
+        return lhs() < rhs();
+    }
+
+    friend bool operator>=(const DynamicMontgomeryModInt &lhs, const DynamicMontgomeryModInt &rhs) {
+        return lhs > rhs || lhs == rhs;
+    }
+
+    friend bool operator<=(const DynamicMontgomeryModInt &lhs, const DynamicMontgomeryModInt &rhs) {
+        return lhs < rhs || lhs == rhs;
+    }
+
+    friend DynamicMontgomeryModInt operator+(const DynamicMontgomeryModInt &lhs, const DynamicMontgomeryModInt &rhs) {
+        return DynamicMontgomeryModInt(lhs) += rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicMontgomeryModInt operator+(const DynamicMontgomeryModInt &lhs, V rhs) {
+        return DynamicMontgomeryModInt(lhs) += rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicMontgomeryModInt operator+(V lhs, const DynamicMontgomeryModInt &rhs) {
+        return DynamicMontgomeryModInt(lhs) += rhs;
+    }
+
+    friend DynamicMontgomeryModInt operator-(const DynamicMontgomeryModInt &lhs, const DynamicMontgomeryModInt &rhs) {
+        return DynamicMontgomeryModInt(lhs) -= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicMontgomeryModInt operator-(const DynamicMontgomeryModInt &lhs, V rhs) {
+        return DynamicMontgomeryModInt(lhs) -= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicMontgomeryModInt operator-(V lhs, const DynamicMontgomeryModInt &rhs) {
+        return DynamicMontgomeryModInt(lhs) -= rhs;
+    }
+
+    friend DynamicMontgomeryModInt operator*(const DynamicMontgomeryModInt &lhs, const DynamicMontgomeryModInt &rhs) {
+        return DynamicMontgomeryModInt(lhs) *= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicMontgomeryModInt operator*(const DynamicMontgomeryModInt &lhs, V rhs) {
+        return DynamicMontgomeryModInt(lhs) *= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicMontgomeryModInt operator*(V lhs, const DynamicMontgomeryModInt &rhs) {
+        return DynamicMontgomeryModInt(lhs) *= rhs;
+    }
+
+    friend DynamicMontgomeryModInt operator/(const DynamicMontgomeryModInt &lhs, const DynamicMontgomeryModInt &rhs) {
+        return DynamicMontgomeryModInt(lhs) /= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicMontgomeryModInt operator/(const DynamicMontgomeryModInt &lhs, V rhs) {
+        return DynamicMontgomeryModInt(lhs) /= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicMontgomeryModInt operator/(V lhs, const DynamicMontgomeryModInt &rhs) {
+        return DynamicMontgomeryModInt(lhs) /= rhs;
+    }
+
+    template <typename S>
+    friend S & operator<<(S &stream, const DynamicMontgomeryModInt &v) {
+        return stream << v();
+    }
+
+    template <typename S>
+    friend S & operator>>(S &stream, DynamicMontgomeryModInt &v) {
+        J x;
+        stream >> x;
+        v = DynamicMontgomeryModInt(x);
+        return stream;
+    }
+
+    template <typename V>
+    static DynamicMontgomeryModInt pow(DynamicMontgomeryModInt base, V exponent) {
+        DynamicMontgomeryModInt v = 1;
         while (exponent) {
             if (exponent & 1) v *= base;
             base *= base;
@@ -294,152 +432,24 @@ struct MontgomeryModInt {
         return v;
     }
 
-    static MontgomeryModInt inv(const MontgomeryModInt &v) {
+    static DynamicMontgomeryModInt inv(const DynamicMontgomeryModInt &v) {
         if (prime_mod) return pow(v, mod() - 2);
 
-        T x = 0, y = 1, a = v.value, m = mod();
+        J x = 0, y = 1;
+        T a = v(), m = mod();
         while (a) {
             T t = m / a;
             m -= t * a;
             swap(a, m);
-            x -= t * y;
+            x -= (J) t * y;
             swap(x, y);
         }
 
-        return (MontgomeryModInt) x;
+        return (DynamicMontgomeryModInt) x;
     }
 };
 
-template <typename T>
-bool operator==(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs.value == rhs.value;
-}
-
-template <typename T, typename U>
-bool operator==(const MontgomeryModInt<T> &lhs, U rhs) {
-    return lhs == MontgomeryModInt<T>(rhs);
-}
-
-template <typename T, typename U>
-bool operator==(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) == rhs;
-}
-
-template <typename T>
-bool operator!=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return !(lhs == rhs);
-}
-
-template <typename T, typename U>
-bool operator!=(const MontgomeryModInt<T> &lhs, U rhs) {
-    return !(lhs == rhs);
-}
-
-template <typename T, typename U>
-bool operator!=(U lhs, const MontgomeryModInt<T> &rhs) {
-    return !(lhs == rhs);
-}
-
-template <typename T>
-bool operator>(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs() > rhs();
-}
-
-template <typename T>
-bool operator<(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs() < rhs();
-}
-
-template <typename T>
-bool operator>=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs > rhs || lhs == rhs;
-}
-
-template <typename T>
-bool operator<=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs < rhs || lhs == rhs;
-}
-
-template <typename T>
-MontgomeryModInt<T> operator+(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) += rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator+(const MontgomeryModInt<T> &lhs, U rhs) {
-    return MontgomeryModInt<T>(lhs) += rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator+(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) += rhs;
-}
-
-template <typename T>
-MontgomeryModInt<T> operator-(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) -= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator-(const MontgomeryModInt<T> &lhs, U rhs) {
-    return MontgomeryModInt<T>(lhs) -= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator-(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) -= rhs;
-}
-
-template <typename T>
-MontgomeryModInt<T> operator*(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) *= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator*(const MontgomeryModInt<T> &lhs, U rhs) {
-    return MontgomeryModInt<T>(lhs) *= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator*(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) *= rhs;
-}
-
-template <typename T>
-MontgomeryModInt<T> operator/(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator/(const MontgomeryModInt<T> &lhs, U rhs) {
-    return MontgomeryModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator/(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-U & operator<<(U &stream, const MontgomeryModInt<T> &v) {
-    return stream << v();
-}
-
-template <typename T, typename U>
-U & operator>>(U &stream, MontgomeryModInt<T> &v) {
-    typename make_signed<typename MontgomeryModInt<T>::T>::type x;
-    stream >> x;
-    v = MontgomeryModInt<T>(x);
-    return stream;
-}
-
-template <typename T>
-struct DynamicMod {
-    static inline T value;
-};
-
-auto &MOD = DynamicMod<unsigned int>::value;
-using modint = MontgomeryModInt<DynamicMod<unsigned int>>;
+using modint = DynamicMontgomeryModInt<unsigned int>;
 
 int main() {
     ios::sync_with_stdio(false);
@@ -449,10 +459,10 @@ int main() {
     cin >> t;
 
     while (t--) {
-        int k;
-        cin >> k >> MOD;
+        int k, m;
+        cin >> k >> m;
 
-        modint::init();
+        modint::init(m);
 
         vector<modint> p(k);
         for (auto &pi : p) cin >> pi;
@@ -468,7 +478,6 @@ int main() {
             rotate(a.rbegin(), a.rbegin() + 1, a.rend());
             for (int j = 0; j < k; j++) a[j] -= a[j + 1] * curr;
         }
-
-        cout << MOD - inner_product(p.begin(), p.end(), a.begin(), (modint) 0, plus<>(), [&](auto x, auto y) { return x * y; }) << "\n";
+        cout << m - inner_product(p.begin(), p.end(), a.begin(), (modint) 0, plus<>(), [&](auto x, auto y) { return x * y; }) << "\n";
     }
 }

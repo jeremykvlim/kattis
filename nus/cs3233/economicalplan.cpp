@@ -168,38 +168,40 @@ T primitive_root_mod_m(T m) {
     return m;
 }
 
-template <typename M>
+template <auto M>
 struct MontgomeryModInt {
-    using T = typename decay<decltype(M::value)>::type;
-    using U = typename conditional<is_same<T, unsigned int>::value, unsigned long long, typename conditional<is_same<T, unsigned long long>::value, unsigned __int128, void>::type>::type;
-    using I = typename conditional<is_same<T, unsigned int>::value, int, typename conditional<is_same<T, unsigned long long>::value, long long, void>::type>::type;
-    using J = typename conditional<is_same<T, unsigned int>::value, long long, typename conditional<is_same<T, unsigned long long>::value, __int128, void>::type>::type;
+    using T = conditional_t<__lg(M) < 30, unsigned int, unsigned long long>;
+    using U = conditional_t<is_same_v<T, unsigned int>, unsigned long long, unsigned __int128>;
+    using I = conditional_t<is_same_v<T, unsigned int>, int, long long>;
+    using J = conditional_t<is_same_v<T, unsigned int>, long long, __int128>;
 
     T value;
-    static inline int p2;
-    static inline T g;
-    static inline pair<T, U> r;
-    static inline bool prime_mod;
-    static constexpr int bit_length = sizeof(T) * 8;
 
-    static void init() {
-        prime_mod = mod() == 998244353 || mod() == (unsigned long long) 1e9 + 7 || mod() == (unsigned long long) 1e9 + 9 || mod() == (unsigned long long) 1e6 + 69 || mod() == 2524775926340780033 || mod() == 39582418599937 || mod() == 79164837199873 || isprime(mod());
-        r = {mod(), - (U) mod() % mod()};
-        while (mod() * r.first != 1) r.first *= (T) 2 - mod() * r.first;
-        g = primitive_root_mod_m(mod());
-        p2 = 0;
-        for (T t = mod() - 1; !(t & 1); t >>= 1) p2++;
+    constexpr static T mod() {
+        return M;
     }
+
+    static constexpr int p2 = countr_zero((T) (mod() - 1));
+    static inline pair<T, U> r = [] {
+        pair<T, U> r{(T) M, -(U) M % (T) M};
+        while ((T) M * r.first != 1) r.first *= (T) 2 - (T) M * r.first;
+        return r;
+    }();
+    static constexpr bool common_prime = mod() == 998244353 || mod() == 1000000007 || mod() == 1000000009 || mod() == 1000069 || mod() == 2524775926340780033 || mod() == 39582418599937 || mod() == 79164837199873;
+    static constexpr int bit_length = sizeof(T) * 8;
+    static inline bool prime_mod = common_prime || isprime(mod());
 
     constexpr MontgomeryModInt() : value() {}
 
     MontgomeryModInt(const J &x) {
-        value = reduce((U) x * r.second);
+        J v = x % mod();
+        if (v < 0) v += mod();
+        value = reduce((U) v * r.second);
     }
 
-    template <typename N, typename = enable_if_t<!is_same<M, N>::value && is_same<typename MontgomeryModInt<N>::T, T>::value>>
+    template <auto N>
     MontgomeryModInt(const MontgomeryModInt<N> &x) {
-        value = reduce((U) x() * r.second);
+        value = reduce((U) (x() % mod()) * r.second);
     }
 
     static T reduce(const U &x) {
@@ -213,7 +215,7 @@ struct MontgomeryModInt {
 
     template <typename V>
     explicit operator V() const {
-        return (V) value;
+        return (V) (*this)();
     }
 
     I recover() const {
@@ -221,17 +223,13 @@ struct MontgomeryModInt {
         return v > mod() / 2 ? v - mod() : v;
     }
 
-    constexpr static T mod() {
-        return M::value;
-    }
-
-    constexpr static T primitive_root() {
+    static T primitive_root() {
+        static const T g = primitive_root_mod_m(mod());
         return g;
     }
 
-    constexpr static bool ntt_viable(int n) {
-        if (!prime_mod || (n & (n - 1)) || g == mod()) return false;
-        return __lg(n) <= p2;
+    static bool ntt_viable(int n) {
+        return prime_mod && !(n & (n - 1)) && __lg(n) <= p2;
     }
 
     inline auto & operator+=(const MontgomeryModInt &v) {
@@ -263,11 +261,15 @@ struct MontgomeryModInt {
     }
 
     auto operator++(int) {
-        return *this += 1;
+        auto t = *this;
+        *this += 1;
+        return t;
     }
 
     auto operator--(int) {
-        return *this -= 1;
+        auto t = *this;
+        *this -= 1;
+        return t;
     }
 
     auto operator-() const {
@@ -284,7 +286,121 @@ struct MontgomeryModInt {
         return *this *= inv(v);
     }
 
-    static MontgomeryModInt pow(MontgomeryModInt base, T exponent) {
+    friend bool operator==(const MontgomeryModInt &lhs, const MontgomeryModInt &rhs) {
+        return lhs.value == rhs.value;
+    }
+
+    template <typename V>
+    friend bool operator==(const MontgomeryModInt &lhs, V rhs) {
+        return lhs == MontgomeryModInt(rhs);
+    }
+
+    template <typename V>
+    friend bool operator==(V lhs, const MontgomeryModInt &rhs) {
+        return MontgomeryModInt(lhs) == rhs;
+    }
+
+    friend bool operator!=(const MontgomeryModInt &lhs, const MontgomeryModInt &rhs) {
+        return !(lhs == rhs);
+    }
+
+    template <typename V>
+    friend bool operator!=(const MontgomeryModInt &lhs, V rhs) {
+        return !(lhs == rhs);
+    }
+
+    template <typename V>
+    friend bool operator!=(V lhs, const MontgomeryModInt &rhs) {
+        return !(lhs == rhs);
+    }
+
+    friend bool operator>(const MontgomeryModInt &lhs, const MontgomeryModInt &rhs) {
+        return lhs() > rhs();
+    }
+
+    friend bool operator<(const MontgomeryModInt &lhs, const MontgomeryModInt &rhs) {
+        return lhs() < rhs();
+    }
+
+    friend bool operator>=(const MontgomeryModInt &lhs, const MontgomeryModInt &rhs) {
+        return lhs > rhs || lhs == rhs;
+    }
+
+    friend bool operator<=(const MontgomeryModInt &lhs, const MontgomeryModInt &rhs) {
+        return lhs < rhs || lhs == rhs;
+    }
+
+    friend MontgomeryModInt operator+(const MontgomeryModInt &lhs, const MontgomeryModInt &rhs) {
+        return MontgomeryModInt(lhs) += rhs;
+    }
+
+    template <typename V>
+    friend MontgomeryModInt operator+(const MontgomeryModInt &lhs, V rhs) {
+        return MontgomeryModInt(lhs) += rhs;
+    }
+
+    template <typename V>
+    friend MontgomeryModInt operator+(V lhs, const MontgomeryModInt &rhs) {
+        return MontgomeryModInt(lhs) += rhs;
+    }
+
+    friend MontgomeryModInt operator-(const MontgomeryModInt &lhs, const MontgomeryModInt &rhs) {
+        return MontgomeryModInt(lhs) -= rhs;
+    }
+
+    template <typename V>
+    friend MontgomeryModInt operator-(const MontgomeryModInt &lhs, V rhs) {
+        return MontgomeryModInt(lhs) -= rhs;
+    }
+
+    template <typename V>
+    friend MontgomeryModInt operator-(V lhs, const MontgomeryModInt &rhs) {
+        return MontgomeryModInt(lhs) -= rhs;
+    }
+
+    friend MontgomeryModInt operator*(const MontgomeryModInt &lhs, const MontgomeryModInt &rhs) {
+        return MontgomeryModInt(lhs) *= rhs;
+    }
+
+    template <typename V>
+    friend MontgomeryModInt operator*(const MontgomeryModInt &lhs, V rhs) {
+        return MontgomeryModInt(lhs) *= rhs;
+    }
+
+    template <typename V>
+    friend MontgomeryModInt operator*(V lhs, const MontgomeryModInt &rhs) {
+        return MontgomeryModInt(lhs) *= rhs;
+    }
+
+    friend MontgomeryModInt operator/(const MontgomeryModInt &lhs, const MontgomeryModInt &rhs) {
+        return MontgomeryModInt(lhs) /= rhs;
+    }
+
+    template <typename V>
+    friend MontgomeryModInt operator/(const MontgomeryModInt &lhs, V rhs) {
+        return MontgomeryModInt(lhs) /= rhs;
+    }
+
+    template <typename V>
+    friend MontgomeryModInt operator/(V lhs, const MontgomeryModInt &rhs) {
+        return MontgomeryModInt(lhs) /= rhs;
+    }
+
+    template <typename S>
+    friend S & operator<<(S &stream, const MontgomeryModInt &v) {
+        return stream << v();
+    }
+
+    template <typename S>
+    friend S & operator>>(S &stream, MontgomeryModInt &v) {
+        typename make_signed<T>::type x;
+        stream >> x;
+        v = MontgomeryModInt(x);
+        return stream;
+    }
+
+    template <typename V>
+    static MontgomeryModInt pow(MontgomeryModInt base, V exponent) {
         MontgomeryModInt v = 1;
         while (exponent) {
             if (exponent & 1) v *= base;
@@ -310,131 +426,8 @@ struct MontgomeryModInt {
     }
 };
 
-template <typename T>
-bool operator==(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs.value == rhs.value;
-}
-
-template <typename T, typename U>
-bool operator==(const MontgomeryModInt<T> &lhs, U rhs) {
-    return lhs == MontgomeryModInt<T>(rhs);
-}
-
-template <typename T, typename U>
-bool operator==(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) == rhs;
-}
-
-template <typename T>
-bool operator!=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return !(lhs == rhs);
-}
-
-template <typename T, typename U>
-bool operator!=(const MontgomeryModInt<T> &lhs, U rhs) {
-    return !(lhs == rhs);
-}
-
-template <typename T, typename U>
-bool operator!=(U lhs, const MontgomeryModInt<T> &rhs) {
-    return !(lhs == rhs);
-}
-
-template <typename T>
-bool operator>(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs() > rhs();
-}
-
-template <typename T>
-bool operator<(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs() < rhs();
-}
-
-template <typename T>
-bool operator>=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs > rhs || lhs == rhs;
-}
-
-template <typename T>
-bool operator<=(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return lhs < rhs || lhs == rhs;
-}
-
-template <typename T>
-MontgomeryModInt<T> operator+(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) += rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator+(const MontgomeryModInt<T> &lhs, U rhs) {
-    return MontgomeryModInt<T>(lhs) += rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator+(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) += rhs;
-}
-
-template <typename T>
-MontgomeryModInt<T> operator-(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) -= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator-(const MontgomeryModInt<T> &lhs, U rhs) {
-    return MontgomeryModInt<T>(lhs) -= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator-(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) -= rhs;
-}
-
-template <typename T>
-MontgomeryModInt<T> operator*(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) *= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator*(const MontgomeryModInt<T> &lhs, U rhs) {
-    return MontgomeryModInt<T>(lhs) *= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator*(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) *= rhs;
-}
-
-template <typename T>
-MontgomeryModInt<T> operator/(const MontgomeryModInt<T> &lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator/(const MontgomeryModInt<T> &lhs, U rhs) {
-    return MontgomeryModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-MontgomeryModInt<T> operator/(U lhs, const MontgomeryModInt<T> &rhs) {
-    return MontgomeryModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-U & operator<<(U &stream, const MontgomeryModInt<T> &v) {
-    return stream << v();
-}
-
-template <typename T, typename U>
-U & operator>>(U &stream, MontgomeryModInt<T> &v) {
-    typename make_signed<typename MontgomeryModInt<T>::T>::type x;
-    stream >> x;
-    v = MontgomeryModInt<T>(x);
-    return stream;
-}
-
-constexpr unsigned long long MOD = 998244353;
-using modint = MontgomeryModInt<integral_constant<decay<decltype(MOD)>::type, MOD>>;
+constexpr int MOD = 998244353;
+using modint = MontgomeryModInt<MOD>;
 
 vector<bool> tarjan(int n, int m, vector<vector<pair<int, int>>> &adj_list) {
     vector<int> order(n, 0), low(n, 0);
@@ -461,8 +454,6 @@ vector<bool> tarjan(int n, int m, vector<vector<pair<int, int>>> &adj_list) {
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
-
-    modint::init();
 
     int n, m, q;
     cin >> n >> m >> q;

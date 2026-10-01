@@ -100,29 +100,36 @@ bool isprime(unsigned long long n) {
     return lucas_pseudoprime();
 }
 
-template <typename M>
-struct ModInt {
-    using T = typename decay<decltype(M::value)>::type;
-    using U = typename conditional<is_same<T, unsigned int>::value, unsigned long long, typename conditional<is_same<T, unsigned long long>::value, unsigned __int128, void>::type>::type;
-    using I = typename conditional<is_same<T, unsigned int>::value, int, typename conditional<is_same<T, unsigned long long>::value, long long, void>::type>::type;
+template <typename T>
+struct DynamicModInt {
+    using U = conditional_t<is_same_v<T, unsigned int>, unsigned long long, unsigned __int128>;
+    using I = conditional_t<is_same_v<T, unsigned int>, int, long long>;
+    using J = conditional_t<is_same_v<T, unsigned int>, long long, __int128>;
 
     T value;
+    static inline T modulus;
     static inline bool prime_mod;
 
-    static void init() {
-        prime_mod = mod() == 998244353 || mod() == (unsigned long long) 1e9 + 7 || mod() == (unsigned long long) 1e9 + 9 || mod() == (unsigned long long) 1e6 + 69 || mod() == 2524775926340780033 || mod() == 39582418599937 || mod() == 79164837199873 || isprime(mod());
+    static T mod() {
+        return modulus;
     }
 
-    constexpr ModInt() : value() {}
-
-    ModInt(const I &x) {
-        value = normalize(x);
+    static void init(T m) {
+        modulus = m;
+        prime_mod = mod() == 998244353 || mod() == 1000000007 || mod() == 1000000009 || mod() == 1000069 || mod() == 2524775926340780033 || mod() == 39582418599937 || mod() == 79164837199873 || isprime(mod());
     }
 
-    static T normalize(const I &x) {
-        I v = x;
-        if (!(-mod() <= x && x < mod())) v = x % mod();
-        return v < 0 ? v + mod() : v;
+    constexpr DynamicModInt() : value() {}
+
+    template <typename V>
+    requires is_integral_v<V>
+    DynamicModInt(const V &x) {
+        value = normalize((J) x);
+    }
+
+    static T normalize(J x) {
+        x %= (J) mod();
+        return x < 0 ? x + mod() : x;
     }
 
     const T & operator()() const {
@@ -134,28 +141,26 @@ struct ModInt {
         return (V) value;
     }
 
-    constexpr static I mod() {
-        return M::value;
-    }
-
-    inline auto & operator+=(const ModInt &v) {
+    inline auto & operator+=(const DynamicModInt &v) {
         if ((I) (value += v.value) >= mod()) value -= mod();
         return *this;
     }
 
-    inline auto & operator-=(const ModInt &v) {
+    inline auto & operator-=(const DynamicModInt &v) {
         if ((I) (value -= v.value) < 0) value += mod();
         return *this;
     }
 
     template <typename V>
+    requires is_integral_v<V>
     inline auto & operator+=(const V &v) {
-        return *this += ModInt(v);
+        return *this += DynamicModInt(v);
     }
 
     template <typename V>
+    requires is_integral_v<V>
     inline auto & operator-=(const V &v) {
-        return *this -= ModInt(v);
+        return *this -= DynamicModInt(v);
     }
 
     auto & operator++() {
@@ -175,33 +180,146 @@ struct ModInt {
     }
 
     auto operator-() const {
-        return (ModInt) 0 - *this;
+        return (DynamicModInt) 0 - *this;
     }
 
-    template <typename V = M>
-    typename enable_if<is_same<typename ModInt<V>::T, unsigned int>::value, ModInt>::type &operator*=(const ModInt &v) {
-        value = normalize((U) value * v.value);
+    auto & operator*=(const DynamicModInt &v) {
+        value = (U) value * v.value % mod();
         return *this;
     }
 
-    template <typename V = M>
-    typename enable_if<is_same<typename ModInt<V>::T, unsigned long long>::value, ModInt>::type &operator*=(const ModInt &v) {
-        value = normalize(mul(value, v.value, mod()));
-        return *this;
+    friend bool operator==(const DynamicModInt &lhs, const DynamicModInt &rhs) {
+        return lhs.value == rhs.value;
     }
 
-    template <typename V = M>
-    typename enable_if<!is_integral<typename ModInt<V>::T>::value, ModInt>::type &operator*=(const ModInt &v) {
-        value = normalize(value * v.value);
-        return *this;
+    template <typename V>
+    requires is_integral_v<V>
+    friend bool operator==(const DynamicModInt &lhs, V rhs) {
+        return lhs == DynamicModInt(rhs);
     }
 
-    auto & operator/=(const ModInt &v) {
+    template <typename V>
+    requires is_integral_v<V>
+    friend bool operator==(V lhs, const DynamicModInt &rhs) {
+        return DynamicModInt(lhs) == rhs;
+    }
+
+    friend bool operator!=(const DynamicModInt &lhs, const DynamicModInt &rhs) {
+        return !(lhs == rhs);
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend bool operator!=(const DynamicModInt &lhs, V rhs) {
+        return !(lhs == rhs);
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend bool operator!=(V lhs, const DynamicModInt &rhs) {
+        return !(lhs == rhs);
+    }
+
+    friend bool operator>(const DynamicModInt &lhs, const DynamicModInt &rhs) {
+        return lhs.value > rhs.value;
+    }
+
+    friend bool operator<(const DynamicModInt &lhs, const DynamicModInt &rhs) {
+        return lhs.value < rhs.value;
+    }
+
+    friend bool operator>=(const DynamicModInt &lhs, const DynamicModInt &rhs) {
+        return lhs > rhs || lhs == rhs;
+    }
+
+    friend bool operator<=(const DynamicModInt &lhs, const DynamicModInt &rhs) {
+        return lhs < rhs || lhs == rhs;
+    }
+
+    friend DynamicModInt operator+(const DynamicModInt &lhs, const DynamicModInt &rhs) {
+        return DynamicModInt(lhs) += rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicModInt operator+(const DynamicModInt &lhs, V rhs) {
+        return DynamicModInt(lhs) += rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicModInt operator+(V lhs, const DynamicModInt &rhs) {
+        return DynamicModInt(lhs) += rhs;
+    }
+
+    friend DynamicModInt operator-(const DynamicModInt &lhs, const DynamicModInt &rhs) {
+        return DynamicModInt(lhs) -= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicModInt operator-(const DynamicModInt &lhs, V rhs) {
+        return DynamicModInt(lhs) -= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicModInt operator-(V lhs, const DynamicModInt &rhs) {
+        return DynamicModInt(lhs) -= rhs;
+    }
+
+    friend DynamicModInt operator*(const DynamicModInt &lhs, const DynamicModInt &rhs) {
+        return DynamicModInt(lhs) *= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicModInt operator*(const DynamicModInt &lhs, V rhs) {
+        return DynamicModInt(lhs) *= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicModInt operator*(V lhs, const DynamicModInt &rhs) {
+        return DynamicModInt(lhs) *= rhs;
+    }
+
+    friend DynamicModInt operator/(const DynamicModInt &lhs, const DynamicModInt &rhs) {
+        return DynamicModInt(lhs) /= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicModInt operator/(const DynamicModInt &lhs, V rhs) {
+        return DynamicModInt(lhs) /= rhs;
+    }
+
+    template <typename V>
+    requires is_integral_v<V>
+    friend DynamicModInt operator/(V lhs, const DynamicModInt &rhs) {
+        return DynamicModInt(lhs) /= rhs;
+    }
+
+    template <typename S>
+    friend S & operator<<(S &stream, const DynamicModInt &v) {
+        return stream << v();
+    }
+
+    template <typename S>
+    friend S & operator>>(S &stream, DynamicModInt &v) {
+        J x;
+        stream >> x;
+        v = DynamicModInt(x);
+        return stream;
+    }
+
+    auto & operator/=(const DynamicModInt &v) {
         return *this *= inv(v);
     }
 
-    static ModInt pow(ModInt base, T exponent) {
-        ModInt v = 1;
+    template <typename V>
+    static DynamicModInt pow(DynamicModInt base, V exponent) {
+        DynamicModInt v = 1;
         while (exponent) {
             if (exponent & 1) v *= base;
             base *= base;
@@ -210,142 +328,24 @@ struct ModInt {
         return v;
     }
 
-    static ModInt inv(const ModInt &v) {
+    static DynamicModInt inv(const DynamicModInt &v) {
         if (prime_mod) return pow(v, mod() - 2);
 
-        T x = 0, y = 1, a = v.value, m = mod();
+        J x = 0, y = 1;
+        T a = v(), m = mod();
         while (a) {
             T t = m / a;
             m -= t * a;
             swap(a, m);
-            x -= t * y;
+            x -= (J) t * y;
             swap(x, y);
         }
 
-        return (ModInt) x;
+        return (DynamicModInt) x;
     }
 };
 
-template <typename T>
-bool operator==(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-    return lhs.value == rhs.value;
-}
-
-template <typename T, typename U>
-bool operator==(const ModInt<T> &lhs, U rhs) {
-    return lhs == ModInt<T>(rhs);
-}
-
-template <typename T, typename U>
-bool operator==(U lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) == rhs;
-}
-
-template <typename T>
-bool operator!=(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-    return !(lhs == rhs);
-}
-
-template <typename T, typename U>
-bool operator!=(const ModInt<T> &lhs, U rhs) {
-    return !(lhs == rhs);
-}
-
-template <typename T, typename U>
-bool operator!=(U lhs, const ModInt<T> &rhs) {
-    return !(lhs == rhs);
-}
-
-template <typename T>
-bool operator>(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-    return lhs.value > rhs.value;
-}
-
-template <typename T>
-bool operator<(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-    return lhs.value < rhs.value;
-}
-
-template <typename T>
-ModInt<T> operator+(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) += rhs;
-}
-
-template <typename T, typename U>
-ModInt<T> operator+(const ModInt<T> &lhs, U rhs) {
-    return ModInt<T>(lhs) += rhs;
-}
-
-template <typename T, typename U>
-ModInt<T> operator+(U lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) += rhs;
-}
-
-template <typename T>
-ModInt<T> operator-(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) -= rhs;
-}
-
-template <typename T, typename U>
-ModInt<T> operator-(const ModInt<T> &lhs, U rhs) {
-    return ModInt<T>(lhs) -= rhs;
-}
-
-template <typename T, typename U>
-ModInt<T> operator-(U lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) -= rhs;
-}
-
-template <typename T>
-ModInt<T> operator*(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) *= rhs;
-}
-
-template <typename T, typename U>
-ModInt<T> operator*(const ModInt<T> &lhs, U rhs) {
-    return ModInt<T>(lhs) *= rhs;
-}
-
-template <typename T, typename U>
-ModInt<T> operator*(U lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) *= rhs;
-}
-
-template <typename T>
-ModInt<T> operator/(const ModInt<T> &lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-ModInt<T> operator/(const ModInt<T> &lhs, U rhs) {
-    return ModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-ModInt<T> operator/(U lhs, const ModInt<T> &rhs) {
-    return ModInt<T>(lhs) /= rhs;
-}
-
-template <typename T, typename U>
-U & operator<<(U &stream, const ModInt<T> &v) {
-    return stream << v();
-}
-
-template <typename T, typename U>
-U & operator>>(U &stream, ModInt<T> &v) {
-    typename make_signed<typename ModInt<T>::T>::type x;
-    stream >> x;
-    v = ModInt<T>(x);
-    return stream;
-}
-
-template <typename T>
-struct DynamicMod {
-    static inline T value;
-};
-
-auto &MOD = DynamicMod<unsigned long long>::value;
-using modint = ModInt<DynamicMod<unsigned long long>>;
+using modint = DynamicModInt<unsigned long long>;
 
 template <typename T>
 T brent(T n) {
@@ -426,17 +426,16 @@ pair<T, T> chinese_remainder_theorem(T a, T n, T b, T m) {
 }
 
 vector<modint> reeds_sloane(const vector<modint> &S) {
-    using U = typename decay<decltype(MOD)>::type;
+    using U = decltype(modint::modulus);
     using T = make_signed_t<U>;
 
     int n = 0;
-    U undo = MOD;
-    auto pfs = factorize(MOD);
+    U temp = modint::mod();
+    auto pfs = factorize(temp);
     vector<vector<U>> coeffs;
     for (auto &[pf, pows] : pfs) {
         auto [pp, e] = pows;
-        MOD = pp;
-        modint::init();
+        modint::init(pp);
 
         vector<U> pw(e, 1);
         for (int i = 1; i < e; i++) pw[i] = pw[i - 1] * pf;
@@ -518,8 +517,7 @@ vector<modint> reeds_sloane(const vector<modint> &S) {
         for (int i = 0; i < a_new[0].size(); i++) coeffs.back()[i] = a_new[0][i]();
         n = max(n, d);
     }
-    MOD = undo;
-    modint::init();
+    modint::init(temp);
 
     vector<modint> A(n - 1);
     for (int i = 1; i < n; i++) {
@@ -569,7 +567,7 @@ T kitamasa(const vector<T> &c, const vector<T> &a, long long k) {
         for (int i = 0; i <= n; i++)
             if (x[i])
                 for (int j = 0; j <= n; j++) z[i + j] += x[i] * y[j];
-    
+
         for (int i = 2 * n; i > n; i--)
             if (z[i])
                 for (int j = 0; j < n; j++) z[i - j - 1] += z[i] * c[j];
@@ -623,11 +621,11 @@ int main() {
     cin >> t;
 
     while (t--) {
-        long long n;
+        long long n, m;
         string p;
-        cin >> n >> MOD >> p;
+        cin >> n >> m >> p;
 
-        modint::init();
+        modint::init(m);
 
         int s = p.size();
         auto fsm = kmp_automaton(p);
