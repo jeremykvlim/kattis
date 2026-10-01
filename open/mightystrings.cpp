@@ -89,12 +89,11 @@ int main() {
     int total = 0;
     auto dfs = [&](auto &&self, int v) -> void {
         bool mighty = true;
-        for (int u = v; u; u = indices[suff_node[u]]) {
+        for (int u = v; u; u = indices[suff_node[u]])
             if (!~suff_node[u] || !~indices[suff_node[u]]) {
                 mighty = false;
                 break;
             }
-        }
 
         if (mighty) {
             total += freq[v];
