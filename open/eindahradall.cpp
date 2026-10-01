@@ -450,7 +450,7 @@ struct MontgomeryModInt {
 };
 
 constexpr int MOD1 = 1e9 + 7;
-constexpr long long MOD2 = 1e18 + 14e9 + 49;
+constexpr long long MOD2 = 1000000014000000049;
 using modint1 = MontgomeryModInt<MOD1>;
 using modint2 = MontgomeryModInt<MOD2>;
 
@@ -465,8 +465,13 @@ int main() {
         long long n;
         cin >> n;
 
-        auto pfs = factorize(n);
-        sort(pfs.begin(), pfs.end());
+        auto temp = factorize(n);
+        sort(temp.begin(), temp.end());
+
+        vector<pair<long long, int>> pfs;
+        for (auto pf : temp)
+            if (pfs.empty() || pfs.back().first != pf) pfs.emplace_back(pf, 1);
+            else pfs.back().second++;
         if (!pfs.empty() && pfs[0].first == 2) pfs.erase(pfs.begin());
 
         auto dfs = [&](auto &&self, auto &sum, int i = 0, long long d = 1, long long phi = 1) -> void {
