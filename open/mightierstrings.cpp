@@ -1,60 +1,46 @@
 #include <bits/stdc++.h>
-#include <ext/pb_ds/assoc_container.hpp>
 using namespace std;
-using namespace __gnu_pbds;
 
-struct Hash {
-    template <typename T>
-    static inline void combine(size_t &h, const T &v) {
-        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
-    }
+struct Trie {
+    enum ascii {
+        LOWER = 97,
+        UPPER = 65,
+        NUM = 48,
+        SYM = 32,
+        NA = 0
+    };
 
-    template <typename T>
-    size_t operator()(const T &v) const {
-        if constexpr (requires { tuple_size<T>::value; })
-            return apply([](const auto &...e) {
-                size_t h = 0;
-                (combine(h, e), ...);
-                return h;
-            }, v);
-        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
-            size_t h = 0;
-            for (const auto &e : v) combine(h, e);
-            return h;
-        } else return hash<T>{}(v);
-    }
-};
+    struct TrieNode {
+        vector<int> next;
 
-struct HashedString {
-    static inline unsigned long long B1 = 0, B2 = 0;
-    static const unsigned long long MOD1 = 1e9 + 7, MOD2 = 1e9 + 9;
+        TrieNode(int range = 26) : next(range, -1) {}
+    };
 
-    int n;
-    vector<unsigned long long> pref1, pref2;
-    static inline vector<unsigned long long> p1{1}, p2{1};
+    vector<TrieNode> T;
+    ascii a;
+    int r;
 
-    HashedString() : n(0), pref1(1, 0), pref2(1, 0) {}
-    HashedString(const string &s) : n(s.size()), pref1(n + 1, 0), pref2(n + 1, 0) {
-        if (!B1 && !B2) {
-            mt19937_64 rng{random_device{}()};
-            B1 = uniform_int_distribution(911382323ULL, MOD1 - 1)(rng);
-            B2 = uniform_int_distribution(972663749ULL, MOD2 - 1)(rng);
-        }
-        while (p1.size() <= n || p2.size() <= n) {
-            p1.emplace_back(p1.back() * B1 % MOD1);
-            p2.emplace_back(p2.back() * B2 % MOD2);
-        }
-        for (int i = 0; i < n; i++) {
-            auto v = (unsigned char)s[i] + 1;
-            pref1[i + 1] = (pref1[i] * B1 + v) % MOD1;
-            pref2[i + 1] = (pref2[i] * B2 + v) % MOD2;
+    Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
+
+    void add(string &s) {
+        int node = 0;
+        for (char c : s) {
+            int pos = c - a;
+
+            if (T[node].next[pos] == -1) {
+                T[node].next[pos] = T.size();
+                T.emplace_back(TrieNode(r));
+            }
+            node = T[node].next[pos];
         }
     }
 
-    pair<unsigned long long, unsigned long long> pref_hash(int l, int r) const {
-        auto h1 = (pref1[r] + MOD1 - pref1[l] * p1[r - l] % MOD1) % MOD1;
-        auto h2 = (pref2[r] + MOD2 - pref2[l] * p2[r - l] % MOD2) % MOD2;
-        return {h1, h2};
+    int size() {
+        return T.size();
+    }
+
+    auto & operator[](int i) {
+        return T[i];
     }
 };
 
@@ -65,48 +51,47 @@ int main() {
     int n;
     cin >> n;
 
-    string t;
-    vector<int> offset(n), len(n);
-    for (int i = 0; i < n; i++) {
-        string s;
+    int total_len = 0;
+    vector<string> strings(n);
+    for (auto &s : strings) {
         cin >> s;
 
-        offset[i] = t.size();
-        len[i] = s.size();
-        t += s;
+        total_len += s.size();
     }
 
     int limit = 0;
-    for (; (limit + 1) * (limit + 2) * (limit + 3) / 6 <= t.size() && (limit + 1) * (limit + 2) / 2 <= n; limit++);
+    for (; (limit + 1) * (limit + 2) * (limit + 3) / 6 <= total_len && (limit + 1) * (limit + 2) / 2 <= n; limit++);
 
-    HashedString hs(t);
-    gp_hash_table<tuple<unsigned long long, unsigned long long, int>, int, Hash> indices;
-    vector<int> start(1), length(1), freq(1);
-    for (int i = 0; i < n; i++) {
-        if (len[i] > limit) continue;
+    Trie trie;
+    for (auto &s : strings)
+        if (s.size() <= limit) trie.add(s);
 
-        auto [h1, h2] = hs.pref_hash(offset[i], offset[i] + len[i]);
-        auto it = indices.find({h1, h2, len[i]});
-        if (it != indices.end()) freq[it->second]++;
-        else {
-            start.emplace_back(offset[i]);
-            length.emplace_back(len[i]);
-            freq.emplace_back(1);
-            indices.insert({{h1, h2, len[i]}, (int) freq.size() - 1});
+    vector<int> pref_node{0}, suff_node{0}, freq{0}, indices(trie.size(), -1);
+    indices[0] = 0;
+    for (auto &s : strings)
+        if (s.size() <= limit) {
+            int node = 0, pref = 0;
+            for (char c : s) {
+                pref = node;
+                node = trie[node].next[c - 'a'];
+            }
+
+            if (!~indices[node]) {
+                freq.emplace_back(0);
+                indices[node] = freq.size() - 1;
+                pref_node.emplace_back(pref);
+                int suff = 0;
+                for (int i = 1; i < s.size() && ~suff; i++) suff = trie[suff].next[s[i] - 'a'];
+                suff_node.emplace_back(suff);
+            }
+            freq[indices[node]]++;
         }
-    }
 
     int m = freq.size();
     vector<vector<int>> adj_list(m);
     for (int u = 1; u < m; u++) {
-        int v = 0;
-        if (length[u] > 1) {
-            auto [h1, h2] = hs.pref_hash(start[u], start[u] + length[u] - 1);
-            auto it = indices.find({h1, h2, length[u] - 1});
-            if (it == indices.end()) continue;
-            v = it->second;
-        }
-        adj_list[v].emplace_back(u);
+        int v = indices[pref_node[u]];
+        if (~v) adj_list[v].emplace_back(u);
     }
 
     int total = 0;
@@ -114,19 +99,13 @@ int main() {
     stack<int> undo;
     auto dfs = [&](auto &&self, int v) -> void {
         bool mighty = true;
-        int l = start[v], r = l + length[v], version = undo.size();
-        for (int i = r - 1; i >= l; i--) {
-            auto [h1, h2] = hs.pref_hash(i, r);
-            auto it = indices.find({h1, h2, r - i});
-            if (it == indices.end()) {
-                mighty = false;
-                break;
-            }
+        int version = undo.size();
 
-            int u = it->second;
+        for (int u = v; u; u = indices[suff_node[u]]) {
             count[u]++;
             undo.emplace(u);
-            if (count[u] > freq[u]) {
+
+            if (count[u] > freq[u] || !~suff_node[u] || !~indices[suff_node[u]]) {
                 mighty = false;
                 break;
             }

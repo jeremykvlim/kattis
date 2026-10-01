@@ -72,8 +72,8 @@ struct Scanner {
             v.clear();
             for (;;) {
                 int prev = pos;
-                for (; buf[pos] && buf[pos] != ' ' && buf[pos] != '\n' && buf[pos] != '\r' && buf[pos] != '\t'; pos++)
-                    v.append(buf.begin() + prev, buf.begin() + pos);
+                for (; buf[pos] && buf[pos] != ' ' && buf[pos] != '\n' && buf[pos] != '\r' && buf[pos] != '\t'; pos++);
+                v.append(buf.begin() + prev, buf.begin() + pos);
                 if (pos < len || !reload()) break;
             }
             return true;
