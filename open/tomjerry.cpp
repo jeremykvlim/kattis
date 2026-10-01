@@ -369,13 +369,13 @@ struct MontgomeryModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     inline auto & operator+=(const V &v) {
         return *this += (MontgomeryModInt) v;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     inline auto & operator-=(const V &v) {
         return *this -= (MontgomeryModInt) v;
     }
@@ -419,13 +419,13 @@ struct MontgomeryModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator==(const MontgomeryModInt &lhs, V rhs) {
         return lhs == MontgomeryModInt(rhs);
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator==(V lhs, const MontgomeryModInt &rhs) {
         return MontgomeryModInt(lhs) == rhs;
     }
@@ -435,13 +435,13 @@ struct MontgomeryModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator!=(const MontgomeryModInt &lhs, V rhs) {
         return !(lhs == rhs);
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator!=(V lhs, const MontgomeryModInt &rhs) {
         return !(lhs == rhs);
     }
@@ -467,13 +467,13 @@ struct MontgomeryModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend MontgomeryModInt operator+(const MontgomeryModInt &lhs, V rhs) {
         return MontgomeryModInt(lhs) += rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend MontgomeryModInt operator+(V lhs, const MontgomeryModInt &rhs) {
         return MontgomeryModInt(lhs) += rhs;
     }
@@ -483,13 +483,13 @@ struct MontgomeryModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend MontgomeryModInt operator-(const MontgomeryModInt &lhs, V rhs) {
         return MontgomeryModInt(lhs) -= rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend MontgomeryModInt operator-(V lhs, const MontgomeryModInt &rhs) {
         return MontgomeryModInt(lhs) -= rhs;
     }
@@ -499,13 +499,13 @@ struct MontgomeryModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend MontgomeryModInt operator*(const MontgomeryModInt &lhs, V rhs) {
         return MontgomeryModInt(lhs) *= rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend MontgomeryModInt operator*(V lhs, const MontgomeryModInt &rhs) {
         return MontgomeryModInt(lhs) *= rhs;
     }
@@ -515,13 +515,13 @@ struct MontgomeryModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend MontgomeryModInt operator/(const MontgomeryModInt &lhs, V rhs) {
         return MontgomeryModInt(lhs) /= rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend MontgomeryModInt operator/(V lhs, const MontgomeryModInt &rhs) {
         return MontgomeryModInt(lhs) /= rhs;
     }

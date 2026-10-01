@@ -120,7 +120,7 @@ struct BarrettModInt {
     constexpr BarrettModInt() : value() {}
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     BarrettModInt(const V &x) {
         value = normalize(x);
     }
@@ -159,13 +159,13 @@ struct BarrettModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     inline auto & operator+=(const V &v) {
         return *this += BarrettModInt(v);
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     inline auto & operator-=(const V &v) {
         return *this -= BarrettModInt(v);
     }
@@ -208,13 +208,13 @@ struct BarrettModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator==(const BarrettModInt &lhs, V rhs) {
         return lhs == BarrettModInt(rhs);
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator==(V lhs, const BarrettModInt &rhs) {
         return BarrettModInt(lhs) == rhs;
     }
@@ -224,13 +224,13 @@ struct BarrettModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator!=(const BarrettModInt &lhs, V rhs) {
         return !(lhs == rhs);
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator!=(V lhs, const BarrettModInt &rhs) {
         return !(lhs == rhs);
     }
@@ -248,13 +248,13 @@ struct BarrettModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend BarrettModInt operator+(const BarrettModInt &lhs, V rhs) {
         return BarrettModInt(lhs) += rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend BarrettModInt operator+(V lhs, const BarrettModInt &rhs) {
         return BarrettModInt(lhs) += rhs;
     }
@@ -264,13 +264,13 @@ struct BarrettModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend BarrettModInt operator-(const BarrettModInt &lhs, V rhs) {
         return BarrettModInt(lhs) -= rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend BarrettModInt operator-(V lhs, const BarrettModInt &rhs) {
         return BarrettModInt(lhs) -= rhs;
     }
@@ -280,13 +280,13 @@ struct BarrettModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend BarrettModInt operator*(const BarrettModInt &lhs, V rhs) {
         return BarrettModInt(lhs) *= rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend BarrettModInt operator*(V lhs, const BarrettModInt &rhs) {
         return BarrettModInt(lhs) *= rhs;
     }
@@ -296,13 +296,13 @@ struct BarrettModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend BarrettModInt operator/(const BarrettModInt &lhs, V rhs) {
         return BarrettModInt(lhs) /= rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend BarrettModInt operator/(V lhs, const BarrettModInt &rhs) {
         return BarrettModInt(lhs) /= rhs;
     }

@@ -137,7 +137,7 @@ struct DynamicBarrettModInt {
     constexpr DynamicBarrettModInt() : value() {}
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     DynamicBarrettModInt(const V &x) {
         value = normalize(x);
     }
@@ -176,13 +176,13 @@ struct DynamicBarrettModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     inline auto & operator+=(const V &v) {
         return *this += DynamicBarrettModInt(v);
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     inline auto & operator-=(const V &v) {
         return *this -= DynamicBarrettModInt(v);
     }
@@ -225,13 +225,13 @@ struct DynamicBarrettModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator==(const DynamicBarrettModInt &lhs, V rhs) {
         return lhs == DynamicBarrettModInt(rhs);
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator==(V lhs, const DynamicBarrettModInt &rhs) {
         return DynamicBarrettModInt(lhs) == rhs;
     }
@@ -241,13 +241,13 @@ struct DynamicBarrettModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator!=(const DynamicBarrettModInt &lhs, V rhs) {
         return !(lhs == rhs);
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator!=(V lhs, const DynamicBarrettModInt &rhs) {
         return !(lhs == rhs);
     }
@@ -265,13 +265,13 @@ struct DynamicBarrettModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicBarrettModInt operator+(const DynamicBarrettModInt &lhs, V rhs) {
         return DynamicBarrettModInt(lhs) += rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicBarrettModInt operator+(V lhs, const DynamicBarrettModInt &rhs) {
         return DynamicBarrettModInt(lhs) += rhs;
     }
@@ -281,13 +281,13 @@ struct DynamicBarrettModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicBarrettModInt operator-(const DynamicBarrettModInt &lhs, V rhs) {
         return DynamicBarrettModInt(lhs) -= rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicBarrettModInt operator-(V lhs, const DynamicBarrettModInt &rhs) {
         return DynamicBarrettModInt(lhs) -= rhs;
     }
@@ -297,13 +297,13 @@ struct DynamicBarrettModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicBarrettModInt operator*(const DynamicBarrettModInt &lhs, V rhs) {
         return DynamicBarrettModInt(lhs) *= rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicBarrettModInt operator*(V lhs, const DynamicBarrettModInt &rhs) {
         return DynamicBarrettModInt(lhs) *= rhs;
     }
@@ -313,13 +313,13 @@ struct DynamicBarrettModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicBarrettModInt operator/(const DynamicBarrettModInt &lhs, V rhs) {
         return DynamicBarrettModInt(lhs) /= rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicBarrettModInt operator/(V lhs, const DynamicBarrettModInt &rhs) {
         return DynamicBarrettModInt(lhs) /= rhs;
     }

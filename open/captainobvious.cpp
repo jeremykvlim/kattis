@@ -251,13 +251,13 @@ struct DynamicMontgomeryModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     inline auto & operator+=(const V &v) {
         return *this += (DynamicMontgomeryModInt) v;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     inline auto & operator-=(const V &v) {
         return *this -= (DynamicMontgomeryModInt) v;
     }
@@ -301,13 +301,13 @@ struct DynamicMontgomeryModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator==(const DynamicMontgomeryModInt &lhs, V rhs) {
         return lhs == DynamicMontgomeryModInt(rhs);
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator==(V lhs, const DynamicMontgomeryModInt &rhs) {
         return DynamicMontgomeryModInt(lhs) == rhs;
     }
@@ -317,13 +317,13 @@ struct DynamicMontgomeryModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator!=(const DynamicMontgomeryModInt &lhs, V rhs) {
         return !(lhs == rhs);
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator!=(V lhs, const DynamicMontgomeryModInt &rhs) {
         return !(lhs == rhs);
     }
@@ -349,13 +349,13 @@ struct DynamicMontgomeryModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicMontgomeryModInt operator+(const DynamicMontgomeryModInt &lhs, V rhs) {
         return DynamicMontgomeryModInt(lhs) += rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicMontgomeryModInt operator+(V lhs, const DynamicMontgomeryModInt &rhs) {
         return DynamicMontgomeryModInt(lhs) += rhs;
     }
@@ -365,13 +365,13 @@ struct DynamicMontgomeryModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicMontgomeryModInt operator-(const DynamicMontgomeryModInt &lhs, V rhs) {
         return DynamicMontgomeryModInt(lhs) -= rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicMontgomeryModInt operator-(V lhs, const DynamicMontgomeryModInt &rhs) {
         return DynamicMontgomeryModInt(lhs) -= rhs;
     }
@@ -381,13 +381,13 @@ struct DynamicMontgomeryModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicMontgomeryModInt operator*(const DynamicMontgomeryModInt &lhs, V rhs) {
         return DynamicMontgomeryModInt(lhs) *= rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicMontgomeryModInt operator*(V lhs, const DynamicMontgomeryModInt &rhs) {
         return DynamicMontgomeryModInt(lhs) *= rhs;
     }
@@ -397,13 +397,13 @@ struct DynamicMontgomeryModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicMontgomeryModInt operator/(const DynamicMontgomeryModInt &lhs, V rhs) {
         return DynamicMontgomeryModInt(lhs) /= rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicMontgomeryModInt operator/(V lhs, const DynamicMontgomeryModInt &rhs) {
         return DynamicMontgomeryModInt(lhs) /= rhs;
     }

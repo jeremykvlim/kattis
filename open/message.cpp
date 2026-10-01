@@ -1,6 +1,15 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+istream & operator>>(istream &stream, __int128 &x) {
+    string s;
+    stream >> s;
+
+    x = 0;
+    for (int sgn = s[0] == '-' ? -1 : 1, i = sgn < 0; i < s.size(); i++) x = x * 10 + sgn * (s[i] - '0');
+    return stream;
+}
+
 template <typename T, typename U, typename V>
 T mul(U x, V y, T mod) {
     return (unsigned __int128) x * y % mod;
@@ -122,7 +131,7 @@ struct DynamicModInt {
     constexpr DynamicModInt() : value() {}
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     DynamicModInt(const V &x) {
         value = normalize((J) x);
     }
@@ -152,13 +161,13 @@ struct DynamicModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     inline auto & operator+=(const V &v) {
         return *this += DynamicModInt(v);
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     inline auto & operator-=(const V &v) {
         return *this -= DynamicModInt(v);
     }
@@ -172,11 +181,15 @@ struct DynamicModInt {
     }
 
     auto operator++(int) {
-        return *this += 1;
+        auto t = *this;
+        *this += 1;
+        return t;
     }
 
     auto operator--(int) {
-        return *this -= 1;
+        auto t = *this;
+        *this -= 1;
+        return t;
     }
 
     auto operator-() const {
@@ -193,13 +206,13 @@ struct DynamicModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator==(const DynamicModInt &lhs, V rhs) {
         return lhs == DynamicModInt(rhs);
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator==(V lhs, const DynamicModInt &rhs) {
         return DynamicModInt(lhs) == rhs;
     }
@@ -209,13 +222,13 @@ struct DynamicModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator!=(const DynamicModInt &lhs, V rhs) {
         return !(lhs == rhs);
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend bool operator!=(V lhs, const DynamicModInt &rhs) {
         return !(lhs == rhs);
     }
@@ -241,13 +254,13 @@ struct DynamicModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicModInt operator+(const DynamicModInt &lhs, V rhs) {
         return DynamicModInt(lhs) += rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicModInt operator+(V lhs, const DynamicModInt &rhs) {
         return DynamicModInt(lhs) += rhs;
     }
@@ -257,13 +270,13 @@ struct DynamicModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicModInt operator-(const DynamicModInt &lhs, V rhs) {
         return DynamicModInt(lhs) -= rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicModInt operator-(V lhs, const DynamicModInt &rhs) {
         return DynamicModInt(lhs) -= rhs;
     }
@@ -273,13 +286,13 @@ struct DynamicModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicModInt operator*(const DynamicModInt &lhs, V rhs) {
         return DynamicModInt(lhs) *= rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicModInt operator*(V lhs, const DynamicModInt &rhs) {
         return DynamicModInt(lhs) *= rhs;
     }
@@ -289,13 +302,13 @@ struct DynamicModInt {
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicModInt operator/(const DynamicModInt &lhs, V rhs) {
         return DynamicModInt(lhs) /= rhs;
     }
 
     template <typename V>
-    requires is_integral_v<V>
+    requires numeric_limits<V>::is_integer
     friend DynamicModInt operator/(V lhs, const DynamicModInt &rhs) {
         return DynamicModInt(lhs) /= rhs;
     }

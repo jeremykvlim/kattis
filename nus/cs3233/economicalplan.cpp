@@ -1,6 +1,15 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+istream & operator>>(istream &stream, __int128 &x) {
+    string s;
+    stream >> s;
+
+    x = 0;
+    for (int sgn = s[0] == '-' ? -1 : 1, i = sgn < 0; i < s.size(); i++) x = x * 10 + sgn * (s[i] - '0');
+    return stream;
+}
+
 template <typename T, typename U, typename V>
 T mul(U x, V y, T mod) {
     return (unsigned __int128) x * y % mod;
@@ -187,9 +196,8 @@ struct MontgomeryModInt {
         while ((T) M * r.first != 1) r.first *= (T) 2 - (T) M * r.first;
         return r;
     }();
-    static constexpr bool common_prime = mod() == 998244353 || mod() == 1000000007 || mod() == 1000000009 || mod() == 1000069 || mod() == 2524775926340780033 || mod() == 39582418599937 || mod() == 79164837199873;
     static constexpr int bit_length = sizeof(T) * 8;
-    static inline bool prime_mod = common_prime || isprime(mod());
+    static inline bool prime_mod = mod() == 998244353 || mod() == 1000000007 || mod() == 1000000009 || mod() == 1000069 || mod() == 2524775926340780033 || mod() == 39582418599937 || mod() == 79164837199873 || isprime(mod());
 
     constexpr MontgomeryModInt() : value() {}
 
@@ -242,13 +250,15 @@ struct MontgomeryModInt {
         return *this;
     }
 
-    template <typename U>
-    inline auto & operator+=(const U &v) {
+    template <typename V>
+    requires numeric_limits<V>::is_integer
+    inline auto & operator+=(const V &v) {
         return *this += (MontgomeryModInt) v;
     }
 
-    template <typename U>
-    inline auto & operator-=(const U &v) {
+    template <typename V>
+    requires numeric_limits<V>::is_integer
+    inline auto & operator-=(const V &v) {
         return *this -= (MontgomeryModInt) v;
     }
 
@@ -276,7 +286,7 @@ struct MontgomeryModInt {
         return (MontgomeryModInt) 0 - *this;
     }
 
-    MontgomeryModInt & operator*=(const MontgomeryModInt &v) {
+    auto & operator*=(const MontgomeryModInt &v) {
         if constexpr (is_same_v<T, unsigned int>) value = reduce((unsigned long long) value * v.value);
         else value = reduce((unsigned __int128) value * v.value);
         return *this;
@@ -291,11 +301,13 @@ struct MontgomeryModInt {
     }
 
     template <typename V>
+    requires numeric_limits<V>::is_integer
     friend bool operator==(const MontgomeryModInt &lhs, V rhs) {
         return lhs == MontgomeryModInt(rhs);
     }
 
     template <typename V>
+    requires numeric_limits<V>::is_integer
     friend bool operator==(V lhs, const MontgomeryModInt &rhs) {
         return MontgomeryModInt(lhs) == rhs;
     }
@@ -305,11 +317,13 @@ struct MontgomeryModInt {
     }
 
     template <typename V>
+    requires numeric_limits<V>::is_integer
     friend bool operator!=(const MontgomeryModInt &lhs, V rhs) {
         return !(lhs == rhs);
     }
 
     template <typename V>
+    requires numeric_limits<V>::is_integer
     friend bool operator!=(V lhs, const MontgomeryModInt &rhs) {
         return !(lhs == rhs);
     }
@@ -335,11 +349,13 @@ struct MontgomeryModInt {
     }
 
     template <typename V>
+    requires numeric_limits<V>::is_integer
     friend MontgomeryModInt operator+(const MontgomeryModInt &lhs, V rhs) {
         return MontgomeryModInt(lhs) += rhs;
     }
 
     template <typename V>
+    requires numeric_limits<V>::is_integer
     friend MontgomeryModInt operator+(V lhs, const MontgomeryModInt &rhs) {
         return MontgomeryModInt(lhs) += rhs;
     }
@@ -349,11 +365,13 @@ struct MontgomeryModInt {
     }
 
     template <typename V>
+    requires numeric_limits<V>::is_integer
     friend MontgomeryModInt operator-(const MontgomeryModInt &lhs, V rhs) {
         return MontgomeryModInt(lhs) -= rhs;
     }
 
     template <typename V>
+    requires numeric_limits<V>::is_integer
     friend MontgomeryModInt operator-(V lhs, const MontgomeryModInt &rhs) {
         return MontgomeryModInt(lhs) -= rhs;
     }
@@ -363,11 +381,13 @@ struct MontgomeryModInt {
     }
 
     template <typename V>
+    requires numeric_limits<V>::is_integer
     friend MontgomeryModInt operator*(const MontgomeryModInt &lhs, V rhs) {
         return MontgomeryModInt(lhs) *= rhs;
     }
 
     template <typename V>
+    requires numeric_limits<V>::is_integer
     friend MontgomeryModInt operator*(V lhs, const MontgomeryModInt &rhs) {
         return MontgomeryModInt(lhs) *= rhs;
     }
@@ -377,11 +397,13 @@ struct MontgomeryModInt {
     }
 
     template <typename V>
+    requires numeric_limits<V>::is_integer
     friend MontgomeryModInt operator/(const MontgomeryModInt &lhs, V rhs) {
         return MontgomeryModInt(lhs) /= rhs;
     }
 
     template <typename V>
+    requires numeric_limits<V>::is_integer
     friend MontgomeryModInt operator/(V lhs, const MontgomeryModInt &rhs) {
         return MontgomeryModInt(lhs) /= rhs;
     }
@@ -393,7 +415,7 @@ struct MontgomeryModInt {
 
     template <typename S>
     friend S & operator>>(S &stream, MontgomeryModInt &v) {
-        typename make_signed<T>::type x;
+        J x;
         stream >> x;
         v = MontgomeryModInt(x);
         return stream;
@@ -413,12 +435,13 @@ struct MontgomeryModInt {
     static MontgomeryModInt inv(const MontgomeryModInt &v) {
         if (prime_mod) return pow(v, mod() - 2);
 
-        T x = 0, y = 1, a = v.value, m = mod();
+        J x = 0, y = 1;
+        T a = v(), m = mod();
         while (a) {
             T t = m / a;
             m -= t * a;
             swap(a, m);
-            x -= t * y;
+            x -= (J) t * y;
             swap(x, y);
         }
 
