@@ -155,9 +155,10 @@ struct DisjointSets {
 template <typename T>
 struct ReachabilityTree {
     int n;
-    vector<int> parent;
+    vector<int> parent, depth, in, inlabel, ascendant, head;
     vector<vector<int>> adj_list;
     vector<T> weight;
+    vector<pair<int, int>> tour;
 
     ReachabilityTree(int m, vector<tuple<int, int, T>> &edges) : n(m), parent(2 * m), adj_list(2 * m), weight(2 * m, 0) {
         DisjointSets dsu(2 * m);
@@ -176,6 +177,48 @@ struct ReachabilityTree {
                 rep[big] = n;
             }
         }
+
+        auto lsb = [&](int x) {
+            return x & -x;
+        };
+
+        in.resize(n + 1);
+        inlabel.resize(n + 1);
+        depth.resize(n + 1);
+        ascendant.resize(n + 1);
+        head.resize(n + 2);
+        int count = 0;
+        auto dfs = [&](auto &&self, int v, int prev) -> void {
+            tour.emplace_back(v, prev);
+            inlabel[v] = tour.size();
+            in[v] = count++;
+
+            for (int u : adj_list[v])
+                if (u != prev) {
+                    depth[u] = depth[v] + 1;
+                    self(self, u, v);
+                    head[inlabel[u]] = v;
+                    if (lsb(inlabel[v]) < lsb(inlabel[u])) inlabel[v] = inlabel[u];
+                }
+        };
+        dfs(dfs, n, n);
+        for (auto [v, p] : tour) ascendant[v] = ascendant[p] | lsb(inlabel[v]);
+    }
+
+    int lca(int u, int v) {
+        if (unsigned above = inlabel[u] ^ inlabel[v]; above) {
+            above = (ascendant[u] & ascendant[v]) & -bit_floor(above);
+            if (unsigned below = ascendant[u] ^ above; below) {
+                below = bit_floor(below);
+                u = head[(inlabel[u] & -below) | below];
+            }
+            if (unsigned below = ascendant[v] ^ above; below) {
+                below = bit_floor(below);
+                v = head[(inlabel[v] & -below) | below];
+            }
+        }
+
+        return depth[u] < depth[v] ? u : v;
     }
 
     vector<int> post_order_traversal() {

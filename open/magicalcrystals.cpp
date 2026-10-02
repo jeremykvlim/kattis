@@ -31,14 +31,14 @@ struct DisjointSets {
 };
 
 template <typename T>
-struct ReachabilityTree {
+struct KruskalReconstructionTree {
     int n;
     vector<int> parent, depth, in, inlabel, ascendant, head;
     vector<vector<int>> adj_list;
     vector<T> weight;
     vector<pair<int, int>> tour;
 
-    ReachabilityTree(int m, vector<tuple<int, int, T>> &edges) : n(m), parent(2 * m), adj_list(2 * m), weight(2 * m, 0) {
+    KruskalReconstructionTree(int m, vector<tuple<int, int, T>> &edges) : n(m), parent(2 * m), adj_list(2 * m), weight(2 * m, 0) {
         DisjointSets dsu(2 * m);
         vector<int> rep(2 * m);
         iota(rep.begin(), rep.end(), 0);
@@ -124,8 +124,8 @@ int main() {
     vector<tuple<int, int, int>> edges(n - 1);
     for (auto &[a, b, w] : edges) cin >> a >> b >> w;
     sort(edges.begin(), edges.end(), [&](auto e1, auto e2) { return get<2>(e1) < get<2>(e2); });
-    ReachabilityTree rt(n, edges);
-    int m = rt.n + 1;
+    KruskalReconstructionTree krt(n, edges);
+    int m = krt.n + 1;
 
     int q;
     cin >> q;
@@ -162,7 +162,7 @@ int main() {
             continue;
         }
 
-        build_virtual_tree(vt, cities, rt.in, [&](int u, int v) { return rt.lca(u, v); });
+        build_virtual_tree(vt, cities, krt.in, [&](int u, int v) { return krt.lca(u, v); });
 
         vector<int> order;
         auto dfs = [&](auto &&self, int v) -> void {
@@ -179,7 +179,7 @@ int main() {
                 c += abs(dp[u]);
                 dp[v] += dp[u];
             }
-            cost += rt.weight[v] * ((c - abs(dp[v])) / 2);
+            cost += krt.weight[v] * ((c - abs(dp[v])) / 2);
         }
         cout << cost << "\n";
 

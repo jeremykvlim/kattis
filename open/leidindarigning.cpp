@@ -31,14 +31,14 @@ struct DisjointSets {
 };
 
 template <typename T>
-struct ReachabilityTree {
+struct KruskalReconstructionTree {
     int n;
     vector<int> parent, depth, in, inlabel, ascendant, head;
     vector<vector<int>> adj_list;
     vector<T> weight;
     vector<pair<int, int>> tour;
 
-    ReachabilityTree(int m, vector<tuple<int, int, T>> &edges) : n(m), parent(2 * m), adj_list(2 * m), weight(2 * m, 0) {
+    KruskalReconstructionTree(int m, vector<tuple<int, int, T>> &edges) : n(m), parent(2 * m), adj_list(2 * m), weight(2 * m, 0) {
         DisjointSets dsu(2 * m);
         vector<int> rep(2 * m);
         iota(rep.begin(), rep.end(), 0);
@@ -114,14 +114,14 @@ int main() {
         b--;
     }
     sort(edges.begin(), edges.end(), [&](auto e1, auto e2) { return get<2>(e1) < get<2>(e2); });
-    ReachabilityTree rt(n, edges);
+    KruskalReconstructionTree krt(n, edges);
 
     int q;
     cin >> q;
 
     vector<bool> open(n, false);
     open[0] = true;
-    set<pair<int, int>> stops{{rt.in[0], 0}};
+    set<pair<int, int>> stops{{krt.in[0], 0}};
     while (q--) {
         int t, x;
         cin >> t >> x;
@@ -129,17 +129,17 @@ int main() {
 
         if (t == 1) {
             open[x] = true;
-            stops.emplace(rt.in[x], x);
+            stops.emplace(krt.in[x], x);
         } else if (t == 2) {
             open[x] = false;
-            stops.erase({rt.in[x], x});
+            stops.erase({krt.in[x], x});
         } else {
             if (open[x]) cout << "0\n";
             else {
                 int wet = INT_MAX;
-                auto it = stops.lower_bound({rt.in[x], -1});
-                if (it != stops.begin()) wet = min(wet, rt.weight[rt.lca(x, prev(it)->second)]);
-                if (it != stops.end()) wet = min(wet, rt.weight[rt.lca(x, it->second)]);
+                auto it = stops.lower_bound({krt.in[x], -1});
+                if (it != stops.begin()) wet = min(wet, krt.weight[krt.lca(x, prev(it)->second)]);
+                if (it != stops.end()) wet = min(wet, krt.weight[krt.lca(x, it->second)]);
                 cout << wet << "\n";
             }
         }
