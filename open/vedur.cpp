@@ -120,9 +120,9 @@ int main() {
     };
 
     int k = n * m;
-    vector<long long> a(k + 1);
+    vector<long long> h(k + 1);
     for (int i = 1; i <= n; i++)
-        for (int j = 1; j <= m; j++) cin >> a[index(i, j)];
+        for (int j = 1; j <= m; j++) cin >> h[index(i, j)];
 
     AntiMonopolyTree<long long> amt(k + 1);
     for (int i = 1; i <= n; i++)
@@ -130,11 +130,11 @@ int main() {
             int u = index(i, j);
             if (i < n) {
                 int v = index(i + 1, j);
-                amt.add(u, v, max(a[u], a[v]));
+                amt.add(u, v, max(h[u], h[v]));
             }
             if (j < m) {
                 int v = index(i, j + 1);
-                amt.add(u, v, max(a[u], a[v]));
+                amt.add(u, v, max(h[u], h[v]));
             }
         }
 
@@ -146,7 +146,7 @@ int main() {
         cin >> l1 >> d1 >> l2 >> d2;
 
         int u = index(l1, d1), v = index(l2, d2);
-        if (u == v) cout << a[u] << "\n";
+        if (u == v) cout << h[u] << "\n";
         else cout << amt.path_max(u, v).first << "\n";
     }
 }

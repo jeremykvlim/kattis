@@ -153,14 +153,14 @@ struct DisjointSets {
 };
 
 template <typename T>
-struct ReachabilityTree {
+struct KruskalReconstructionTree {
     int n;
     vector<int> parent, depth, in, inlabel, ascendant, head;
     vector<vector<int>> adj_list;
     vector<T> weight;
     vector<pair<int, int>> tour;
 
-    ReachabilityTree(int m, vector<tuple<int, int, T>> &edges) : n(m), parent(2 * m), adj_list(2 * m), weight(2 * m, 0) {
+    KruskalReconstructionTree(int m, vector<tuple<int, int, T>> &edges) : n(m), parent(2 * m), adj_list(2 * m), weight(2 * m, 0) {
         DisjointSets dsu(2 * m);
         vector<int> rep(2 * m);
         iota(rep.begin(), rep.end(), 0);
@@ -249,15 +249,15 @@ int main() {
     for (int i = 2; i <= n; i++) edges.emplace_back(1, i, sum + 1);
     sort(edges.begin(), edges.end(), [&](auto e1, auto e2) { return get<2>(e1) < get<2>(e2); });
 
-    ReachabilityTree rt(n, edges);
-    vector<int> dp(rt.n + 1, 0);
-    for (int v : rt.post_order_traversal()) {
-        if (rt.adj_list[v].empty()) dp[v] = 1;
+    KruskalReconstructionTree krt(n, edges);
+    vector<int> dp(krt.n + 1, 0);
+    for (int v : krt.post_order_traversal()) {
+        if (krt.adj_list[v].empty()) dp[v] = 1;
         else
-            for (int u : rt.adj_list[v]) dp[v] += dp[u];
+            for (int u : krt.adj_list[v]) dp[v] += dp[u];
     }
 
-    BoundedFlowNetwork<int, int> bfn(rt.n + g + 1);
+    BoundedFlowNetwork<int, int> bfn(krt.n + g + 1);
     for (int i = 0; i < g; i++) {
         int k;
         cin >> k;
@@ -266,21 +266,21 @@ int main() {
             int v;
             cin >> v;
 
-            bfn.add_arc(rt.n + i, v - 1, 0, 1, 0);
+            bfn.add_arc(krt.n + i, v - 1, 0, 1, 0);
         }
-        bfn.add_arc(rt.n + g, rt.n + i, 0, 1, 0);
+        bfn.add_arc(krt.n + g, krt.n + i, 0, 1, 0);
     }
 
     int delta = 0;
-    for (int v = 1; v <= rt.n; v++)
-        if (rt.parent[v]) {
-            int d = rt.weight[rt.parent[v]] - rt.weight[v];
+    for (int v = 1; v <= krt.n; v++)
+        if (krt.parent[v]) {
+            int d = krt.weight[krt.parent[v]] - krt.weight[v];
             delta += d;
-            bfn.add_arc(v - 1, rt.parent[v] - 1, 0, 1, -d);
-            if (v > n) bfn.add_arc(v - 1, rt.parent[v] - 1, 0, dp[v] - 1, 0);
+            bfn.add_arc(v - 1, krt.parent[v] - 1, 0, 1, -d);
+            if (v > n) bfn.add_arc(v - 1, krt.parent[v] - 1, 0, dp[v] - 1, 0);
         }
-    bfn.add_supply(rt.n + g, g);
-    bfn.add_demand(rt.n - 1, g);
+    bfn.add_supply(krt.n + g, g);
+    bfn.add_demand(krt.n - 1, g);
 
     auto [cost, feasible] = bfn.min_cost_b_flow();
     if (!feasible || cost + delta > sum) cout << -1;
