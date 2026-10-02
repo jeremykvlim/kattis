@@ -316,6 +316,29 @@ struct OfflineDynamicGraph {
     }
 };
 
+template <typename T>
+struct AffineFunction {
+    T m, c;
+
+    AffineFunction(T m = 0, T c = 0) : m(m), c(c) {}
+
+    T operator()(T x) {
+        return m * x + c;
+    }
+
+    AffineFunction & operator+=(const AffineFunction &f) {
+        m += f.m;
+        c += f.c;
+        return *this;
+    }
+
+    AffineFunction & operator-=(const AffineFunction &f) {
+        m -= f.m;
+        c -= f.c;
+        return *this;
+    }
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -355,7 +378,7 @@ int main() {
         vector<int> pos(n);
         for (int i = 0; i < n; i++) pos[order[i]] = i;
 
-        vector<pair<array<int, 2>, complex<double>>> contours;
+        vector<pair<array<int, 2>, AffineFunction<double>>> contours;
         vector<vector<int>> adds(n), deletes(n);
         vector<vector<pair<int, double>>> node_lengths(n);
         while (m--) {
@@ -395,7 +418,7 @@ int main() {
                 auto a = euclidean_dist(slope(coords[i], coords[j]) - slope(coords[i], coords[k])) * (neg ? -1 : 1), b = -coords[i].z * a;
 
                 if (swapped) swap(u, v);
-                contours.emplace_back(make_pair(array{u, v}, complex{a, b}));
+                contours.emplace_back(make_pair(array{u, v}, AffineFunction{a, b}));
                 adds[l].emplace_back(contours.size() - 1);
                 deletes[r].emplace_back(contours.size() - 1);
             };
@@ -404,11 +427,11 @@ int main() {
             add_contour(q + 1, r, node_id(b, c), node_id(a, c), c, a, b, true);
         }
 
-        vector<complex<double>> c(contours.size() + nodes);
+        vector<AffineFunction<double>> c(contours.size() + nodes);
         for (int e = 0; e < contours.size(); e++) c[e + nodes] = contours[e].second;
 
         auto len = 1e20;
-        OfflineDynamicGraph<complex<double>> odg(c);
+        OfflineDynamicGraph<AffineFunction<double>> odg(c);
         vector<array<int, 2>> edge_id(contours.size());
         for (int l = 0; l < n; l++) {
             for (int e : deletes[l]) {
@@ -436,10 +459,7 @@ int main() {
                             return;
                         }
 
-                        if (base < 0) {
-                            auto sum = amt.sum[component];
-                            base = sum.real() * coords[i].z + sum.imag();
-                        }
+                        if (base == -1) base = amt.sum[component](coords[i].z);
                         length = min(length, base + d);
                     };
                     if (component == west) relax(west_len, west_base, west_border);
