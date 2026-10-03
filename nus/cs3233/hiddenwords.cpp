@@ -23,18 +23,18 @@ struct Trie {
 
     Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
 
-    void add(string &s) {
-        int node = 0;
+    void add(const string &s) {
+        int v = 0;
         for (char c : s) {
             int pos = c - a;
 
-            if (T[node].next[pos] == -1) {
-                T[node].next[pos] = T.size();
+            if (!~T[v].next[pos]) {
                 T.emplace_back(TrieNode(r));
+                T[v].next[pos] = T.size() - 1;
             }
-            node = T[node].next[pos];
+            v = T[v].next[pos];
         }
-        T[node].count++;
+        T[v].count++;
     }
 
     auto & operator[](int i) {
@@ -66,16 +66,16 @@ int main() {
     int words = 0;
     vector<vector<bool>> visited(h, vector<bool>(w, false));
     vector<int> dr{1, 0, -1, 0}, dc{0, 1, 0, -1};
-    auto dfs = [&](auto &&self, int i, int j, int node) -> int {
+    auto dfs = [&](auto &&self, int i, int j, int v) -> int {
         visited[i][j] = true;
-        int words = trie[node].count;
-        trie[node].count = 0;
+        int words = trie[v].count;
+        trie[v].count = 0;
 
         for (int k = 0; k < 4; k++) {
             int r = i + dr[k], c = j + dc[k];
             if (0 <= r && r < grid.size() && 0 <= c && c < grid[0].size() && !visited[r][c]) {
                 int pos = grid[r][c] - 'A';
-                if (trie[node].next[pos] != -1) words += self(self, r, c, trie[node].next[pos]);
+                if (~trie[v].next[pos]) words += self(self, r, c, trie[v].next[pos]);
             }
         }
         visited[i][j] = false;
@@ -86,7 +86,7 @@ int main() {
     for (int i = 0; i < h; i++)
         for (int j = 0; j < w; j++) {
             int pos = grid[i][j] - 'A';
-            if (trie[0].next[pos] != -1) words += dfs(dfs, i, j, trie[0].next[pos]);
+            if (~trie[0].next[pos]) words += dfs(dfs, i, j, trie[0].next[pos]);
         }
 
     cout << words;

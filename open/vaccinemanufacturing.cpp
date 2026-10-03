@@ -1,6 +1,28 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+struct Hash {
+    template <typename T>
+    static inline void combine(size_t &h, const T &v) {
+        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
+    }
+
+    template <typename T>
+    size_t operator()(const T &v) const {
+        if constexpr (requires { tuple_size<T>::value; })
+            return apply([](const auto &...e) {
+                size_t h = 0;
+                (combine(h, e), ...);
+                return h;
+            }, v);
+        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
+            size_t h = 0;
+            for (const auto &e : v) combine(h, e);
+            return h;
+        } else return hash<T>{}(v);
+    }
+};
+
 istream & operator>>(istream &stream, __int128 &x) {
     string s;
     stream >> s;
@@ -452,88 +474,35 @@ struct MontgomeryModInt {
 constexpr int MOD = 1e9 + 7;
 using modint = MontgomeryModInt<MOD>;
 
-struct Trie {
-    enum ascii {
-        LOWER = 97,
-        UPPER = 65,
-        NUM = 48,
-        SYM = 32,
-        NA = 0
-    };
+struct HashedString {
+    static inline unsigned long long B1 = 0, B2 = 0;
+    static const unsigned long long MOD1 = 1e9 + 7, MOD2 = 1e9 + 9;
 
-    struct TrieNode {
-        vector<int> next;
-        int end, palindrome;
+    int n;
+    vector<unsigned long long> pref1, pref2;
+    static inline vector<unsigned long long> p1{1}, p2{1};
 
-        TrieNode(int range = 26) : next(range, -1), end(0), palindrome(0) {}
-    };
-
-    vector<TrieNode> T;
-    ascii a;
-    int r;
-
-    Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
-
-    void add(string &s, const __int128 &affix_mask, int count) {
-        int node = 0;
-        for (int i = 0; i < s.size(); i++) {
-            char c = s[i];
-            int pos = c - a;
-
-            if ((affix_mask >> i) & 1) T[node].palindrome += count;
-
-            if (T[node].next[pos] == -1) {
-                T[node].next[pos] = T.size();
-                T.emplace_back(TrieNode(r));
-            }
-            node = T[node].next[pos];
+    HashedString() : n(0), pref1(1, 0), pref2(1, 0) {}
+    HashedString(const string &s) : n(s.size()), pref1(n + 1, 0), pref2(n + 1, 0) {
+        if (!B1 && !B2) {
+            mt19937_64 rng{random_device{}()};
+            B1 = uniform_int_distribution(911382323ULL, MOD1 - 1)(rng);
+            B2 = uniform_int_distribution(972663749ULL, MOD2 - 1)(rng);
         }
-
-        T[node].end += count;
-        T[node].palindrome += count;
+        while (p1.size() <= n || p2.size() <= n) {
+            p1.emplace_back((p1.back() * B1) % MOD1);
+            p2.emplace_back((p2.back() * B2) % MOD2);
+        }
+        for (int i = 0; i < n; i++) {
+            auto v = (unsigned char) s[i] + 1;
+            pref1[i + 1] = (pref1[i] * B1 + v) % MOD1;
+            pref2[i + 1] = (pref2[i] * B2 + v) % MOD2;
+        }
     }
 
-    vector<int> end_count(string &s) {
-        vector<int> end_count(s.size() + 1, 0);
-        end_count[0] = T[0].end;
-        int node = 0;
-        for (int i = 0; i < s.size(); i++) {
-            char c = s[i];
-            int pos = c - a;
-
-            if (T[node].next[pos] == -1) return end_count;
-            node = T[node].next[pos];
-            end_count[i + 1] = T[node].end;
-        }
-        return end_count;
-    }
-
-    int walk_left(string &s, const __int128 &affix_mask, int sr) {
-        int node = 0, count = 0;
-        for (int i = sr; ~i; i--) {
-            char c = s[i];
-            int pos = c - a;
-
-            if ((affix_mask >> (s.size() - i - 1)) & 1) count += T[node].end;
-
-            if (T[node].next[pos] == -1) return count;
-            node = T[node].next[pos];
-        }
-        return count + T[node].palindrome;
-    }
-
-    int walk_right(string &s, const __int128 &affix_mask, int sl) {
-        int node = 0, count = 0;
-        for (int i = sl; i < s.size(); i++) {
-            char c = s[i];
-            int pos = c - a;
-
-            if ((affix_mask >> i) & 1) count += T[node].end;
-
-            if (T[node].next[pos] == -1) return count;
-            node = T[node].next[pos];
-        }
-        return count + T[node].palindrome;
+    pair<unsigned long long, unsigned long long> pref_hash(int l, int r) const {
+        auto h1 = (pref1[r] + MOD1 - (pref1[l] * p1[r - l]) % MOD1) % MOD1, h2 = (pref2[r] + MOD2 - (pref2[l] * p2[r - l]) % MOD2) % MOD2;
+        return {h1, h2};
     }
 };
 
@@ -576,41 +545,70 @@ int main() {
     }
 
     vector<string> m, rev;
+    vector<HashedString> hs_m, hs_rev;
     vector<int> count;
     for (auto [mi, f] : freq) {
         m.emplace_back(mi);
         rev.emplace_back(mi);
         reverse(rev.back().begin(), rev.back().end());
+        hs_m.emplace_back(mi);
+        hs_rev.emplace_back(rev.back());
         count.emplace_back(f);
     }
     n = m.size();
 
+    int sum = 0;
     vector<__int128> pref_mask(n, 0), suff_mask(n, 0);
+    vector<vector<int>> pref_pos(n), suff_pos(n);
     for (int i = 0; i < n; i++) {
         auto [pref, suff] = manacher(m[i]);
-        for (int b = 0; b <= m[i].size(); b++)
-            if ((pref >> b) & 1) pref_mask[i] |= (__int128) 1 << (m[i].size() - b);
-        suff_mask[i] = suff;
-    }
-
-    Trie trie_l, trie_r;
-    for (int i = 0; i < n; i++) {
-        trie_l.add(m[i], suff_mask[i], count[i]);
-        trie_r.add(rev[i], pref_mask[i], count[i]);
-    }
-
-    int sum = 0;
-    for (int i = 0; i < n; i++)
+        int len = m[i].size();
+        for (int j = 0; j <= len; j++)
+            if ((pref >> j) & 1) pref_mask[i] |= (__int128) 1 << (len - j);
         if (pref_mask[i] & 1) sum += count[i];
+        suff_mask[i] = suff;
+        for (int j = 0; j < len; j++) {
+            if ((pref_mask[i] >> j) & 1) pref_pos[i].emplace_back(j);
+            if ((suff_mask[i] >> j) & 1) suff_pos[i].emplace_back(j);
+        }
+    }
+
+    unordered_map<pair<unsigned long long, unsigned long long>, int, Hash> exact_m, exact_rev, pal_m, pal_rev;
+    for (int i = 0; i < n; i++) {
+        int len = m[i].size();
+        exact_m[hs_m[i].pref_hash(0, len)] += count[i];
+        exact_rev[hs_rev[i].pref_hash(0, len)] += count[i];
+        for (int j = 0; j <= len; j++) {
+            if ((suff_mask[i] >> j) & 1) pal_m[hs_m[i].pref_hash(0, j)] += count[i];
+            if ((pref_mask[i] >> j) & 1) pal_rev[hs_rev[i].pref_hash(0, j)] += count[i];
+        }
+    }
 
     modint ways = 0;
     for (int i = 0; i < n; i++) {
-        ways += sum * count[i] * freq[rev[i]];
-        auto end_count_l = trie_l.end_count(rev[i]), end_count_r = trie_r.end_count(m[i]);
-        for (int k = 0; k < m[i].size(); k++) {
-            ways += trie_l.walk_left(m[i], pref_mask[i], m[i].size() - k - 1) * count[i] * end_count_l[k];
-            ways += trie_r.walk_right(m[i], suff_mask[i], k) * count[i] * end_count_r[k];
+        int len = m[i].size();
+
+        auto get = [&](const auto &c, auto p) {
+            auto it = c.find(p);
+            return it == c.end() ? 0 : it->second;
+        };
+        ways += (modint) sum * count[i] * get(exact_m, hs_rev[i].pref_hash(0, len));
+        for (int l = 0; l < len; l++) {
+            int end_m = get(exact_m, hs_rev[i].pref_hash(0, l));
+            if (end_m) {
+                int s = get(pal_m, hs_rev[i].pref_hash(l, len));
+                for (auto it = lower_bound(pref_pos[i].begin(), pref_pos[i].end(), l); it != pref_pos[i].end(); it++) s += get(exact_m, hs_rev[i].pref_hash(l, *it));
+                ways += (modint) s * count[i] * end_m;
+            }
+
+            int end_rev = get(exact_rev, hs_m[i].pref_hash(0, l));
+            if (end_rev) {
+                int s = get(pal_rev, hs_m[i].pref_hash(l, len));
+                for (auto it = lower_bound(suff_pos[i].begin(), suff_pos[i].end(), l); it != suff_pos[i].end(); it++) s += get(exact_rev, hs_m[i].pref_hash(l, *it));
+                ways += (modint) s * count[i] * end_rev;
+            }
         }
     }
+
     cout << ways;
 }

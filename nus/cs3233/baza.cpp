@@ -23,18 +23,31 @@ struct Trie {
 
     Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
 
-    void add(string &s, int &steps) {
-        int node = 0;
+    int add(const string &s) {
+        int v = 0, steps = 0;
         for (char c : s) {
             int pos = c - a;
 
-            if (T[node].next[pos] == -1) {
-                T[node].next[pos] = T.size();
+            if (!~T[v].next[pos]) {
                 T.emplace_back(TrieNode(r));
+                T[v].next[pos] = T.size() - 1;
             }
-            node = T[node].next[pos];
-            steps += ++T[node].count;
+            v = T[v].next[pos];
+            steps += ++T[v].count;
         }
+        return steps;
+    }
+
+    int query(const string &s) {
+        int v = 0, steps = 0;
+        for (char c : s) {
+            int pos = c - 'a';
+            if (!~T[v].next[pos]) break;
+
+            v = T[v].next[pos];
+            steps += T[v].count;
+        }
+        return steps;
     }
 
     auto & operator[](int i) {
@@ -49,15 +62,13 @@ int main() {
     int n;
     cin >> n;
 
-    unordered_map<string, int> database;
     Trie trie;
+    unordered_map<string, int> database;
     for (int i = 0; i < n; i++) {
         string s;
         cin >> s;
 
-        int steps = i;
-        trie.add(s, steps);
-        database[s] = steps;
+        database[s] = i + trie.add(s);
     }
 
     int q;
@@ -68,17 +79,6 @@ int main() {
         cin >> s;
 
         if (database.count(s)) cout << database[s] + 1 << "\n";
-        else {
-            int steps = n, node = 0;
-            for (char c : s) {
-                int pos = c - 'a';
-                if (trie[node].next[pos] == -1) break;
-
-                node = trie[node].next[pos];
-                steps += trie[node].count;
-            }
-
-            cout << steps << "\n";
-        }
+        else cout << n + trie.query(s) << "\n";
     }
 }

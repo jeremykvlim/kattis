@@ -1,27 +1,50 @@
 #include <bits/stdc++.h>
-#include <ext/pb_ds/assoc_container.hpp>
 using namespace std;
-using namespace __gnu_pbds;
 
-struct Hash {
-    template <typename T>
-    static inline void combine(size_t &h, const T &v) {
-        h ^= Hash{}(v) + 0x9e3779b9 + (h << 6) + (h >> 2);
+struct Trie {
+    struct TrieNode {
+        vector<tuple<int, long long, long long>> next;
+
+        TrieNode() = default;
+    };
+
+    vector<TrieNode> T;
+
+    Trie(int n = 1) : T(n) {}
+
+    int add(const auto &seq) {
+        int v = 0;
+        for (int i = seq.size() - 1; ~i; i--) {
+            auto [a, b] = seq[i];
+            int u = -1;
+            for (auto [t, x, y] : T[v].next)
+                if (x == a && y == b) {
+                    u = t;
+                    break;
+                }
+
+            if (!~u) {
+                T.emplace_back();
+                u = T.size() - 1;
+                T[v].next.emplace_back(u, a, b);
+            }
+            v = u;
+        }
+        return v;
     }
 
-    template <typename T>
-    size_t operator()(const T &v) const {
-        if constexpr (requires { tuple_size<T>::value; })
-            return apply([](const auto &...e) {
-                size_t h = 0;
-                (combine(h, e), ...);
-                return h;
-            }, v);
-        else if constexpr (requires { declval<T>().begin(); declval<T>().end(); } && !is_same_v<T, string>) {
-            size_t h = 0;
-            for (const auto &e : v) combine(h, e);
-            return h;
-        } else return hash<T>{}(v);
+    int find(int v, long long a, long long b) const {
+        for (auto [u, x, y] : T[v].next)
+            if (x == a && y == b) return u;
+        return -1;
+    }
+
+    int size() {
+        return T.size();
+    }
+
+    auto & operator[](int i) {
+        return T[i];
     }
 };
 
@@ -32,7 +55,7 @@ int main() {
     int n;
     cin >> n;
 
-    vector<long long> seq;
+    vector<pair<long long, long long>> base;
     vector<int> divisor_count(25, 0), dp(25, 0);
     dp[0] = 1;
     for (int i = 1; i < 25; i++) {
@@ -41,85 +64,87 @@ int main() {
 
         if (n > dp[i]) n -= dp[i];
         else {
-            seq.emplace_back(i);
+            base.emplace_back(i, i);
             break;
         }
     }
 
-    auto search = [&](const auto &v, auto e) -> bool {
-        auto it = lower_bound(v.begin(), v.end(), e, [](const auto &p, auto x) { return p.first < x; });
-        return it != v.end() && it->first == e;
+    auto search = [&](const auto &freq, auto e) -> bool {
+        auto it = lower_bound(freq.begin(), freq.end(), e, [](const auto &p, auto x) { return p.first < x; });
+        return it != freq.end() && it->first == e;
     };
 
-    vector<pair<long long, long long>> empty, base{{0, 1}};
-    cc_hash_table<pair<vector<long long>, vector<long long>>, vector<pair<long long, long long>>, Hash> memo;
-    auto dfs1 = [&](auto &&self, const vector<long long> &seq, const vector<long long> &start) -> const vector<pair<long long, long long>> & {
-        if (!seq[0]) {
-            if (all_of(seq.begin(), seq.end(), [](auto e) { return !e; })) return base;
-            return empty;
-        }
+    Trie trie;
+    int node = trie.add(base);
+    vector<vector<pair<long long, int>>> freq(trie.size());
+    auto dfs1 = [&](auto &&self, const auto &curr, int v) -> void {
+        if (!freq[v].empty()) return;
 
-        if (any_of(seq.begin(), seq.end(), [](auto e) { return !e; })) return empty;
+        int c_max = curr[0].first;
+        for (int i = 1; i < curr.size(); i++) c_max = min((long long) c_max, curr[i].first / curr[i - 1].second);
 
-        if (seq.size() > 1) {
-            auto temp_seq = seq, temp_start = start;
-            temp_seq.pop_back();
-            temp_start.pop_back();
-            auto it = memo.find({temp_seq, temp_start});
-            if (it == memo.end() || !search(it->second, seq.back())) return empty;
-        }
-        if (memo.find({seq, start}) != memo.end()) return memo[{seq, start}];
-
-        int c_max = seq[0];
-        if (seq.size() > 1)
-            for (int i = 1; i < seq.size(); i++)
-                if (start[i - 1]) c_max = min((long long) c_max, seq[i] / start[i - 1]);
-        if (!c_max) return empty;
-
-        vector<long long> st{0};
-        st.insert(st.end(), start.begin(), start.end());
-        gp_hash_table<long long, long long> m;
+        vector<pair<long long, long long>> next(curr.size());
+        vector<pair<long long, int>> values;
         for (int ci = 1; ci <= c_max; ci++) {
-            auto s = seq;
-            for (int k = 1; k < seq.size(); k++) {
-                if (s[k] < ci * st[k]) goto next;
-                s[k] -= ci * st[k];
+            for (int i = 1; i < curr.size(); i++) {
+                next[i].first = curr[i].first - curr[i - 1].second * ci;
+                next[i].second = curr[i - 1].second;
             }
 
-            for (int ai = 1; ai * ci <= seq[0]; ai++) {
-                s[0] = seq[0] - ai * ci;
-                st[0] = ai;
-                st.pop_back();
-                for (auto [e, freq] : self(self, s, st)) m[e + ci * start.back()] += freq;
-                st.emplace_back(start.back());
+            int p = 0;
+            for (int i = curr.size() - 2; i > 0; i--) {
+                p = trie.find(p, next[i].first, next[i].second);
+                if (!~p) break;
             }
-            next:;
+
+            auto add = curr.back().second * ci;
+            for (int ai = 1; ai * ci <= curr[0].first; ai++) {
+                next[0] = {curr[0].first - ai * ci, ai};
+                if (!next[0].first) {
+                    if (all_of(next.begin() + 1, next.end(), [](auto e) { return !e.first; })) values.emplace_back(add, 1);
+                    continue;
+                }
+                if (!~p) continue;
+
+                if (curr.size() >= 2) {
+                    int t = trie.find(p, next[0].first, ai);
+                    if (!~t || freq[t].empty() || !search(freq[t], next.back().first)) continue;
+                }
+
+                int u = trie.add(next);
+                freq.resize(trie.size());
+                self(self, next, u);
+                for (auto [e, f] : freq[u]) values.emplace_back(e + add, f);
+            }
         }
+        sort(values.begin(), values.end());
 
-        vector<pair<long long, long long>> v{m.begin(), m.end()};
-        sort(v.begin(), v.end());
-        return memo[{seq, start}] = v;
+        for (auto [e, f] : values)
+            if (freq[v].empty() || freq[v].back().first != e) freq[v].emplace_back(e, f);
+            else freq[v].back().second += f;
     };
 
-    bool change = true;
-    while (seq.size() < 8 && change) {
-        change = false;
-        for (auto [e, freq] : dfs1(dfs1, seq, seq)) {
-            if (n <= freq) {
-                seq.emplace_back(e);
-                change = true;
+    while (base.size() < 8) {
+        dfs1(dfs1, base, node);
+        for (auto [e, f] : freq[node])
+            if (n > f) n -= f;
+            else {
+                base.emplace_back(e, e);
+                if (base.size() < 8) {
+                    node = trie.add(base);
+                    freq.resize(trie.size());
+                }
                 break;
             }
-            n -= freq;
-        }
     }
-    dfs1(dfs1, seq, seq);
 
+    vector<long long> C, A;
     vector<array<vector<long long>, 3>> rec;
-    auto dfs2 = [&](auto &&self, const vector<long long> &seq, const vector<long long> &start, vector<long long> c = {}, vector<long long> a = {}) {
-        if (!seq[0]) {
-            if (any_of(seq.begin(), seq.end(), [](auto e) { return e; })) return;
+    auto dfs2 = [&](auto &&self, const auto &curr) -> void {
+        if (!curr[0].first) {
+            if (any_of(curr.begin(), curr.end(), [](auto e) { return e.first; })) return;
 
+            auto c = C, a = A;
             reverse(c.begin(), c.end());
             reverse(a.begin(), a.end());
 
@@ -127,56 +152,51 @@ int main() {
             vector<long long> s;
             while (s.size() < 20) {
                 auto si = 0LL;
-                for (int i = 0; i < k; i++) {
+                for (int i = 0; i < k; i++)
                     if (s.size() + i < k) si += c[i] * a[s.size() + i];
                     else si += c[i] * s[s.size() + i - k];
-                }
                 s.emplace_back(si);
             }
             rec.push_back({s, c, a});
             return;
         }
 
-        if (any_of(seq.begin(), seq.end(), [](auto e) { return !e; })) return;
+        int c_max = curr[0].first;
+        for (int i = 1; i < curr.size(); i++) c_max = min((long long) c_max, curr[i].first / curr[i - 1].second);
 
-        if (seq.size() > 1) {
-            auto temp_seq = seq, temp_start = start;
-            temp_seq.pop_back();
-            temp_start.pop_back();
-            auto it = memo.find({temp_seq, temp_start});
-            if (it == memo.end() || !search(it->second, seq.back())) return;
-        }
-
-        int c_max = seq[0];
-        if (seq.size() > 1)
-            for (int i = 1; i < seq.size(); i++)
-                if (start[i - 1]) c_max = min((long long) c_max, seq[i] / start[i - 1]);
-        if (!c_max) return;
-
-        vector<long long> st{0};
-        st.insert(st.end(), start.begin(), start.end());
+        vector<pair<long long, long long>> next(curr.size());
         for (int ci = 1; ci <= c_max; ci++) {
-            auto s = seq;
-            for (int k = 1; k < seq.size(); k++) {
-                if (s[k] < ci * st[k]) goto next;
-                s[k] -= ci * st[k];
+            for (int i = 1; i < curr.size(); i++) {
+                next[i].first = curr[i].first - curr[i - 1].second * ci;
+                next[i].second = curr[i - 1].second;
             }
 
-            for (int ai = 1; ai * ci <= seq[0]; ai++) {
-                s[0] = seq[0] - ai * ci;
-                st[0] = ai;
-                st.pop_back();
-                c.emplace_back(ci);
-                a.emplace_back(ai);
-                self(self, s, st, c, a);
-                a.pop_back();
-                c.pop_back();
-                st.emplace_back(st.back());
+            int p = 0;
+            for (int i = curr.size() - 2; i > 0; i--) {
+                p = trie.find(p, next[i].first, next[i].second);
+                if (!~p) break;
             }
-            next:;
+
+            for (int ai = 1; ai * ci <= curr[0].first; ai++) {
+                next[0] = {curr[0].first - ai * ci, ai};
+                if (next[0].first) {
+                    if (!~p) continue;
+
+                    if (curr.size() >= 2) {
+                        int t = trie.find(p, next[0].first, ai);
+                        if (!~t || freq[t].empty() || !search(freq[t], next.back().first)) continue;
+                    }
+                }
+
+                C.emplace_back(ci);
+                A.emplace_back(ai);
+                self(self, next);
+                A.pop_back();
+                C.pop_back();
+            }
         }
     };
-    dfs2(dfs2, seq, seq);
+    dfs2(dfs2, base);
 
     nth_element(rec.begin(), rec.begin() + n - 1, rec.end());
     auto [s, c, a] = rec[n - 1];

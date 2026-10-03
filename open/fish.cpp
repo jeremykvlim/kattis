@@ -23,28 +23,28 @@ struct Trie {
     Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
 
     void add(const string &s, int i) {
-        int node = 0;
-        T[node].indices.emplace_back(i);
+        int v = 0;
+        T[v].indices.emplace_back(i);
         for (char c : s) {
             int pos = c - a;
 
-            if (T[node].next[pos] == -1) {
-                T[node].next[pos] = T.size();
+            if (!~T[v].next[pos]) {
                 T.emplace_back(TrieNode(r));
+                T[v].next[pos] = T.size() - 1;
             }
-            node = T[node].next[pos];
-            T[node].indices.emplace_back(i);
+            v = T[v].next[pos];
+            T[v].indices.emplace_back(i);
         }
     }
 
     int find(const string &s) {
-        int node = 0;
+        int v = 0;
         for (char c : s) {
             int pos = c - a;
-            if (T[node].next[pos] == -1) return -1;
-            node = T[node].next[pos];
+            if (!~T[v].next[pos]) return -1;
+            v = T[v].next[pos];
         }
-        return node;
+        return v;
     }
 };
 
@@ -71,8 +71,8 @@ int main() {
                 if (!up) {
                     up = true;
                     count = 0;
-                    int node = trie.find(out);
-                    if (~node) indices = trie.T[node].indices;
+                    int v = trie.find(out);
+                    if (~v) indices = trie.T[v].indices;
                     else indices.clear();
                 }
 

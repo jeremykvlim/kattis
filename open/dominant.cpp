@@ -23,18 +23,18 @@ struct Trie {
 
     Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
 
-    void add(string &s) {
-        int node = 0;
+    void add(const string &s) {
+        int v = 0;
         for (char c : s) {
             int pos = c - a;
 
-            if (T[node].next[pos] == -1) {
-                T[node].next[pos] = T.size();
+            if (!~T[v].next[pos]) {
                 T.emplace_back(TrieNode(r));
+                T[v].next[pos] = T.size() - 1;
             }
-            node = T[node].next[pos];
+            v = T[v].next[pos];
         }
-        ends.emplace_back(node);
+        ends.emplace_back(v);
     }
 
     int size() {
@@ -57,17 +57,16 @@ int main() {
         S.emplace_back(s);
         sort(s.begin(), s.end());
         sorted.emplace_back(s);
-
         trie.add(s);
     }
 
     vector<bool> visited(trie.size(), false);
-    auto dfs = [&](auto &&self, int i, int node, int end, string s) -> void {
-        if (node != end) visited[node] = true;
+    auto dfs = [&](auto &&self, int i, int v, int end, string s) -> void {
+        if (v != end) visited[v] = true;
 
         for (; i < s.size(); i++) {
             int pos = s[i] - 'a';
-            if (trie[node].next[pos] != -1) self(self, i + 1, trie[node].next[pos], end, s);
+            if (~trie[v].next[pos]) self(self, i + 1, trie[v].next[pos], end, s);
         }
     };
     for (int i = 0; i < trie.ends.size(); i++) dfs(dfs, 0, 0, trie.ends[i], sorted[i]);

@@ -23,20 +23,19 @@ struct Trie {
 
     Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
 
-    int add(string &s) {
-        int node = 0;
+    int add(const string &s) {
+        int v = 0;
         for (char c : s) {
             int pos = c - a;
 
-            if (T[node].next[pos] == -1) {
-                T[node].next[pos] = T.size();
+            if (!~T[v].next[pos]) {
                 T.emplace_back(TrieNode(r));
+                T[v].next[pos] = T.size() - 1;
             }
-            node = T[node].next[pos];
+            v = T[v].next[pos];
         }
-        T[node].end_link = node;
-
-        return node;
+        T[v].end_link = v;
+        return v;
     }
 
     void aho_corasick() {
@@ -47,14 +46,14 @@ struct Trie {
             q.pop();
 
             int l = T[v].link;
-            if (l != -1 && T[v].end_link == -1) T[v].end_link = T[l].end_link;
+            if (~l && !~T[v].end_link) T[v].end_link = T[l].end_link;
             for (int c = 0; c < r; c++) {
                 int u = T[v].next[c];
 
-                if (u != -1) {
-                    T[u].link = (l == -1) ? 0 : T[l].next[c];
+                if (~u) {
+                    T[u].link = !~l ? 0 : T[l].next[c];
                     q.emplace(u);
-                } else T[v].next[c] = (l == -1) ? 0 : T[l].next[c];
+                } else T[v].next[c] = !~l ? 0 : T[l].next[c];
             }
         }
         T[0].link = 0;
@@ -98,15 +97,15 @@ int main() {
             string s;
             cin >> s;
 
-            int node = 0;
+            int v = 0;
             for (char c : s) {
                 int pos = c - 'a';
 
-                node = trie[node].next[pos];
-                for (int v = trie[node].end_link; ~v; v = trie[trie[v].link].end_link)
-                    if (visited[v] != q) {
-                        visited[v] = q;
-                        count[v]++;
+                v = trie[v].next[pos];
+                for (int u = trie[v].end_link; ~u; u = trie[trie[u].link].end_link)
+                    if (visited[u] != q) {
+                        visited[u] = q;
+                        count[u]++;
                     } else break;
             }
         } else {

@@ -45,7 +45,7 @@ struct QueryDecomposition {
         vector<unsigned long long> hilbert_order(Q);
         for (int q = 0; q < Q; q++) {
             auto [l, r, t, i] = queries[q];
-            hilbert_order[q] = hilbert_index(l / size, r / size, t / size);
+            hilbert_order[q] = hilbert_index(l, r, t);
         }
         vector<int> order(Q);
         iota(order.begin(), order.end(), 0);

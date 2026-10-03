@@ -24,18 +24,18 @@ struct Trie {
 
     Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
 
-    void add(string &s) {
-        int node = 0;
+    void add(const string &s) {
+        int v = 0;
         for (char c : s) {
             int pos = c - a;
 
-            if (T[node].next[pos] == -1) {
-                T[node].next[pos] = T.size();
+            if (!~T[v].next[pos]) {
                 T.emplace_back(TrieNode(r));
+                T[v].next[pos] = T.size() - 1;
             }
-            node = T[node].next[pos];
+            v = T[v].next[pos];
         }
-        T[node].end = true;
+        T[v].end = true;
     }
 
     void aho_corasick() {
@@ -49,11 +49,11 @@ struct Trie {
             for (int c = 0; c < r; c++) {
                 int u = T[v].next[c];
 
-                if (u != -1) {
-                    T[u].link = (l == -1) ? 0 : T[l].next[c];
+                if (~u) {
+                    T[u].link = !~l ? 0 : T[l].next[c];
                     T[u].end = T[u].end || T[T[u].link].end;
                     q.emplace(u);
-                } else T[v].next[c] = (l == -1) ? 0 : T[l].next[c];
+                } else T[v].next[c] = !~l ? 0 : T[l].next[c];
             }
         }
         T[0].link = 0;
@@ -90,12 +90,12 @@ int main() {
 
         string text;
         cin >> text;
-        reverse(text.begin(), text.end());
 
+        reverse(text.begin(), text.end());
         vector<int> dp(trie.size(), 0), temp(trie.size());
         for (char c : text) {
             int pos = c - trie.a;
-            for (int node = 0; node < dp.size(); node++) temp[node] = max(dp[node], trie[trie[node].next[pos]].end ? -1 : dp[trie[node].next[pos]] + 1);
+            for (int v = 0; v < dp.size(); v++) temp[v] = max(dp[v], trie[trie[v].next[pos]].end ? -1 : dp[trie[v].next[pos]] + 1);
             dp = temp;
         }
 

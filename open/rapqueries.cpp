@@ -45,7 +45,7 @@ struct QueryDecomposition {
         vector<unsigned long long> hilbert_order(Q);
         for (int q = 0; q < Q; q++) {
             auto [l, r, i] = queries[q];
-            hilbert_order[q] = hilbert_index(l / size, r / size);
+            hilbert_order[q] = hilbert_index(l, r);
         }
         vector<int> order(Q);
         iota(order.begin(), order.end(), 0);
@@ -57,18 +57,16 @@ struct QueryDecomposition {
         auto add = [&](int i) {
             int v = a[i], c = count[v];
             freq[c]--;
-            c++;
-            count[v] = c;
-            freq[c]++;
-            ans = max(ans, c);
+            count[v]++;
+            freq[c + 1]++;
+            ans = max(ans, c + 1);
         };
 
         auto remove = [&](int i) {
             int v = a[i], c = count[v];
             freq[c]--;
-            c--;
-            count[v] = c;
-            freq[c]++;
+            count[v]--;
+            freq[c - 1]++;
             for (; ans && !freq[ans]; ans--);
         };
 
@@ -82,54 +80,6 @@ struct QueryDecomposition {
         }
 
         return answers;
-    }
-};
-
-struct Trie {
-    enum ascii {
-        LOWER = 97,
-        UPPER = 65,
-        NUM = 48,
-        SYM = 32,
-        NA = 0
-    };
-
-    struct TrieNode {
-        vector<int> next;
-
-        TrieNode(int range = 26) : next(range, -1) {}
-    };
-
-    vector<TrieNode> T;
-    ascii a;
-    int r;
-    vector<int> depth, index_in_depth;
-
-    Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range), depth(1), index_in_depth(1) {}
-
-    void add(string &s, int i, vector<int> &nodes_at_depth, vector<vector<int>> &word_indices, vector<vector<int>> &depth_indices) {
-        int node = 0;
-        for (char c : s) {
-            int pos = c - a;
-
-            if (T[node].next[pos] == -1) {
-                T[node].next[pos] = T.size();
-                T.emplace_back(TrieNode(r));
-
-                int d = depth[node] + 1;
-                depth.emplace_back(d);
-                nodes_at_depth[d]++;
-                index_in_depth.emplace_back(nodes_at_depth[d] - 1);
-            }
-            node = T[node].next[pos];
-            int d = depth[node];
-            word_indices[d].emplace_back(i);
-            depth_indices[d].emplace_back(index_in_depth[node]);
-        }
-    }
-
-    auto & operator[](int i) {
-        return T[i];
     }
 };
 
@@ -150,21 +100,29 @@ int main() {
         longest = max(longest, len[i] = words[i].size());
     }
 
-    Trie trie;
-    vector<int> nodes_at_depth(longest + 1);
-    nodes_at_depth[0] = 1;
-    vector<vector<int>> word_indices(longest + 1), depth_indices(longest + 1);
-    for (int i = 1; i <= n; i++) trie.add(words[i], i, nodes_at_depth, word_indices, depth_indices);
+    vector<vector<int>> word_indices(longest + 1), states(longest + 1);
+    for (int i = 1; i <= n; i++)
+        for (int l = 1; l <= len[i]; l++) word_indices[l].emplace_back(i);
 
-    vector<int> pref1(longest + 2, 0), pref2(longest + 2, 0);
-    for (int d = 1; d <= longest + 1; d++) {
-        pref1[d] = pref1[d - 1] + depth_indices[d - 1].size();
-        pref2[d] = pref2[d - 1] + nodes_at_depth[d - 1];
+    vector<int> dp(n + 1);
+    int k = 1;
+    for (int l = 1, prev = 1; l <= longest; l++) {
+        vector<int> temp(prev * 26, -1);
+        int count = 0;
+        for (int i : word_indices[l]) {
+            int j = dp[i] * 26 + (words[i][l - 1] - 'a');
+            if (!~temp[j]) temp[j] = count++;
+            dp[i] = temp[j];
+            states[l].emplace_back(dp[i]);
+        }
+        k = max(k, prev = count);
     }
 
-    vector<int> a(pref1.back(), 0);
-    for (int d = 1; d <= longest; d++)
-        for (int i = 0; i < depth_indices[d].size(); i++) a[pref1[d] + i] = pref2[d] + depth_indices[d][i];
+    vector<int> pref(longest + 2, 0);
+    for (int l = 1; l <= longest + 1; l++) pref[l] = pref[l - 1] + states[l - 1].size();
+
+    vector<int> a(pref.back(), 0);
+    for (int l = 1; l <= longest; l++) copy(states[l].begin(), states[l].end(), a.begin() + pref[l]);
 
     int q;
     cin >> q;
@@ -176,20 +134,20 @@ int main() {
     vector<array<int, 3>> queries;
     for (int i = 0; i < q; i++) {
         auto [ql, qr, qt] = qs[i];
-        if (qt > longest || depth_indices[qt].empty()) continue;
+        if (qt > longest) continue;
 
         int l = lower_bound(word_indices[qt].begin(), word_indices[qt].end(), ql) - word_indices[qt].begin(),
             r = upper_bound(word_indices[qt].begin(), word_indices[qt].end(), qr) - word_indices[qt].begin();
         if (l < r) {
-            l += pref1[qt];
-            r += pref1[qt];
+            l += pref[qt];
+            r += pref[qt];
             indices.emplace_back(i);
             queries.push_back({l, r - 1, (int) indices.size() - 1});
         }
     }
 
     QueryDecomposition qd(a.size(), queries);
-    auto answers = qd.mo(a, pref2.back());
+    auto answers = qd.mo(a, k);
     vector<int> count(q, 0);
     for (int i = 0; i < indices.size(); i++) count[indices[i]] = answers[i];
     for (int c : count) cout << c << "\n";

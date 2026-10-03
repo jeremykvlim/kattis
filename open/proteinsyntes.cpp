@@ -42,23 +42,23 @@ struct Trie {
 
     Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range), count(0), next_link{-1}, list(1, 0) {}
 
-    void add(string &s) {
-        int node = 0;
+    void add(const string &s) {
+        int v = 0;
         for (char c : s) {
             int pos = c - a;
 
-            if (T[node].next[pos] == -1) {
-                T[node].next[pos] = T.size();
+            if (!~T[v].next[pos]) {
                 T.emplace_back(TrieNode(r));
+                T[v].next[pos] = T.size() - 1;
                 next_link.emplace_back(-1);
                 list.extend();
             }
-            node = T[node].next[pos];
+            v = T[v].next[pos];
         }
 
-        if (list.head[node] == -1) {
+        if (!~list.head[v]) {
             len.emplace_back(s.size());
-            list.add_edge(node, count++);
+            list.add_edge(v, count++);
         }
     }
 
@@ -73,11 +73,11 @@ struct Trie {
             for (int c = 0; c < r; c++) {
                 int u = T[v].next[c];
 
-                if (u != -1) {
-                    T[u].link = (l == -1) ? 0 : T[l].next[c];
-                    next_link[u] = (list.head[T[u].link] != -1) ? T[u].link : next_link[T[u].link];
+                if (~u) {
+                    T[u].link = !~l ? 0 : T[l].next[c];
+                    next_link[u] = ~list.head[T[u].link] ? T[u].link : next_link[T[u].link];
                     q.emplace(u);
-                } else T[v].next[c] = (l == -1) ? 0 : T[l].next[c];
+                } else T[v].next[c] = !~l ? 0 : T[l].next[c];
             }
         }
         T[0].link = 0;
@@ -107,12 +107,12 @@ int main() {
 
     vector<int> dp(n + 1, 1e9);
     dp[0] = 0;
-    int node = 0;
+    int v = 0;
     for (int i = 1; i <= n; i++) {
         int c = t[i - 1] - 'a';
-        node = trie[node].next[c];
-        for (int v = node; v != -1; v = trie.next_link[v])
-            for (int j = trie.list.head[v]; j != -1; j = trie.list.next[j]) dp[i] = min(dp[i], dp[i - trie.len[j]] + 1);
+        v = trie[v].next[c];
+        for (int u = v; u != -1; u = trie.next_link[u])
+            for (int j = trie.list.head[u]; j != -1; j = trie.list.next[j]) dp[i] = min(dp[i], dp[i - trie.len[j]] + 1);
     }
     cout << dp[n];
 }

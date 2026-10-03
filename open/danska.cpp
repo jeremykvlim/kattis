@@ -475,18 +475,18 @@ struct Trie {
 
     Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
 
-    void add(string &s) {
-        int node = 0;
+    void add(const string &s) {
+        int v = 0;
         for (char c : s) {
             int pos = c - a;
 
-            if (T[node].next[pos] == -1) {
-                T[node].next[pos] = T.size();
+            if (!~T[v].next[pos]) {
                 T.emplace_back(TrieNode(r));
+                T[v].next[pos] = T.size() - 1;
             }
-            node = T[node].next[pos];
+            v = T[v].next[pos];
         }
-        T[node].end = true;
+        T[v].end = true;
     }
 
     void aho_corasick() {
@@ -500,11 +500,11 @@ struct Trie {
             for (int c = 0; c < r; c++) {
                 int u = T[v].next[c];
 
-                if (u != -1) {
-                    T[u].link = (l == -1) ? 0 : T[l].next[c];
+                if (~u) {
+                    T[u].link = !~l ? 0 : T[l].next[c];
                     T[u].end = T[u].end || T[T[u].link].end;
                     q.emplace(u);
-                } else T[v].next[c] = (l == -1) ? 0 : T[l].next[c];
+                } else T[v].next[c] = !~l ? 0 : T[l].next[c];
             }
         }
         T[0].link = 0;
@@ -540,16 +540,15 @@ int main() {
     dp[0] = 1;
     for (int _ = 0; _ < n; _++) {
         vector<modint> temp(s, 0);
-        for (int node = 0; node < s; node++) 
-            if (dp[node] && !trie[node].end)
+        for (int v = 0; v < s; v++)
+            if (dp[v] && !trie[v].end)
                 for (int c = 0; c < 26; c++)
-                    if (!trie[trie[node].next[c]].end) temp[trie[node].next[c]] += dp[node];
-        
-        dp.swap(temp);
+                    if (!trie[trie[v].next[c]].end) temp[trie[v].next[c]] += dp[v];
+        dp = temp;
     }
 
     modint count = 0;
-    for (int node = 0; node < s; node++)
-        if (!trie[node].end) count += dp[node];
+    for (int v = 0; v < s; v++)
+        if (!trie[v].end) count += dp[v];
     cout << count;
 }

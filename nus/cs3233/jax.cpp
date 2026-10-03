@@ -23,17 +23,17 @@ struct Trie {
 
     Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
 
-    void add(string &s) {
-        int node = 0;
+    void add(const string &s) {
+        int v = 0;
         for (char c : s) {
             int pos = c - a;
 
-            if (T[node].next[pos] == -1) {
-                T[node].next[pos] = T.size();
+            if (!~T[v].next[pos]) {
                 T.emplace_back(TrieNode(r));
+                T[v].next[pos] = T.size() - 1;
             }
-            node = T[node].next[pos];
-            T[node].count++;
+            v = T[v].next[pos];
+            T[v].count++;
         }
     }
 
@@ -68,8 +68,8 @@ int main() {
     int total = offset[n];
     vector<int> pref(total, 0), suff(total, 0);
     for (int i = 0; i < n; i++) {
-        for (int j = 0, node = 0; j < s[i].size(); j++) node = pref[offset[i] + j] = pref_trie[node].next[s[i][j] - 'a'];
-        for (int j = 0, node = 0; j < s[i].size(); j++) node = suff[offset[i] + j] = suff_trie[node].next[s[i][s[i].size() - 1 - j] - 'a'];
+        for (int j = 0, v = 0; j < s[i].size(); j++) v = pref[offset[i] + j] = pref_trie[v].next[s[i][j] - 'a'];
+        for (int j = 0, v = 0; j < s[i].size(); j++) v = suff[offset[i] + j] = suff_trie[v].next[s[i][s[i].size() - 1 - j] - 'a'];
     }
 
     vector<pair<int, int>> pairs;

@@ -23,18 +23,18 @@ struct Trie {
 
     Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
 
-    void add(string &s) {
-        int node = 0;
+    void add(const string &s) {
+        int v = 0;
         for (char c : s) {
             int pos = c - a;
 
-            if (T[node].next[pos] == -1) {
-                T[node].next[pos] = T.size();
+            if (!~T[v].next[pos]) {
                 T.emplace_back(TrieNode(r));
+                T[v].next[pos] = T.size() - 1;
             }
-            node = T[node].next[pos];
+            v = T[v].next[pos];
         }
-        T[node].end = true;
+        T[v].end = true;
     }
 
     auto & operator[](int i) {
@@ -57,7 +57,7 @@ int main() {
     int n;
     cin >> n;
 
-    Trie trie(1, Trie::UPPER, 26);
+    Trie trie(1, Trie::UPPER);
     while (n--) {
         string word;
         cin >> word;
@@ -81,15 +81,15 @@ int main() {
                     if (trie[v].end) add(0, c);
 
                     for (int C = 0; C < 26; C++)
-                        if (trie[v].next[C] != -1) add(trie[v].next[C], (char) (C + 'A'));
+                        if (~trie[v].next[C]) add(trie[v].next[C], (char) (C + 'A'));
                 } else {
                     if (!prints.count(c)) {
-                        if (trie[v].next[c - 'A'] != -1) add(trie[v].next[c - 'A'], c);
+                        if (~trie[v].next[c - 'A']) add(trie[v].next[c - 'A'], c);
                         continue;
                     }
 
                     for (char C : prints[c])
-                        if (trie[v].next[C - 'A'] != -1) add(trie[v].next[C - 'A'], C);
+                        if (~trie[v].next[C - 'A']) add(trie[v].next[C - 'A'], C);
                 }
             }
             seqs = temp;

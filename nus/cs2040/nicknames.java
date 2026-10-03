@@ -33,29 +33,29 @@ public class nicknames {
         }
 
         void add(String s) {
-            int node = 0;
+            int v = 0;
             for (int i = 0; i < s.length(); i++) {
                 int pos = s.charAt(i) - 'a';
 
-                if (T.get(node).next[pos] == -1) {
-                    T.get(node).next[pos] = T.size();
+                if (T.get(v).next[pos] == -1) {
                     T.add(new TrieNode());
+                    T.get(v).next[pos] = T.size() - 1;
                 }
-                node = T.get(node).next[pos];
-                T.get(node).count++;
+                v = T.get(v).next[pos];
+                T.get(v).count++;
             }
         }
 
         int occurrences(String s) {
-            int node = 0;
+            int v = 0;
             for (int i = 0; i < s.length(); i++) {
                 int pos = s.charAt(i) - 'a';
 
-                if (T.get(node).next[pos] == -1) return 0;
-                node = T.get(node).next[pos];
+                if (T.get(v).next[pos] == -1) return 0;
+                v = T.get(v).next[pos];
             }
 
-            return T.get(node).count;
+            return T.get(v).count;
         }
     }
 }

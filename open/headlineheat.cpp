@@ -23,18 +23,18 @@ struct Trie {
 
     Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
 
-    void add(string &s, int h) {
-        int node = 0;
+    void add(const string &s, int h) {
+        int v = 0;
         for (char c : s) {
             int pos = c - a;
 
-            if (T[node].next[pos] == -1) {
-                T[node].next[pos] = T.size();
+            if (!~T[v].next[pos]) {
                 T.emplace_back(TrieNode(r));
+                T[v].next[pos] = T.size() - 1;
             }
-            node = T[node].next[pos];
+            v = T[v].next[pos];
         }
-        T[node].hash += h;
+        T[v].hash += h;
     }
 
     void aho_corasick() {
@@ -48,24 +48,24 @@ struct Trie {
             for (int c = 0; c < r; c++) {
                 int u = T[v].next[c];
 
-                if (u != -1) {
-                    T[u].link = (l == -1) ? 0 : T[l].next[c];
+                if (~u) {
+                    T[u].link = !~l ? 0 : T[l].next[c];
                     T[u].hash += T[T[u].link].hash;
                     q.emplace(u);
-                } else T[v].next[c] = (l == -1) ? 0 : T[l].next[c];
+                } else T[v].next[c] = !~l ? 0 : T[l].next[c];
             }
         }
         T[0].link = 0;
     }
 
-    bool balanced(string &s) {
-        int node = 0, sum = 0;
+    bool balanced(const string &s) {
+        int v = 0, sum = 0;
         for (char c : s) {
             int pos = c - a;
 
-            while (T[node].next[pos] == -1) node = T[node].link;
-            node = T[node].next[pos];
-            sum += T[node].hash;
+            for (; !~T[v].next[pos]; v = T[v].link);
+            v = T[v].next[pos];
+            sum += T[v].hash;
         }
         return !sum;
     }

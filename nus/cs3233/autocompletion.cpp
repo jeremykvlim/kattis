@@ -23,40 +23,44 @@ struct Trie {
 
     Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
 
-    void add(string &s) {
-        int node = 0;
+    void add(const string &s) {
+        int v = 0;
         for (char c : s) {
             int pos = c - a;
 
-            if (T[node].next[pos] == -1) {
-                T[node].next[pos] = T.size();
+            if (!~T[v].next[pos]) {
                 T.emplace_back(TrieNode(r));
+                T[v].next[pos] = T.size() - 1;
             }
-            node = T[node].next[pos];
-            T[node].count++;
+            v = T[v].next[pos];
+            T[v].count++;
         }
-        T[node].end = true;
+        T[v].end = true;
     }
 
-    int find(string &s) {
-        int node = 0;
-        for (char c : s) node = T[node].next[c - a];
-        return node;
+    int find(const string &s) {
+        int v = 0;
+        for (char c : s) {
+            int pos = c - a;
+            if (!~T[v].next[pos]) return -1;
+            v = T[v].next[pos];
+        }
+        return v;
     }
 
-    string order_statistic(int k, int node = 0) {
+    string kth(int k, int v = 0) {
         string word;
         for (;;) {
-            if (T[node].end)
+            if (T[v].end)
                 if (!--k) return word;
 
             for (int c = 0; c < 26; c++)
-                if (T[node].next[c] != -1) {
-                    if (T[T[node].next[c]].count >= k) {
+                if (~T[v].next[c]) {
+                    if (T[T[v].next[c]].count >= k) {
                         word += 'a' + c;
-                        node = T[node].next[c];
+                        v = T[v].next[c];
                         break;
-                    } else k -= T[T[node].next[c]].count;
+                    } else k -= T[T[v].next[c]].count;
                 }
         }
     }
@@ -89,22 +93,22 @@ int main() {
         cin >> s;
 
         string text;
-        int node = 0;
+        int v = 0;
         for (int i = 0; i < s.size();)
             if (s[i] == '#') {
                 int tab = 0;
                 for (; i < s.size() && s[i] == '#'; i++, tab++);
-                if (node != -1) {
-                    int count = trie[node].count - trie[node].end;
+                if (~v) {
+                    int count = trie[v].count - trie[v].end;
                     if (count <= 0) continue;
 
-                    text += trie.order_statistic((tab - 1) % count + 1 + trie[node].end, node);
-                    node = trie.find(text);
+                    text += trie.kth((tab - 1) % count + 1 + trie[v].end, v);
+                    v = trie.find(text);
                 }
             } else {
                 char c = s[i++];
                 text += c;
-                if (node != -1) node = trie[node].next[c - 'a'];
+                if (~v) v = trie[v].next[c - 'a'];
             }
         cout << text << "\n";
     }

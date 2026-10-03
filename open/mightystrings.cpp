@@ -22,16 +22,16 @@ struct Trie {
 
     Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
 
-    void add(string &s) {
-        int node = 0;
+    void add(const string &s) {
+        int v = 0;
         for (char c : s) {
             int pos = c - a;
 
-            if (T[node].next[pos] == -1) {
-                T[node].next[pos] = T.size();
+            if (!~T[v].next[pos]) {
                 T.emplace_back(TrieNode(r));
+                T[v].next[pos] = T.size() - 1;
             }
-            node = T[node].next[pos];
+            v = T[v].next[pos];
         }
     }
 
@@ -62,21 +62,21 @@ int main() {
     vector<int> pref_node{0}, suff_node{0}, freq{0}, indices(trie.size(), -1);
     indices[0] = 0;
     for (auto &s : strings) {
-        int node = 0, pref = 0;
+        int v = 0, pref = 0;
         for (char c : s) {
-            pref = node;
-            node = trie[node].next[c - 'a'];
+            pref = v;
+            v = trie[v].next[c - 'a'];
         }
 
-        if (!~indices[node]) {
+        if (!~indices[v]) {
             freq.emplace_back(0);
-            indices[node] = freq.size() - 1;
+            indices[v] = freq.size() - 1;
             pref_node.emplace_back(pref);
             int suff = 0;
             for (int i = 1; i < s.size() && ~suff; i++) suff = trie[suff].next[s[i] - 'a'];
             suff_node.emplace_back(suff);
         }
-        freq[indices[node]]++;
+        freq[indices[v]]++;
     }
 
     int m = freq.size();

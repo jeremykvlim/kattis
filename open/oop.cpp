@@ -20,26 +20,26 @@ struct Trie {
     vector<TrieNode> T;
     ascii a;
     int r;
-    vector<int> order;
 
     Trie(int n = 1, ascii alpha = LOWER, int range = 26) : T(n, TrieNode(range)), a(alpha), r(range) {}
 
-    int add(string &s) {
-        int node = 0;
+    int add(const string &s) {
+        int v = 0;
         for (char c : s) {
             int pos = c - a;
 
-            if (T[node].next[pos] == -1) {
-                T[node].next[pos] = T.size();
-                T.emplace_back(TrieNode(r, T[node].depth + 1));
+            if (!~T[v].next[pos]) {
+                T.emplace_back(TrieNode(r, T[v].depth + 1));
+                T[v].next[pos] = T.size() - 1;
             }
-            node = T[node].next[pos];
+            v = T[v].next[pos];
         }
 
-        return node;
+        return v;
     }
 
-    void aho_corasick() {
+    vector<int> aho_corasick() {
+        vector<int> order;
         queue<int> q;
         q.emplace(0);
         while (!q.empty()) {
@@ -52,28 +52,14 @@ struct Trie {
             for (int c = 0; c < r; c++) {
                 int u = T[v].next[c];
 
-                if (u != -1) {
-                    T[u].link = (l == -1) ? 0 : T[l].next[c];
+                if (~u) {
+                    T[u].link = !~l ? 0 : T[l].next[c];
                     q.emplace(u);
-                } else T[v].next[c] = (l == -1) ? 0 : T[l].next[c];
+                } else T[v].next[c] = !~l ? 0 : T[l].next[c];
             }
         }
         T[0].link = 0;
-    }
-
-    void match(const vector<string> &strings) {
-        for (auto s : strings) {
-            int node = 0;
-            for (char c : s) {
-                int pos = c - a;
-
-                node = T[node].next[pos];
-                while (T[node].depth > s.size() / 2 + 1) node = T[node].link;
-                T[node].count++;
-            }
-        }
-
-        for (int i = order.size() - 1; ~i; i--) T[T[order[i]].link].count += T[order[i]].count;
+        return order;
     }
 
     auto & operator[](int i) {
@@ -113,7 +99,18 @@ int main() {
         v = trie.add(p);
     }
 
-    trie.aho_corasick();
-    trie.match(words);
+    auto order = trie.aho_corasick();
+    reverse(order.begin(), order.end());
+    for (const auto &s : words) {
+        int v = 0;
+        for (char c : s) {
+            int pos = c - 'a';
+
+            v = trie[v].next[pos];
+            while (trie[v].depth > s.size() / 2 + 1) v = trie[v].link;
+            trie[v].count++;
+        }
+    }
+    for (int v : order) trie[trie[v].link].count += trie[v].count;
     for (int v : nodes) cout << trie[v].count << "\n";
 }
