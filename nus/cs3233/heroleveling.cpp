@@ -26,15 +26,11 @@ int main() {
     for (int t = 0; t <= t_max; t++) {
         fill(dp.begin(), dp.end(), -1);
         dp[0] = 0;
-        for (int i : indices) {
+        for (int bound = 0; int i : indices) {
             int cost = max(0, T[i] - t);
-            auto temp = dp;
-            for (int j = 0; j <= c; j++)
-                if (~dp[j] && dp[j] >= m[i]) {
-                    int J = j + cost;
-                    if (J <= c) temp[J] = max(temp[J], dp[j] + x[i]);
-                }
-            dp = temp;
+            for (int j = min(bound, c - cost); j >= 0; j--)
+                if (dp[j] >= m[i]) dp[j + cost] = max(dp[j + cost], dp[j] + x[i]);
+            bound = min(bound + cost, c);
         }
 
         int j = find_if(dp.begin(), dp.end(), [&](auto level) { return level >= l; }) - dp.begin();
