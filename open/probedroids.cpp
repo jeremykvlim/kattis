@@ -5,9 +5,11 @@ template <typename T>
 struct Fraction : array<T, 2> {
     using F = array<T, 2>;
 
+    bool reduced;
+
     Fraction() = default;
-    Fraction(T n, T d) : F{n, d} {
-        reduce();
+    Fraction(T n, T d, bool reduced = false) : F{n, d}, reduced(reduced) {
+        if (!reduced) reduce();
     }
 
     T & numer() {
@@ -32,35 +34,62 @@ struct Fraction : array<T, 2> {
             denom() *= -1;
         }
 
-        T g = __gcd(abs(numer()), denom());
-        if (g) {
+        if (!numer() && denom()) denom() = 1;
+        else if (numer() && !denom()) numer() = numer() < 0 ? -1 : 1;
+        else if (numer() && denom() && abs(numer()) != 1 && denom() != 1) {
+            T g = __gcd(abs(numer()), denom());
             numer() /= g;
             denom() /= g;
         }
+        reduced = true;
     }
 
     bool operator<(const Fraction &f) const {
         return numer() * f.denom() < f.numer() * denom();
     }
 
+    bool operator<(const T &v) const {
+        return numer() < v * denom();
+    }
+
     bool operator>(const Fraction &f) const {
         return numer() * f.denom() > f.numer() * denom();
+    }
+
+    bool operator>(const T &v) const {
+        return numer() > v * denom();
     }
 
     bool operator==(const Fraction &f) const {
         return numer() == f.numer() && denom() == f.denom();
     }
 
+    bool operator==(const T &v) const {
+        return numer() == v * denom();
+    }
+
     bool operator!=(const Fraction &f) const {
         return numer() != f.numer() || denom() != f.denom();
+    }
+
+    bool operator!=(const T &v) const {
+        return numer() != v * denom();
     }
 
     bool operator<=(const Fraction &f) const {
         return *this < f || *this == f;
     }
 
+    bool operator<=(const T &v) const {
+        return numer() <= v * denom();
+    }
+
     bool operator>=(const Fraction &f) const {
         return *this > f || *this == f;
+    }
+
+    bool operator>=(const T &v) const {
+        return numer() >= v * denom();
     }
 
     Fraction operator+(const Fraction &f) const {
@@ -68,7 +97,7 @@ struct Fraction : array<T, 2> {
     }
 
     Fraction operator+(const T &v) const {
-        return {numer() + v * denom(), denom()};
+        return {numer() + v * denom(), denom(), reduced};
     }
 
     Fraction & operator+=(const Fraction &f) {
@@ -80,7 +109,7 @@ struct Fraction : array<T, 2> {
 
     Fraction & operator+=(const T &v) {
         numer() += v * denom();
-        reduce();
+        if (!reduced) reduce();
         return *this;
     }
 
@@ -89,7 +118,7 @@ struct Fraction : array<T, 2> {
     }
 
     Fraction operator-(const T &v) const {
-        return {numer() - v * denom(), denom()};
+        return {numer() - v * denom(), denom(), reduced};
     }
 
     Fraction & operator-=(const Fraction &f) {
@@ -101,7 +130,7 @@ struct Fraction : array<T, 2> {
 
     Fraction & operator-=(const T &v) {
         numer() -= v * denom();
-        reduce();
+        if (!reduced) reduce();
         return *this;
     }
 
@@ -135,8 +164,9 @@ struct Fraction : array<T, 2> {
     }
 
     Fraction & operator/=(const Fraction &f) {
-        numer() *= f.denom();
-        denom() *= f.numer();
+        T fn = f.numer(), fd = f.denom();
+        numer() *= fd;
+        denom() *= fn;
         reduce();
         return *this;
     }
@@ -146,11 +176,52 @@ struct Fraction : array<T, 2> {
         reduce();
         return *this;
     }
+
+    friend Fraction operator+(const T &v, const Fraction &f) {
+        return f + v;
+    }
+
+    friend Fraction operator-(const T &v, const Fraction &f) {
+        return {v * f.denom() - f.numer(), f.denom()};
+    }
+
+    friend Fraction operator*(const T &v, const Fraction &f) {
+        return f * v;
+    }
+
+    friend Fraction operator/(const T &v, const Fraction &f) {
+        return {v * f.denom(), f.numer()};
+    }
+
+    friend bool operator<(const T &v, const Fraction &f) {
+        return v * f.denom() < f.numer();
+    }
+
+    friend bool operator>(const T &v, const Fraction &f) {
+        return v * f.denom() > f.numer();
+    }
+
+    friend bool operator==(const T &v, const Fraction &f) {
+        return v * f.denom() == f.numer();
+    }
+
+    friend bool operator!=(const T &v, const Fraction &f) {
+        return v * f.denom() != f.numer();
+    }
+
+    friend bool operator<=(const T &v, const Fraction &f) {
+        return v * f.denom() <= f.numer();
+    }
+
+    friend bool operator>=(const T &v, const Fraction &f) {
+        return v * f.denom() >= f.numer();
+    }
 };
 
 template <typename T>
 Fraction<T> mediant(const Fraction<T> &l, const Fraction<T> &r) {
-    return {l.numer() + r.numer(), l.denom() + r.denom()};
+    bool reduced = l.reduced && r.reduced && abs(l.numer() * r.denom() - r.numer() * l.denom()) == 1;
+    return {l.numer() + r.numer(), l.denom() + r.denom(), reduced};
 }
 
 struct SternBrocotTree {
@@ -160,7 +231,7 @@ struct SternBrocotTree {
         for (T k, nl = 0, nr = 0;; nl = 0, nr = 0) {
             auto check_left = [&]() {
                 T num = (nl + k) * l.numer() + r.numer(), den = (nl + k) * l.denom() + r.denom();
-                if (num > bound || den > bound || !predicate({num, den})) return false;
+                if (num > bound || den > bound || !predicate({num, den, true})) return false;
                 return true;
             };
 
@@ -182,7 +253,7 @@ struct SternBrocotTree {
 
             auto check_right = [&]() {
                 T num = l.numer() + (nr + k) * r.numer(), den = l.denom() + (nr + k) * r.denom();
-                if (num > bound || den > bound || predicate({num, den})) return false;
+                if (num > bound || den > bound || predicate({num, den, true})) return false;
                 return true;
             };
 
@@ -213,14 +284,12 @@ struct SternBrocotTree {
         Fraction<T> l{0, 1}, r{1, 0};
         while (f != mediant(l, r)) {
             if (left) {
-                T num = f.denom() * (l.numer() + r.numer()) - f.numer() * (l.denom() + r.denom()), den = f.numer() * l.denom() - f.denom() * l.numer(),
-                  n = (num + den - 1) / den;
+                T num = f.denom() * (l.numer() + r.numer()) - f.numer() * (l.denom() + r.denom()), den = f.numer() * l.denom() - f.denom() * l.numer(), n = (num + den - 1) / den;
                 path.emplace_back('L', n);
                 r.numer() += n * l.numer();
                 r.denom() += n * l.denom();
             } else {
-                T num = f.numer() * (l.denom() + r.denom()) - f.denom() * (l.numer() + r.numer()), den = f.denom() * r.numer() - f.numer() * r.denom(),
-                  n = (num + den - 1) / den;
+                T num = f.numer() * (l.denom() + r.denom()) - f.denom() * (l.numer() + r.numer()), den = f.denom() * r.numer() - f.numer() * r.denom(), n = (num + den - 1) / den;
                 path.emplace_back('R', n);
                 l.numer() += n * r.numer();
                 l.denom() += n * r.denom();
@@ -281,6 +350,42 @@ struct SternBrocotTree {
         }
         if (k) return {0, 0};
         return mediant(l, r);
+    }
+
+    template <typename T, typename F>
+    static void enumerate_tree(T bound, F &&visit) {
+        auto dfs = [&](auto &&self, Fraction<T> l, Fraction<T> r) -> bool {
+            auto m = mediant(l, r);
+            if (m.numer() > bound || m.denom() > bound) return true;
+            if (!self(self, l, m)) return false;
+            if (!visit(m)) return false;
+            return self(self, m, r);
+        };
+        dfs(dfs, {0, 1}, {1, 0});
+    }
+
+    template <typename T, typename F>
+    static void enumerate_left_subtree(T bound, F &&visit) {
+        auto dfs = [&](auto &&self, Fraction<T> l, Fraction<T> r) -> bool {
+            auto m = mediant(l, r);
+            if (m.denom() > bound) return true;
+            if (!self(self, l, m)) return false;
+            if (!visit(m)) return false;
+            return self(self, m, r);
+        };
+        dfs(dfs, {0, 1}, {1, 1});
+    }
+
+    template <typename T, typename F>
+    static void enumerate_right_subtree(T bound, F &&visit) {
+        auto dfs = [&](auto &&self, Fraction<T> l, Fraction<T> r) -> bool {
+            auto m = mediant(l, r);
+            if (m.numer() > bound) return true;
+            if (!self(self, l, m)) return false;
+            if (!visit(m)) return false;
+            return self(self, m, r);
+        };
+        dfs(dfs, {1, 1}, {1, 0});
     }
 };
 

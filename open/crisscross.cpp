@@ -27,9 +27,11 @@ template <typename T>
 struct Fraction : array<T, 2> {
     using F = array<T, 2>;
 
+    bool reduced;
+
     Fraction() = default;
-    Fraction(T n, T d) : F{n, d} {
-        reduce();
+    Fraction(T n, T d, bool reduced = false) : F{n, d}, reduced(reduced) {
+        if (!reduced) reduce();
     }
 
     T & numer() {
@@ -54,35 +56,62 @@ struct Fraction : array<T, 2> {
             denom() *= -1;
         }
 
-        T g = __gcd(abs(numer()), denom());
-        if (g) {
+        if (!numer() && denom()) denom() = 1;
+        else if (numer() && !denom()) numer() = numer() < 0 ? -1 : 1;
+        else if (numer() && denom() && abs(numer()) != 1 && denom() != 1) {
+            T g = __gcd(abs(numer()), denom());
             numer() /= g;
             denom() /= g;
         }
+        reduced = true;
     }
 
     bool operator<(const Fraction &f) const {
         return numer() * f.denom() < f.numer() * denom();
     }
 
+    bool operator<(const T &v) const {
+        return numer() < v * denom();
+    }
+
     bool operator>(const Fraction &f) const {
         return numer() * f.denom() > f.numer() * denom();
+    }
+
+    bool operator>(const T &v) const {
+        return numer() > v * denom();
     }
 
     bool operator==(const Fraction &f) const {
         return numer() == f.numer() && denom() == f.denom();
     }
 
+    bool operator==(const T &v) const {
+        return numer() == v * denom();
+    }
+
     bool operator!=(const Fraction &f) const {
         return numer() != f.numer() || denom() != f.denom();
+    }
+
+    bool operator!=(const T &v) const {
+        return numer() != v * denom();
     }
 
     bool operator<=(const Fraction &f) const {
         return *this < f || *this == f;
     }
 
+    bool operator<=(const T &v) const {
+        return numer() <= v * denom();
+    }
+
     bool operator>=(const Fraction &f) const {
         return *this > f || *this == f;
+    }
+
+    bool operator>=(const T &v) const {
+        return numer() >= v * denom();
     }
 
     Fraction operator+(const Fraction &f) const {
@@ -90,7 +119,7 @@ struct Fraction : array<T, 2> {
     }
 
     Fraction operator+(const T &v) const {
-        return {numer() + v * denom(), denom()};
+        return {numer() + v * denom(), denom(), reduced};
     }
 
     Fraction & operator+=(const Fraction &f) {
@@ -102,7 +131,7 @@ struct Fraction : array<T, 2> {
 
     Fraction & operator+=(const T &v) {
         numer() += v * denom();
-        reduce();
+        if (!reduced) reduce();
         return *this;
     }
 
@@ -111,7 +140,7 @@ struct Fraction : array<T, 2> {
     }
 
     Fraction operator-(const T &v) const {
-        return {numer() - v * denom(), denom()};
+        return {numer() - v * denom(), denom(), reduced};
     }
 
     Fraction & operator-=(const Fraction &f) {
@@ -123,7 +152,7 @@ struct Fraction : array<T, 2> {
 
     Fraction & operator-=(const T &v) {
         numer() -= v * denom();
-        reduce();
+        if (!reduced) reduce();
         return *this;
     }
 
@@ -157,8 +186,9 @@ struct Fraction : array<T, 2> {
     }
 
     Fraction & operator/=(const Fraction &f) {
-        numer() *= f.denom();
-        denom() *= f.numer();
+        T fn = f.numer(), fd = f.denom();
+        numer() *= fd;
+        denom() *= fn;
         reduce();
         return *this;
     }
@@ -167,6 +197,46 @@ struct Fraction : array<T, 2> {
         denom() *= v;
         reduce();
         return *this;
+    }
+
+    friend Fraction operator+(const T &v, const Fraction &f) {
+        return f + v;
+    }
+
+    friend Fraction operator-(const T &v, const Fraction &f) {
+        return {v * f.denom() - f.numer(), f.denom()};
+    }
+
+    friend Fraction operator*(const T &v, const Fraction &f) {
+        return f * v;
+    }
+
+    friend Fraction operator/(const T &v, const Fraction &f) {
+        return {v * f.denom(), f.numer()};
+    }
+
+    friend bool operator<(const T &v, const Fraction &f) {
+        return v * f.denom() < f.numer();
+    }
+
+    friend bool operator>(const T &v, const Fraction &f) {
+        return v * f.denom() > f.numer();
+    }
+
+    friend bool operator==(const T &v, const Fraction &f) {
+        return v * f.denom() == f.numer();
+    }
+
+    friend bool operator!=(const T &v, const Fraction &f) {
+        return v * f.denom() != f.numer();
+    }
+
+    friend bool operator<=(const T &v, const Fraction &f) {
+        return v * f.denom() <= f.numer();
+    }
+
+    friend bool operator>=(const T &v, const Fraction &f) {
+        return v * f.denom() >= f.numer();
     }
 };
 
@@ -375,7 +445,7 @@ int main() {
                 else if (v.size() > 1) {
                     cout << -1;
                     exit(0);
-                } else points.emplace(Fraction((long long) v[0].x, 1LL), Fraction((long long) v[0].y, 1LL));
+                } else points.emplace(Fraction<long long>(v[0].x, 1), Fraction<long long>(v[0].y, 1));
             } else {
                 auto p = non_collinear_intersection(l1, l2);
                 if (point_on_line(l1, p) && point_on_line(l2, p)) {
