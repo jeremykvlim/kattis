@@ -1,0 +1,40 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    int n, k;
+    cin >> n >> k;
+
+    vector<int> cargo(k + 1);
+    iota(cargo.begin(), cargo.end(), 0);
+
+    mt19937_64 rng(random_device{}());
+    vector<array<unsigned long long, 2>> seed(k + 1);
+    array<unsigned long long, 2> hash{0, 0};
+    for (int i = 1; i <= k; i++) {
+        seed[i] = {rng(), rng()};
+        for (int j = 0; j < 2; j++) hash[j] += seed[i][j] * i;
+    }
+
+    vector<array<unsigned long long, 2>> hashes(n + 1);
+    hashes[0] = hash;
+    for (int i = 1; i <= n; i++) {
+        int a, b;
+        cin >> a >> b;
+
+        for (int j = 0; j < 2; j++) hash[j] += (seed[a][j] - seed[b][j]) * (cargo[b] - cargo[a]);
+        swap(cargo[a], cargo[b]);
+        hashes[i] = hash;
+    }
+    sort(hashes.begin(), hashes.end());
+
+    auto count = 0LL;
+    for (int l = 0, r = 1; l <= n; l = r++) {
+        for (; r <= n && hashes[l] == hashes[r]; r++);
+        count += (long long) (r - l) * (r - l - 1) / 2;
+    }
+    cout << count;
+}
