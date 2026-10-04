@@ -8,24 +8,27 @@ int main() {
     int r, c, q;
     cin >> r >> c >> q;
 
-    vector<string> grid(r);
-    for (auto &row : grid) cin >> row;
+    vector<int> dp((r + 1) * (c + 1)), height(c);
+    auto index = [&](int i, int j) {
+        return i * (c + 1) + j;
+    };
 
-    vector<int> height(c);
-    vector<vector<int>> dp(r + 1, vector<int>(c + 1));
     for (int i = 0; i < r; i++) {
+        string row;
+        cin >> row;
+
         stack<pair<int, int>> s;
         s.emplace(-1, 0);
         for (int j = 0; j < c; j++) {
-            if (grid[i][j] != '#') height[j]++;
+            if (row[j] != '#') height[j]++;
             else height[j] = 0;
 
             while (height[j] < s.top().first) {
                 auto [hk, k] = s.top();
                 s.pop();
                 auto [hl, l] = s.top();
-                dp[hk][j - l]++;
-                dp[max(height[j], hl)][j - l]--;
+                dp[index(hk, j - l)]++;
+                dp[index(max(height[j], hl), j - l)]--;
             }
             s.emplace(height[j], j + 1);
         }
@@ -34,22 +37,18 @@ int main() {
             auto [hk, k] = s.top();
             s.pop();
             auto [hl, l] = s.top();
-            dp[hk][c - l]++;
-            dp[max(0, hl)][c - l]--;
+            dp[index(hk, c - l)]++;
+            dp[index(max(0, hl), c - l)]--;
         }
     }
 
-    for (int j = 1; j <= c; j++)
-        for (int i = r - 1; i; i--) dp[i][j] += dp[i + 1][j];
-
-    for (int i = 1; i <= r; i++) {
-        int count = dp[i][c];
-        for (int j = c; j; j--) count += exchange(dp[i][j - 1], dp[i][j - 1] + dp[i][j] + count);
-    }
+    vector<int> suff(c + 1, 0);
+    for (int i = r; i; i--)
+        for (int j = c, sum = 0, count = 0; j; j--) dp[index(i, j)] = count += sum += suff[j] += dp[index(i, j)];
 
     while (q--) {
         int h, w;
         cin >> h >> w;
-        cout << dp[h][w] << "\n";
+        cout << dp[index(h, w)] << "\n";
     }
 }

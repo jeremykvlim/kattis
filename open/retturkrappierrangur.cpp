@@ -152,23 +152,31 @@ int main() {
     for (auto &[x, y] : coords) cin >> x >> y;
 
     int count = 0;
+    unordered_map<Point<int>, pair<int, int>, Hash> freq;
     for (int i = 0; i < n; i++) {
-        unordered_map<Point<int>, int, Hash> freq;
+        freq.clear();
 
         auto normalize = [&](const auto &v) {
             auto u = v / gcd(abs(v.x), abs(v.y));
             if (u < Point(0, 0)) u *= -1;
             return u;
         };
-        for (int j = 0; j < n; j++)
-            if (i != j) freq[normalize(coords[j] - coords[i])]++;
 
-        int c = 0;
-        for (auto [v, f] : freq) {
-            auto it = freq.find(normalize(~v));
-            if (it != freq.end()) c += f * it->second;
-        }
-        count += c / 2;
+        for (int j = 0; j < n; j++)
+            if (i != j) {
+                auto u = normalize(coords[j] - coords[i]);
+                auto v = ~u;
+                if (v < Point{0, 0}) v *= -1;
+
+                auto &[a, b] = freq[v < u ? v : u];
+                if (v < u) {
+                    count += a;
+                    b++;
+                } else {
+                    count += b;
+                    a++;
+                }
+            }
     }
     cout << count;
 }

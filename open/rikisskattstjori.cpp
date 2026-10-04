@@ -1,7 +1,5 @@
 #include <bits/stdc++.h>
-#include <tr2/dynamic_bitset>
 using namespace std;
-using namespace tr2;
 
 int main() {
     ios::sync_with_stdio(false);
@@ -12,49 +10,64 @@ int main() {
 
     vector<pair<long long, int>> ids(n);
     for (int i = 0; i < n; i++) {
-        long long k;
-        cin >> k;
+        cin >> ids[i].first;
 
-        ids[i] = {k, i};
+        ids[i].second = i;
     }
     sort(ids.begin(), ids.end());
 
     vector<int> rank(n);
     for (int i = 0; i < n; i++) rank[ids[i].second] = i;
 
-    auto build = [&](vector<int> r) {
-        vector<vector<int>> indices;
-        dynamic_bitset<> bs(n);
-        vector<int> temp;
-        for (int _ = 0; _ < ceil(sqrt(n)) && !r.empty(); _++) {
-            bs.reset();
-            temp.clear();
-            for (int i : r) {
-                bs[i] = true;
-                int j = bs.find_next(i);
-                if (j < n) {
-                    bs[j] = false;
-                    temp.emplace_back(j);
-                }
+    vector<pair<int, int>> left(n), right(n);
+    for (int i = 0; i < n; i++) left[i] = {rank[i], n};
+    for (int i = 0; i < n; i++) right[i] = {rank[n - 1 - i], n};
+
+    vector<int> folder;
+    auto build = [&](vector<pair<int, int>> &order) {
+        folder.clear();
+        int size = 0;
+        for (int i = 0; i < order.size(); i++) {
+            auto [ri, j] = order[i];
+            int f = folder.size();
+            if (j + 1 >= f && (!f || folder.back() < ri)) {
+                folder.emplace_back(ri);
+                continue;
             }
 
-            indices.emplace_back();
-            for (int i = bs.find_first(); i < n; i = bs.find_next(i)) indices.back().emplace_back(i);
-            r = temp;
-        }
-        return indices;
-    };
-    auto folders = build(rank);
-    reverse(rank.begin(), rank.end());
-    auto folders_rev = build(rank);
+            int l = j < f ? j - 1 : f - 2, r = l + 1, m;
+            for (; l >= 0 && folder[l] > ri; l = max(-1, 2 * l - r));
+            while (l + 1 < r) {
+                m = l + (r - l) / 2;
 
-    for (int temp = folders.size(); auto &rev : folders_rev) {
-        folders.resize(max(folders.size(), rev.size()));
-        for (int s = temp; s < rev.size(); s++) folders[s].emplace_back(rev[s]);
+                if (folder[m] > ri) r = m;
+                else l = m;
+            }
+
+            order[size++] = {folder[r], r};
+            folder[r] = ri;
+        }
+        order.resize(size);
+    };
+
+    int d = 0;
+    vector<int> folders_rev, offset{0};
+    for (int count = 0; count - d * d != n; d++) {
+        build(left);
+        count += folder.size();
+
+        for (int i = 0; i < folder.size(); i++) cout << ids[folder[i]].first << (i + 1 == folder.size() ? ";" : " ");
+        cout << "\n";
+
+        build(right);
+        count += folder.size();
+
+        folders_rev.insert(folders_rev.end(), folder.begin(), folder.end());
+        offset.emplace_back(folders_rev.size());
     }
 
-    for (auto &folder : folders) {
-        for (int i : folder) cout << ids[i].first << (i == folder.back() ? ";" : " ");
+    for (int i = d; i < offset[1]; i++) {
+        for (int j = 0; j < d && i < offset[j + 1] - offset[j]; j++) cout << ids[folders_rev[offset[j] + i]].first << (j + 1 == d || i >= offset[j + 2] - offset[j + 1] ? ";" : " ");
         cout << "\n";
     }
 }
