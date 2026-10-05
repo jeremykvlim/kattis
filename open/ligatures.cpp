@@ -12,7 +12,7 @@ int main() {
     cin >> n >> q >> k >> s;
     n -= n & 1;
 
-    const int size = 256, total = 26 * 26 + 1;
+    const int size = 1024, total = 26 * 26 + 1;
     int blocks = (q + size - 1) / size;
 
     auto encode = [&](int i) {
@@ -30,10 +30,10 @@ int main() {
         for (int j = 0; j < k; j++) row[encode(2 * j)][i % size] = true;
     }
 
-    auto adder = [](auto &a, auto &b, const auto &c) {
-        auto temp = a ^ b ^ c;
-        b = (a & b) | (b & c) | (c & a);
-        a = temp;
+    auto full_adder = [](auto &a, auto &b, const auto &c) {
+        auto temp = a ^ b;
+        b = (a & b) | (c & temp);
+        a = temp ^ c;
     };
 
     for (int b = 0; b < blocks; b++) {
@@ -46,15 +46,15 @@ int main() {
             auto temp = carry;
             picked = (~picked) & row[pairs[i++]];
             carry = picked;
-            adder(sums[0], carry, temp);
+            full_adder(sums[0], carry, temp);
 
             int bit = countr_zero(i);
-            for (int j = 1; j < bit; j++) adder(sums[j], carry, temps[j]);
+            for (int j = 1; j < bit; j++) full_adder(sums[j], carry, temps[j]);
             if (bit < 19) temps[bit] = carry;
         }
 
         carry.reset();
-        for (int bit = 1; bit < 19; bit++) adder(sums[bit], carry, ((n >> bit) & 1) ? temps[bit] : bitset<size>(0));
+        for (int bit = 1; bit < 19; bit++) full_adder(sums[bit], carry, ((n >> bit) & 1) ? temps[bit] : bitset<size>(0));
 
         for (int _ = 0; _ < min(size, q - b * size); _++) {
             int count = 0;
