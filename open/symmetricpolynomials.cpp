@@ -47,27 +47,29 @@ void ifft(int n, vector<complex<T>> &f) {
 }
 
 template <typename T>
-vector<T> convolve(const vector<T> &a, const vector<T> &b) {
-    int da = a.size(), db = b.size(), m = da + db - 1, n = bit_ceil((unsigned) m);
+vector<T> convolve(const vector<T> &a, const vector<T> &b, size_t truncate = INT_MAX) {
+    auto m = min(a.size() + b.size() - 1, truncate), da = min(a.size(), m), db = min(b.size(), m), n = bit_ceil(da + db - 1);
     if (n <= 256 || min(da, db) <= __lg(n)) {
-        auto x = a, y = b;
+        auto *x = &a, *y = &b;
         if (da > db) {
             swap(x, y);
             swap(da, db);
         }
 
-        vector<T> z(m, 0);
+        vector<T> z(m);
         for (int i = 0; i < m; i++) {
-            int l = max(0, i - (db - 1)), r = min(i, da - 1) + 1;
-            z[i] = inner_product(x.begin() + l, x.begin() + r, make_reverse_iterator(y.begin() + (i - l + 1)), (T) 0);
+            int l = max(0, i - (int) db + 1), r = min(i, (int) da - 1) + 1;
+            z[i] = inner_product(x->begin() + l, x->begin() + r, make_reverse_iterator(y->begin() + (i - l + 1)), (T) 0);
         }
         return z;
     }
 
-    vector<complex<T>> f(n);
-    for (int i = 0; i < da; i++) f[i].real(a[i]);
+    static vector<complex<T>> f;
+    f.resize(n);
+    copy_n(a.begin(), da, f.begin());
+    fill(f.begin() + da, f.end(), complex<T>{});
     for (int i = 0; i < db; i++) f[i].imag(b[i]);
-
+    
     fft(n, f);
     for (auto &v : f) v *= v;
     ifft(n, f);

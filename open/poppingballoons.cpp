@@ -519,41 +519,42 @@ void intt(int n, vector<M> &f) {
 }
 
 template <typename T>
-vector<T> convolve(const vector<T> &a, const vector<T> &b) {
-    int da = a.size(), db = b.size(), m = da + db - 1, n = bit_ceil((unsigned) m);
+vector<T> convolve(const vector<T> &a, const vector<T> &b, size_t truncate = INT_MAX) {
+    auto m = min(a.size() + b.size() - 1, truncate), da = min(a.size(), m), db = min(b.size(), m), n = bit_ceil(da + db - 1);
     if (n <= 256 || min(da, db) <= __lg(n)) {
-        vector<modint> x(da), y(db);
-        for (int i = 0; i < da; i++) x[i] = a[i];
-        for (int i = 0; i < db; i++) y[i] = b[i];
-        if (da > db) {
-            swap(x, y);
-            swap(da, db);
-        }
+        static vector<modint> x, y;
+        x.resize(da);
+        y.resize(db);
+        copy_n(a.begin(), da, x.begin());
+        copy_n(b.begin(), db, y.begin());
 
         vector<T> z(m);
         for (int i = 0; i < m; i++) {
-            int l = max(0, i - (db - 1)), r = min(i, da - 1) + 1;
+            int l = max(0, i - (int) db + 1), r = min(i, (int) da - 1) + 1;
             z[i] = inner_product(x.begin() + l, x.begin() + r, make_reverse_iterator(y.begin() + (i - l + 1)), (modint) 0).recover();
         }
         return z;
     }
 
     if (!modint::ntt_viable(n)) {
-        constexpr unsigned long long ntt_mod1 = 39582418599937, ntt_mod2 = 79164837199873;
+        constexpr long long ntt_mod1 = 39582418599937, ntt_mod2 = 79164837199873;
         using ntt_modint1 = MontgomeryModInt<ntt_mod1>;
         using ntt_modint2 = MontgomeryModInt<ntt_mod2>;
 
-        vector<ntt_modint1> f_a1(n), f_b1(n);
-        vector<ntt_modint2> f_a2(n), f_b2(n);
-        for (int i = 0; i < da; i++) {
-            f_a1[i] = a[i];
-            f_a2[i] = a[i];
-        }
-        for (int i = 0; i < db; i++) {
-            f_b1[i] = b[i];
-            f_b2[i] = b[i];
-        }
-
+        static vector<ntt_modint1> f_a1, f_b1;
+        static vector<ntt_modint2> f_a2, f_b2;
+        f_a1.resize(n);
+        f_b1.resize(n);
+        f_a2.resize(n);
+        f_b2.resize(n);
+        copy_n(a.begin(), da, f_a1.begin());
+        copy_n(a.begin(), da, f_a2.begin());
+        copy_n(b.begin(), db, f_b1.begin());
+        copy_n(b.begin(), db, f_b2.begin());
+        fill(f_a1.begin() + da, f_a1.end(), ntt_modint1());
+        fill(f_a2.begin() + da, f_a2.end(), ntt_modint2());
+        fill(f_b1.begin() + db, f_b1.end(), ntt_modint1());
+        fill(f_b2.begin() + db, f_b2.end(), ntt_modint2());
         ntt(n, f_a1);
         ntt(n, f_b1);
         ntt(n, f_a2);
@@ -572,15 +573,18 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
         return c;
     }
 
-    vector<modint> f_a(n);
-    for (int i = 0; i < da; i++) f_a[i] = a[i];
+    static vector<modint> f_a, f_b;
+    f_a.resize(n);
+    copy_n(a.begin(), da, f_a.begin());
+    fill(f_a.begin() + da, f_a.end(), 0);
     ntt(n, f_a);
 
     if (a == b)
         for (int i = 0; i < n; i++) f_a[i] *= f_a[i];
     else {
-        vector<modint> f_b(n);
-        for (int i = 0; i < db; i++) f_b[i] = b[i];
+        f_b.resize(n);
+        copy_n(b.begin(), db, f_b.begin());
+        fill(f_b.begin() + db, f_b.end(), 0);
         ntt(n, f_b);
         for (int i = 0; i < n; i++) f_a[i] *= f_b[i];
     }
@@ -592,29 +596,6 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
     return c;
 }
 
-template <typename T>
-vector<T> inverse_binomial_transform(const vector<T> &b, const vector<T> &fact, const vector<T> &fact_inv) {
-    int n = b.size();
-    vector<T> x(n), y(n);
-    for (int i = 0; i < n; i++) {
-        x[i] = b[i] * fact_inv[i];
-        y[i] = fact_inv[i];
-    }
-    auto c = convolve(x, y);
-
-    vector<T> a(n);
-    for (int k = 0; k < n; k++) a[k] = fact[k] * c[k];
-    return a;
-}
-
-template <typename T>
-T binomial_coefficient_mod_p(long long n, long long k, int p, vector<T> &fact, vector<T> &fact_inv) {
-    if (k < 0 || k > n) return 0;
-    if (n >= p || k >= p) return binomial_coefficient_mod_p(n / p, k / p, p, fact, fact_inv) *
-                                 binomial_coefficient_mod_p(n % p, k % p, p, fact, fact_inv);
-    return fact[n] * fact_inv[k] * fact_inv[n - k];
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -622,84 +603,62 @@ int main() {
     string s;
     cin >> s;
 
-    int m = s.size();
-    vector<int> pref_b(m + 1, 0), pref_y(m + 1, 0), suff_r(m, 0);
-    for (int i = 0; i < m; i++) {
-        pref_b[i + 1] = pref_b[i] + (s[i] == 'B');
-        pref_y[i + 1] = pref_y[i] + (s[i] == 'Y');
+    int m = s.size(), B = count(s.begin(), s.end(), 'B'), Y = count(s.begin(), s.end(), 'Y'), R = m - B - Y;
+    vector<modint> inv(m + 2, 1), t0(m + 1), t1(m + 1, 0), t2(m + 1, 0);
+    for (int i = 2; i <= m + 1; i++) inv[i] = (MOD - MOD / i) * inv[MOD % i];
+    for (int i = 0; i <= m; i++) {
+        t0[i] = (m + 1) * inv[m - i + 1];
+        if (i) t1[i - 1] = t0[i] - t0[i - 1];
+        if (i > 1) t2[i - 2] = t1[i - 1] - t1[i - 2];
     }
-    for (int i = m - 1; i; i--) suff_r[i - 1] = suff_r[i] + (s[i] == 'R');
 
-    vector<modint> fact(m + 1, 1), fact_inv(m + 1, 1);
-    auto prepare = [&]() {
-        auto inv = fact;
-
-        for (int i = 1; i <= m; i++) {
-            if (i > 1) inv[i] = (MOD - MOD / i) * inv[MOD % i];
-            fact[i] = i * fact[i - 1];
-            fact_inv[i] = inv[i] * fact_inv[i - 1];
+    modint t = m - t0[Y] + 1;
+    vector<pair<char, int>> order;
+    int b = 0, y = 0, r = 0;
+    for (char c : s) {
+        if (c == 'B') {
+            t -= t1[b + Y - y];
+            order.emplace_back('B', b - y);
+            b++;
+        } else if (c == 'Y') {
+            y++;
+        } else {
+            t -= t1[y + R - r - 1];
+            order.emplace_back('R', y + R - r - 1);
+            r++;
         }
-    };
-    prepare();
+    }
 
-    vector<modint> count(m + 1), total(m + 1);
     auto dnc = [&](auto &&self, int l, int r) -> void {
-        if (l + 1 == r) return;
+        if (l + 1 >= r) return;
 
         int mid = l + (r - l) / 2, ll = 1e9, lr = -1e9, rl = 1e9, rr = -1e9;
         for (int i = l; i < mid; i++)
-            if (s[i] == 'B') {
-                int v = pref_b[i] - pref_y[i + 1];
-                ll = min(ll, v);
-                lr = max(lr, v);
+            if (order[i].first == 'B') {
+                ll = min(ll, order[i].second);
+                lr = max(lr, order[i].second);
             }
         for (int i = mid; i < r; i++)
-            if (s[i] == 'R') {
-                int v = suff_r[i] + pref_y[i + 1];
-                rl = min(rl, v);
-                rr = max(rr, v);
+            if (order[i].first == 'R') {
+                rl = min(rl, order[i].second);
+                rr = max(rr, order[i].second);
             }
 
         if (ll <= lr && rl <= rr) {
-            vector<modint> a(lr - ll + 1), b(rr - rl + 1);
+            vector<modint> a(lr - ll + 1, 0), b(rr - rl + 1, 0);
             for (int i = l; i < mid; i++)
-                if (s[i] == 'B') a[pref_b[i] - pref_y[i + 1] - ll]++;
+                if (order[i].first == 'B') a[order[i].second - ll]++;
             for (int i = mid; i < r; i++)
-                if (s[i] == 'R') b[suff_r[i] + pref_y[i + 1] - rl]++;
+                if (order[i].first == 'R') b[order[i].second - rl]++;
+
             auto c = convolve(a, b);
-            for (int i = 0; i < c.size(); i++) count[i + ll + rl] += c[i];
+            for (int i = 0; i < c.size(); i++) t -= c[i] * t2[i + ll + rl];
         }
 
         self(self, l, mid);
         self(self, mid, r);
     };
-    dnc(dnc, 0, m);
+    dnc(dnc, 0, B + R);
 
-    auto transform = [&](const vector<modint> &count) {
-        vector<modint> a(m + 1);
-        for (int i = 0; i <= m; i++) a[i] = count[m - i] * fact[m - i] * fact[i];
-        auto b = inverse_binomial_transform(a, fact, fact_inv);
-
-        vector<modint> c(m + 1);
-        for (int i = 0; i <= m; i++) c[i] = b[m - i] * fact_inv[m - i] * fact_inv[i];
-        return c;
-    };
-
-    auto c = transform(count);
-    for (int i = 2; i <= m; i++) total[i] += c[i - 2];
-
-    int n = pref_y[m];
-    fill(count.begin(), count.end(), 0);
-    for (int i = 0; i < m; i++) {
-        if (s[i] == 'B') count[pref_b[i] - pref_y[i + 1] + n]++;
-        if (s[i] == 'R') count[suff_r[i] + pref_y[i + 1]]++;
-    }
-    c = transform(count);
-    for (int i = 1; i <= m; i++) total[i] += c[i - 1];
-
-    for (int k = 1; k <= n; k++) total[k] += binomial_coefficient_mod_p(n, k, MOD, fact, fact_inv);
-
-    modint t = m;
-    for (int i = 1; i <= m; i++) t -= fact[i] * fact[m - i] * fact_inv[m] * total[i];
     cout << t;
 }

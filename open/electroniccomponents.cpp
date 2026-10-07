@@ -62,8 +62,8 @@ vector<pair<T, int>> smawk(int n, int m, auto &&get, auto &&cmp) {
 }
 
 template <typename T>
-vector<T> min_plus_convolve(const vector<T> &convex, const vector<T> &arbitrary) {
-    int da = convex.size(), db = arbitrary.size(), n = da + db - 1;
+vector<T> min_plus_convolve(const vector<T> &convex, const vector<T> &arbitrary, size_t truncate = INT_MAX) {
+    auto n = min(convex.size() + arbitrary.size() - 1, truncate), da = min(convex.size(), n), db = min(arbitrary.size(), n);
 
     auto get = [&](int row, int col) -> T {
         if (!(col <= row && row < col + da)) return numeric_limits<T>::max();
@@ -102,7 +102,7 @@ int main() {
     for (auto [f, t] : components) {
         for (int i = 0; i <= f; i++) convex.emplace_back(t * i);
         for (int i = parity; i <= 2 * most; i += 2) arbitrary.emplace_back(dp[i]);
-        auto c = min_plus_convolve(convex, arbitrary);
+        auto c = min_plus_convolve(convex, arbitrary, most + f / 2 + 1);
 
         parity ^= f & 1;
         fill(temp.begin(), temp.end(), 1e18);

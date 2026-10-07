@@ -518,80 +518,6 @@ void intt(int n, vector<M> &f) {
     reverse(f.begin() + 1, f.end());
 }
 
-template <typename T>
-vector<T> convolve(const vector<T> &a, const vector<T> &b) {
-    int da = a.size(), db = b.size(), m = da + db - 1, n = bit_ceil((unsigned) m);
-    if (n <= 256 || min(da, db) <= __lg(n)) {
-        vector<modint> x(da), y(db);
-        for (int i = 0; i < da; i++) x[i] = a[i];
-        for (int i = 0; i < db; i++) y[i] = b[i];
-        if (da > db) {
-            swap(x, y);
-            swap(da, db);
-        }
-
-        vector<T> z(m);
-        for (int i = 0; i < m; i++) {
-            int l = max(0, i - (db - 1)), r = min(i, da - 1) + 1;
-            z[i] = inner_product(x.begin() + l, x.begin() + r, make_reverse_iterator(y.begin() + (i - l + 1)), (modint) 0).recover();
-        }
-        return z;
-    }
-
-    if (!modint::ntt_viable(n)) {
-        constexpr unsigned long long ntt_mod1 = 39582418599937, ntt_mod2 = 79164837199873;
-        using ntt_modint1 = MontgomeryModInt<ntt_mod1>;
-        using ntt_modint2 = MontgomeryModInt<ntt_mod2>;
-
-        vector<ntt_modint1> f_a1(n), f_b1(n);
-        vector<ntt_modint2> f_a2(n), f_b2(n);
-        for (int i = 0; i < da; i++) {
-            f_a1[i] = a[i];
-            f_a2[i] = a[i];
-        }
-        for (int i = 0; i < db; i++) {
-            f_b1[i] = b[i];
-            f_b2[i] = b[i];
-        }
-
-        ntt(n, f_a1);
-        ntt(n, f_b1);
-        ntt(n, f_a2);
-        ntt(n, f_b2);
-
-        for (int i = 0; i < n; i++) {
-            f_a1[i] *= f_b1[i];
-            f_a2[i] *= f_b2[i];
-        }
-
-        intt(n, f_a1);
-        intt(n, f_a2);
-
-        vector<T> c(m);
-        for (int i = 0; i < m; i++) c[i] = modint{(modint::T) (chinese_remainder_theorem<__int128>(f_a1[i](), ntt_mod1, f_a2[i](), ntt_mod2).first % MOD)}.recover();
-        return c;
-    }
-
-    vector<modint> f_a(n);
-    for (int i = 0; i < da; i++) f_a[i] = a[i];
-    ntt(n, f_a);
-
-    if (a == b)
-        for (int i = 0; i < n; i++) f_a[i] *= f_a[i];
-    else {
-        vector<modint> f_b(n);
-        for (int i = 0; i < db; i++) f_b[i] = b[i];
-        ntt(n, f_b);
-        for (int i = 0; i < n; i++) f_a[i] *= f_b[i];
-    }
-
-    intt(n, f_a);
-
-    vector<T> c(m);
-    for (int i = 0; i < m; i++) c[i] = f_a[i].recover();
-    return c;
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -599,46 +525,63 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<int> x(n), z(m);
-    for (int &xi : x) cin >> xi;
-    for (int &zi : z) cin >> zi;
-    sort(x.begin(), x.end());
-    sort(z.begin(), z.end());
+    int xl = 1e6, xr = 0;
+    vector<int> type(1e6 + 1, 0);
+    while (n--) {
+        int x;
+        cin >> x;
 
-    int xr = x.back();
-    vector<int> seen(xr + 1, 0), rev(xr + 1, 0);
-    for (int xi : x) seen[xi] = rev[xr - xi] = 1;
+        type[x] |= 1;
+        xl = min(xl, x);
+        xr = max(xr, x);
+    }
+    while (m--) {
+        int z;
+        cin >> z;
 
-    vector<int> count(xr + 1), c = convolve(seen, rev);
-    for (int xi = 1; xi <= xr; xi++) count[xi] = c[xr - xi];
+        type[z] |= 2;
+    }
+
+    int len = xr - xl + 1, k = bit_ceil((unsigned) (2 * len - 1));
+    vector<modint> f_c(k, 0);
+    for (int x = xl; x <= xr; x++)
+        if (type[x] & 1) f_c[x - xl] = 1;
+
+    auto transform = [&]() {
+        ntt(k, f_c);
+
+        f_c[0] *= f_c[0];
+        for (int i = 1; i < k - i; i++) f_c[i] = f_c[k - i] = f_c[i] * f_c[k - i];
+        if (k > 1) f_c[k / 2] *= f_c[k / 2];
+
+        intt(k, f_c);
+    };
+    transform();
+
+    vector<int> count(len, 0);
+    for (int d = 1; d < len; d++) count[d] = f_c[d]();
 
     vector<int> items;
     auto process = [&]() {
-        int k = items.size();
-        if (k < 2) return;
+        if (items.size() < 2) return;
 
-        if (k <= sqrt(n)) {
-            for (int i = 0; i < k; i++)
-                for (int j = i + 1; j < k; j++) count[items[j] - items[i]]--;
-            return;
-        }
+        int l = items.back() - items.front() + 1;
+        k = bit_ceil((unsigned) (2 * l - 1));
+        f_c.resize(k);
+        fill(f_c.begin(), f_c.end(), 0);
+        for (int x : items) f_c[x - items.front()] = 1;
 
-        int xl = items.front(), xr = items.back(), len = xr - xl + 1;
-        vector<int> l(len, 0), r(len, 0);
-        for (int xi : items) l[xi - xl] = r[xr - xi] = 1;
-
-        auto c = convolve(l, r);
-        for (int d = 1; d < len; d++) count[d] -= c[len - 1 - d];
+        transform();
+        for (int d = 1; d < l; d++) count[d] -= f_c[d]();
     };
-    for (int i = 0, j = 0; i < n;)
-        if (j < m && z[j] < x[i]) {
+
+    for (int x = xl; x <= xr; x++) {
+        if (type[x] & 1) items.emplace_back(x);
+        if (type[x] & 2) {
             process();
             items.clear();
-            j++;
-        } else {
-            items.emplace_back(x[i]);
-            i++;
         }
+    }
     process();
 
     if (none_of(count.begin(), count.end(), [&](int c) { return c; })) {
@@ -646,6 +589,6 @@ int main() {
         exit(0);
     }
 
-    for (int d = 1; d <= xr; d++)
+    for (int d = 1; d < len; d++)
         if (count[d]) cout << d << " " << count[d] << "\n";
 }

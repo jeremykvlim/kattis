@@ -519,41 +519,42 @@ void intt(int n, vector<M> &f) {
 }
 
 template <typename T>
-vector<T> convolve(const vector<T> &a, const vector<T> &b) {
-    int da = a.size(), db = b.size(), m = da + db - 1, n = bit_ceil((unsigned) m);
+vector<T> convolve(const vector<T> &a, const vector<T> &b, size_t truncate = INT_MAX) {
+    auto m = min(a.size() + b.size() - 1, truncate), da = min(a.size(), m), db = min(b.size(), m), n = bit_ceil(da + db - 1);
     if (n <= 256 || min(da, db) <= __lg(n)) {
-        vector<modint> x(da), y(db);
-        for (int i = 0; i < da; i++) x[i] = a[i];
-        for (int i = 0; i < db; i++) y[i] = b[i];
-        if (da > db) {
-            swap(x, y);
-            swap(da, db);
-        }
+        static vector<modint> x, y;
+        x.resize(da);
+        y.resize(db);
+        copy_n(a.begin(), da, x.begin());
+        copy_n(b.begin(), db, y.begin());
 
         vector<T> z(m);
         for (int i = 0; i < m; i++) {
-            int l = max(0, i - (db - 1)), r = min(i, da - 1) + 1;
+            int l = max(0, i - (int) db + 1), r = min(i, (int) da - 1) + 1;
             z[i] = inner_product(x.begin() + l, x.begin() + r, make_reverse_iterator(y.begin() + (i - l + 1)), (modint) 0).recover();
         }
         return z;
     }
 
     if (!modint::ntt_viable(n)) {
-        constexpr unsigned long long ntt_mod1 = 39582418599937, ntt_mod2 = 79164837199873;
+        constexpr long long ntt_mod1 = 39582418599937, ntt_mod2 = 79164837199873;
         using ntt_modint1 = MontgomeryModInt<ntt_mod1>;
         using ntt_modint2 = MontgomeryModInt<ntt_mod2>;
 
-        vector<ntt_modint1> f_a1(n), f_b1(n);
-        vector<ntt_modint2> f_a2(n), f_b2(n);
-        for (int i = 0; i < da; i++) {
-            f_a1[i] = a[i];
-            f_a2[i] = a[i];
-        }
-        for (int i = 0; i < db; i++) {
-            f_b1[i] = b[i];
-            f_b2[i] = b[i];
-        }
-
+        static vector<ntt_modint1> f_a1, f_b1;
+        static vector<ntt_modint2> f_a2, f_b2;
+        f_a1.resize(n);
+        f_b1.resize(n);
+        f_a2.resize(n);
+        f_b2.resize(n);
+        copy_n(a.begin(), da, f_a1.begin());
+        copy_n(a.begin(), da, f_a2.begin());
+        copy_n(b.begin(), db, f_b1.begin());
+        copy_n(b.begin(), db, f_b2.begin());
+        fill(f_a1.begin() + da, f_a1.end(), ntt_modint1());
+        fill(f_a2.begin() + da, f_a2.end(), ntt_modint2());
+        fill(f_b1.begin() + db, f_b1.end(), ntt_modint1());
+        fill(f_b2.begin() + db, f_b2.end(), ntt_modint2());
         ntt(n, f_a1);
         ntt(n, f_b1);
         ntt(n, f_a2);
@@ -572,15 +573,18 @@ vector<T> convolve(const vector<T> &a, const vector<T> &b) {
         return c;
     }
 
-    vector<modint> f_a(n);
-    for (int i = 0; i < da; i++) f_a[i] = a[i];
+    static vector<modint> f_a, f_b;
+    f_a.resize(n);
+    copy_n(a.begin(), da, f_a.begin());
+    fill(f_a.begin() + da, f_a.end(), 0);
     ntt(n, f_a);
 
     if (a == b)
         for (int i = 0; i < n; i++) f_a[i] *= f_a[i];
     else {
-        vector<modint> f_b(n);
-        for (int i = 0; i < db; i++) f_b[i] = b[i];
+        f_b.resize(n);
+        copy_n(b.begin(), db, f_b.begin());
+        fill(f_b.begin() + db, f_b.end(), 0);
         ntt(n, f_b);
         for (int i = 0; i < n; i++) f_a[i] *= f_b[i];
     }
@@ -611,5 +615,5 @@ int main() {
 
     if (!K.empty())
         for (int k : K) cout << k << "\n";
-    else cout << "-1\n";
+    else cout << -1;
 }

@@ -23,12 +23,13 @@ vector<T> subset_mobius_transform(int n, const vector<T> &F) {
 }
 
 template <typename T>
-vector<T> OR_convolve(const vector<T> &a, const vector<T> &b) {
-    int da = a.size(), db = b.size(), m = max(da, db), n = bit_ceil((unsigned) m);
+vector<T> OR_convolve(const vector<T> &a, const vector<T> &b, size_t truncate = INT_MAX) {
+    auto m = min(bit_ceil(max(a.size(), b.size())), truncate), da = min(a.size(), m), db = min(b.size(), m), n = bit_ceil(max(da, db));
     if (n <= 256 || min(da, db) <= __lg(n)) {
-        vector<T> c(n);
+        vector<T> c(m, 0);
         for (int i = 0; i < da; i++)
-            for (int j = 0; j < db; j++) c[i | j] += a[i] * b[j];
+            for (int j = 0; j < db; j++)
+                if ((i | j) < m) c[i | j] += a[i] * b[j];
         return c;
     }
 
@@ -38,7 +39,10 @@ vector<T> OR_convolve(const vector<T> &a, const vector<T> &b) {
 
     vector<T> F_a = subset_zeta_transform(n, fzt_a), F_b = a == b ? F_a : subset_zeta_transform(n, fzt_b), F_c(n);
     for (int i = 0; i < n; i++) F_c[i] = F_a[i] * F_b[i];
-    return subset_mobius_transform(n, F_c);
+
+    auto c = subset_mobius_transform(n, F_c);
+    c.resize(m);
+    return c;
 }
 
 int main() {

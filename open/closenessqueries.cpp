@@ -56,7 +56,7 @@ int main() {
         cin >> u >> v;
 
         if (dsu.find(u) != dsu.find(v)) {
-            cout << -1 << "\n";
+            cout << "-1\n";
             continue;
         }
 

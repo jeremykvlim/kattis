@@ -140,5 +140,5 @@ int main() {
 
     auto cut_edges = fn.min_cut(s, sp_edges);
     cout << cut_edges.size() << "\n";
-    for (int i : cut_edges) cout << roads[i][0] << " " << roads[i][1] << " " << 1 << "\n";
+    for (int i : cut_edges) cout << roads[i][0] << " " << roads[i][1] << " " << "1\n";
 }

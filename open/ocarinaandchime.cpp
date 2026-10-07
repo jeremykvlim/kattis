@@ -47,10 +47,10 @@ void ifft(int n, vector<complex<T>> &f) {
 }
 
 template <typename T>
-vector<complex<T>> convolve(const vector<complex<T>> &a, const vector<complex<T>> &b) {
-    int da = a.size(), db = b.size(), m = da + db - 1, n = bit_ceil((unsigned) m);
+vector<complex<T>> convolve(const vector<complex<T>> &a, const vector<complex<T>> &b, size_t truncate = INT_MAX) {
+    auto m = min(a.size() + b.size() - 1, truncate), da = min(a.size(), m), db = min(b.size(), m), n = bit_ceil(da + db - 1);
     if (n <= 256 || min(da, db) <= __lg(n)) {
-        auto x = a, y = b;
+        auto *x = &a, *y = &b;
         if (da > db) {
             swap(x, y);
             swap(da, db);
@@ -58,27 +58,28 @@ vector<complex<T>> convolve(const vector<complex<T>> &a, const vector<complex<T>
 
         vector<complex<T>> z(m);
         for (int i = 0; i < m; i++) {
-            int l = max(0, i - (db - 1)), r = min(i, da - 1) + 1;
-            z[i] = inner_product(x.begin() + l, x.begin() + r, make_reverse_iterator(y.begin() + (i - l + 1)), complex<T>());
+            int l = max(0, i - (int) db + 1), r = min(i, (int) da - 1) + 1;
+            z[i] = inner_product(x->begin() + l, x->begin() + r, make_reverse_iterator(y->begin() + (i - l + 1)), complex<T>{});
         }
         return z;
     }
 
     vector<complex<T>> f_a(n);
-    for (int i = 0; i < da; i++) f_a[i] = a[i];
+    copy_n(a.begin(), da, f_a.begin());
     fft(n, f_a);
 
     if (a == b)
         for (int i = 0; i < n; i++) f_a[i] *= f_a[i];
     else {
-        vector<complex<T>> f_b(n);
-        for (int i = 0; i < db; i++) f_b[i] = b[i];
+        static vector<complex<T>> f_b;
+        f_b.resize(n);
+        copy_n(b.begin(), db, f_b.begin());
+        fill(f_b.begin() + db, f_b.end(), complex<T>{});
         fft(n, f_b);
         for (int i = 0; i < n; i++) f_a[i] *= f_b[i];
     }
 
     ifft(n, f_a);
-
     f_a.resize(m);
     return f_a;
 }
@@ -103,7 +104,7 @@ int main() {
             for (int i = 0; i < m; i++) a[i] = roots[A[i] % d];
             for (int i = 0; i < n; i++) b[n - 1 - i] = roots[B[i] % d];
 
-            auto c = convolve(a, b);
+            auto c = convolve(a, b, m);
             for (int i = 0; i <= m - n; i++)
                 if (norm(c[i + n - 1]) > 1e-8) invalid[i] = true;
         }
