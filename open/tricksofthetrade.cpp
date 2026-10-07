@@ -127,7 +127,10 @@ template <typename T>
 vector<pair<T, int>> smawk(int n, int m, auto &&get, auto &&cmp) {
     int lg = __lg(n);
     vector<pair<T, int>> dp(n);
-    vector<int> cols(n), offset(lg + 1, 0);
+    static vector<int> cols, offset;
+    if (cols.size() < n) cols.resize(n);
+    if (offset.size() < lg + 1) offset.resize(lg + 1);
+    offset[0] = 0;
     for (int b = 0; b < lg; b++) {
         int size = 0;
         auto push = [&](int col, int limit = 0) {

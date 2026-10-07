@@ -5,7 +5,10 @@ template <typename T>
 vector<pair<T, int>> smawk(int n, int m, auto &&get, auto &&cmp) {
     int lg = __lg(n);
     vector<pair<T, int>> dp(n);
-    vector<int> cols(n), offset(lg + 1, 0);
+    static vector<int> cols, offset;
+    if (cols.size() < n) cols.resize(n);
+    if (offset.size() < lg + 1) offset.resize(lg + 1);
+    offset[0] = 0;
     for (int b = 0; b < lg; b++) {
         int size = 0;
         auto push = [&](int col, int limit = 0) {
@@ -94,11 +97,10 @@ int main() {
     sort(components.begin(), components.end(), [&](auto p1, auto p2) { return p1.second > p2.second; });
 
     int parity = 0;
-    vector<long long> dp(2 * most + 1, 1e18), temp(2 * most + 1);
+    vector<long long> convex, arbitrary, dp(2 * most + 1, 1e18), temp(2 * most + 1);
     dp[0] = 0;
     for (auto [f, t] : components) {
-        vector<long long> convex(f + 1), arbitrary;
-        for (int i = 0; i <= f; i++) convex[i] = t * i;
+        for (int i = 0; i <= f; i++) convex.emplace_back(t * i);
         for (int i = parity; i <= 2 * most; i += 2) arbitrary.emplace_back(dp[i]);
         auto c = min_plus_convolve(convex, arbitrary);
 
@@ -111,7 +113,9 @@ int main() {
             if (least != LLONG_MAX) temp[i] = (t * (f + i) + least) / 2;
         }
         for (int i = f + (parity ^ (f & 1)); i <= 2 * most; i += 2) temp[i] = c[(i + f - (parity ^ (f & 1))) / 2];
-        dp = temp;
+        dp.swap(temp);
+        convex.clear();
+        arbitrary.clear();
     }
     cout << *min_element(dp.begin(), dp.end());
 }
