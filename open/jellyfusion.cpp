@@ -4,70 +4,96 @@ using namespace std;
 template <typename T>
 struct AffineFunction {
     T m, c;
-    int i;
-    mutable T cutoff;
 
-    AffineFunction(T m = 0, T c = numeric_limits<T>::lowest() / 4, int i = -1) : m(m), c(c), i(i), cutoff(0) {}
+    AffineFunction(T m = 0, T c = numeric_limits<T>::lowest() / 4) : m(m), c(c) {}
 
     T operator()(T x) const {
         return m * x + c;
     }
-
-    bool operator<(const AffineFunction &f) const {
-        return m < f.m;
-    }
-
-    bool operator<(T x) const {
-        return cutoff < x;
-    }
 };
 
-template <typename T>
-struct DynamicHull : multiset<AffineFunction<T>, less<>> {
-    T div(T a, T b) {
-        if constexpr (!is_floating_point_v<T>) return a / b - ((a ^ b) < 0 && a % b);
-        else return a / b;
+template <typename F, typename E, typename C = less<>>
+struct LiChaoSegmentTree {
+    int n;
+    vector<F> ST;
+    vector<bool> used, visited;
+    F identity;
+    E eval;
+    C cmp;
+
+    LiChaoSegmentTree(int n, F identity, E eval) : n(n), ST(2 * n, identity), used(2 * n, false), visited(2 * n, false),
+                                                   identity(identity), eval(eval), cmp({}) {}
+
+    void update(F f) {
+        apply(1, 0, n, f);
     }
 
-    bool update(auto it_l, auto it_r) {
-        if (it_r == this->end()) {
-            it_l->cutoff = numeric_limits<T>::max();
-            return false;
+    void apply(int i, int l, int r, F f) {
+        visited[i] = true;
+        if (!used[i]) {
+            used[i] = true;
+            ST[i] = f;
+            return;
         }
 
-        if (it_l->m == it_r->m) it_l->cutoff = it_l->c > it_r->c ? numeric_limits<T>::max() : numeric_limits<T>::lowest();
-        else it_l->cutoff = div(it_r->c - it_l->c, it_l->m - it_r->m);
-        return it_l->cutoff >= it_r->cutoff;
-    }
+        auto fl = eval(f, l), fr = eval(f, r - 1),
+                sl = eval(ST[i], l), sr = eval(ST[i], r - 1);
 
-    void add(const AffineFunction<T> &f) {
-        auto it = this->insert(f);
-        for (auto it_r = next(it); update(it, it_r); it_r = this->erase(it_r));
-
-        if (it != this->begin()) {
-            auto it_l = prev(it);
-            if (update(it_l, it)) {
-                this->erase(it);
-                it = it_l;
-                update(it, next(it));
-            } else it = it_l;
+        bool left = cmp(fl, sl), right = cmp(fr, sr);
+        if (!left && !right) return;
+        if (!cmp(sl, fl) && !cmp(sr, fr)) {
+            ST[i] = f;
+            return;
         }
 
-        while (it != this->begin()) {
-            auto it_l = prev(it);
-            if (it_l->cutoff < it->cutoff) break;
-            update(it_l, this->erase(it));
-            it = it_l;
+        if (l + 1 == r) {
+            if (left) ST[i] = f;
+            return;
         }
+
+        int m = midpoint(l, r);
+        bool mid = cmp(eval(f, m), eval(ST[i], m));
+        if (mid) swap(f, ST[i]);
+        if (left != mid) apply(i << 1, l, m, f);
+        else apply(i << 1 | 1, m, r, f);
     }
 
-    void add(T m, T c, int i = -1) {
-        add(AffineFunction<T>(m, c, i));
+    void range_update(int ql, int qr, const F &f) {
+        range_update(1, ql, qr, f, 0, n);
     }
 
-    pair<T, int> query(T x) {
-        auto f = *this->lower_bound(x);
-        return {f(x), f.i};
+    void range_update(int i, int ql, int qr, const F &f, int l, int r) {
+        if (qr <= l || r <= ql) return;
+        visited[i] = true;
+        if (ql <= l && r <= qr) {
+            apply(i, l, r, f);
+            return;
+        }
+
+        int m = midpoint(l, r);
+        range_update(i << 1, ql, qr, f, l, m);
+        range_update(i << 1 | 1, ql, qr, f, m, r);
+    }
+
+    F query(int p) {
+        return query(1, p, 0, n);
+    }
+
+    F query(int i, int p, int l, int r) {
+        if (!visited[i]) return identity;
+
+        F f = used[i] ? ST[i] : identity;
+        if (l + 1 == r) return f;
+
+        int m = midpoint(l, r);
+        F g = p < m ? query(i << 1, p, l, m) : query(i << 1 | 1, p, m, r);
+        if (cmp(eval(g, p), eval(f, p))) f = g;
+        return f;
+    }
+
+    int midpoint(int l, int r) {
+        int i = 1 << __lg(r - l);
+        return min(l + i, r - (i >> 1));
     }
 };
 
@@ -79,28 +105,44 @@ int main() {
     cin >> n;
 
     int k = 0;
-    vector<int> w(n), h(n);
+    vector<long long> w(n), h(n), xs;
     for (int i = 0; i < n; i++) {
         cin >> w[i] >> h[i];
 
         if (w[k] < w[i]) k = i;
+        xs.emplace_back(w[i]);
+        xs.emplace_back(h[i]);
     }
     rotate(w.begin(), w.begin() + k, w.end());
     rotate(h.begin(), h.begin() + k, h.end());
+    sort(xs.begin(), xs.end());
+    xs.erase(unique(xs.begin(), xs.end()), xs.end());
+
+    vector<int> pos_w(n), pos_h(n);
+    for (int i = 0; i < n; i++) {
+        pos_w[i] = lower_bound(xs.begin(), xs.end(), w[i]) - xs.begin();
+        pos_h[i] = lower_bound(xs.begin(), xs.end(), h[i]) - xs.begin();
+    }
+
+    auto eval = [&](const AffineFunction<long long> &f, int p) {
+        return f(xs[p]);
+    };
 
     auto sum = 0LL;
     vector<long long> dp(n + 1, 0);
     for (int _ = 0; _ < 2; _++) {
-        DynamicHull<long long> dh1, dh2;
+        LiChaoSegmentTree<AffineFunction<long long>, decltype(eval), greater<>> lcst1(xs.size(), {}, eval), lcst2(xs.size(), {}, eval);
         for (int i = 0; i < n; i++) {
-            dh1.add(w[i], dp[i], i);
-            dh2.add(h[i], dp[i], i);
-            dp[i + 1] = max(dh1.query(h[i]).first, dh2.query(w[i]).first);
+            lcst1.update({w[i], dp[i]});
+            lcst2.update({h[i], dp[i]});
+            dp[i + 1] = max(lcst1.query(pos_h[i])(h[i]), lcst2.query(pos_w[i])(w[i]));
         }
         sum = max(sum, dp[n]);
         fill(dp.begin(), dp.end(), 0);
         reverse(w.begin() + 1, w.end());
         reverse(h.begin() + 1, h.end());
+        reverse(pos_w.begin() + 1, pos_w.end());
+        reverse(pos_h.begin() + 1, pos_h.end());
     }
     cout << sum;
 }

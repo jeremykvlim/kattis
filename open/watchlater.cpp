@@ -30,26 +30,25 @@ int main() {
         indices[node[i] = next[pos]].emplace_back(i);
     }
 
-    int m = 1 << k;
-    vector<int> merges(k * m, 0);
-    for (int t = 0; t < k; t++)
+    int m = 1 << k, half = m >> 1;
+    vector<vector<int>> merges(k, vector<int>(half, 0));
+    for (int t = 0; t < k; t++) {
         for (int j = 0; j + 1 < indices[t].size(); j++) {
             int mask = 0;
             for (int i = indices[t][j] + 1; i < indices[t][j + 1]; i++) mask |= 1 << node[i];
-            merges[t * m + mask]++;
+            mask = (mask & ((1 << t) - 1)) | ((mask >> (t + 1)) << t);
+            merges[t][mask]++;
         }
 
-    vector<int> temp(m);
-    for (int t = 0; t < k; t++) {
-        for (int mask = 0; mask < m; mask++) temp[mask] = merges[t * m + mask];
-        subset_zeta_transform(m, temp);
-        for (int mask = 0; mask < m; mask++) merges[t * m + mask] = temp[mask];
+        subset_zeta_transform(half, merges[t]);
     }
 
     vector<int> dp(m, 1e9);
     dp[0] = 0;
-    for (int mask = 0; mask < m; mask++)
-        for (int t = 0; t < k; t++)
-            if (!((mask >> t) & 1)) dp[mask | (1 << t)] = min(dp[mask | (1 << t)], dp[mask] + (int) indices[t].size() - merges[t * m + mask]);
+    for (int m1 = 1; m1 < m; m1++)
+        for (int m2 = m1; m2; m2 &= m2 - 1) {
+            int t = countr_zero((unsigned) m2), m3 = m1 ^ (1 << t), m4 = (m3 & ((1 << t) - 1)) | ((m3 >> (t + 1)) << t);
+            dp[m1] = min(dp[m1], dp[m3] + (int) indices[t].size() - merges[t][m4]);
+        }
     cout << dp[m - 1];
 }
