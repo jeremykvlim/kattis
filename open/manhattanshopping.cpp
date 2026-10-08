@@ -9,17 +9,13 @@ void fast_subset_transform(int n, vector<T> &v, F &&f) {
 }
 
 template <typename T>
-vector<T> subset_zeta_transform(int n, const vector<T> &f) {
-    auto F = f;
-    fast_subset_transform(n, F, [](T x, T y) { return x + y; });
-    return F;
+void subset_zeta_transform(int n, vector<T> &f) {
+    fast_subset_transform(n, f, [](T x, T y) { return x + y; });
 }
 
 template <typename T>
-vector<T> subset_mobius_transform(int n, const vector<T> &F) {
-    auto f = F;
+void subset_mobius_transform(int n, vector<T> &f) {
     fast_subset_transform(n, f, [](T x, T y) { return x - y; });
-    return f;
 }
 
 template <typename T>
@@ -33,16 +29,29 @@ vector<T> OR_convolve(const vector<T> &a, const vector<T> &b, size_t truncate = 
         return c;
     }
 
-    vector<T> fzt_a(n), fzt_b(n);
-    for (int i = 0; i < da; i++) fzt_a[i] = a[i];
-    for (int i = 0; i < db; i++) fzt_b[i] = b[i];
+    static vector<T> fzt_a, fzt_b;
+    fzt_a.resize(n);
+    copy_n(a.begin(), da, fzt_a.begin());
+    fill(fzt_a.begin() + da, fzt_a.end(), T{});
 
-    vector<T> F_a = subset_zeta_transform(n, fzt_a), F_b = a == b ? F_a : subset_zeta_transform(n, fzt_b), F_c(n);
-    for (int i = 0; i < n; i++) F_c[i] = F_a[i] * F_b[i];
+    if (a != b) {
+        fzt_b.resize(n);
+        copy_n(b.begin(), db, fzt_b.begin());
+        fill(fzt_b.begin() + db, fzt_b.end(), T{});
+    }
+    subset_zeta_transform(n, fzt_a);
 
-    auto c = subset_mobius_transform(n, F_c);
-    c.resize(m);
-    return c;
+    if (a == b)
+        for (int i = 0; i < n; i++) fzt_a[i] *= fzt_a[i];
+    else {
+        fzt_b.resize(n);
+        copy_n(b.begin(), db, fzt_b.begin());
+        fill(fzt_b.begin() + db, fzt_b.end(), T{});
+        subset_zeta_transform(n, fzt_b);
+        for (int i = 0; i < n; i++) fzt_a[i] *= fzt_b[i];
+    }
+    subset_mobius_transform(n, fzt_a);
+    return {fzt_a.begin(), fzt_a.begin() + m};
 }
 
 int main() {

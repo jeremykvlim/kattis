@@ -459,10 +459,8 @@ void fast_superset_transform(int n, vector<T> &v, F &&f) {
 }
 
 template <typename T>
-vector<T> superset_zeta_transform(int n, const vector<T> &f) {
-    auto F = f;
-    fast_superset_transform(n, F, [](T x, T y) { return x + y; });
-    return F;
+void superset_zeta_transform(int n, vector<T> &f) {
+    fast_superset_transform(n, f, [](T x, T y) { return x + y; });
 }
 
 int main() {
@@ -500,20 +498,19 @@ int main() {
                     }
             }
 
-    vector<vector<modint>> dp1(n + 1, vector<modint>(size, 1)), dp2(n + 1, vector<modint>(size));
-    vector<modint> temp(size);
+    vector<vector<modint>> dp(n + 1, vector<modint>(size, 1)), temp(n + 1, vector<modint>(size));
     for (int _ = 0; _ < m - 1; _++) {
         for (int i = 0; i <= n; i++) {
-            fill(temp.begin(), temp.end(), 0);
+            fill(temp[i].begin(), temp[i].end(), 0);
             for (int j = 0; j <= n; j++)
-                for (int mask = 0; mask < size; mask++) temp[masks[i][j][mask]] += dp1[j][mask];
-            dp2[i] = superset_zeta_transform(size, temp);
+                for (int mask = 0; mask < size; mask++) temp[i][masks[i][j][mask]] += dp[j][mask];
+            superset_zeta_transform(size, temp[i]);
         }
-        swap(dp1, dp2);
+        dp = temp;
     }
 
     modint ways = 0;
-    for (auto &row : dp1)
+    for (auto &row : dp)
         for (auto &w : row) ways += w;
     cout << ways;
 }

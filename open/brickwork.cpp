@@ -625,7 +625,7 @@ int main() {
     seen[0] = true;
     for (int bi : b) seen[bi / g] = true;
 
-    vector<vector<int>> reach{{1, seen[1]}}, pair_sum;
+    vector<vector<int>> dp1{{1, seen[1]}}, dp2;
     for (int limit = 2; limit <= w; limit = min(w, 2 * limit)) {
         auto bool_convolve = [&](const auto &a, const auto &b) {
             auto c = convolve(a, b, limit + 1);
@@ -633,15 +633,15 @@ int main() {
             return c;
         };
 
-        auto c = bool_convolve(reach.back(), reach.back());
-        reach.emplace_back(bool_convolve(c, vector<int>(seen.begin(), seen.begin() + limit + 1)));
-        pair_sum.emplace_back(c);
+        auto c = bool_convolve(dp1.back(), dp1.back());
+        dp1.emplace_back(bool_convolve(c, vector<int>(seen.begin(), seen.begin() + limit + 1)));
+        dp2.emplace_back(c);
         if (limit == w) break;
     }
 
     int b1 = -1, b2 = -1;
     for (int bi = 1; bi <= w; bi++)
-        if (seen[bi] && reach.back()[w - bi]) {
+        if (seen[bi] && dp1.back()[w - bi]) {
             if (!~b1) b1 = bi;
             else {
                 b2 = bi;
@@ -673,17 +673,17 @@ int main() {
             }
 
             int b3 = 1;
-            for (; !seen[b3] || !pair_sum[i - 1][remaining - b3]; b3++);
+            for (; !seen[b3] || !dp2[i - 1][remaining - b3]; b3++);
             bricks.emplace_back(b3);
 
             remaining -= b3;
-            int b4 = max(0, remaining - (int) reach[i - 1].size() + 1);
-            for (; !reach[i - 1][b4] || !reach[i - 1][remaining - b4]; b4++);
+            int b4 = max(0, remaining - (int) dp1[i - 1].size() + 1);
+            for (; !dp1[i - 1][b4] || !dp1[i - 1][remaining - b4]; b4++);
 
             self(self, i - 1, b4);
             self(self, i - 1, remaining - b4);
         };
-        dfs(dfs, reach.size() - 1, w - b1);
+        dfs(dfs, dp1.size() - 1, w - b1);
         bricks.emplace_back(b1);
         sort(bricks.begin(), bricks.end());
 
