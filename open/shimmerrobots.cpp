@@ -17,7 +17,7 @@ int main() {
         adj_list[c == 'A' ? n : N + k].emplace_back(c == 'A' ? N + k : n);
     }
 
-    vector<int> order, state(N + K + 1, 0);
+    vector<int> state(N + K + 1, 0), order;
     auto dfs = [&](auto &&self, int v) -> bool {
         state[v] = 1;
         for (int u : adj_list[v])

@@ -1,128 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T, typename U>
-struct BoundedFlowNetwork {
-    struct Arc {
-        int u, v;
-        T cap;
-        U cost;
-        Arc(int u, int v, T cap, U cost) : u(u), v(v), cap(cap), cost(cost) {}
-    };
-
-    int n;
-    vector<vector<Arc>> network;
-    vector<T> balance;
-    U cost;
-
-    BoundedFlowNetwork(int n) : n(n), network(n + 2), balance(n + 2, 0), cost(0) {}
-
-    void add_supply(int v, T b) {
-        balance[v] += b;
-    }
-
-    void add_demand(int v, T b) {
-        balance[v] -= b;
-    }
-
-    pair<int, int> add_arc(int u, int v, T lb, T ub, U c = 0) {
-        int su = network[u].size(), sv = network[v].size();
-        T f = c < 0 ? ub : lb;
-        cost += c * f;
-        add_supply(v, f);
-        add_demand(u, f);
-        if (u == v) return {su, sv};
-
-        if (c < 0) {
-            network[v].emplace_back(u, network[u].size(), ub - lb, -c);
-            network[u].emplace_back(v, network[v].size() - 1, 0, c);
-        } else {
-            network[u].emplace_back(v, network[v].size(), ub - lb, c);
-            network[v].emplace_back(u, network[u].size() - 1, 0, -c);
-        }
-        return {su, sv};
-    }
-
-    void successive_shortest_path() {
-        for (int v = 0; v < n; v++)
-            if (balance[v] > 0) add_arc(n, v, 0, balance[v]);
-            else if (balance[v] < 0) add_arc(v, n + 1, 0, -balance[v]);
-
-        U inf = numeric_limits<U>::max();
-        vector<U> potential(n + 2, 0), dist(n + 2);
-        vector<pair<int, int>> prev(n + 2, {-1, -1});
-        priority_queue<pair<U, int>, vector<pair<U, int>>, greater<>> pq;
-
-        for (;;) {
-            fill(dist.begin(), dist.end(), inf);
-            dist[n] = 0;
-            pq.emplace(0, n);
-
-            while (!pq.empty()) {
-                auto [d, v] = pq.top();
-                pq.pop();
-
-                if (dist[v] != d) continue;
-
-                for (int i = 0; i < network[v].size(); i++) {
-                    auto &[u, _, cap, c] = network[v][i];
-                    U phi = c + potential[v] - potential[u];
-                    if (cap > 0 && dist[u] > d + phi) {
-                        dist[u] = d + phi;
-                        pq.emplace(d + phi, u);
-                        prev[u] = {v, i};
-                    }
-                }
-            }
-
-            if (dist[n + 1] == inf) break;
-
-            for (int v = 0; v < n + 2; v++)
-                if (dist[v] != inf) potential[v] += dist[v];
-
-            T f = numeric_limits<T>::max();
-            for (int v = n + 1; v != n; v = prev[v].first) {
-                auto [u, e] = prev[v];
-                f = min(f, network[u][e].cap);
-            }
-
-            cost += (potential[n + 1] - potential[n]) * f;
-            for (int v = n + 1; v != n; v = prev[v].first) {
-                auto [u, e] = prev[v];
-                auto &[w, rev, cap, c] = network[u][e];
-                cap -= f;
-                network[v][rev].cap += f;
-            }
-        }
-    }
-
-    bool feasible() {
-        if (accumulate(balance.begin(), balance.end(), (T) 0)) return false;
-        return all_of(network[n].begin(), network[n].end(), [](auto &a) { return !a.cap; });
-    }
-
-    tuple<T, U, bool> min_cost_max_flow(int s, int t) {
-        U penalty = 1;
-        for (int v = 0; v < n; v++)
-            for (auto &a : network[v])
-                if (a.cost > 0) penalty += a.cost;
-
-        T cap = -balance[s];
-        for (auto &a : network[s]) cap += a.cap;
-
-        auto [st, ss] = add_arc(t, s, 0, max(cap, (T) 0), -penalty);
-        successive_shortest_path();
-        if (!feasible()) return {0, 0, false};
-        return {network[s][ss].cap, cost + penalty * network[s][ss].cap, true};
-    }
-
-    pair<U, bool> min_cost_b_flow() {
-        successive_shortest_path();
-        if (!feasible()) return {0, false};
-        return {cost, true};
-    }
-};
-
 struct DisjointSets {
     vector<int> sets;
 
@@ -152,112 +30,85 @@ struct DisjointSets {
     DisjointSets(int n) : sets(n, -1) {}
 };
 
-template <typename T>
-struct KruskalReconstructionTree {
-    int n;
-    vector<int> parent, depth, in, inlabel, ascendant, head;
-    vector<vector<int>> adj_list;
-    vector<T> weight;
-    vector<pair<int, int>> tour;
+vector<array<int, 3>> kruskal(int n, vector<array<int, 3>> edges) {
+    DisjointSets dsu(n);
+    sort(edges.begin(), edges.end());
 
-    KruskalReconstructionTree(int m, vector<tuple<int, int, T>> &edges) : n(m), parent(2 * m), adj_list(2 * m), weight(2 * m, 0) {
-        DisjointSets dsu(2 * m);
-        vector<int> rep(2 * m);
-        iota(rep.begin(), rep.end(), 0);
+    vector<array<int, 3>> mst;
+    for (auto e : edges) {
+        auto [w, u, v] = e;
+        if (~dsu.unite(u, v).second) mst.emplace_back(e);
+    }
 
-        for (auto [u, v, w] : edges) {
-            int u_set = dsu.find(u), v_set = dsu.find(v);
-            if (u_set != v_set) {
-                n++;
-                weight[n] = w;
-                parent[rep[u_set]] = parent[rep[v_set]] = n;
-                adj_list[n].emplace_back(rep[u_set]);
-                adj_list[n].emplace_back(rep[v_set]);
-                auto [big, small] = dsu.unite(u_set, v_set);
-                rep[big] = n;
-            }
-        }
+    return mst;
+}
 
-        auto lsb = [&](int x) {
-            return x & -x;
-        };
+tuple<vector<int>, vector<int>, int> hopcroft_karp(int n, int m, const vector<pair<int, int>> &edges) {
+    vector<int> adj_list(edges.size()), l(n, -1), r(m, -1), degree(n + 1, 0);
+    for (auto [u, v] : edges) degree[u]++;
+    for (int i = 1; i <= n; i++) degree[i] += degree[i - 1];
+    for (auto [u, v] : edges) adj_list[--degree[u]] = v;
 
-        in.resize(n + 1);
-        inlabel.resize(n + 1);
-        depth.resize(n + 1);
-        ascendant.resize(n + 1);
-        head.resize(n + 2);
-        int count = 0;
-        auto dfs = [&](auto &&self, int v, int prev) -> void {
-            tour.emplace_back(v, prev);
-            inlabel[v] = tour.size();
-            in[v] = count++;
+    int matches = 0;
+    vector<int> src(n), prev(n);
+    queue<int> q;
+    for (;;) {
+        fill(src.begin(), src.end(), -1);
+        fill(prev.begin(), prev.end(), -1);
 
-            for (int u : adj_list[v])
-                if (u != prev) {
-                    depth[u] = depth[v] + 1;
-                    self(self, u, v);
-                    head[inlabel[u]] = v;
-                    if (lsb(inlabel[v]) < lsb(inlabel[u])) inlabel[v] = inlabel[u];
+        for (int i = 0; i < n; i++)
+            if (!~l[i]) q.emplace(src[i] = prev[i] = i);
+
+        int temp = matches;
+        while (!q.empty()) {
+            int v = q.front();
+            q.pop();
+
+            if (~l[src[v]]) continue;
+
+            for (int j = degree[v]; j < degree[v + 1]; j++) {
+                int u = adj_list[j];
+
+                if (!~r[u]) {
+                    while (~u) {
+                        r[u] = v;
+                        swap(l[v], u);
+                        v = prev[v];
+                    }
+
+                    matches++;
+                    break;
                 }
-        };
-        dfs(dfs, n, n);
-        for (auto [v, p] : tour) ascendant[v] = ascendant[p] | lsb(inlabel[v]);
-    }
 
-    int lca(int u, int v) {
-        if (unsigned above = inlabel[u] ^ inlabel[v]; above) {
-            above = (ascendant[u] & ascendant[v]) & -bit_floor(above);
-            if (unsigned below = ascendant[u] ^ above; below) {
-                below = bit_floor(below);
-                u = head[(inlabel[u] & -below) | below];
-            }
-            if (unsigned below = ascendant[v] ^ above; below) {
-                below = bit_floor(below);
-                v = head[(inlabel[v] & -below) | below];
+                if (!~prev[r[u]]) {
+                    q.emplace(u = r[u]);
+                    prev[u] = v;
+                    src[u] = src[v];
+                }
             }
         }
 
-        return depth[u] < depth[v] ? u : v;
+        if (temp == matches) return {l, r, matches};
     }
-
-    vector<int> post_order_traversal() {
-        vector<int> order;
-        auto dfs = [&](auto &&self, int v) -> void {
-            for (int u : adj_list[v]) self(self, u);
-            order.emplace_back(v);
-        };
-        dfs(dfs, n);
-        return order;
-    }
-};
+}
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n, R, g;
-    cin >> n >> R >> g;
+    int n, r, g;
+    cin >> n >> r >> g;
 
-    int sum = 0;
-    vector<tuple<int, int, int>> edges(R);
-    for (auto &[a, b, c] : edges) {
-        cin >> a >> b >> c;
-
-        sum += c;
+    vector<array<int, 3>> e(r);
+    for (auto &[w, u, v] : e) {
+        cin >> u >> v >> w;
+        u--;
+        v--;
     }
-    for (int i = 2; i <= n; i++) edges.emplace_back(1, i, sum + 1);
-    sort(edges.begin(), edges.end(), [&](auto e1, auto e2) { return get<2>(e1) < get<2>(e2); });
+    auto mst = kruskal(n, e);
 
-    KruskalReconstructionTree krt(n, edges);
-    vector<int> dp(krt.n + 1, 0);
-    for (int v : krt.post_order_traversal()) {
-        if (krt.adj_list[v].empty()) dp[v] = 1;
-        else
-            for (int u : krt.adj_list[v]) dp[v] += dp[u];
-    }
-
-    BoundedFlowNetwork<int, int> bfn(krt.n + g + 1);
+    vector<bitset<300>> masks(n);
+    vector<pair<int, int>> edges;
     for (int i = 0; i < g; i++) {
         int k;
         cin >> k;
@@ -266,23 +117,39 @@ int main() {
             int v;
             cin >> v;
 
-            bfn.add_arc(krt.n + i, v - 1, 0, 1, 0);
+            masks[v - 1][i] = true;
+            edges.emplace_back(i, v - 1);
         }
-        bfn.add_arc(krt.n + g, krt.n + i, 0, 1, 0);
     }
 
-    int delta = 0;
-    for (int v = 1; v <= krt.n; v++)
-        if (krt.parent[v]) {
-            int d = krt.weight[krt.parent[v]] - krt.weight[v];
-            delta += d;
-            bfn.add_arc(v - 1, krt.parent[v] - 1, 0, 1, -d);
-            if (v > n) bfn.add_arc(v - 1, krt.parent[v] - 1, 0, dp[v] - 1, 0);
-        }
-    bfn.add_supply(krt.n + g, g);
-    bfn.add_demand(krt.n - 1, g);
+    if (get<2>(hopcroft_karp(g, n, edges)) != g) {
+        cout << -1;
+        exit(0);
+    }
 
-    auto [cost, feasible] = bfn.min_cost_b_flow();
-    if (!feasible || cost + delta > sum) cout << -1;
-    else cout << cost + delta;
+    DisjointSets dsu(n);
+    int count = 0, cost = 0;
+    for (auto [w, u, v] : mst) {
+        if (count == n - g) break;
+
+        int u_set = dsu.find(u), v_set = dsu.find(v);
+        if (u_set == v_set) continue;
+
+        edges.clear();
+        for (int t = 0; t < n; t++)
+            if (dsu.find(t) == t && t != v_set) {
+                auto temp = masks[t];
+                if (t == u_set) temp |= masks[v_set];
+                for (int i = 0; i < g; i++)
+                    if (temp[i]) edges.emplace_back(i, t);
+            }
+
+        if (get<2>(hopcroft_karp(g, n, edges)) == g) {
+            auto [big, small] = dsu.unite(u_set, v_set);
+            masks[big] |= masks[small];
+            count++;
+            cost += w;
+        }
+    }
+    cout << (count == n - g ? cost : -1);
 }

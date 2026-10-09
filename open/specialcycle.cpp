@@ -311,21 +311,58 @@ int main() {
         b[i]--;
     }
 
+    vector<int> degree(n, 0);
     vector<vector<int>> adj_list(n);
     vector<pair<int, int>> edges(k);
     for (int i = 0; i < k; i++) {
         adj_list[a[i]].emplace_back(2 * i);
         adj_list[b[i]].emplace_back(2 * i + 1);
+        degree[a[i]]++;
+        degree[b[i]]++;
         edges[i] = {2 * i, 2 * i + 1};
     }
 
-    vector<int> degree(n, 0);
     int id = 2 * k;
     for (int i = 0; i < n; i++)
-        if (adj_list[i].empty()) {
+        if (!degree[i]) {
             adj_list[i].emplace_back(id++);
             adj_list[i].emplace_back(id++);
-        } else degree[i] = adj_list[i].size();
+        }
+
+    vector<vector<int>> adj_list_no_special(n);
+    for (int i = k; i < m; i++)
+        if (!degree[a[i]] && !degree[b[i]]) {
+            adj_list_no_special[a[i]].emplace_back(b[i]);
+            adj_list_no_special[b[i]].emplace_back(a[i]);
+        }
+
+    vector<int> state(n, 0), cycle;
+    auto dfs = [&](auto &&self, int v, int prev = -1) -> bool {
+        state[v] = 1;
+        for (int u : adj_list_no_special[v]) {
+            if (u != prev) {
+                if (!state[u]) {
+                    if (self(self, u, v)) {
+                        if (cycle.back() != cycle.front()) cycle.emplace_back(v);
+                        return true;
+                    }
+                } else if (state[u] == 1) {
+                    cycle = {u, v};
+                    return true;
+                }
+            }
+        }
+        state[v] = 2;
+        return false;
+    };
+
+    for (int v = 0; v < n; v++)
+        if (!state[v] && dfs(dfs, v)) {
+            cycle.pop_back();
+            cout << cycle.size() << "\n";
+            for (int u : cycle) cout << u + 1 << "\n";
+            exit(0);
+        }
 
     vector<int> next(id, -1);
     for (int v = 0; v < n; v++)

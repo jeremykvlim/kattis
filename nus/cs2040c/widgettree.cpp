@@ -379,7 +379,7 @@ int main() {
         }
     }
 
-    vector<int> state(n), order;
+    vector<int> state(n, 0), order;
     auto dfs = [&](auto &&self, int v = 0) -> bool {
         state[v] = 1;
         for (auto [u, count] : adj_list[v])

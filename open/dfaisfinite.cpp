@@ -64,13 +64,13 @@ int main() {
         exit(0);
     }
 
-    vector<int> state(n + 1, 0);
     vector<vector<int>> adj_list(n + 1);
     for (int v = 1; v <= n; v++)
         if (visited1[v] && visited2[v])
             for (int u : table[v])
                 if (visited1[u] && visited2[u]) adj_list[v].emplace_back(u);
 
+    vector<int> state(n + 1, 0);
     auto dfs = [&](auto &&self, int v) -> bool {
         state[v] = 1;
         for (int u : adj_list[v]) 
