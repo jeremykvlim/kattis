@@ -55,7 +55,7 @@ struct StaticTopTree {
     vector<StaticTopTreeNode> STT;
     vector<int> vals;
 
-    StaticTopTree(int n, vector<vector<int>> &adj_list, const vector<int> &values) : root(-1), nodes(n), STT(4 * n), vals(values) {
+    StaticTopTree(int n, vector<vector<int>> &adj_list, const vector<int> &values) : root(-1), nodes(n), STT(3 * n), vals(values) {
         vector<int> heavy(n, -1);
         auto hld = [&](auto &&self, int v = 0) -> int {
             int subtree_size = 1, largest = 0;
