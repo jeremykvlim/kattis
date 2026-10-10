@@ -1,4 +1,3 @@
-
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -91,10 +90,8 @@ int main() {
     cin.tie(nullptr);
 
     int n, m;
-    cin >> n >> m;
-
     string c, s;
-    cin >> c >> s;
+    cin >> n >> m >> c >> s;
 
     vector<tuple<int, int, int>> edges;
     for (int _ = 0; _ < n - 1; _++) {

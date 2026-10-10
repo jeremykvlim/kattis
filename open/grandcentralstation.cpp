@@ -23,25 +23,23 @@ auto rerooting_dp(int n, const vector<tuple<int, int, T>> &edges) {
     parent[0] = -2;
     dfs(dfs);
 
-    using State = pair<int, long long>;
+    using State = unsigned long long;
     auto base = [&]() -> State {
-        return {0, 0};
+        return 0;
     };
 
     auto merge = [&](const State &s1, const State &s2) -> State {
-        return {s1.first + s2.first, s1.second + s2.second};
+        return s1 + s2;
     };
 
-    auto finalize = [&](vector<pair<State, int>> &states, int v) -> State {
+    auto finalize = [&](const vector<pair<State, int>> &states, int v) -> State {
         auto t = base();
         for (auto [s, _] : states) t = merge(t, s);
-        t.first++;
-        return t;
+        return t + 1;
     };
 
     auto climb = [&](State s, T w) -> State {
-        s.second += s.first * w;
-        return s;
+        return s ^= hash<T>{}(w) + 0x9e3779b9 + (s << 6) + (s >> 2);
     };
 
     reverse(order.begin(), order.end());
@@ -87,20 +85,13 @@ int main() {
 
     vector<tuple<int, int, int>> edges;
     for (int _ = 0; _ < n - 1; _++) {
-        int u, v;
-        cin >> u >> v;
+        int a, b;
+        cin >> a >> b;
 
-        edges.emplace_back(u - 1, v - 1, 1);
+        edges.emplace_back(a - 1, b - 1, 1);
     }
+
     auto dp = rerooting_dp(n, edges);
-
-    auto dist = 0LL;
-    for (auto [_, d] : dp) dist = max(dist, d);
-
-    vector<int> s;
-    for (int i = 0; i < n; i++)
-        if (dp[i].second == dist) s.emplace_back(i + 1);
-
-    cout << s.size() << "\n";
-    for (int si : s) cout << si << " ";
+    sort(dp.begin(), dp.end());
+    cout << unique(dp.begin(), dp.end()) - dp.begin();
 }
