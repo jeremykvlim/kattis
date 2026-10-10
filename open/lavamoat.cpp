@@ -337,6 +337,14 @@ struct AffineFunction {
         c -= f.c;
         return *this;
     }
+
+    friend AffineFunction operator+(AffineFunction f1, const AffineFunction &f2) {
+        return f1 += f2;
+    }
+
+    friend AffineFunction operator-(AffineFunction f1, const AffineFunction &f2) {
+        return f1 -= f2;
+    }
 };
 
 int main() {
