@@ -128,13 +128,11 @@ int main() {
     };
 
     vector<pair<int, int>> tour;
-    vector<int> child(n, 0), depth(n, 0), in(n), inlabel(n), ascendant(n, 0), head(n + 1);
+    vector<int> child(n, -1), depth(n, 0), inlabel(n), ascendant(n, 0), head(n + 1);
     vector<long long> dist(n);
-    int count = 0;
     auto dfs = [&](auto &&self, int v = 0, int prev = 0) -> void {
         tour.emplace_back(v, prev);
         inlabel[v] = tour.size();
-        in[v] = count++;
 
         for (auto [u, w] : adj_list[v])
             if (u != prev) {
