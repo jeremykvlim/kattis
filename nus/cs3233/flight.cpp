@@ -25,15 +25,15 @@ auto rerooting_dp(int n, const vector<tuple<int, int, T>> &edges) {
 
     using State = array<int, 3>;
     auto base = [&]() -> State {
-        return {-1, 0, INT_MAX};
+        return {0, 0, INT_MAX};
     };
 
     auto merge = [&](const State &s1, const State &s2) -> State {
         return {max(s1[0], s2[0]), max({s1[1], s2[1], s1[0] + s2[0]}), INT_MAX};
     };
 
-    auto finalize = [&](const vector<pair<State, int>> &states) -> State {
-        State t{0, 0, INT_MAX};
+    auto finalize = [&](vector<pair<State, int>> &states, int v) -> State {
+        auto t = base();
         for (auto [s, _] : states) t = merge(t, s);
 
         int p = -1;
@@ -44,7 +44,7 @@ auto rerooting_dp(int n, const vector<tuple<int, int, T>> &edges) {
             }
 
         if (~p) {
-            State temp{0, 0, INT_MAX};
+            auto temp = base();
             for (int i = 0; i < states.size(); i++)
                 if (i != p) temp = merge(temp, states[i].first);
 
@@ -60,16 +60,13 @@ auto rerooting_dp(int n, const vector<tuple<int, int, T>> &edges) {
         return s;
     };
 
-    auto arrange = [&](vector<pair<State, int>> &states) -> void {};
-
     reverse(order.begin(), order.end());
     vector<State> up(n, base());
     for (int v : order) {
         vector<pair<State, int>> states;
         for (auto [u, w] : adj_list[v])
             if (u != parent[v]) states.emplace_back(climb(up[u], w), u);
-        arrange(states);
-        up[v] = finalize(states);
+        up[v] = finalize(states, v);
     }
 
     reverse(order.begin(), order.end());
@@ -79,8 +76,7 @@ auto rerooting_dp(int n, const vector<tuple<int, int, T>> &edges) {
         if (parent[v] != -2) states.emplace_back(climb(down[v], parent_w[v]), -1);
         for (auto [u, w] : adj_list[v])
             if (u != parent[v]) states.emplace_back(climb(up[u], w), u);
-        arrange(states);
-        dp[v] = finalize(states);
+        dp[v] = finalize(states, v);
 
         int m = states.size();
         vector<State> pref(m), suff(m);
@@ -92,7 +88,7 @@ auto rerooting_dp(int n, const vector<tuple<int, int, T>> &edges) {
                 vector<pair<State, int>> s;
                 if (k) s.emplace_back(pref[k - 1], -1);
                 if (k + 1 < m) s.emplace_back(suff[k + 1], -1);
-                down[states[k].second] = finalize(s);
+                down[states[k].second] = finalize(s, v);
             }
     }
     return dp;

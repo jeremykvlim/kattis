@@ -1,8 +1,9 @@
+
 #include <bits/stdc++.h>
 using namespace std;
 
 template <typename T>
-auto rerooting_dp(int n, const vector<tuple<int, int, T>> &edges) {
+auto rerooting_dp(int n, const vector<tuple<int, int, T>> &edges, const vector<bool> &auxiliary) {
     vector<vector<pair<int, T>>> adj_list(n);
     for (auto [u, v, w] : edges) {
         adj_list[u].emplace_back(v, w);
@@ -23,23 +24,27 @@ auto rerooting_dp(int n, const vector<tuple<int, int, T>> &edges) {
     parent[0] = -2;
     dfs(dfs);
 
-    using State = array<long long, 2>;
+    using State = pair<long long, long long>;
     auto base = [&]() -> State {
-        return {0, 0};
+        return {0, -1};
     };
 
     auto merge = [&](const State &s1, const State &s2) -> State {
-        return {max(s1[0], s2[0]), max(max(s1[1], s2[1]), s1[0] + s2[0])};
+        return {s1.first + s2.first, max(s1.second, s2.second)};
     };
 
     auto finalize = [&](vector<pair<State, int>> &states, int v) -> State {
         auto t = base();
         for (auto [s, _] : states) t = merge(t, s);
+        if (auxiliary[v]) t.second = max(t.second, 0LL);
         return t;
     };
 
     auto climb = [&](State s, T w) -> State {
-        s[0] += w;
+        if (~s.second) {
+            s.first += 2 * w;
+            s.second += w;
+        }
         return s;
     };
 
@@ -74,26 +79,32 @@ auto rerooting_dp(int n, const vector<tuple<int, int, T>> &edges) {
                 down[states[k].second] = finalize(s, v);
             }
     }
-    return tuple{dp, up, down};
+    return dp;
 }
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n;
-    while (cin >> n && n) {
-        vector<tuple<int, int, int>> edges(n - 1);
-        for (int i = 0; i < n - 1; i++) {
-            int p, w;
-            cin >> p >> w;
+    int n, k;
+    cin >> n >> k;
 
-            edges[i] = {p - 1, i + 1, w};
-        }
+    vector<tuple<int, int, int>> edges;
+    for (int _ = 0; _ < n - 1; _++) {
+        int a, b, c;
+        cin >> a >> b >> c;
 
-        auto [dp, up, down] = rerooting_dp(n, edges);
-        auto diff = LLONG_MAX;
-        for (int v = 1; v < n; v++) diff = min(diff, abs(up[v][1] - down[v][1]));
-        cout << diff << "\n";
+        edges.emplace_back(a - 1, b - 1, c);
     }
+
+    vector<bool> marked(n, false);
+    while (k--) {
+        int v;
+        cin >> v;
+
+        marked[v - 1] = true;
+    }
+
+    auto dp = rerooting_dp(n, edges, marked);
+    for (auto [w, d] : dp) cout << w - d << "\n";
 }
