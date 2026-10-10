@@ -464,20 +464,20 @@ int main() {
 
         modint::init(m);
 
+        vector<modint> c(k + 1, 0);
+        c[0] = 1;
+
+        modint a = 1, b = 2;
+        for (int i = 0; i < k; i++) {
+            for (int j = i + 1; j >= 1; j--) c[j] -= a * c[j - 1];
+            a = exchange(b, a + b);
+        }
+
         vector<modint> p(k);
         for (auto &pi : p) cin >> pi;
 
-        vector<modint> a(k + 1, 0);
-        a[0] = 1;
-        modint curr = 1, prev = 0, next;
-        for (int i = 0; i < k; i++) {
-            next = curr + prev;
-            prev = curr;
-            curr = next;
-
-            rotate(a.rbegin(), a.rbegin() + 1, a.rend());
-            for (int j = 0; j < k; j++) a[j] -= a[j + 1] * curr;
-        }
-        cout << m - inner_product(p.begin(), p.end(), a.begin(), (modint) 0, plus<>(), [&](auto x, auto y) { return x * y; }) << "\n";
+        modint value = 0;
+        for (int i = 0; i < k; i++) value -= c[i + 1] * p[k - 1 - i];
+        cout << value << "\n";
     }
 }
