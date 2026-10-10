@@ -41,7 +41,7 @@ int main() {
             }
     }
 
-    auto lsb = [&](unsigned x) {
+    auto lsb = [&](int x) {
         return x & -x;
     };
 
@@ -68,15 +68,13 @@ int main() {
         if (v && inlabel[v] == inlabel[p]) child[p] = v;
     }
 
-    auto lca = [&](int u, int v) {
+    auto lca = [&](int u, int v) -> int {
         if (unsigned above = inlabel[u] ^ inlabel[v]; above) {
             above = (ascendant[u] & ascendant[v]) & -bit_floor(above);
-
             if (unsigned below = ascendant[u] ^ above; below) {
                 below = bit_floor(below);
                 u = head[(inlabel[u] & -below) | below];
             }
-
             if (unsigned below = ascendant[v] ^ above; below) {
                 below = bit_floor(below);
                 v = head[(inlabel[v] & -below) | below];

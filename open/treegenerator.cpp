@@ -395,6 +395,7 @@ int main() {
             }
     };
     dfs(dfs, n);
+
     for (auto [v, p] : tour) {
         ascendant[v] = ascendant[p] | lsb(inlabel[v]);
         if (v != n && inlabel[v] == inlabel[p]) child[p] = v;

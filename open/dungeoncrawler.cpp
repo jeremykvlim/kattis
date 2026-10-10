@@ -1,6 +1,105 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T>
+auto rerooting_dp(int n, const vector<tuple<int, int, T>> &edges) {
+    vector<vector<pair<int, T>>> adj_list(n);
+    for (auto [u, v, w] : edges) {
+        adj_list[u].emplace_back(v, w);
+        adj_list[v].emplace_back(u, w);
+    }
+
+    vector<int> order, parent(n, -1);
+    vector<T> parent_w(n, 0);
+    auto dfs = [&](auto &&self, int v = 0) -> void {
+        order.emplace_back(v);
+        for (auto [u, w] : adj_list[v])
+            if (u != parent[v]) {
+                parent[u] = v;
+                parent_w[u] = w;
+                self(self, u);
+            }
+    };
+    parent[0] = -2;
+    dfs(dfs);
+
+    using State = array<long long, 5>;
+    auto base = [&]() -> State {
+        return {-1, -1, -1, -1, -1};
+    };
+
+    auto merge = [&](const State &s1, const State &s2) -> State {
+        if (!~s1[0]) return s2;
+        if (!~s2[0]) return s1;
+
+        auto s3 = s1;
+        if (s3[1] < s2[1]) {
+            s3[1] = s2[1];
+            s3[3] = s2[3];
+            s3[4] = s2[4];
+        }
+        if (s3[1] < s1[0] + s2[0]) {
+            s3[1] = s1[0] + s2[0];
+            s3[3] = s1[2];
+            s3[4] = s2[2];
+        }
+        if (s3[0] < s2[0]) {
+            s3[0] = s2[0];
+            s3[2] = s2[2];
+        }
+        return s3;
+    };
+
+    auto finalize = [&](const vector<pair<State, int>> &states, int v) -> State {
+        auto t = base();
+        for (auto [s, _] : states) t = merge(t, s);
+        t = merge(t, {0, 0, v, v, v});
+        return t;
+    };
+
+    auto climb = [&](State s, T w) -> State {
+        s[0] += w;
+        return s;
+    };
+
+    auto arrange = [&](vector<pair<State, int>> &states) -> void {};
+
+    reverse(order.begin(), order.end());
+    vector<State> up(n, base());
+    for (int v : order) {
+        vector<pair<State, int>> states;
+        for (auto [u, w] : adj_list[v])
+            if (u != parent[v]) states.emplace_back(climb(up[u], w), u);
+        arrange(states);
+        up[v] = finalize(states, v);
+    }
+
+    reverse(order.begin(), order.end());
+    vector<State> down(n, base()), dp(n, base());
+    for (int v : order) {
+        vector<pair<State, int>> states;
+        if (parent[v] != -2) states.emplace_back(climb(down[v], parent_w[v]), -1);
+        for (auto [u, w] : adj_list[v])
+            if (u != parent[v]) states.emplace_back(climb(up[u], w), u);
+        arrange(states);
+        dp[v] = finalize(states, v);
+
+        int m = states.size();
+        vector<State> pref(m), suff(m);
+        for (int i = 0; i < m; i++) pref[i] = (!i ? states[i].first : merge(pref[i - 1], states[i].first));
+        for (int i = m - 1; ~i; i--) suff[i] = (i == m - 1 ? states[i].first : merge(suff[i + 1], states[i].first));
+
+        for (int k = 0; k < m; k++)
+            if (~states[k].second) {
+                vector<pair<State, int>> s;
+                if (k) s.emplace_back(pref[k - 1], -1);
+                if (k + 1 < m) s.emplace_back(suff[k + 1], -1);
+                down[states[k].second] = finalize(s, v);
+            }
+    }
+    return tuple{dp, up, down};
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -8,72 +107,113 @@ int main() {
     int n, q;
     cin >> n >> q;
 
-    vector<vector<pair<int, int>>> adj_list(n);
+    vector<tuple<int, int, long long>> edges;
+    vector<vector<pair<int, long long>>> adj_list(n);
     auto total = 0LL;
-    for (int i = 0; i < n - 1; i++) {
-        int u, v, w;
+    for (int _ = 0; _ < n - 1; _++) {
+        int u, v;
+        long long w;
         cin >> u >> v >> w;
+        u--;
+        v--;
 
-        adj_list[u - 1].emplace_back(v - 1, w);
-        adj_list[v - 1].emplace_back(u - 1, w);
+        edges.emplace_back(u, v, w);
+        adj_list[u].emplace_back(v, w);
+        adj_list[v].emplace_back(u, w);
         total += 2 * w;
     }
 
-    vector<vector<array<int, 3>>> queries(n);
-    for (int i = 0; i < q; i++) {
+    auto lsb = [&](int x) {
+        return x & -x;
+    };
+
+    vector<pair<int, int>> tour;
+    vector<int> child(n, 0), depth(n, 0), in(n), inlabel(n), ascendant(n, 0), head(n + 1);
+    vector<long long> dist(n);
+    int count = 0;
+    auto dfs = [&](auto &&self, int v = 0, int prev = 0) -> void {
+        tour.emplace_back(v, prev);
+        inlabel[v] = tour.size();
+        in[v] = count++;
+
+        for (auto [u, w] : adj_list[v])
+            if (u != prev) {
+                depth[u] = depth[v] + 1;
+                dist[u] = dist[v] + w;
+                self(self, u, v);
+                head[inlabel[u]] = v;
+                if (lsb(inlabel[v]) < lsb(inlabel[u])) inlabel[v] = inlabel[u];
+            }
+    };
+    dfs(dfs);
+
+    for (auto [v, p] : tour) {
+        ascendant[v] = ascendant[p] | lsb(inlabel[v]);
+        if (v && inlabel[v] == inlabel[p]) child[p] = v;
+    }
+
+    auto lca = [&](int u, int v) -> int {
+        if (unsigned above = inlabel[u] ^ inlabel[v]; above) {
+            above = (ascendant[u] & ascendant[v]) & -bit_floor(above);
+            if (unsigned below = ascendant[u] ^ above; below) {
+                below = bit_floor(below);
+                u = head[(inlabel[u] & -below) | below];
+            }
+            if (unsigned below = ascendant[v] ^ above; below) {
+                below = bit_floor(below);
+                v = head[(inlabel[v] & -below) | below];
+            }
+        }
+
+        return depth[u] < depth[v] ? u : v;
+    };
+
+    vector<int> base, offset(n + 1), pos(n);
+    for (auto [v, p] : tour)
+        if (!v || inlabel[v] != inlabel[p]) {
+            offset[inlabel[v]] = base.size();
+            for (int u = v; ~u; u = child[u]) {
+                base.emplace_back(u);
+                pos[u] = base.size() - 1;
+            }
+        }
+
+    auto climb = [&](int v, int d) {
+        while (d) {
+            if (d <= pos[v] - offset[inlabel[v]]) return base[pos[v] - d];
+            d -= pos[v] - offset[inlabel[v]] + 1;
+            v = head[inlabel[v]];
+        }
+        return v;
+    };
+
+    auto [dp, up, down] = rerooting_dp(n, edges);
+    while (q--) {
         int s, k, t;
         cin >> s >> k >> t;
+        s--;
+        k--;
+        t--;
 
-        queries[s - 1].push_back({k - 1, t - 1, i});
-    }
-
-    vector<long long> time(q, LLONG_MAX);
-    for (int s = 0; s < n; s++) {
-        if (queries[s].empty()) continue;
-        
-        vector<int> in(n), out(n), prev(n, -1);
-        vector<long long> dist(n);
-        int count = 0;
-        auto dfs = [&](auto &&self, int v) -> void {
-            in[v] = count++;
-            for (auto [u, w] : adj_list[v])
-                if (u != prev[v]) {
-                    prev[u] = v;
-                    dist[u] = dist[v] + w;
-                    self(self, u);
-                }
-            out[v] = count;
-        };
-        dfs(dfs, s);
-
-        vector<long long> pref(n + 1), suff(n + 1);
-        for (int i = 0; i < n; i++) {
-            pref[in[i] + 1] = dist[i];
-            suff[in[i]] = dist[i];
+        int x = lca(s, k), y = lca(s, t), z = lca(k, t);
+        auto s_to_k = dist[s] + dist[k] - 2 * dist[x], s_to_t = dist[s] + dist[t] - 2 * dist[y], k_to_t = dist[k] + dist[t] - 2 * dist[z];
+        if (s_to_k == s_to_t + k_to_t) {
+            cout << "impossible\n";
+            continue;
         }
 
-        for (int i = 1; i <= n; i++) pref[i] = max(pref[i], pref[i - 1]);
-        for (int i = n - 1; ~i; i--) suff[i] = max(suff[i], suff[i + 1]);
-
-        auto ancestor = [&](int v, int u) {
-            return in[v] <= in[u] && in[u] < out[v];
+        auto eccentricity = [&](int v, const auto &d) {
+            return max(dist[d[3]] + dist[v] - 2 * dist[lca(d[3], v)], dist[d[4]] + dist[v] - 2 * dist[lca(d[4], v)]);
         };
 
-        for (auto [k, t, i] : queries[s]) {
-            if (ancestor(t, k)) {
-                time[i] = -1;
-                continue;
-            }
-
-            for (int l = in[k], r = l, j = k;; l = in[j], r = out[j], j = prev[j]) {
-                time[i] = min(time[i], total + 2 * dist[j] - max(pref[l], suff[r]));
-                if (ancestor(j, t)) {
-                    time[i] -= 2 * dist[j];
-                    break;
-                }
-            }
+        if (s_to_t == s_to_k + k_to_t) {
+            cout << total - eccentricity(s, dp[0]) << "\n";
+            continue;
         }
-    }
 
-    for (auto t : time) cout << (t == -1 ? "impossible" : to_string(t)) << "\n";
+        int a = x ^ y ^ z;
+        bool inside = a == x || a == z;
+        int v = inside ? climb(k, depth[k] - depth[a] - 1) : a;
+        cout << total - max(eccentricity(s, inside ? down[v] : up[v]), s_to_t - k_to_t + eccentricity(k, inside ? up[v] : down[v])) << "\n";
+    }
 }
