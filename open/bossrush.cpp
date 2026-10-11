@@ -1,50 +1,112 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-struct DisjointSets {
-    vector<int> sets;
+template <typename T>
+struct AntiMonopolyTree {
+    vector<int> parent, size;
+    vector<T> weight;
 
-    int find(int v) {
-        while (sets[v] >= 0) {
-            int p = sets[v];
-            if (sets[p] >= 0) sets[v] = sets[p];
-            v = p;
+    AntiMonopolyTree(int n) : parent(n, -1), size(n, 1), weight(n, numeric_limits<T>::max()) {}
+
+    pair<T, int> path_max(int u, int v) {
+        upward_maintain(u);
+        upward_maintain(v);
+
+        T max_w = numeric_limits<T>::min();
+        int t = -1;
+        while (u != v) {
+            if (size[u] > size[v]) swap(u, v);
+            if (weight[u] == numeric_limits<T>::max()) return {numeric_limits<T>::max(), -1};
+            if (max_w < weight[u]) {
+                max_w = weight[u];
+                t = u;
+            }
+            u = parent[u];
         }
+        return {max_w, t};
+    }
+
+    bool connected(int u, int v) {
+        return u == v || path_max(u, v).second != -1;
+    }
+
+    void upward_maintain(int v) {
+        while (~parent[v]) {
+            int p = parent[v];
+            if (3 * size[v] <= 2 * size[p]) {
+                v = p;
+                continue;
+            }
+
+            size[p] -= size[v];
+            parent[v] = parent[p];
+            if (weight[v] < weight[p]) {
+                size[v] += size[p];
+                swap(weight[v], weight[p]);
+                parent[p] = v;
+            }
+        }
+    }
+
+    int root(int v) {
+        while (~parent[v]) v = parent[v];
         return v;
     }
 
-    bool unite(int u, int v) {
-        int u_set = find(u), v_set = find(v);
-        if (u_set == v_set) return false;
+    void cut(int v) {
+        for (int p = parent[v]; ~p; p = parent[p]) size[p] -= size[v];
+        parent[v] = -1;
+        weight[v] = numeric_limits<T>::max();
+    }
 
-        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
-        sets[u_set] += sets[v_set];
-        sets[v_set] = u_set;
+    bool add(int u, int v, T w) {
+        if (u == v) return false;
+
+        auto [max_w, t] = path_max(u, v);
+        bool merged = max_w == numeric_limits<T>::max();
+        if (!merged) {
+            if (w >= max_w) return false;
+            cut(t);
+        }
+
+        int du = 0, dv = 0;
+        while (~u && ~v) {
+            if (w >= weight[u]) {
+                int p = parent[u];
+                if (~p) size[p] += du;
+                u = p;
+            } else if (w >= weight[v]) {
+                int p = parent[v];
+                if (~p) size[p] += dv;
+                v = p;
+            } else {
+                if (size[u] > size[v]) {
+                    swap(u, v);
+                    swap(du, dv);
+                }
+
+                du -= size[u];
+                dv += size[u];
+                size[v] += size[u];
+                w = exchange(weight[u], w);
+                u = exchange(parent[u], v);
+                if (~u) size[u] += du;
+            }
+        }
+
+        if (~v)
+            for (v = parent[v]; ~v; v = parent[v]) size[v] += dv;
+        return merged;
+    }
+
+    bool remove(int u, int v, T w) {
+        auto [max_w, t] = path_max(u, v);
+        if (max_w != w) return false;
+
+        cut(t);
         return true;
     }
-
-    int size(int v) {
-        return -sets[find(v)];
-    }
-
-    DisjointSets(int n) : sets(n, -1) {}
 };
-
-pair<int, bool> kruskal(int n, vector<array<int, 3>> edges) {
-    DisjointSets dsu(n);
-    sort(edges.begin(), edges.end());
-
-    int count = 0, mst_max = 0;
-    for (auto e : edges) {
-        auto [w, u, v] = e;
-        if (dsu.unite(u, v)) {
-            mst_max = max(mst_max, w);
-            if (++count == n - 1) break;
-        }
-    }
-
-    return {mst_max, count == n - 1};
-}
 
 int main() {
     ios::sync_with_stdio(false);
@@ -55,56 +117,55 @@ int main() {
 
     vector<int> f(n);
     for (int &fi : f) cin >> fi;
-    for (int i = 0; i < n; i++) f.emplace_back((f[i] + w) % d);
 
-    vector<int> order(2 * n), rev(2 * n), sorted(2 * n);
-    iota(order.rbegin(), order.rend(), 0);
-    stable_sort(order.begin(), order.end(), [&](int i, int j) { return f[i] < f[j]; });
-    for (int i = 0; i < 2 * n; i++) {
-        rev[order[i]] = i;
-        sorted[i] = f[order[i]];
+    int r = w % d;
+    vector<int> deduped{0};
+    for (int fi : f) {
+        deduped.emplace_back(fi);
+        deduped.emplace_back((fi + r) % d);
     }
-    sorted.insert(sorted.begin(), 0);
-    sorted.emplace_back(d);
+    sort(deduped.begin(), deduped.end());
+    deduped.erase(unique(deduped.begin(), deduped.end()), deduped.end());
 
-    auto base = (long long) n * (w / d) * d - w;
-    w %= d;
-
-    vector<int> overlaps{0};
-    for (int i = 0; i < n; i++)
-        if (f[i] + w >= d) overlaps[0]++;
-
-    int o = overlaps[0];
-    for (int i : order) {
-        overlaps.emplace_back(overlaps.back() + (i < n ? 1 : -1));
-        o = max(o, overlaps.back());
+    int m = deduped.size();
+    vector<int> pos_l(n), pos_r(n);
+    for (int i = 0; i < n; i++) {
+        pos_l[i] = lower_bound(deduped.begin(), deduped.end(), f[i]) - deduped.begin();
+        pos_r[i] = lower_bound(deduped.begin(), deduped.end(), (f[i] + r) % d) - deduped.begin();
     }
 
-    auto time = LLONG_MAX;
-    for (int _ = 0, m = 2 * n + 1; _ < 2; _++, o++) {
-        int r = 0;
-        bool possible = true;
-        vector<array<int, 3>> edges;
-        for (int i = 0; i < m; i++) {
-            if (overlaps[i] > o) {
-                possible = false;
-                break;
+    vector<int> diff(m + 1, 0);
+    auto add = [&](int l, int r) {
+        if (l >= r) return;
+        diff[l]++;
+        diff[r]--;
+    };
+
+    if (r)
+        for (int i = 0; i < n; i++) {
+            if (pos_l[i] < pos_r[i]) add(pos_l[i], pos_r[i]);
+            else {
+                add(pos_l[i], m);
+                add(0, pos_r[i]);
             }
-
-            if (overlaps[i] == o) {
-                if (i == 2 * n) {
-                    possible = false;
-                    break;
-                }
-                r = max(r, sorted[i + 1]);
-            } else if (overlaps[i] == o - 1 && i < 2 * n) edges.push_back({sorted[i + 1], i, (i + 1) % m});
-            else if (overlaps[i] < o - 1) edges.push_back({0, i, (i + 1) % m});
         }
-        if (!possible) continue;
 
-        for (int i = 0; i < n; i++) edges.push_back({0, rev[i] + 1, rev[i + n] + 1});
-        auto [mst_max, valid_mst] = kruskal(m, edges);
-        if (valid_mst) time = min(time, base + (long long) (o - 1) * d + max(r, mst_max));
+    vector<int> pref(m);
+    pref[0] = diff[0];
+    for (int i = 1; i < m; i++) pref[i] = pref[i - 1] + diff[i];
+
+    AntiMonopolyTree<long long> amt(m);
+    for (int i = 0; i < n; i++) amt.add(pos_l[i], pos_r[i], -1);
+
+    auto base = 0LL;
+    for (int i = 0; i < m; i++) {
+        int t = i + 1 < m ? deduped[i + 1] : d;
+        base = max(base, (long long) d * (pref[i] - 1) + t);
+        amt.add(i, (i + 1) % m, (long long) d * pref[i] + t);
     }
-    cout << time;
+
+    auto bottleneck = 0LL;
+    for (int v = 0; v < m; v++)
+        if (~amt.parent[v]) bottleneck = max(bottleneck, amt.weight[v]);
+    cout << max(base, bottleneck) + (long long) n * (w - r) - w;
 }

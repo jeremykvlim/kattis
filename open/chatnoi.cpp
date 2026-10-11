@@ -30,83 +30,92 @@ int main() {
     int n, k;
     cin >> n >> k;
 
-    vector<string> w(n);
-    for (auto &wi : w) cin >> wi;
-    auto sorted = w;
-    sort(sorted.begin(), sorted.end());
-    sorted.erase(unique(sorted.begin(), sorted.end()), sorted.end());
-
+    vector<string> words;
+    unordered_map<string, int> compress;
     vector<int> indices(n);
-    for (int i = 0; i < n; i++) indices[i] = lower_bound(sorted.begin(), sorted.end(), w[i]) - sorted.begin();
+    for (int &i : indices) {
+        string s;
+        cin >> s;
 
-    vector<vector<int>> kgrams(n - k + 1, vector<int>(k));
-    for (int l = 0, r = k - 1; r < n; l++, r++)
-        for (int i = 0; i <= r - l; i++) kgrams[l][i] = indices[i + l];
-    sort(kgrams.begin(), kgrams.end());
-    kgrams.erase(unique(kgrams.begin(), kgrams.end()), kgrams.end());
-
-    vector<int> pos(n, -1);
-    for (int l = 0, r = k - 1; r < n; l++, r++) {
-        vector<int> temp(k);
-        for (int i = 0; i <= r - l; i++) temp[i] = indices[i + l];
-
-        auto it = lower_bound(kgrams.begin(), kgrams.end(), temp);
-        if (it == kgrams.end() || *it != temp) continue;
-        pos[r] = it - kgrams.begin();
+        auto [it, inserted] = compress.try_emplace(s, words.size());
+        if (inserted) words.emplace_back(s);
+        i = it->second;
     }
 
-    unordered_map<pair<int, int>, int, Hash> edges;
-    for (int r = k - 1; r < n - 1; r++) edges[{pos[r], pos[r + 1]}]++;
+    array<int, 10> seq{};
+    for (int i = 0; i < k; i++) seq[i] = indices[i];
 
-    int V = kgrams.size();
-    vector<int> freqs;
-    vector<vector<pair<int, int>>> adj_list_regular(V), adj_list_transpose(V);
-    for (auto [e, f] : edges) {
-        auto [u, v] = e;
-        adj_list_regular[u].emplace_back(v, f);
-        adj_list_transpose[v].emplace_back(u, f);
-        freqs.emplace_back(f);
+    unordered_map<array<int, 10>, int, Hash> seq_node;
+    vector<int> nodes(n - k + 1), seq_last;
+    for (int i = 0; i <= n - k; i++) {
+        auto [it, inserted] = seq_node.try_emplace(seq, seq_last.size());
+        if (inserted) seq_last.emplace_back(indices[i + k - 1]);
+        nodes[i] = it->second;
+
+        if (i < n - k) {
+            for (int j = 0; j < k - 1; j++) seq[j] = seq[j + 1];
+            seq[k - 1] = indices[i + k];
+        }
     }
-    sort(freqs.rbegin(), freqs.rend());
-    freqs.erase(unique(freqs.begin(), freqs.end()), freqs.end());
 
-    vector<vector<int>> longest(freqs.size(), vector<int>(V, -1)), next(freqs.size(), vector<int>(V, -1));
-    for (int i = 0; i < freqs.size(); i++) {
-        vector<int> degree(V, 0);
-        for (int v = 0; v < V; v++)
-            for (auto [u, f] : adj_list_regular[v])
-                if (f >= freqs[i]) degree[v]++;
+    unordered_map<pair<int, int>, int, Hash> freq;
+    for (int i = 0; i < n - k; i++) freq[{nodes[i], nodes[i + 1]}]++;
+
+    vector<array<int, 3>> edges;
+    for (auto [uv, f] : freq) edges.push_back({uv.first, uv.second, f});
+    sort(edges.begin(), edges.end(), [&](auto &e1, auto &e2) { return e1[2] > e2[2]; });
+
+    int V = seq_last.size();
+    vector<int> seen(V, -1), degree(V), longest(V), next(V), active;
+    vector<vector<pair<int, int>>> adj_list(V), dp(V);
+    for (int i = 0; i < edges.size(); i++) adj_list[edges[i][1]].emplace_back(edges[i][0], i);
+    for (int e = edges.size(); e;) {
+        int f = edges[e - 1][2];
+
+        active.clear();
+        for (int i = 0; i < e; i++) {
+            auto [u, v, _] = edges[i];
+            for (int t : {u, v})
+                if (seen[t] != e) {
+                    seen[t] = e;
+                    degree[t] = longest[t] = 0;
+                    next[t] = -1;
+                    active.emplace_back(t);
+                }
+            degree[u]++;
+        }
 
         queue<int> q;
-        for (int v = 0; v < V; v++)
-            if (!degree[v]) {
-                longest[i][v] = 0;
-                q.emplace(v);
-            }
+        for (int v : active)
+            if (!degree[v]) q.emplace(v);
 
         while (!q.empty()) {
             int v = q.front();
             q.pop();
 
-            for (auto [u, f] : adj_list_transpose[v])
-                if (f >= freqs[i])
-                    if (!--degree[u]) q.emplace(u);
-
-            for (auto [u, f] : adj_list_regular[v])
-                if (f >= freqs[i]) longest[i][v] = max(longest[i][v], longest[i][u] + 1);
+            for (auto [u, i] : adj_list[v]) {
+                if (i >= e) break;
+                if (longest[u] < longest[v] + 1) {
+                    longest[u] = longest[v] + 1;
+                    next[u] = i;
+                }
+                if (!--degree[u]) q.emplace(u);
+            }
         }
 
-        for (int v = 0; v < V; v++)
-            if (!~longest[i][v]) longest[i][v] = 1e6;
+        for (int i = 0; i < e; i++) {
+            auto [u, v, _] = edges[i];
+            if (degree[v]) {
+                longest[u] = INT_MAX;
+                next[u] = i;
+            }
+        }
 
-        for (int v = 0; v < V; v++)
-            for (auto [u, f] : adj_list_regular[v])
-                if (f >= freqs[i]) {
-                    if (!~next[i][v]) next[i][v] = u;
-                    else if (longest[i][next[i][v]] < longest[i][u]) next[i][v] = u;
-                }
+        for (int v : active)
+            if (~next[v]) dp[v].emplace_back(longest[v], next[v]);
+
+        for (; e && edges[e - 1][2] == f; e--);
     }
-    indices.resize(k);
 
     int q;
     cin >> q;
@@ -115,26 +124,28 @@ int main() {
         int m;
         cin >> m;
 
-        for (int &i : indices) {
-            string ui;
-            cin >> ui;
+        array<int, 10> query{};
+        for (int i = 0; i < k; i++) {
+            string s;
+            cin >> s;
 
-            i = lower_bound(sorted.begin(), sorted.end(), ui) - sorted.begin();
+            query[i] = compress.find(s)->second;
         }
 
-        vector<string> words(m, sorted[0]);
-        int v = lower_bound(kgrams.begin(), kgrams.end(), indices) - kgrams.begin();
-        if (~v)
-            for (int i = 0; i < freqs.size(); i++)
-                if (longest[i][v] >= m) {
-                    for (auto &wj : words) {
-                        v = next[i][v];
-                        wj = sorted[kgrams[v].back()];
-                    }
-                    break;
-                }
+        auto it = seq_node.find(query);
+        int v = -1, l = -1;
+        if (it != seq_node.end()) {
+            v = it->second;
+            int r = dp[v].size(), mid;
+            while (l + 1 < r) {
+                mid = l + (r - l) / 2;
 
-        for (auto wj : words) cout << wj << " ";
+                if (dp[v][mid].first >= m) l = mid;
+                else r = mid;
+            }
+        }
+
+        while (m--) cout << (words[!~l ? 0 : seq_last[v = edges[dp[v][l].second][1]]]) << " ";
         cout << "\n";
     }
 }
