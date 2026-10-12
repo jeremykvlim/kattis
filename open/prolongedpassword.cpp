@@ -1,48 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T>
-struct JumpTable {
-    int lg;
-    vector<vector<int>> lift;
-    vector<vector<T>> sum;
-
-    JumpTable(long long n, int m, const vector<int> &next, const vector<T> &w) {
-        lg = __lg(n) + 1;
-        lift.assign(lg, vector<int>(m));
-        lift[0] = next;
-        sum.assign(lg, vector<T>(m));
-        sum[0] = w;
-
-        for (int b = 1; b < lg; b++)
-            for (int i = 0; i < m; i++) {
-                int j = lift[b - 1][i];
-                lift[b][i] = lift[b - 1][j];
-                sum[b][i] = sum[b - 1][i] + sum[b - 1][j];
-            }
-    }
-
-    pair<T, int> jump_up(int v, long long k) const {
-        T cost = 0;
-        for (int b = 0; b < lg; b++)
-            if ((k >> b) & 1) {
-                cost += sum[b][v];
-                v = lift[b][v];
-            }
-        return {cost, v};
-    }
-
-    pair<T, int> jump_down(int v, T bound) const {
-        T cost = 0;
-        for (int b = lg - 1; ~b; b--)
-            if (lift[b][v] <= bound) {
-                cost += sum[b][v];
-                v = lift[b][v];
-            }
-        return {cost, v};
-    }
-};
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -88,11 +46,27 @@ int main() {
     vector<int> next(26);
     for (int c = 0; c < 26; c++) next[c] = T[c][0] - 'a';
 
-    JumpTable<int> jt(K + 1, 26, next, vector<int>(26, 0));
+    vector<int> jump(26);
+    auto steps = max(0LL, K - p2);
+    for (int c = 0; c < 26; c++) {
+        vector<int> pos(26, -1), path;
+        int v = c;
+        for (; !~pos[v]; v = next[v]) {
+            path.emplace_back(v);
+            pos[v] = path.size() - 1;
+        }
+
+        if (steps < path.size()) jump[c] = path[steps];
+        else {
+            int i = pos[v];
+            jump[c] = path[i + (steps - i) % (path.size() - i)];
+        }
+    }
+
     auto letter = [&](int c1, long long p) {
         auto k = K;
         if (k > p2) {
-            c1 = jt.jump_up(c1, k - p2).second;
+            c1 = jump[c1];
             k = p2;
         }
 

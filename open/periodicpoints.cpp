@@ -646,48 +646,6 @@ T trace(const Matrix<T> &A) {
     return tr;
 }
 
-template <typename T>
-struct JumpTable {
-    int lg;
-    vector<vector<int>> lift;
-    vector<vector<T>> sum;
-
-    JumpTable(int n, int m, const vector<int> &next, const vector<T> &w) {
-        lg = __lg(n) + 1;
-        lift.assign(lg, vector<int>(m));
-        lift[0] = next;
-        sum.assign(lg, vector<T>(m));
-        sum[0] = w;
-
-        for (int b = 1; b < lg; b++)
-            for (int i = 0; i < m; i++) {
-                int j = lift[b - 1][i];
-                lift[b][i] = lift[b - 1][j];
-                sum[b][i] = sum[b - 1][i] + sum[b - 1][j];
-            }
-    }
-
-    pair<T, int> jump_up(int v, int k) const {
-        T cost = 0;
-        for (int b = 0; b < lg; b++)
-            if ((k >> b) & 1) {
-                cost += sum[b][v];
-                v = lift[b][v];
-            }
-        return {cost, v};
-    }
-
-    pair<T, int> jump_down(int v, T bound) const {
-        T cost = 0;
-        for (int b = lg - 1; ~b; b--)
-            if (lift[b][v] <= bound) {
-                cost += sum[b][v];
-                v = lift[b][v];
-            }
-        return {cost, v};
-    }
-};
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -765,9 +723,56 @@ int main() {
             next[i] = encode(f[x], l, r);
         }
 
-        JumpTable<int> jt(n, states, next, vector<int>(states, 0));
+        vector<vector<int>> adj_list(states);
+        vector<int> indegree(states, 0);
+        for (int v = 0; v < states; v++) {
+            adj_list[next[v]].emplace_back(v);
+            indegree[next[v]]++;
+        }
+
+        queue<int> q;
+        for (int v = 0; v < states; v++)
+            if (!indegree[v]) q.emplace(v);
+
+        while (!q.empty()) {
+            int v = q.front();
+            q.pop();
+
+            if (!--indegree[next[v]]) q.emplace(next[v]);
+        }
+
+        vector<int> jump(states), seen(states);
+        for (int s = 0; s < states; s++) {
+            if (!indegree[s] || seen[s]) continue;
+
+            vector<int> cycle;
+            for (int v = s; !seen[v]; v = next[v]) {
+                seen[v] = true;
+                cycle.emplace_back(v);
+            }
+
+            int len = cycle.size();
+            for (int i = 0; i < len; i++) jump[cycle[i]] = cycle[(i + n % len) % len];
+
+            for (int i = 0; i < len; i++) {
+                vector<int> path{cycle[i]};
+                auto dfs = [&](auto &&self, int v) -> void {
+                    for (int u : adj_list[v])
+                        if (!indegree[u]) {
+                            path.emplace_back(u);
+                            int depth = path.size() - 1;
+                            if (n < depth) jump[u] = path[depth - n];
+                            else jump[u] = cycle[(i + (n - depth) % len) % len];
+                            self(self, u);
+                            path.pop_back();
+                        }
+                };
+                dfs(dfs, cycle[i]);
+            }
+        }
+
         for (int x = 0; x <= m; x++) {
-            auto [y, l, r] = decode(jt.jump_up(encode(x, !!x, x < m), n).second);
+            auto [y, l, r] = decode(jump[encode(x, !!x, x < m)]);
             if (x == y) solutions += (l != 1 && r != 1) - (l == 1 && r == 1);
         }
         cout << solutions << "\n";
