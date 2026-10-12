@@ -1,9 +1,11 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-vector<int> prefix_function(const string &s) {
-    vector<int> pi(s.size());
-    for (int i = 1; i < s.size(); i++) {
+template <typename T>
+vector<int> prefix_function(const T &s) {
+    int n = s.size();
+    vector<int> pi(n);
+    for (int i = 1; i < n; i++) {
         int j = pi[i - 1];
         while (j && s[i] != s[j]) j = pi[j - 1];
         if (s[i] == s[j]) j++;
@@ -13,7 +15,8 @@ vector<int> prefix_function(const string &s) {
     return pi;
 }
 
-vector<int> z_function(const string &s) {
+template <typename T>
+vector<int> z_function(const T &s) {
     int n = s.size();
     vector<int> z(n, 0);
     for (int i = 1, l = 0, r = 0; i < n; i++) {

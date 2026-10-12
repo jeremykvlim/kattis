@@ -41,53 +41,40 @@ tuple<int, vector<int>, vector<vector<int>>> tarjan(int n, vector<vector<pair<in
 
 template <typename T>
 auto dasdan_gupta(int n, const vector<vector<pair<int, T>>> &adj_list) {
-    vector<int> first(n, 0), last(n, 0);
-    for (int _ = 0; _ < n; _++) {
-        for (int v = 0; v < n; v++) {
-            int degree = adj_list[v].size();
-            for (auto [u, w] : adj_list[v]) degree += first[u];
-            last[v] = degree;
-        }
-        first.swap(last);
-    }
-    int s = 0;
-    for (int v = 1; v < n; v++)
-        if (first[s] > first[v]) s = v;
-
-    T inf = numeric_limits<T>::max() / 4;
-    vector<vector<T>> dp(n + 1, vector<T>(n, -inf));
-    dp[0][s] = 0;
+    T inf = numeric_limits<T>::min();
+    vector<vector<T>> dp(n + 1, vector<T>(n, inf));
+    dp[0][0] = 0;
     vector<vector<int>> valid(n + 1, vector<int>(n, -1));
     vector<int> last_level(n, -1);
-    last_level[s] = 0;
+    last_level[0] = 0;
     queue<pair<int, int>> q;
-    q.emplace(0, s);
+    q.emplace(0, 0);
     while (!q.empty()) {
         auto [k, v] = q.front();
         q.pop();
 
-        if (k == n || dp[k][v] == -inf) continue;
+        if (k == n || dp[k][v] == inf) continue;
 
         for (auto [u, w] : adj_list[v]) {
             if (last_level[u] < k + 1) {
                 q.emplace(k + 1, u);
                 valid[k + 1][u] = last_level[u];
                 last_level[u] = k + 1;
-                dp[k + 1][u] = -inf;
+                dp[k + 1][u] = inf;
             }
 
             dp[k + 1][u] = max(dp[k + 1][u], dp[k][v] + w);
         }
     }
 
-    using U = typename conditional<is_same<T, int>::value, double, typename conditional<is_same<T, long long>::value, long double, void>::type>::type;
+    using U = conditional_t<sizeof(T) <= sizeof(int), double, long double>;
     U lambda = numeric_limits<U>::lowest();
     for (int v = 0; v < n; v++)
-        if (last_level[v] == n && dp[n][v] != -inf) {
+        if (last_level[v] == n && dp[n][v] != inf) {
             U m = numeric_limits<U>::max();
             int k = valid[n][v];
             while (k > -1) {
-                if (dp[k][v] != -inf) m = min(m, (U) (dp[n][v] - dp[k][v]) / (n - k));
+                if (dp[k][v] != inf) m = min(m, ((U) dp[n][v] - dp[k][v]) / (n - k));
                 k = valid[k][v];
             }
             lambda = max(lambda, m);

@@ -1,7 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-vector<int> z_function(const vector<int> &s) {
+template <typename T>
+vector<int> z_function(const T &s) {
     int n = s.size();
     vector<int> z(n, 0);
     for (int i = 1, l = 0, r = 0; i < n; i++) {
@@ -12,6 +13,7 @@ vector<int> z_function(const vector<int> &s) {
             r = i + z[i];
         }
     }
+
     return z;
 }
 

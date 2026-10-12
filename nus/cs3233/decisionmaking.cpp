@@ -496,9 +496,11 @@ vector<int> rref(Matrix<T> &matrix) {
     return match;
 }
 
-vector<int> prefix_function(const string &s) {
-    vector<int> pi(s.size());
-    for (int i = 1; i < s.size(); i++) {
+template <typename T>
+vector<int> prefix_function(const T &s) {
+    int n = s.size();
+    vector<int> pi(n);
+    for (int i = 1; i < n; i++) {
         int j = pi[i - 1];
         while (j && s[i] != s[j]) j = pi[j - 1];
         if (s[i] == s[j]) j++;
