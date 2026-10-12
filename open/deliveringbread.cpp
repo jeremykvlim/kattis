@@ -76,7 +76,7 @@ int main() {
         indices[ki].emplace_back(i);
     }
 
-    vector<int> offset(2 * K + 1), id(n);
+    vector<int> offset(2 * K + 1, 0), id(n);
     for (int ki = 0; ki < K; ki++) {
         sort(indices[ki].begin(), indices[ki].end(), [&](int i, int j) { return d[i] < d[j]; });
 

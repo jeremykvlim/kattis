@@ -142,7 +142,7 @@ struct MonotonicHull : deque<Point<T>> {
             return p.x * x + p.y;
         };
 
-        while (this->size() > 1 && f((*this)[this->size() - 1]) >= f((*this)[this->size() - 2])) this->pop_back();
+        while (this->size() > 1 && f(this->back()) >= f((*this)[this->size() - 2])) this->pop_back();
         return f(this->back());
     }
 };

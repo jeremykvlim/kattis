@@ -8,78 +8,78 @@ struct LARSCH {
     vector<int> offset, size, pos;
 
     LARSCH(int n) : n(n), lg(__lg(n)), i(0), dp(lg), offset(lg + 1), size(lg), pos(lg) {
-        for (int b = 0; b < lg; b++) offset[b + 1] = offset[b] + (n >> (b + 1));
+        for (int p2 = 0; p2 < lg; p2++) offset[p2 + 1] = offset[p2] + (n >> (p2 + 1));
         cols.resize(offset[lg]);
     }
 
     pair<T, int> query(auto &&get, auto &&cmp) {
-        int b = 0;
+        int p2 = 0;
         pair<T, int> optimum;
         for (;;) {
-            int r = i >> b, limit = (r + 1) >> 1, col = !b ? i : cols[offset[b - 1] + r].second;
-            if (b == lg) {
-                int row = ((r + 1) << b) - 1;
-                if (!b) optimum = {get(row, col), col};
-                else optimum = cols[offset[b - 1] + r];
-                b--;
+            int r = i >> p2, limit = (r + 1) >> 1, col = !p2 ? i : cols[offset[p2 - 1] + r].second;
+            if (p2 == lg) {
+                int row = ((r + 1) << p2) - 1;
+                if (!p2) optimum = {get(row, col), col};
+                else optimum = cols[offset[p2 - 1] + r];
+                p2--;
                 break;
             }
 
             if (r & 1) {
-                int row = (limit << (b + 1)) - 1;
+                int row = (limit << (p2 + 1)) - 1;
                 pair<T, int> p;
-                if (!b) p = {get(row, col), col};
-                else p = cols[offset[b - 1] + r];
-                if (pos[b] == r || cmp(dp[b], p)) {
-                    pos[b] = r;
-                    dp[b] = p;
+                if (!p2) p = {get(row, col), col};
+                else p = cols[offset[p2 - 1] + r];
+                if (pos[p2] == r || cmp(dp[p2], p)) {
+                    pos[p2] = r;
+                    dp[p2] = p;
                 }
             }
 
-            if (pos[b] == r) {
-                size[b] = limit;
-                if (b + 1 < lg) pos[b + 1] = limit;
+            if (pos[p2] == r) {
+                size[p2] = limit;
+                if (p2 + 1 < lg) pos[p2 + 1] = limit;
             }
 
-            int temp = size[b];
-            for (; size[b] > limit; size[b]--) {
-                int row = (size[b] << (b + 1)) - 1;
+            int temp = size[p2];
+            for (; size[p2] > limit; size[p2]--) {
+                int row = (size[p2] << (p2 + 1)) - 1;
                 pair<T, int> p{get(row, col), col};
-                if (!cmp(cols[offset[b] + size[b] - 1], p)) break;
-                cols[offset[b] + size[b] - 1] = p;
+                if (!cmp(cols[offset[p2] + size[p2] - 1], p)) break;
+                cols[offset[p2] + size[p2] - 1] = p;
             }
 
-            if (temp != size[b]) size[b]++;
+            if (temp != size[p2]) size[p2]++;
             else {
-                int row = ((size[b] + 1) << (b + 1)) - 1;
-                if (row < n) cols[offset[b] + size[b]++] = {get(row, col), col};
+                int row = ((size[p2] + 1) << (p2 + 1)) - 1;
+                if (row < n) cols[offset[p2] + size[p2]++] = {get(row, col), col};
             }
 
             if (r & 1) {
-                optimum = dp[b];
-                b--;
+                optimum = dp[p2];
+                p2--;
                 break;
             }
 
-            if ((limit + 1) << (b + 1) > n) {
+            if ((limit + 1) << (p2 + 1) > n) {
                 optimum.second = col;
                 break;
             }
 
-            b++;
+            p2++;
         }
 
-        for (; ~b; b--) {
-            dp[b] = optimum;
-            int r = i >> b, row = ((r + 1) << b) - 1, stop = dp[b].second, col = !b ? pos[b] : cols[offset[b - 1] + pos[b]].second;
+        for (; ~p2; p2--) {
+            dp[p2] = optimum;
+            int r = i >> p2, row = ((r + 1) << p2) - 1, stop = dp[p2].second, col = !p2 ? pos[p2] : cols[offset[p2 - 1] + pos[p2]].second;
             auto next = [&]() -> pair<T, int> {
-                if (!b || pos[b] != r) return {get(row, col), col};
-                return cols[offset[b - 1] + r];
+                if (!p2 || pos[p2] != r) return {get(row, col), col};
+                return cols[offset[p2 - 1] + r];
             };
             optimum = next();
             if (col == stop) continue;
-            for (pos[b]++;; pos[b]++) {
-                col = !b ? pos[b] : cols[offset[b - 1] + pos[b]].second;
+            for (pos[p2]++;; pos[p2]++) {
+                col = !p2 ? pos[p2] : cols[offset[p2 - 1] + pos[p2]].second;
                 auto p = next();
                 if (cmp(optimum, p)) optimum = p;
                 if (col == stop) break;

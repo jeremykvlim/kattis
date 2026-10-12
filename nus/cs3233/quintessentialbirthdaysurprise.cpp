@@ -37,9 +37,7 @@ struct LiChaoSegmentTree {
             return;
         }
 
-        auto fl = eval(f, l), fr = eval(f, r - 1),
-             sl = eval(ST[i], l), sr = eval(ST[i], r - 1);
-
+        auto fl = eval(f, l), fr = eval(f, r - 1), sl = eval(ST[i], l), sr = eval(ST[i], r - 1);
         bool left = cmp(fl, sl), right = cmp(fr, sr);
         if (!left && !right) return;
         if (!cmp(sl, fl) && !cmp(sr, fr)) {

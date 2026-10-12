@@ -2,64 +2,150 @@
 using namespace std;
 
 template <typename T>
-vector<pair<T, int>> smawk(int n, int m, auto &&get, auto &&cmp) {
-    int lg = __lg(n);
-    vector<pair<T, int>> dp(n);
-    static vector<int> cols, offset;
-    if (cols.size() < n) cols.resize(n);
-    if (offset.size() < lg + 1) offset.resize(lg + 1);
-    offset[0] = 0;
-    for (int b = 0; b < lg; b++) {
-        int size = 0;
-        auto push = [&](int col, int limit = 0) {
-            int temp = size;
-            for (; size > limit; size--) {
-                int row = (size << (b + 1)) - 1;
-                pair<T, int> p{get(row, col), col};
-                if (!cmp(dp[row], p)) break;
-                dp[row] = p;
-            }
-            if (size == n >> (b + 1)) return;
+struct Point {
+    T x, y;
 
-            if (size == temp) {
-                int row = ((size + 1) << (b + 1)) - 1;
-                dp[row] = {get(row, col), col};
-            }
-            cols[offset[b] + size++] = col;
+    Point() {}
+    Point(T x, T y) : x(x), y(y) {}
+
+    template <typename U>
+    Point(U x, U y) : x(x), y(y) {}
+
+    template <typename U>
+    Point(const Point<U> &p) : x((T) p.x), y((T) p.y) {}
+
+    const auto begin() const {
+        return &x;
+    }
+
+    const auto end() const {
+        return &y + 1;
+    }
+
+    Point operator-() const {
+        return {-x, -y};
+    }
+
+    Point operator!() const {
+        return {y, x};
+    }
+
+    Point operator~() const {
+        return {-y, x};
+    }
+
+    bool operator<(const Point &p) const {
+        return x != p.x ? x < p.x : y < p.y;
+    }
+
+    bool operator>(const Point &p) const {
+        return x != p.x ? x > p.x : y > p.y;
+    }
+
+    bool operator==(const Point &p) const {
+        return x == p.x && y == p.y;
+    }
+
+    bool operator!=(const Point &p) const {
+        return x != p.x || y != p.y;
+    }
+
+    bool operator<=(const Point &p) const {
+        return *this < p || *this == p;
+    }
+
+    bool operator>=(const Point &p) const {
+        return *this > p || *this == p;
+    }
+
+    Point operator+(const Point &p) const {
+        return {x + p.x, y + p.y};
+    }
+
+    Point operator+(const T &v) const {
+        return {x + v, y + v};
+    }
+
+    Point & operator+=(const Point &p) {
+        x += p.x;
+        y += p.y;
+        return *this;
+    }
+
+    Point & operator+=(const T &v) {
+        x += v;
+        y += v;
+        return *this;
+    }
+
+    Point operator-(const Point &p) const {
+        return {x - p.x, y - p.y};
+    }
+
+    Point operator-(const T &v) const {
+        return {x - v, y - v};
+    }
+
+    Point & operator-=(const Point &p) {
+        x -= p.x;
+        y -= p.y;
+        return *this;
+    }
+
+    Point & operator-=(const T &v) {
+        x -= v;
+        y -= v;
+        return *this;
+    }
+
+    Point operator*(const T &v) const {
+        return {x * v, y * v};
+    }
+
+    Point & operator*=(const T &v) {
+        x *= v;
+        y *= v;
+        return *this;
+    }
+
+    Point operator/(const T &v) const {
+        return {x / v, y / v};
+    }
+
+    Point & operator/=(const T &v) {
+        x /= v;
+        y /= v;
+        return *this;
+    }
+};
+
+template <typename T>
+T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
+    return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+}
+
+template <typename T, int sign = -1, bool collinear = false>
+struct MonotonicHull : deque<Point<T>> {
+    bool violates(const auto &a, const auto &b, const auto &c) {
+        auto cp = cross(a, b, c);
+        if constexpr (sign < 0) cp = -cp;
+        return collinear ? cp >= 0 : cp > 0;
+    }
+
+    void add(const auto &p) {
+        while (this->size() > 1 && violates((*this)[1], (*this)[0], p)) this->pop_front();
+        this->emplace_front(p);
+    }
+
+    T query(T x) {
+        auto f = [&](const auto &p) {
+            return p.x * x + p.y;
         };
 
-        if (!b)
-            for (int col = 0; col < m; col++) push(col);
-        else
-            for (int i = offset[b - 1]; i < offset[b]; i++) push(cols[i], (i - offset[b - 1]) >> 1);
-        offset[b + 1] = offset[b] + size;
+        while (this->size() > 1 && f(this->back()) >= f((*this)[this->size() - 2])) this->pop_back();
+        return f(this->back());
     }
-
-    for (int b = lg; b; b--)
-        for (int row = (1 << b) - 1, i = offset[b - 1]; row < n; row += 2 << b) {
-            int stop = row + (1 << b) < n ? dp[row + (1 << b)].second : -1, col = cols[i];
-            dp[row] = {get(row, col), col};
-            if (col == stop) continue;
-            for (i++; i < offset[b]; i++) {
-                col = cols[i];
-                pair<T, int> p{get(row, col), col};
-                if (cmp(dp[row], p)) dp[row] = p;
-                if (col == stop) break;
-            }
-        }
-
-    for (int row = 0, col = 0; row < n; row += 2) {
-        int stop = row + 1 < n ? dp[row + 1].second : -1;
-        dp[row] = {get(row, col), col};
-        if (col == stop) continue;
-        for (col++; col < m; col++) {
-            pair<T, int> p{get(row, col), col};
-            if (cmp(dp[row], p)) dp[row] = p;
-            if (col == stop) break;
-        }
-    }
-    return dp;
-}
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -80,16 +166,26 @@ int main() {
         auto left = self(self, l, m), right = self(self, m, r);
 
         auto update = [&](const vector<int> &v1, const vector<int> &v2) {
-            auto get = [&](int row, int col) {
-                int d = max(0, s[v1[col]] - s[v2[row]]);
-                return dp[v1[col]] + (long long) d * d;
-            };
+            auto value = LLONG_MAX;
+            for (int a = 0; int i : v2) {
+                for (; a < v1.size() && s[v1[a]] <= s[i]; a++) value = min(value, dp[v1[a]]);
+                temp[i] = a ? dp[i] + value : LLONG_MAX;
+            }
 
-            auto cmp = [&](const auto &p1, const auto &p2) {
-                return p1 > p2;
-            };
-            auto rows = smawk<long long>(v2.size(), v1.size(), get, cmp);
-            for (int i = 0; i < v2.size(); i++) temp[v2[i]] = dp[v2[i]] + rows[i].first;
+            MonotonicHull<long long, -1, true> hull;
+            for (int a = v1.size() - 1, b = v2.size() - 1; ~b; b--) {
+                int i = v2[b];
+                while (~a && s[v1[a]] > s[i]) {
+                    int x = s[v1[a]];
+
+                    value = LLONG_MAX;
+                    do value = min(value, dp[v1[a--]]);
+                    while (~a && s[v1[a]] == x);
+
+                    hull.add(Point<long long>{-2 * x, value + (long long) x * x});
+                }
+                if (!hull.empty()) temp[i] = min(temp[i], dp[i] + (long long) s[i] * s[i] + hull.query(s[i]));
+            }
         };
         update(right, left);
         update(left, right);
@@ -102,3 +198,4 @@ int main() {
     dnc(dnc, 0, n);
     cout << dp[0];
 }
+

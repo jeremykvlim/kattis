@@ -589,10 +589,10 @@ int main() {
         for (int i = (dirs.size() - 2) | 1; i > 2; i -= 2)
             while (points.back().x + dirs[i - 1].x <= blocks - 1) add(dirs[i - 1] + dirs[i] * ((blocks - 1 - points.back().x - dirs[i - 1].x) / dirs[i].x));
 
-        MonotonicHull<__int128, -1, true> mh;
-        for (auto p : points) mh.add(Point<__int128>{p.x, -p.y});
-        mh.add(Point<__int128>{blocks, 0});
-        return mh.query({y, x}, n);
+        MonotonicHull<__int128, -1, true> hull;
+        for (auto p : points) hull.add(Point<__int128>{p.x, -p.y});
+        hull.add(Point<__int128>{blocks, 0});
+        return hull.query({y, x}, n);
     };
 
     long long l = 0, r = ((x * a + y * b) / n) + 1, m;

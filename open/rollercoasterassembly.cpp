@@ -1,65 +1,88 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T>
-vector<pair<T, int>> smawk(int n, int m, auto &&get, auto &&cmp) {
-    int lg = __lg(n);
-    vector<pair<T, int>> dp(n);
-    static vector<int> cols, offset;
-    if (cols.size() < n) cols.resize(n);
-    if (offset.size() < lg + 1) offset.resize(lg + 1);
-    offset[0] = 0;
-    for (int b = 0; b < lg; b++) {
-        int size = 0;
-        auto push = [&](int col, int limit = 0) {
-            int temp = size;
-            for (; size > limit; size--) {
-                int row = (size << (b + 1)) - 1;
-                pair<T, int> p{get(row, col), col};
-                if (!cmp(dp[row], p)) break;
-                dp[row] = p;
-            }
-            if (size == n >> (b + 1)) return;
+template <typename F, typename E, typename C = less<>>
+struct LiChaoSegmentTree {
+    int n;
+    vector<F> ST;
+    vector<bool> used, visited;
+    F identity;
+    E eval;
+    C cmp;
 
-            if (size == temp) {
-                int row = ((size + 1) << (b + 1)) - 1;
-                dp[row] = {get(row, col), col};
-            }
-            cols[offset[b] + size++] = col;
-        };
+    LiChaoSegmentTree(int n, F identity, E eval) : n(n), ST(2 * n, identity), used(2 * n, false), visited(2 * n, false),
+                                                   identity(identity), eval(eval), cmp({}) {}
 
-        if (!b)
-            for (int col = 0; col < m; col++) push(col);
-        else
-            for (int i = offset[b - 1]; i < offset[b]; i++) push(cols[i], (i - offset[b - 1]) >> 1);
-        offset[b + 1] = offset[b] + size;
+    void update(F f) {
+        apply(1, 0, n, f);
     }
 
-    for (int b = lg; b; b--)
-        for (int row = (1 << b) - 1, i = offset[b - 1]; row < n; row += 2 << b) {
-            int stop = row + (1 << b) < n ? dp[row + (1 << b)].second : -1, col = cols[i];
-            dp[row] = {get(row, col), col};
-            if (col == stop) continue;
-            for (i++; i < offset[b]; i++) {
-                col = cols[i];
-                pair<T, int> p{get(row, col), col};
-                if (cmp(dp[row], p)) dp[row] = p;
-                if (col == stop) break;
-            }
+    void apply(int i, int l, int r, F f) {
+        visited[i] = true;
+        if (!used[i]) {
+            used[i] = true;
+            ST[i] = f;
+            return;
         }
 
-    for (int row = 0, col = 0; row < n; row += 2) {
-        int stop = row + 1 < n ? dp[row + 1].second : -1;
-        dp[row] = {get(row, col), col};
-        if (col == stop) continue;
-        for (col++; col < m; col++) {
-            pair<T, int> p{get(row, col), col};
-            if (cmp(dp[row], p)) dp[row] = p;
-            if (col == stop) break;
+        auto fl = eval(f, l), fr = eval(f, r - 1), sl = eval(ST[i], l), sr = eval(ST[i], r - 1);
+        bool left = cmp(fl, sl), right = cmp(fr, sr);
+        if (!left && !right) return;
+        if (!cmp(sl, fl) && !cmp(sr, fr)) {
+            ST[i] = f;
+            return;
         }
+
+        if (l + 1 == r) {
+            if (left) ST[i] = f;
+            return;
+        }
+
+        int m = midpoint(l, r);
+        bool mid = cmp(eval(f, m), eval(ST[i], m));
+        if (mid) swap(f, ST[i]);
+        if (left != mid) apply(i << 1, l, m, f);
+        else apply(i << 1 | 1, m, r, f);
     }
-    return dp;
-}
+
+    void range_update(int ql, int qr, const F &f) {
+        range_update(1, ql, qr, f, 0, n);
+    }
+
+    void range_update(int i, int ql, int qr, const F &f, int l, int r) {
+        if (qr <= l || r <= ql) return;
+        visited[i] = true;
+        if (ql <= l && r <= qr) {
+            apply(i, l, r, f);
+            return;
+        }
+
+        int m = midpoint(l, r);
+        range_update(i << 1, ql, qr, f, l, m);
+        range_update(i << 1 | 1, ql, qr, f, m, r);
+    }
+
+    F query(int p) {
+        return query(1, p, 0, n);
+    }
+
+    F query(int i, int p, int l, int r) {
+        if (!visited[i]) return identity;
+
+        F f = used[i] ? ST[i] : identity;
+        if (l + 1 == r) return f;
+
+        int m = midpoint(l, r);
+        F g = p < m ? query(i << 1, p, l, m) : query(i << 1 | 1, p, m, r);
+        if (cmp(eval(g, p), eval(f, p))) f = g;
+        return f;
+    }
+
+    int midpoint(int l, int r) {
+        int i = 1 << __lg(r - l);
+        return min(l + i, r - (i >> 1));
+    }
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -74,47 +97,22 @@ int main() {
     vector<long long> pref(n, 0);
     for (int i = 1; i < n; i++) pref[i] = pref[i - 1] + min(a[i], b[i - 1]);
 
-    vector<int> indices_a(n - 1), indices_b(n - 1);
-    iota(indices_a.begin(), indices_a.end(), 0);
-    iota(indices_b.begin(), indices_b.end(), 2);
-    sort(indices_a.begin(), indices_a.end(), [&](int i, int j) { return a[i] != a[j] ? a[i] < a[j] : i < j; });
-    sort(indices_b.begin(), indices_b.end(), [&](int i, int j) { return b[i - 1] != b[j - 1] ? b[i - 1] < b[j - 1] : i < j; });
+    vector<int> xs(b.begin() + 1, b.end());
+    sort(xs.begin(), xs.end());
+    xs.erase(unique(xs.begin(), xs.end()), xs.end());
 
-    vector<long long> dp(n + 1, numeric_limits<long long>::lowest() / 4);
-    dp[0] = 0;
-    auto dnc = [&](auto &&self, int l, int r, const auto &indices_a, const auto &indices_b) -> void {
-        if (l + 1 == r) return;
-
-        int m = l + (r - l) / 2;
-        vector<int> indices_al, indices_ar, indices_bl, indices_br;
-        for (int i : indices_a)
-            if (i < m - 1) indices_al.emplace_back(i);
-            else if (i >= m) indices_ar.emplace_back(i);
-        for (int i : indices_b)
-            if (i < m) indices_bl.emplace_back(i);
-            else indices_br.emplace_back(i);
-        self(self, l, m, indices_al, indices_bl);
-
-        if (!indices_al.empty()) {
-            auto get = [&](int row, int col) {
-                int j = indices_br[row], i = indices_al[col];
-                return dp[i] - pref[i] + min(a[i], b[j - 1]);
-            };
-
-            auto cmp = [&](const auto &p1, const auto &p2) {
-                return p1.first <= p2.first;
-            };
-            auto rows = smawk<long long>(indices_br.size(), indices_al.size(), get, cmp);
-            for (int k = 0; k < indices_br.size(); k++) {
-                int j = indices_br[k];
-                dp[j] = max(dp[j], pref[j - 1] + rows[k].first);
-            }
-        }
-
-        int i = m - 1;
-        for (int j = m + 1; j < r; j++) dp[j] = max(dp[j], dp[i] + pref[j - 1] - pref[i] + min(a[i], b[j - 1]));
-        self(self, m, r, indices_ar, indices_br);
+    auto eval = [&](const pair<int, long long> &f, int p) {
+        return min(xs[p], f.first) + f.second;
     };
-    dnc(dnc, 0, n + 1, indices_a, indices_b);
+
+    LiChaoSegmentTree<pair<int, long long>, decltype(eval), greater<>> lcst(xs.size(), {0, LLONG_MIN / 4}, eval);
+    vector<long long> dp(n + 1, -1e18);
+    dp[0] = 0;
+    for (int j = 2; j <= n; j++) {
+        int i = j - 2;
+        if (dp[i] != -1e18) lcst.update({a[i], dp[i] - pref[i]});
+        int p = lower_bound(xs.begin(), xs.end(), b[j - 1]) - xs.begin();
+        dp[j] = pref[j - 1] + eval(lcst.query(p), p);
+    }
     cout << dp[n];
 }
