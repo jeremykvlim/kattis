@@ -32,7 +32,7 @@ int main() {
 
     auto total = (long long) n * (n - 1) / 2;
     array<vector<array<int, 3>>, 2> h, v;
-    vector<pair<int, int>> h_ranges, v_ranges;
+    vector<pair<int, int>> h_intervals, v_intervals;
     while (n--) {
         int x1, y1, x2, y2;
         cin >> x1 >> y1 >> x2 >> y2;
@@ -50,7 +50,7 @@ int main() {
             }
             if (y1 > y2) h[0].push_back({yl, yr, yl - x1});
             else h[1].push_back({yl, yr, yl + x2});
-            h_ranges.emplace_back(yl, yr);
+            h_intervals.emplace_back(yl, yr);
         } else if (dx > dy) {
             int xm = (x1 + x2) / 2, xl = xm - dy / 2, xr = xm + dy / 2;
             if (y1 > y2) {
@@ -59,25 +59,25 @@ int main() {
             }
             if (x1 > x2) v[0].push_back({xl, xr, xl - y1});
             else v[1].push_back({xl, xr, xl + y2});
-            v_ranges.emplace_back(xl, xr);
+            v_intervals.emplace_back(xl, xr);
         }
     }
 
-    auto count = [&](const auto &axis, const auto &ranges) -> long long {
-        if (ranges.empty()) return 0;
+    auto count = [&](const auto &axis, const auto &intervals) -> long long {
+        if (intervals.empty()) return 0;
 
         vector<int> sweep;
-        for (auto [l, r] : ranges) sweep.emplace_back(r);
+        for (auto [l, r] : intervals) sweep.emplace_back(r);
         sort(sweep.begin(), sweep.end());
 
-        vector<int> order(ranges.size());
+        vector<int> order(intervals.size());
         iota(order.begin(), order.end(), 0);
-        sort(order.begin(), order.end(), [&](int i, int j) { return ranges[i].first < ranges[j].first; });
+        sort(order.begin(), order.end(), [&](int i, int j) { return intervals[i].first < intervals[j].first; });
 
         int p = 0;
         auto c = 0LL;
         for (int i : order) {
-            for (; p < sweep.size() && sweep[p] < ranges[i].first; p++);
+            for (; p < sweep.size() && sweep[p] < intervals[i].first; p++);
             c += p;
         }
 
@@ -143,5 +143,5 @@ int main() {
         }
         return c;
     };
-    cout << total - count(h, h_ranges) - count(v, v_ranges);
+    cout << total - count(h, h_intervals) - count(v, v_intervals);
 }
