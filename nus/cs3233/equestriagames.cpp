@@ -1,51 +1,61 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T>
-struct JumpTable {
-    int lg;
-    vector<vector<int>> lift;
-    vector<vector<T>> sum;
+struct DisjointSets {
+    vector<int> sets;
 
-    JumpTable(int n, int m, const vector<int> &next, const vector<T> &w) {
-        lg = __lg(n) + 1;
-        lift.assign(lg, vector<int>(m));
-        lift[0] = next;
-        sum.assign(lg, vector<T>(m));
-        sum[0] = w;
-
-        for (int b = 1; b < lg; b++)
-            for (int i = 0; i < m; i++) {
-                int j = lift[b - 1][i];
-                lift[b][i] = lift[b - 1][j];
-                sum[b][i] = sum[b - 1][i] + sum[b - 1][j];
-            }
+    int find(int v) {
+        while (sets[v] >= 0) {
+            int p = sets[v];
+            if (sets[p] >= 0) sets[v] = sets[p];
+            v = p;
+        }
+        return v;
     }
 
-    pair<T, int> jump_up(int v, int k) const {
-        T cost = 0;
-        int steps = 0;
-        for (int b = 0; b < lg; b++)
-            if ((k >> b) & 1) {
-                cost += sum[b][v];
-                steps += 1 << b;
-                v = lift[b][v];
-            }
-        return {cost, steps};
+    pair<int, int> unite(int u, int v) {
+        int u_set = find(u), v_set = find(v);
+        if (u_set == v_set) return {u_set, -1};
+
+        if (sets[u_set] > sets[v_set]) swap(u_set, v_set);
+        sets[u_set] += sets[v_set];
+        sets[v_set] = u_set;
+        return {u_set, v_set};
     }
 
-    pair<T, int> jump_down(int v, T bound) const {
-        T cost = 0;
-        int steps = 0;
-        for (int b = lg - 1; ~b; b--)
-            if (lift[b][v] <= bound) {
-                cost += sum[b][v];
-                steps += 1 << b;
-                v = lift[b][v];
-            }
-        return {cost, steps};
+    int size(int v) {
+        return -sets[find(v)];
     }
+
+    DisjointSets(int n) : sets(n, -1) {}
 };
+
+vector<pair<int, int>> monotone_jumps(const vector<int> &next, const vector<pair<int, int>> &queries) {
+    int n = next.size();
+    vector<vector<int>> adj_list(n + 1);
+    vector<int> depth(n + 1, 0);
+    for (int v = 0; v < n; v++) adj_list[next[v]].emplace_back(v);
+    for (int v = n - 1; ~v; v--) depth[v] = depth[next[v]] + 1;
+
+    DisjointSets dsu(n + 1);
+    vector<int> rep(n + 1);
+    iota(rep.begin(), rep.end(), 0);
+
+    int q = queries.size();
+    vector<pair<int, int>> result(q);
+    for (int i = 0, v = 0; i < q; i++) {
+        auto [a, bound] = queries[i];
+        for (; v <= bound; v++)
+            for (int u : adj_list[v]) {
+                auto [big, small] = dsu.unite(u, v);
+                if (small != -1) rep[big] = max(rep[big], rep[small]);
+            }
+
+        int b = rep[dsu.find(a)];
+        result[i] = {depth[a] - depth[b], b};
+    }
+    return result;
+}
 
 int main() {
     ios::sync_with_stdio(false);
@@ -66,17 +76,19 @@ int main() {
     a.resize(m);
     for (int i = n; i < m; i++) a[i] = a[i - n];
 
-    vector<int> freq(temp.size(), 0), next(m + 2, m + 1);
-    for (int l = 1, r = 1, count = 0; l <= m; l++) {
-        for (; r <= m && count < c; r++)
-            if (!freq[a[r - 1]]++) count++;
+    vector<int> freq(temp.size(), 0), next(m, m);
+    for (int l = 0, r = 0, count = 0; l < m; l++) {
+        for (; r < m && count < c; r++)
+            if (!freq[a[r]]++) count++;
 
-        if (count >= c) next[l] = min(m + 1, max(r, l + k));
-        if (!--freq[a[l - 1]]) count--;
+        if (count >= c) next[l] = min(next[l], max(r, l + k));
+        if (!--freq[a[l]]) count--;
     }
 
-    JumpTable<int> jt(n, m + 2, next, vector<int>(m + 2, 1));
+    vector<pair<int, int>> queries(n);
+    for (int i = 0; i < n; i++) queries[i] = {i, i + n};
+
     int sold = 0;
-    for (int l = 1; l <= n; l++) sold = max(sold, jt.jump_down(l, l + n).second);
+    for (auto [cost, v] : monotone_jumps(next, queries)) sold = max(sold, cost);
     cout << sold;
 }
