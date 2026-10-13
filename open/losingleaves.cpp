@@ -8,35 +8,21 @@ int main() {
     int n, k;
     cin >> n >> k;
 
-    vector<vector<int>> adj_list(n);
-    for (int i = 1; i < n; i++) {
-        int p;
-        cin >> p;
+    vector<int> p(n), height(n, 1);
+    for (int i = 1; i < n; i++) cin >> p[i];
+    for (int i = n - 1; i; i--) height[p[i]] = max(height[p[i]], height[i] + 1);
 
-        adj_list[p].emplace_back(i);
+    vector<int> count(n + 1, 0);
+    for (int h : height) {
+        count[h]++;
+        if (h > 1) count[h - 1]--;
     }
 
-    vector<int> dp(n, 0);
-    auto dfs = [&](auto &&self, int v = 0) -> void {
-        int t = 0;
-        for (int u : adj_list[v]) {
-            self(self, u);
-            if (dp[v] < dp[u]) {
-                dp[v] = dp[u];
-                t = u;
-            }
-        }
-        dp[v]++;
-        if (t) dp[t] = 1e9;
-    };
-    dfs(dfs);
-
-    sort(dp.begin(), dp.end());
-    int count = count_if(adj_list.begin(), adj_list.end(), [&](auto neighbors) { return neighbors.empty(); });
-    for (int i = 0; i < n; i++)
-        if (k >= dp[i]) {
-            k -= dp[i];
-            count--;
-        }
-    cout << count;
+    int nodes = 0;
+    for (int h = n, remaining = n - k; h && remaining > 0; h--) {
+        int c = min(count[h], (remaining + h - 1) / h);
+        nodes += c;
+        remaining -= c * h;
+    }
+    cout << nodes;
 }
