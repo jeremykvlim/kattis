@@ -136,40 +136,60 @@ struct MonotonicHull : deque<Point<T>> {
         while (this->size() > 1 && violates((*this)[1], (*this)[0], p)) this->pop_front();
         this->emplace_front(p);
     }
+
+    void update(const auto &p) {
+        while (!this->empty() && this->back().y >= p.y) this->pop_back();
+        while (this->size() > 1 && violates(p, this->back(), (*this)[this->size() - 2])) this->pop_back();
+        this->emplace_back(p);
+    }
+
+    auto query() {
+        return (*this)[this->size() - 2];
+    }
 };
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
+    long long xs, ys, xt, yt;
     int n;
-    Point<long long> s, t;
-    cin >> s.x >> s.y >> t.x >> t.y >> n;
+    cin >> xs >> ys >> xt >> yt >> n;
 
-    MonotonicHull<long long, 1, true> lower;
-    MonotonicHull<long long, -1, true> upper;
-    auto add = [&](const auto &l, const auto &u) {
-        lower.add(l);
-        upper.add(u);
+    Point<long long> pos{ys, -xs};
+    MonotonicHull<long long, 1, true> left;
+    MonotonicHull<long long, -1, true> right;
+    left.emplace_back(pos);
+    right.emplace_back(pos);
 
-        while (lower.size() > 1 && upper.size() > 1 && cross(lower.back(), lower[lower.size() - 2], upper[upper.size() - 2]) <= 0) {
-            cout << lower.back().x << " " << lower.back().y << "\n";
-            if (lower.size() > 2) {
-                lower.pop_back();
-                upper.back() = lower.back();
-            } else if (upper.size() > 2) {
-                upper.pop_back();
-                lower.back() = upper.back();
-            } else break;
+    vector<Point<long long>> path{pos};
+    auto turn = [&](auto p) {
+        path.emplace_back(p);
+        pos = p;
+        left.update(p);
+        right.update(p);
+    };
+
+    auto process = [&]() {
+        while (left.size() > 1 && right.size() > 1 && cross(pos, left.query(), right.query()) < 0) {
+            auto l = left.query(), r = right.query();
+            turn(l.y > r.y ? l : r);
         }
     };
-    add(s, s);
-    while (n--) {
-        long long x, y1, y2;
-        cin >> x >> y1 >> y2;
 
-        add(Point(x, y1), Point(x, y2));
+    while (n--) {
+        long long x, l, r;
+        cin >> x >> l >> r;
+
+        left.add(Point{l, -x});
+        right.add(Point{r, -x});
+        process();
     }
-    add(t, t);
-    cout << t.x << " " << t.y;
+
+    left.add(Point{yt, -xt});
+    right.add(Point{yt, -xt});
+    process();
+
+    if (pos.x != yt || pos.y != -xt) path.emplace_back(yt, -xt);
+    for (auto p : path) cout << -p.y << " " << p.x << "\n";
 }

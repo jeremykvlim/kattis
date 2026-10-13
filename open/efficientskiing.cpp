@@ -182,7 +182,7 @@ int main() {
         right.update(p);
     };
 
-    auto process = [&] {
+    auto process = [&]() {
         while (left.size() > 1 && right.size() > 1 && cross(pos, left.query(), right.query()) < 0) {
             auto l = left.query(), r = right.query();
             turn(l.y > r.y ? l : r);
