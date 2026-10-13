@@ -1,6 +1,88 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+struct TwoSATSystem {
+    int n;
+    vector<vector<int>> adj_list;
+
+    TwoSATSystem(int n = 0) : n(n), adj_list(2 * n) {}
+
+    int add_variable() {
+        adj_list.emplace_back();
+        adj_list.emplace_back();
+        return n++;
+    }
+
+    void add_clause(int i, int j) {
+        i = max(i << 1, -(i << 1 | 1));
+        j = max(j << 1, -(j << 1 | 1));
+        adj_list[i ^ 1].emplace_back(j);
+        adj_list[j ^ 1].emplace_back(i);
+    }
+
+    void assign(int i) {
+        add_clause(i, i);
+    }
+
+    void add_at_most_one(const vector<int> &literals) {
+        if (literals.size() < 2) return;
+
+        int prev = ~literals[0];
+        for (int i = 2; i < literals.size(); i++) {
+            int curr = add_variable();
+            add_clause(prev, ~literals[i]);
+            add_clause(prev, curr);
+            add_clause(~literals[i], curr);
+            prev = ~curr;
+        }
+        add_clause(prev, ~literals[1]);
+    }
+
+    vector<int> tarjan() {
+        vector<int> order(2 * n, 0), low(2 * n, 0), component(2 * n, 0);
+        vector<bool> stacked(2 * n, false);
+        stack<int> st;
+        int count = 0, sccs = 0;
+
+        auto dfs = [&](auto &&self, int v) -> void {
+            order[v] = low[v] = ++count;
+            st.emplace(v);
+            stacked[v] = true;
+
+            for (int u : adj_list[v])
+                if (!order[u]) {
+                    self(self, u);
+                    low[v] = min(low[v], low[u]);
+                } else if (stacked[u]) low[v] = min(low[v], order[u]);
+
+            if (order[v] == low[v]) {
+                sccs++;
+                int u;
+                do {
+                    u = st.top();
+                    st.pop();
+                    stacked[u] = false;
+                    component[u] = sccs;
+                } while (u != v);
+            }
+        };
+
+        for (int v = 0; v < 2 * n; v++)
+            if (!order[v]) dfs(dfs, v);
+
+        return component;
+    }
+
+    pair<bool, vector<int>> solve() {
+        vector<int> assignment(n), component = tarjan();
+        for (int i = 0; i < n; i++) {
+            if (component[i << 1] == component[i << 1 | 1]) return {false, {}};
+            assignment[i] = component[i << 1] < component[i << 1 | 1];
+        }
+        return {true, assignment};
+    }
+};
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -8,35 +90,33 @@ int main() {
     int n, k;
     cin >> n >> k;
 
-    vector<string> answers(n);
-    for (auto &s : answers) cin >> s;
+    TwoSATSystem sat(k);
+    while (n--) {
+        string s;
+        cin >> s;
 
-    string key(k, '.');
+        vector<int> literals;
+        for (int i = 0; i < k; i++)
+            if (s[i] == 'T') literals.emplace_back(i);
+            else if (s[i] == 'F') literals.emplace_back(~i);
 
-    auto check = [&](auto &&self, int i, char c) -> bool {
-        if (key[i] != '.') return key[i] == c;
+        sat.add_at_most_one(literals);
+    }
 
-        key[i] = c;
-        for (auto &s : answers)
-            if (s[i] == c)
-                for (int j = 0; j < s.size(); j++)
-                    if (j != i && s[j] != 'X' && !self(self, j, s[j] ^ 'F' ^ 'T')) return false;
+    if (!sat.solve().first) {
+        cout << -1;
+        exit(0);
+    }
 
-        return true;
-    };
-
-    for (int i = 0; i < k; i++)
-        if (key[i] == '.')
-            for (char c : {'F', 'T'}) {
-                auto temp = key;
-                if (check(check, i, c)) break;
-                else if (c == 'T') {
-                    cout << -1;
-                    exit(0);
-                }
-                
-                key = temp;
-            }
-
-    cout << key;
+    for (int i = 0; i < k; i++) {
+        auto temp = sat;
+        temp.assign(~i);
+        if (temp.solve().first) {
+            cout << 'F';
+            sat.assign(~i);
+        } else {
+            cout << 'T';
+            sat.assign(i);
+        }
+    }
 }

@@ -1,7 +1,32 @@
 #include <bits/stdc++.h>
-#include <ext/pb_ds/assoc_container.hpp>
 using namespace std;
-using namespace __gnu_pbds;
+
+template <typename T>
+struct FenwickTree {
+    vector<T> BIT;
+
+    void update(int i, T v) {
+        for (; i && i < BIT.size(); i += i & -i) BIT[i] += v;
+    }
+
+    void update(int l, int r, T v) {
+        update(l, v);
+        update(r, -v);
+    }
+
+    T pref_sum(int i) {
+        T sum = 0;
+        for (; i; i &= i - 1) sum += BIT[i];
+        return sum;
+    }
+
+    T range_sum_query(int l, int r) {
+        if (l >= r) return 0;
+        return pref_sum(r) - pref_sum(l);
+    }
+
+    FenwickTree(int n) : BIT(n, 0) {}
+};
 
 int main() {
     ios::sync_with_stdio(false);
@@ -10,44 +35,42 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    int s = 0;
-    vector<int> a(n + 1);
-    for (int i = 1; i <= n; i++) {
+    int size = ceil(sqrt(n)), blocks = (n + size - 1) / size;
+    vector<int> a(n);
+    vector<FenwickTree<int>> bit(501, blocks + 1);
+    for (int i = 0; i < n; i++) {
         cin >> a[i];
 
-        s = max(s, a[i]);
+        bit[a[i]].update(i / size + 1, 1);
     }
 
-    vector<array<int, 4>> queries(m);
-    for (auto &[t, l, r, x] : queries) {
-        cin >> t;
+    while (m--) {
+        int type;
+        cin >> type;
 
-        if (!t) {
-            cin >> l >> x;
-            s = max(s, x);
-        } else cin >> l >> r >> x;
-    }
+        if (!type) {
+            int p, x;
+            cin >> p >> x;
+            p--;
 
-    vector<tree<int, null_type, less<>, rb_tree_tag, tree_order_statistics_node_update>> pos(s + 1);
-    for (int i = 1; i <= n; i++) pos[a[i]].insert(i);
-
-    for (auto [t, l, r, x] : queries)
-        if (!t) {
-            if (a[l] != x) {
-                pos[a[l]].erase(l);
-                pos[x].insert(l);
-                a[l] = x;
-            }
+            if (a[p] == x) continue;
+            bit[a[p]].update(p / size + 1, -1);
+            bit[x].update(p / size + 1, 1);
+            a[p] = x;
         } else {
-            int prev = 0;
-            for (int X = 1; X <= s; X++) {
-                int count = pos[X].order_of_key(r + 1) - pos[X].order_of_key(l);
-                if (!count) continue;
+            int l, r, x;
+            cin >> l >> r >> x;
+            l--;
+            r--;
 
-                if (x <= max(X, prev + 1) - prev - 1) break;
-                x -= max(X, prev + 1) - prev - 1;
-                prev = max(X, prev + 1) + count - 1;
-            }
-            cout << x + prev << "\n";
+            array<int, 501> count{};
+            int bl = l / size, br = r / size;
+            for (int i = l; i <= min(r, (bl + 1) * size - 1); i++) count[a[i]]++;
+            if (bl < br)
+                for (int i = br * size; i <= r; i++) count[a[i]]++;
+
+            for (int v = 1; v <= 500 && v <= x; v++) x += count[v] + bit[v].range_sum_query(bl + 1, br);
+            cout << x << "\n";
         }
+    }
 }

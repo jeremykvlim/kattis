@@ -140,14 +140,6 @@ int main() {
 
     for (int r = 0; r < n; r++)
         for (int c = 0; c < m; c++)
-            if (grid[r][c] == 'W') {
-                if (literals[r][c].empty()) {
-                    cout << "NO";
-                    exit(0);
-                }
-
-                for (int i = 0; i < literals[r][c].size(); i++)
-                    for (int j = i + 1; j < literals[r][c].size(); j++) sat.add_clause(~literals[r][c][i], ~literals[r][c][j]);
-            }
+            if (grid[r][c] == 'W') sat.add_at_most_one(literals[r][c]);
     cout << (sat.solve().first ? "YES" : "NO");
 }
