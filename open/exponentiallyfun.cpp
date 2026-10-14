@@ -452,21 +452,22 @@ struct MontgomeryModInt {
 constexpr int MOD = 1e9 + 7;
 using modint = MontgomeryModInt<MOD>;
 
-vector<int> sieve(int n) {
-    if (n < 2) return {};
+vector<bool> sieve(int n) {
+    if (n < 2) return vector<bool>(n + 1, false);
 
     int r = sqrt(n);
-    vector<int> primes{2};
+    vector<bool> prime(n + 1, false);
+    prime[2] = true;
     vector<bool> composite(n / 2 + 1, false);
     for (int o = 3; o <= r; o += 2)
         if (!composite[o / 2]) {
             for (auto m = (long long) o * o; m <= n; m += 2 * o) composite[m / 2] = true;
-            primes.emplace_back(o);
+            prime[o] = true;
         }
 
     for (int o = (r + 1) | 1; o <= n; o += 2)
-        if (!composite[o / 2]) primes.emplace_back(o);
-    return primes;
+        if (!composite[o / 2]) prime[o] = true;
+    return prime;
 }
 
 int main() {
@@ -476,19 +477,19 @@ int main() {
     int n;
     cin >> n;
 
-    vector<int> primes = sieve(n + 1);
-    vector<modint> dp(n + 1, -1);
+    auto prime = sieve(n + 1);
+    vector<int> dp(n + 1, INT_MAX);
     dp[0] = 1;
-    for (int p : primes)
-        for (int i = 0; i <= n - p; i++)
-            if (dp[i] != -1) dp[i + p] = min(dp[i]() * p, dp[i + p] != -1 ? dp[i + p]() : LLONG_MAX);
+    for (int p = 2; p <= n; p++)
+        if (prime[p])
+            for (int i = p; i <= n; i++) dp[i] = min((long long) dp[i], (long long) dp[i - p] * p);
 
-    modint xl = dp[n], xr = 1;
-    while (n % 3) {
-        xr *= 2;
-        n -= 2;
+    cout << (modint) dp[n] << " ";
+
+    modint largest = 1;
+    while (n > 4) {
+        largest *= 3;
+        n -= 3;
     }
-    xr *= modint::pow(3, n / 3);
-
-    cout << xl << " " << xr;
+    cout << largest * n;
 }
