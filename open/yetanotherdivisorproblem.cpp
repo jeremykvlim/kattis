@@ -40,15 +40,15 @@ int main() {
 
     auto primes = sieve(1e5);
     auto factorize = [&](int n) {
-        unordered_map<int, int> pfs;
+        vector<pair<int, int>> pfs;
         for (int p : primes) {
             if (p * p > n) break;
-            while (!(n % p)) {
-                pfs[p]++;
-                n /= p;
+            if (!(n % p)) {
+                pfs.emplace_back(p, 0);
+                for (; !(n % p); n /= p) pfs.back().second++;
             }
         }
-        if (n > 1) pfs[n]++;
+        if (n > 1) pfs.emplace_back(n, 1);
         return pfs;
     };
 
