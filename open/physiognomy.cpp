@@ -177,11 +177,15 @@ int main() {
     }
 
     int V = corners.size();
-    vector<vector<array<int, 2>>> adj_list(V);
+    vector<vector<pair<int, int>>> adj_list(V);
     vector<vector<double>> adj_matrix(V, vector<double>(V));
     for (int i = 0; i < V; i++)
         for (int j = i + 1; j < V; j++) {
             auto a = corners[i], b = corners[j];
+
+            auto w = euclidean_dist(a, b);
+            adj_matrix[i][j] = adj_matrix[j][i] = w;
+
             bool valid = true;
             for (auto p : lamps) {
                 if (max(a.x, b.x) <= p.x - 1 || min(a.x, b.x) >= p.x + 1 || max(a.y, b.y) <= p.y - 1 || min(a.y, b.y) >= p.y + 1) continue;
@@ -199,10 +203,8 @@ int main() {
                 for (int k = 0; k < n; k++)
                     if (a.y < lamps[k].y && lamps[k].y <= b.y && cross(a, b, lamps[k]) > 0) mask |= 1 << k;
 
-            auto w = euclidean_dist(a, b);
-            adj_list[i].push_back({j, mask});
-            adj_list[j].push_back({i, mask});
-            adj_matrix[i][j] = adj_matrix[j][i] = w;
+            adj_list[i].emplace_back(j, mask);
+            adj_list[j].emplace_back(i, mask);
         }
 
     vector<int> roots;
@@ -212,11 +214,11 @@ int main() {
     }
 
     auto len = 1e20;
-    priority_queue<tuple<double, double, int, int>, vector<tuple<double, double, int, int>>, greater<>> pq;
     vector<vector<double>> dist(V, vector<double>(m));
     for (int r : roots) {
         for (auto &row : dist) fill(row.begin(), row.end(), 1e20);
         dist[r][0] = 0;
+        priority_queue<tuple<double, double, int, int>, vector<tuple<double, double, int, int>>, greater<>> pq;
         pq.emplace(0, 0, r, 0);
         while (!pq.empty()) {
             auto [h, d, v, mv] = pq.top();
