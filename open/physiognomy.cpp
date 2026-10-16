@@ -2,17 +2,6 @@
 using namespace std;
 
 template <typename T>
-bool approximately_equal(const T &v1, const T &v2, double epsilon = 1e-5) {
-    return fabs(v1 - v2) <= epsilon;
-}
-
-template <typename T>
-int sgn(const T &v) {
-    if constexpr (!is_floating_point_v<T>) return (v > 0) - (v < 0);
-    else return approximately_equal(v, (T) 0) ? 0 : (v > 0) - (v < 0);
-}
-
-template <typename T>
 struct Point {
     T x, y;
 
@@ -131,16 +120,6 @@ struct Point {
 };
 
 template <typename T>
-T dot(const Point<T> &a, const Point<T> &b) {
-    return (a.x * b.x) + (a.y * b.y);
-}
-
-template <typename T>
-T cross(const Point<T> &a, const Point<T> &b) {
-    return (a.x * b.y) - (a.y * b.x);
-}
-
-template <typename T>
 T cross(const Point<T> &a, const Point<T> &b, const Point<T> &c) {
     return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
@@ -152,39 +131,6 @@ auto euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
     return sqrt(x * x + y * y);
 }
 
-template <typename T>
-struct Line {
-    Point<T> a, b;
-
-    Line() {}
-    Line(Point<T> a, Point<T> b) : a(a), b(b) {}
-};
-
-template <typename T>
-bool point_on_line(const Line<T> &l, const Point<T> &p, bool include_endpoints = true) {
-    return !sgn(cross(l.b - l.a, p - l.a)) && (dot(l.a - p, l.b - p) < 0 || (include_endpoints && approximately_equal(dot(l.a - p, l.b - p), (T) 0)));
-}
-
-template <typename T>
-bool parallel(const Line<T> &l1, const Line<T> &l2) {
-    return !sgn(cross(l1.b - l1.a, l2.b - l2.a));
-}
-
-template <typename T>
-bool collinear(const Line<T> &l1, const Line<T> &l2) {
-    return parallel(l1, l2) && !sgn(cross(l1.b - l1.a, l2.a - l1.a));
-}
-
-template <typename T>
-bool intersects(const Line<T> &l1, const Line<T> &l2) {
-    return collinear(l1, l2) || !parallel(l1, l2);
-}
-
-template <typename T>
-Point<T> non_collinear_intersection(const Line<T> &l1, const Line<T> &l2) {
-    return l1.a + (l1.b - l1.a) * (cross(l2.a - l1.a, l2.b - l2.a) / cross(l1.b - l1.a, l2.b - l2.a));
-}
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -192,100 +138,108 @@ int main() {
     int n;
     cin >> n;
 
-    vector<Point<double>> lamps(n), corners(4 * n);
+    int total = 0;
+    vector<Point<int>> lamps(n), corners(4 * n);
     vector<int> e(n);
     for (int i = 0; i < n; i++) {
         double x, y;
         cin >> x >> y >> e[i];
 
+        total += e[i];
         lamps[i] = {x, y};
         corners[4 * i] = {x - 1, y - 1};
         corners[4 * i + 1] = {x - 1, y + 1};
         corners[4 * i + 2] = {x + 1, y - 1};
         corners[4 * i + 3] = {x + 1, y + 1};
     }
+    sort(corners.begin(), corners.end());
+    corners.erase(unique(corners.begin(), corners.end()), corners.end());
 
-    vector<int> energy(1 << n, 0);
-    for (int mask = 0; mask < 1 << n; mask++)
-        for (int i = 0; i < n; i++)
-            if ((mask >> i) & 1) energy[mask] += e[i];
-
-    if (!energy.back()) {
+    if (!total) {
         cout << 0;
         exit(0);
     }
 
-    vector<vector<int>> masks(4 * n, vector<int>(4 * n)), adj_list(4 * n);
-    vector<vector<double>> w(4 * n, vector<double>(4 * n, 0));
-    for (int i = 0; i < 4 * n; i++)
-        for (int j = i + 1; j < 4 * n; j++) {
-            auto a = corners[i], b = corners[j];
-            if (a == b) continue;
-            auto c = a + b;
-            Line<double> l1(a, b);
-            for (int k = 0; k < n; k++) {
-                if (c + Point(1, 0) == lamps[k] * 2 ||
-                    c + Point(0, 1) == lamps[k] * 2 ||
-                    c + Point(-1, 0) == lamps[k] * 2 ||
-                    c + Point(0, -1) == lamps[k] * 2 ||
-                    point_on_line(l1, lamps[k], false) ||
-                    point_on_line(l1, corners[4 * k], false) ||
-                    point_on_line(l1, corners[4 * k + 1], false) ||
-                    point_on_line(l1, corners[4 * k + 2], false) ||
-                    point_on_line(l1, corners[4 * k + 3], false)) goto next;
+    int m = 1 << n;
+    vector<int> energy(m);
+    for (int mask = 1; mask < m; mask++) {
+        int b = countr_zero((unsigned) mask);
+        energy[mask] = energy[mask ^ (1 << b)] + e[b];
+    }
 
-                Line<double> l2(corners[4 * k], corners[4 * k + 1]), l3(corners[4 * k], corners[4 * k + 2]),
-                             l4(corners[4 * k + 3], corners[4 * k + 1]), l5(corners[4 * k + 3], corners[4 * k + 2]);
-                for (auto l : {l2, l3, l4, l5}) {
-                    if (!intersects(l1, l) || collinear(l1, l)) continue;
-                    auto p = non_collinear_intersection(l1, l);
-                    if (point_on_line(l1, p, false) && point_on_line(l, p)) goto next;
+    vector<int> targets;
+    for (int mask = 1; mask < m - 1; mask++)
+        if (2 * energy[mask] == total) targets.emplace_back(mask);
+
+    if (targets.empty()) {
+        cout << "IMPOSSIBLE";
+        exit(0);
+    }
+
+    int V = corners.size();
+    vector<vector<array<int, 2>>> adj_list(V);
+    vector<vector<double>> adj_matrix(V, vector<double>(V));
+    for (int i = 0; i < V; i++)
+        for (int j = i + 1; j < V; j++) {
+            auto a = corners[i], b = corners[j];
+            bool valid = true;
+            for (auto p : lamps) {
+                if (max(a.x, b.x) <= p.x - 1 || min(a.x, b.x) >= p.x + 1 || max(a.y, b.y) <= p.y - 1 || min(a.y, b.y) >= p.y + 1) continue;
+                auto v = b - a;
+                if (abs(cross(a, b, p)) < abs(v.x) + abs(v.y)) {
+                    valid = false;
+                    break;
                 }
             }
-            adj_list[i].emplace_back(j);
-            adj_list[j].emplace_back(i);
-            w[i][j] = w[j][i] = euclidean_dist(a, b);
-            if (a.y == b.y) continue;
+            if (!valid) continue;
+
             if (a.y > b.y) swap(a, b);
-            for (int k = 0; k < n; k++)
-                if (a.y < lamps[k].y && lamps[k].y <= b.y && cross(a, b, lamps[k]) > 0) {
-                    masks[i][j] |= 1 << k;
-                    masks[j][i] |= 1 << k;
-                }
-            next:;
+            int mask = 0;
+            if (a.y != b.y)
+                for (int k = 0; k < n; k++)
+                    if (a.y < lamps[k].y && lamps[k].y <= b.y && cross(a, b, lamps[k]) > 0) mask |= 1 << k;
+
+            auto w = euclidean_dist(a, b);
+            adj_list[i].push_back({j, mask});
+            adj_list[j].push_back({i, mask});
+            adj_matrix[i][j] = adj_matrix[j][i] = w;
         }
+
+    vector<int> roots;
+    for (auto p : lamps) {
+        int r = lower_bound(corners.begin(), corners.end(), Point<int>{p.x - 1, p.y - 1}) - corners.begin();
+        if (find(roots.begin(), roots.end(), r) == roots.end()) roots.emplace_back(r);
+    }
 
     auto len = 1e20;
-    priority_queue<pair<double, pair<int, int>>, vector<pair<double, pair<int, int>>>, greater<>> pq;
-    for (int i = 0; i < 4 * n; i++) {
-        for (int j = 0; j < n; j++)
-            if (corners[i] + Point(1, 1) == lamps[j]) goto valid;
-        continue;
-
-        valid:;
-        vector<vector<double>> dist(4 * n, vector<double>(1 << n, 1e20));
-        dist[i][0] = 0;
-        pq.emplace(0, make_pair(i, 0));
+    priority_queue<tuple<double, double, int, int>, vector<tuple<double, double, int, int>>, greater<>> pq;
+    vector<vector<double>> dist(V, vector<double>(m));
+    for (int r : roots) {
+        for (auto &row : dist) fill(row.begin(), row.end(), 1e20);
+        dist[r][0] = 0;
+        pq.emplace(0, 0, r, 0);
         while (!pq.empty()) {
-            auto [d, p] = pq.top();
+            auto [h, d, v, mv] = pq.top();
             pq.pop();
 
-            auto [v, m1] = p;
+            if (h + 1e-9 >= len) break;
+            if (d != dist[v][mv]) continue;
 
-            if (dist[v][m1] != d) continue;
+            if (v == r && mv && 2 * energy[mv] == total) {
+                len = d;
+                break;
+            }
 
-            for (int u : adj_list[v]) {
-                int m2 = m1 ^ masks[v][u];
-
-                if (dist[u][m2] > d + w[v][u]) {
-                    dist[u][m2] = d + w[v][u];
-                    pq.emplace(d + w[v][u], make_pair(u, m2));
+            for (auto [u, mask] : adj_list[v]) {
+                auto w = adj_matrix[v][u];
+                if (adj_matrix[u][r] + d + w + 1e-9 >= len) continue;
+                int mu = mv ^ mask;
+                if (dist[u][mu] > d + w) {
+                    dist[u][mu] = d + w;
+                    pq.emplace(adj_matrix[u][r] + d + w, d + w, u, mu);
                 }
             }
         }
-
-        for (int mask = 1; mask < 1 << n; mask++)
-            if (dist[i][mask] != 1e20 && energy[mask] * 2 == energy.back()) len = min(len, dist[i][mask]);
     }
 
     if (len == 1e20) cout << "IMPOSSIBLE";
