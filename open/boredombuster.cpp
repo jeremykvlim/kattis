@@ -23,10 +23,16 @@ int main() {
     };
 
     vector<vector<array<int, 3>>> adj_list(n / 2);
-    for (int i = 0; i < n / 2; i++) {
-        int x = i << 1, y = i << 1 | 1;
+    for (int i = 0; i < n; i += 2) cout << "? " << i + 1 << " " << i + 2 << "\n";
+    cout << flush;
 
-        auto [a, b] = look(x, y);
+    for (int i = 0; i < n / 2; i++) {
+        int a, b;
+        cin >> a >> b;
+        a--;
+        b--;
+
+        int x = i << 1, y = i << 1 | 1;
         if (a == b) {
             assign(x, a);
             assign(y, a);

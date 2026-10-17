@@ -22,6 +22,22 @@ int main() {
     mt19937 rng(random_device{}());
     while (t--) {
         vector<vector<int>> adj_matrix(n + 1, vector<int>(n + 1, -1));
+        for (int i = 1; i < n; i += 2) cout << "? " << i << " " << i + 1 << "\n";
+        cout << flush;
+
+        vector<vector<int>> paths;
+        for (int i = 1; i < n; i += 2) {
+            char c;
+            cin >> c;
+
+            adj_matrix[i][i + 1] = c == '>';
+            adj_matrix[i + 1][i] = c != '>';
+
+            if (adj_matrix[i][i + 1]) paths.push_back({i, i + 1});
+            else paths.push_back({i + 1, i});
+        }
+        if (n & 1) paths.push_back({n});
+
         auto query = [&](int u, int v) {
             if (!~adj_matrix[u][v]) {
                 cout << "? " << u << " " << v << "\n" << flush;
@@ -34,12 +50,6 @@ int main() {
             }
             return adj_matrix[u][v];
         };
-
-        vector<vector<int>> paths;
-        for (int i = 1; i < n; i += 2)
-            if (query(i, i + 1)) paths.push_back({i, i + 1});
-            else paths.push_back({i + 1, i});
-        if (n & 1) paths.push_back({n});
 
         while (paths.size() > 1) {
             int i = 1;
