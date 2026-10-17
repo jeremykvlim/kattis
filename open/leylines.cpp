@@ -131,16 +131,6 @@ auto euclidean_dist(const Point<T> &a, const Point<T> &b = {0, 0}) {
     return sqrt(x * x + y * y);
 }
 
-template <typename T>
-struct Line {
-    Point<T> a, b;
-    int i, j;
-
-    Line() {}
-    Line(Point<T> a, Point<T> b) : a(a), b(b) {}
-    Line(Point<T> a, Point<T> b, int i, int j) : a(a), b(b), i(i), j(j) {}
-};
-
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -152,36 +142,45 @@ int main() {
     for (auto &[x, y] : points) cin >> x >> y;
     sort(points.begin(), points.end());
 
-    vector<Line<long long>> lines;
-    for (int i = 0; i < n; i++)
-        for (int j = i + 1; j < n; j++) lines.emplace_back(points[i], points[j], i, j);
-    sort(lines.begin(), lines.end(), [&](auto l1, auto l2) { return cross(l1.b - l1.a, l2.b - l2.a) < 0; });
+    vector<tuple<Point<long long>, int, int>> d(n * (n - 1) / 2);
+    for (int i = 0, k = 0; i < n; i++)
+        for (int j = i + 1; j < n; j++) d[k++] = {points[i] - points[j], i, j};
+    sort(d.begin(), d.end(), [&](const auto &t1, const auto &t2) { return cross(get<0>(t1), get<0>(t2)) < 0; });
 
     vector<int> indices(n);
     iota(indices.begin(), indices.end(), 0);
     int count = 2;
-    for (auto li : lines) {
-        swap(points[indices[li.i]], points[indices[li.j]]);
-        swap(indices[li.i], indices[li.j]);
+    for (const auto &[v, i, j] : d) {
+        swap(points[indices[i]], points[indices[j]]);
+        swap(indices[i], indices[j]);
 
-        int mid1 = indices[li.i], mid2 = indices[li.j];
-        if (mid1 > mid2) swap(mid1, mid2);
+        int mid = min(indices[i], indices[j]), left = mid - count + 1, right = mid + count;
+        if (left < 0 && right >= n) continue;
 
-        long long d = cross(points[mid1], li.a - li.b), limit = euclidean_dist(li.a, li.b) * t;
-        auto search = [&](int l, int r, bool half) {
-            if (l + 1 >= r) return;
-
+        long long limit = euclidean_dist(v) * t;
+        if (left >= 0 && abs(cross(points[left] - points[mid], v)) <= limit) {
+            int l = -1, r = left, m;
             while (l + 1 < r) {
-                int mid = l + (r - l) / 2;
+                m = l + (r - l) / 2;
 
-                if (abs(cross(li.a - li.b, points[mid]) + d) <= abs(limit)) (half ? r : l) = mid;
-                else (half ? l : r) = mid;
+                if (abs(cross(points[m] - points[mid], v)) <= limit) r = m;
+                else l = m;
             }
+            count = max(count, mid - r + 2);
+        }
 
-            count = max(count, (half ? mid2 - (~l ? l : r - 1) : l + 1 - mid1));
-        };
-        search(-1, mid1, true);
-        search(mid2 - 1, n, false);
+        if (right < n && abs(cross(points[right] - points[mid], v)) <= limit) {
+            int l = right, r = n, m;
+            while (l + 1 < r) {
+                m = l + (r - l) / 2;
+
+                if (abs(cross(points[m] - points[mid], v)) <= limit) l = m;
+                else r = m;
+            }
+            count = max(count, l - mid + 1);
+        }
+
+        if (count == n) break;
     }
     cout << count;
 }
