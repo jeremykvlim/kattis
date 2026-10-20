@@ -103,14 +103,14 @@ int main() {
                 int ll = compressed[l][0], lr = compressed[r - 1][0];
                 if (ll == lr) return 0;
 
-                int left = l, right = r, mid, lm = ll + (lr - ll) / 2;
-                while (left < right) {
-                    mid = (left + right) >> 1;
+                int left = l - 1, right = r, mid, lm = ll + (lr - ll) / 2;
+                while (left + 1 < right) {
+                    mid = left + (right - left) / 2;
 
-                    if (compressed[mid][0] <= lm) left = mid + 1;
+                    if (compressed[mid][0] <= lm) left = mid;
                     else right = mid;
                 }
-                int m = left;
+                int m = right;
                 auto sum = self(self, l, m) + self(self, m, r);
 
                 vector<int> indices_l(m - l);

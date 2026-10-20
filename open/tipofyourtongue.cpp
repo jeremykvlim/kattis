@@ -2,95 +2,33 @@
 using namespace std;
 
 template <typename T>
-struct WaveletMatrix {
-    int lg;
-    vector<int> mid;
-    vector<vector<int>> pref;
-    vector<pair<T, int>> order;
+struct FenwickTree {
+    vector<T> BIT;
 
-    WaveletMatrix(int n, vector<T> a) : lg(__lg(*max_element(a.begin(), a.end()) + 1) + 1), order(n) {
-        mid.resize(lg);
-        pref.assign(lg, vector<int>(n + 1, 0));
-
-        vector<pair<T, int>> temp(n);
-        for (int i = 0; i < n; i++) order[i] = {a[i], i};
-        for (int b = lg - 1; ~b; b--) {
-            for (int i = 0; i < n; i++) pref[b][i + 1] = pref[b][i] + ((order[i].first >> b) & 1);
-
-            int zeroes = 0, ones = mid[b] = n - pref[b][n];
-            for (int i = 0; i < n; i++) temp[((order[i].first >> b) & 1) ? ones++ : zeroes++] = order[i];
-            order.swap(temp);
-        }
+    void update(int i, T v) {
+        for (; i && i < BIT.size(); i += i & -i) BIT[i] += v;
     }
 
-    tuple<T, int, int, int> quantile(int l, int r, int k) {
-        T v = 0;
-        for (int b = lg - 1; ~b; b--) {
-            int zeroes = (r - pref[b][r]) - (l - pref[b][l]);
-            if (k >= zeroes) {
-                k -= zeroes;
-                v |= ((T) 1) << b;
-                l = pref[b][l] + mid[b];
-                r = pref[b][r] + mid[b];
-            } else {
-                l -= pref[b][l];
-                r -= pref[b][r];
-            }
-        }
-        return {v, k, r - l, order[l + k].second};
+    T pref_sum(int i) {
+        T sum = 0;
+        for (; i; i &= i - 1) sum += BIT[i];
+        return sum;
     }
 
-    int freq_less(int l, int r, T x) {
-        int f = 0;
-        for (int b = lg - 1; ~b; b--) {
-            if ((x >> b) & 1) {
-                f += (r - pref[b][r]) - (l - pref[b][l]);
-                l = pref[b][l] + mid[b];
-                r = pref[b][r] + mid[b];
-            } else {
-                l -= pref[b][l];
-                r -= pref[b][r];
-            }
-        }
-        return f;
+    T range_sum_query(int l, int r) {
+        if (l >= r) return 0;
+        return pref_sum(r) - pref_sum(l);
     }
 
-    int freq(int l, int r, T x) {
-        if ((((T) 1) << lg) <= x) return 0;
-        for (int b = lg - 1; ~b; b--) {
-            if ((x >> b) & 1) {
-                l = pref[b][l] + mid[b];
-                r = pref[b][r] + mid[b];
-            } else {
-                l -= pref[b][l];
-                r -= pref[b][r];
-            }
-        }
-        return r - l;
-    }
-
-    T lower_bound(int l, int r, T x) {
-        int f = freq_less(l, r, x);
-        return f == r - l ? -1 : get<0>(quantile(l, r, f));
-    }
-
-    T predecessor(int l, int r, T x) {
-        int f = freq_less(l, r, x);
-        return !f ? -1 : get<0>(quantile(l, r, f - 1));
-    }
-
-    T successor(int l, int r, T x) {
-        int f = freq_less(l, r, x) + freq(l, r, x);
-        return f == r - l ? -1 : get<0>(quantile(l, r, f));
-    }
+    FenwickTree(int n) : BIT(n, 0) {}
 };
 
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    int n, q;
-    cin >> n >> q;
+    int n, Q;
+    cin >> n >> Q;
 
     vector<pair<string, int>> words(n), words_rev(n);
     for (int i = 0; i < n; i++) {
@@ -112,31 +50,43 @@ int main() {
 
     vector<int> a(n);
     for (int i = 0; i < n; i++) a[i] = rank_rev[words[i].second];
-    WaveletMatrix<int> wm(n, a);
 
-    auto count_AND = [&](int l1, int r1, int l2, int r2) {
-        if (l1 == r1 || l2 == r2) return 0;
-        return wm.freq_less(l1, r1, r2) - wm.freq_less(l1, r1, l2);
-    };
-
-    while (q--) {
-        string o, p, s;
-        cin >> o >> p >> s;
+    vector<int> total(Q, 0);
+    vector<string> op(Q);
+    vector<array<int, 5>> sweep;
+    for (int q = 0; q < Q; q++) {
+        string p, s;
+        cin >> op[q] >> p >> s;
 
         auto rev = s;
         reverse(rev.begin(), rev.end());
 
-        int l1 = lower_bound(words.begin(), words.end(), make_pair(p, -1)) - words.begin(), 
+        int l1 = lower_bound(words.begin(), words.end(), make_pair(p, -1)) - words.begin(),
             l2 = lower_bound(words_rev.begin(), words_rev.end(), make_pair(rev, -1)) - words_rev.begin();
-        
+
         p.back()++;
         rev.back()++;
-        
+
         int r1 = lower_bound(words.begin(), words.end(), make_pair(p, -1)) - words.begin(),
             r2 = lower_bound(words_rev.begin(), words_rev.end(), make_pair(rev, -1)) - words_rev.begin();
 
-        if (o == "AND") cout << count_AND(l1, r1, l2, r2) << "\n";
-        else if (o == "OR") cout << r1 - l1 + r2 - l2 - count_AND(l1, r1, l2, r2) << "\n";
-        else cout << r1 - l1 + r2 - l2 - 2 * count_AND(l1, r1, l2, r2) << "\n";
+        total[q] = r1 - l1 + r2 - l2;
+
+        if (l1 == r1 || l2 == r2) continue;
+        sweep.push_back({l1, l2, r2, q, -1});
+        sweep.push_back({r1, l2, r2, q, 1});
     }
+    sort(sweep.begin(), sweep.end());
+
+    vector<int> count(Q, 0);
+    FenwickTree<int> fw(n + 1);
+    for (int i = 0; auto [m, l, r, q, sgn] : sweep) {
+        for (; i < m; i++) fw.update(a[i] + 1, 1);
+        count[q] += sgn * fw.range_sum_query(l, r);
+    }
+
+    for (int i = 0; i < Q; i++)
+        if (op[i] == "AND") cout << count[i] << "\n";
+        else if (op[i] == "OR") cout << total[i] - count[i] << "\n";
+        else cout << total[i] - 2 * count[i] << "\n";
 }
