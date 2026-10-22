@@ -37,6 +37,7 @@ int main() {
         if (a <= 1e10) pref[upper_bound(sums.begin(), sums.end(), a) - sums.begin()] += pref[i];
         pref[i] += pref[i - 1];
     }
+    pref.back() += pref[pref.size() - 2];
 
     int q;
     cin >> q;
