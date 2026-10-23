@@ -480,7 +480,7 @@ int main() {
         if (c < 0) {
             cout << 0;
             exit(0);
-        } else if (c) x *= pow(c + 1, p, (long long) MOD) + 2 * (MOD - pow(c, p, (long long) MOD)) + pow(c - 1, p, (long long) MOD);
+        } else if (c) x *= modint::pow(c + 1, p) - 2 * modint::pow(c, p) + modint::pow(c - 1, p);
 
     cout << x;
 }

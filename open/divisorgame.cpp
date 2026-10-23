@@ -506,7 +506,7 @@ int main() {
             if (!count[i]) continue;
 
             vector<modint> temp(size);
-            for (int j = 0; j < size; j++) temp[j] = (dp[j] + dp[i ^ j]) * pow(2, count[i] - 1, (int) MOD);
+            for (int j = 0; j < size; j++) temp[j] = (dp[j] + dp[i ^ j]) * modint::pow(2, count[i] - 1);
 
             dp = temp;
         }
