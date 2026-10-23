@@ -35,7 +35,7 @@ bool isprime(unsigned long long n) {
     };
     if (!miller_rabin(2) || !miller_rabin(3)) return false;
 
-    auto lucas_pseudoprime = [&]() {
+    auto lucas_probable_prime = [&]() {
         auto normalize = [&](__int128 &x) {
             if (x < 0) x += ((-x / n) + 1) * n;
         };
@@ -84,7 +84,7 @@ bool isprime(unsigned long long n) {
 
         __int128 U = 1, V = 1;
         for (char b : bits) {
-            auto U_2k = mul(U, V, n), V_2k = div2mod(mul(V, V, n) + D * mul(U, U, n));
+            __int128 U_2k = mul(U, V, n), V_2k = div2mod(mul(V, V, n) + D * mul(U, U, n));
 
             if (b == '0') {
                 U = U_2k;
@@ -97,7 +97,7 @@ bool isprime(unsigned long long n) {
 
         return !U;
     };
-    return lucas_pseudoprime();
+    return lucas_probable_prime();
 }
 
 struct DynamicBarrettModInt {
