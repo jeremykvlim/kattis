@@ -331,7 +331,7 @@ struct MontgomeryModInt {
     }
 
     static T reduce(const U &x) {
-        T q = (U) x * r.first, v = (x >> bit_length) + mod() - (((U) q * mod()) >> bit_length);
+        T q = x * r.first, v = (x >> bit_length) + mod() - (((U) q * mod()) >> bit_length);
         return v >= mod() ? v - mod() : v;
     }
 
