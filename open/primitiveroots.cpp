@@ -158,7 +158,7 @@ T primitive_root_mod_m(T m) {
     pfs.erase(unique(pfs.begin(), pfs.end()), pfs.end());
     if (pfs.size() > 2 || (pfs.size() == 2 && (m & 1))) return m;
 
-    auto phi = !(m & 1) ? m / 2 / pfs[1] * (pfs[1] - 1) : m / pfs[0] * (pfs[0] - 1);
+    T phi = !(m & 1) ? m / 2 / pfs[1] * (pfs[1] - 1) : m / pfs[0] * (pfs[0] - 1);
     pfs = factorize(phi);
     sort(pfs.begin(), pfs.end());
     pfs.erase(unique(pfs.begin(), pfs.end()), pfs.end());

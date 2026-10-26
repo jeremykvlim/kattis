@@ -347,31 +347,49 @@ struct DynamicBarrettModInt {
 
 using modint = DynamicBarrettModInt;
 
-template <typename T>
-T brent(T n) {
+unsigned long long pollard_brent(unsigned long long n) {
     if (!(n & 1)) return 2;
+
+    auto inv = n, one = -n % n;
+    while (n * inv != 1) inv *= 2 - n * inv;
+
+    auto add = [&](auto x, auto y) {
+        return x >= n - y ? x - (n - y) : x + y;
+    };
+
+    auto mul = [&](auto x, auto y) -> unsigned long long {
+        auto z = (unsigned __int128) x * y;
+        unsigned long long q = z * inv;
+        auto v = (z >> 64) + n - (((unsigned __int128) q * n) >> 64);
+        return v >= n ? v - n : v;
+    };
 
     static mt19937_64 rng(random_device{}());
     for (;;) {
-        T x = 2, y = 2, g = 1, q = 1, xs = 1, c = rng() % (n - 1) + 1;
-        for (int i = 1; g == 1; i <<= 1, y = x) {
-            for (int j = 1; j < i; j++) x = mul(x, x, n) + c;
-            for (int j = 0; j < i && g == 1; j += 128) {
+        auto x = add(one, one), y = x, z = one, xs = x, d = 1ULL, c = rng() % (n - 1) + 1;
+
+        auto f = [&](auto x) {
+            return add(mul(x, x), c);
+        };
+
+        for (int i = 1; d == 1; i <<= 1, y = x) {
+            for (int _ = 0; _ < i - 1; _++) x = f(x);
+            for (int j = 0; j < i && d == 1; j += 300) {
                 xs = x;
-                for (int k = 0; k < min(128, i - j); k++) {
-                    x = mul(x, x, n) + c;
-                    q = mul(q, max(x, y) - min(x, y), n);
+                for (int k = 0; k < min(300, i - j); k++) {
+                    x = f(x);
+                    z = mul(z, max(x, y) - min(x, y));
                 }
-                g = __gcd(q, n);
+                d = __gcd(z, n);
             }
         }
 
-        if (g == n) g = 1;
-        while (g == 1) {
-            xs = mul(xs, xs, n) + c;
-            g = __gcd(max(xs, y) - min(xs, y), n);
+        if (d == n) d = 1;
+        while (d == 1) {
+            xs = f(xs);
+            d = __gcd(max(xs, y) - min(xs, y), n);
         }
-        if (g != n) return isprime(g) ? g : brent(g);
+        if (d != n) return d;
     }
 }
 
@@ -395,9 +413,9 @@ vector<pair<T, pair<T, int>>> factorize(T n) {
             return;
         }
 
-        T pf = brent(m);
-        add(pf);
-        self(self, m / pf);
+        T d = pollard_brent(m);
+        self(self, d);
+        self(self, m / d);
     };
     dfs(dfs, n);
 
