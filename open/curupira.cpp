@@ -1,6 +1,22 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+template <typename T, typename U, typename V>
+T mul(U x, V y, T mod) {
+    return (unsigned __int128) x * y % mod;
+}
+
+template <typename T, typename U>
+T pow(T base, U exponent, T mod) {
+    T value = 1;
+    while (exponent) {
+        if (exponent & 1) value = mul(base, value, mod);
+        base = mul(base, base, mod);
+        exponent >>= 1;
+    }
+    return value;
+}
+
 bool isprime(unsigned long long n) {
     if (n < 2) return false;
     if (n == 2 || n == 5 || n == 11) return true;
