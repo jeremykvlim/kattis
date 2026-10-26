@@ -37,11 +37,11 @@ T tonelli_shanks(T n, T p) {
     int m = s;
     T c = pow(z, q, p), t = pow(n, q, p), r = pow(n, (q + 1) / 2, p);
     while (t != 1) {
-        auto temp = t;
+        T temp = t;
 
         int i = 0;
         for (; temp != 1 && i < m; i++) temp = mul(temp, temp, p);
-        
+
         T b = c;
         for (int j = 0; j < m - i - 1; j++) b = mul(b, b, p);
         m = i;
