@@ -1,130 +1,140 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-template <typename T, typename U, typename V>
-T mul(U x, V y, T mod) {
-    return (unsigned __int128) x * y % mod;
-}
-
-template <typename T, typename U>
-T pow(T base, U exponent, T mod) {
-    T value = 1;
-    while (exponent) {
-        if (exponent & 1) value = mul(base, value, mod);
-        base = mul(base, base, mod);
-        exponent >>= 1;
-    }
-    return value;
-}
-
 bool isprime(unsigned long long n) {
     if (n < 2) return false;
     if (n == 2 || n == 5 || n == 11) return true;
     if (n % 6 % 4 != 1) return (n | 1) == 3;
 
-    auto miller_rabin = [&](int a) {
-        int s = countr_zero(n - 1);
-        auto d = n >> s, x = pow(a % n, d, n);
-        if (x == 1 || x == n - 1) return true;
+    auto inv = n, one = -n % n;
+    while (n * inv != 1) inv *= 2 - n * inv;
 
-        while (s--) {
-            x = mul(x, x, n);
-            if (x == n - 1) return true;
+    auto add = [&](auto x, auto y) {
+        return x >= n - y ? x - (n - y) : x + y;
+    };
+
+    auto sub = [&](auto x, auto y) {
+        return x >= y ? x - y : n - (y - x);
+    };
+
+    auto mul = [&](auto x, auto y) -> unsigned long long {
+        auto z = (unsigned __int128) x * y;
+        unsigned long long q = z * inv;
+        auto v = (z >> 64) + n - (((unsigned __int128) q * n) >> 64);
+        return v >= n ? v - n : v;
+    };
+
+    auto pow = [&](auto base, auto exponent) {
+        auto value = one;
+        while (exponent) {
+            if (exponent & 1) value = mul(value, base);
+            base = mul(base, base);
+            exponent >>= 1;
+        }
+        return value;
+    };
+
+    auto two = add(one, one);
+    auto miller_rabin = [&](auto a) {
+        int s = countr_zero(n - 1);
+        auto x = pow(a, (n - 1) >> s);
+        if (x == one || x == n - one) return true;
+
+        while (--s) {
+            x = mul(x, x);
+            if (x == n - one) return true;
         }
         return false;
     };
-    if (!miller_rabin(2) || !miller_rabin(3)) return false;
+    if (!miller_rabin(two) || !miller_rabin(add(two, one))) return false;
 
-    auto lucas_probable_prime = [&]() {
-        auto normalize = [&](__int128 &x) {
-            if (x < 0) x += ((-x / n) + 1) * n;
-        };
+    auto P = 3ULL;
+    for (;; P++) {
+        auto D = P * P - 4;
+        auto jacobi_symbol = [&](auto n) {
+            int j = 1;
+            auto a = D;
+            while (a) {
+                for (; !(a & 1); a >>= 1)
+                    if ((n & 7) == 3 || (n & 7) == 5) j = -j;
+                if ((a & 3) == 3 && (n & 3) == 3) j = -j;
 
-        __int128 D = -3;
-        for (;;) {
-            D += D > 0 ? 2 : -2;
-            D *= -1;
-
-            int jacobi = 1;
-            auto jacobi_symbol = [&](__int128 n) {
-                auto a = D;
-                normalize(a);
-
-                while (a) {
-                    while (!(a & 1)) {
-                        a >>= 1;
-                        if ((n & 7) == 3 || (n & 7) == 5) jacobi = -jacobi;
-                    }
-                    if ((a & 3) == 3 && (n & 3) == 3) jacobi = -jacobi;
-
-                    swap(a, n);
-                    a %= n;
-                }
-                return n == 1;
-            };
-            if (!jacobi_symbol(n)) return false;
-            if (jacobi == -1) break;
-        }
-
-        string bits;
-        auto temp = n + 1;
-        while (temp) {
-            bits += (temp & 1) ? '1' : '0';
-            temp >>= 1;
-        }
-        bits.pop_back();
-        reverse(bits.begin(), bits.end());
-
-        auto div2mod = [&](__int128 x) -> unsigned long long {
-            if (x & 1) x += n;
-            normalize(x >>= 1);
-
-            return x % n;
-        };
-
-        __int128 U = 1, V = 1;
-        for (char b : bits) {
-            __int128 U_2k = mul(U, V, n), V_2k = div2mod(mul(V, V, n) + D * mul(U, U, n));
-
-            if (b == '0') {
-                U = U_2k;
-                V = V_2k;
-            } else {
-                U = div2mod(U_2k + V_2k);
-                V = div2mod(D * U_2k + V_2k);
+                swap(a, n);
+                a %= n;
             }
-        }
+            return n == 1 ? j : 0;
+        };
+        int j = jacobi_symbol(n);
+        if (j == -1) break;
+        if (!j && D % n) return false;
+    }
+    P = ((unsigned __int128) P * one % n);
 
-        return !U;
-    };
-    return lucas_probable_prime();
+    int s = countr_zero(n + 1);
+    auto k = (n + 1) >> s, V_k = P, V_kp1 = sub(mul(P, P), two);
+    for (int i = bit_width(k) - 2; i >= 0; i--) {
+        auto V_2kp1 = sub(mul(V_k, V_kp1), P);
+
+        if ((k >> i) & 1) {
+            V_k = V_2kp1;
+            V_kp1 = sub(mul(V_kp1, V_kp1), two);
+        } else {
+            V_kp1 = V_2kp1;
+            V_k = sub(mul(V_k, V_k), two);
+        }
+    }
+    if ((V_k == two && V_kp1 == P) || (V_k == sub(0, two) && V_kp1 == sub(0, P))) return true;
+
+    while (--s) {
+        if (!V_k) return true;
+        V_k = sub(mul(V_k, V_k), two);
+    }
+    return false;
 }
 
-template <typename T>
-T brent(T n) {
+unsigned long long pollard_brent(unsigned long long n) {
     if (!(n & 1)) return 2;
+
+    auto inv = n, one = -n % n;
+    while (n * inv != 1) inv *= 2 - n * inv;
+
+    auto add = [&](auto x, auto y) {
+        return x >= n - y ? x - (n - y) : x + y;
+    };
+
+    auto mul = [&](auto x, auto y) -> unsigned long long {
+        auto z = (unsigned __int128) x * y;
+        unsigned long long q = z * inv;
+        auto v = (z >> 64) + n - (((unsigned __int128) q * n) >> 64);
+        return v >= n ? v - n : v;
+    };
 
     static mt19937_64 rng(random_device{}());
     for (;;) {
-        T x = 2, y = 2, g = 1, q = 1, xs = 1, c = rng() % (n - 1) + 1;
-        for (int i = 1; g == 1; i <<= 1, y = x) {
-            for (int j = 1; j < i; j++) x = mul(x, x, n) + c;
-            for (int j = 0; j < i && g == 1; j += 128) {
+        auto x = add(one, one), y = x, z = one, xs = x, d = 1ULL, c = rng() % (n - 1) + 1;
+
+        auto f = [&](auto x) {
+            return add(mul(x, x), c);
+        };
+
+        for (int i = 1; d == 1; i <<= 1, y = x) {
+            for (int _ = 0; _ < i - 1; _++) x = f(x);
+            for (int j = 0; j < i && d == 1; j += 300) {
                 xs = x;
-                for (int k = 0; k < min(128, i - j); k++) {
-                    x = mul(x, x, n) + c;
-                    q = mul(q, max(x, y) - min(x, y), n);
+                for (int k = 0; k < min(300, i - j); k++) {
+                    x = f(x);
+                    z = mul(z, max(x, y) - min(x, y));
                 }
-                g = __gcd(q, n);
+                d = __gcd(z, n);
             }
         }
 
-        if (g == n) g = 1;
-        while (g == 1) {
-            xs = mul(xs, xs, n) + c;
-            g = __gcd(max(xs, y) - min(xs, y), n);
+        if (d == n) d = 1;
+        while (d == 1) {
+            xs = f(xs);
+            d = __gcd(max(xs, y) - min(xs, y), n);
         }
-        if (g != n) return isprime(g) ? g : brent(g);
+        if (d != n) return d;
     }
 }
 
@@ -139,9 +149,9 @@ vector<pair<T, int>> factorize(T n) {
             return;
         }
 
-        T pf = brent(m);
-        pfs[pf]++;
-        self(self, m / pf);
+        T d = pollard_brent(m);
+        self(self, d);
+        self(self, m / d);
     };
     dfs(dfs, n);
 
