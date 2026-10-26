@@ -28,7 +28,7 @@ int main() {
         int _mp_alloc, _mp_size;
         unsigned long int *_mp_d;
     };
-    void *gmp = dlopen("libgmp.so.10", RTLD_NOW);
+    void *gmp = dlopen("libgmp.so.10", RTLD_LAZY);
     auto init = (void (*)(mpz_t *x)) dlsym(gmp, "__gmpz_init");
     auto priomorial_ui = (void (*)(mpz_t *rop, unsigned long int n)) dlsym(gmp, "__gmpz_primorial_ui");
     auto gcd_ui = (unsigned long int (*)(mpz_t *rop, const mpz_t *op1, unsigned long int op2)) dlsym(gmp, "__gmpz_gcd_ui");

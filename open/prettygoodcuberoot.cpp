@@ -6,7 +6,7 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    void *gmp = dlopen("libgmp.so.10", RTLD_NOW);
+    void *gmp = dlopen("libgmp.so.10", RTLD_LAZY);
     auto set_str = (long int (*)(long unsigned int *rp, const unsigned char *str, size_t strsize, int base)) dlsym(gmp, "__gmpn_set_str");
     auto get_str = (size_t (*)(unsigned char *str, int base, long unsigned int *s1p, long int s1n)) dlsym(gmp, "__gmpn_get_str");
     auto rootrem = (long int (*)(long unsigned int *r1p, long unsigned int *r2p, const long unsigned int *sp, long int n, long unsigned int k)) dlsym(gmp, "__gmpn_rootrem");
