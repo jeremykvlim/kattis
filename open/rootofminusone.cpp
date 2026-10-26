@@ -20,14 +20,11 @@ T pow(T base, U exponent, T mod) {
 template <typename T>
 T tonelli_shanks(T n, T p) {
     if (p == 2) return n;
-    if (p % 4 == 3) return pow(n, (p + 1) / 4, p);
+    if (p % 4 == 3) return pow(n, p / 4 + 1, p);
 
     T q = p - 1;
     int s = 0;
-    while (!(q & 1)) {
-        q >>= 1;
-        s++;
-    }
+    for (; !(q & 1); q >>= 1, s++);
 
     auto legendre = [&](T a, T p) -> int {
         if (!a) return 0;
@@ -43,15 +40,13 @@ T tonelli_shanks(T n, T p) {
         auto temp = t;
 
         int i = 0;
-        while (temp != 1 && i < m) {
-            temp = mul(temp, temp, p);
-            i++;
-        }
-
-        T b = pow(c, (T) 1 << (m - i - 1), p);
+        for (; temp != 1 && i < m; i++) temp = mul(temp, temp, p);
+        
+        T b = c;
+        for (int j = 0; j < m - i - 1; j++) b = mul(b, b, p);
         m = i;
         c = mul(b, b, p);
-        t = mul(t, mul(b, b, p), p);
+        t = mul(t, c, p);
         r = mul(r, b, p);
     }
     return r;
