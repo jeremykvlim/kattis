@@ -11,10 +11,9 @@ public class cardtrading {
         for (int i : cards) count[i - 1]++;
 
         var prices = new int[t][2];
-
         for (int i = 0; i < t; i++) {
-            var input = br.readLine().split(" ");
-            prices[i] = new int[]{Integer.parseInt(input[0]), Integer.parseInt(input[1])};
+            var line = Arrays.stream(br.readLine().split(" ")).mapToInt(Integer::parseInt).toArray();
+            prices[i] = new int[]{line[0], line[1]};
         }
 
         long profit = 0;
