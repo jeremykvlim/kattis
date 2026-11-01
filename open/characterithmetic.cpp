@@ -199,7 +199,7 @@ vector<int> sieve(int n) {
 template <typename T>
 vector<int> prefix_function(const T &s) {
     int n = s.size();
-    vector<int> pi(n);
+    vector<int> pi(n, 0);
     for (int i = 1; i < n; i++) {
         int j = pi[i - 1];
         while (j && s[i] != s[j]) j = pi[j - 1];
