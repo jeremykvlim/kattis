@@ -134,8 +134,10 @@ T dot(const Point3D<T> &a, const Point3D<T> &b) {
 }
 
 template <typename T>
-double euclidean_dist(const Point3D<T> &a, const Point3D<T> &b = {0, 0, 0}) {
-    return sqrt((double) (a.x - b.x) * (a.x - b.x) + (double) (a.y - b.y) * (a.y - b.y) + (double) (a.z - b.z) * (a.z - b.z));
+auto euclidean_dist(const Point3D<T> &a, const Point3D<T> &b = {0, 0, 0}) {
+    using U = common_type_t<T, double>;
+    U x = (U) a.x - b.x, y = (U) a.y - b.y, z = (U) a.z - b.z;
+    return sqrt(x * x + y * y + z * z);
 }
 
 template <typename T>
