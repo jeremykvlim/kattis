@@ -16,9 +16,7 @@ struct GaloisField2Matrix {
 
 template <int S>
 vector<int> rref(GaloisField2Matrix<S> &matrix) {
-    int n = matrix.r, m = matrix.c;
-
-    int rank = 0;
+    int n = matrix.r, m = matrix.c, rank = 0;
     vector<int> pivots;
     for (int c = m - 1; ~c && rank < n; c--) {
         int pivot = rank;

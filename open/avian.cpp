@@ -1,30 +1,59 @@
 #include <bits/stdc++.h>
-#include "avian.h"
 using namespace std;
 
-vector<string> encode(int C, int K, int N, string X) {
-    vector<string> S(K);
+template <int S>
+struct GaloisField2Matrix {
+    int r, c;
+    vector<bitset<S>> mat;
 
-    vector<vector<int>> C3_len3{{1, 2, 4}, {8, 16, 32}, {64, 128, 256}, {73, 146, 292}, {83, 166, 287}},
-                        C3_len2{{1, 2}, {4, 8}, {16, 32}, {21, 42}, {27, 45}},
-                        C2_len3{{1, 2, 4}, {8, 16, 32}, {9, 18, 36}, {10, 20, 35}},
-                        C2_len2{{1, 2}, {4, 8}, {5, 10}, {6, 11}};
+    GaloisField2Matrix(int rows, bool v = false) : r(rows), c(S), mat(rows, v ? ~bitset<S>() : bitset<S>()) {}
+    GaloisField2Matrix(const vector<bitset<S>> &mat) : r(mat.size()), c(S), mat(mat) {}
+
+    auto & operator[](int i) {
+        return mat[i];
+    }
+};
+
+template <int S>
+void rref(GaloisField2Matrix<S> &matrix) {
+    int n = matrix.r, m = matrix.c, rank = 0;
+    for (int c = 0; c < m && rank < n; c++) {
+        int pivot = rank;
+        for (; pivot < n && !matrix[pivot][c]; pivot++);
+
+        if (pivot == n) continue;
+        swap(matrix[pivot], matrix[rank]);
+
+        for (int i = 0; i < n; i++)
+            if (i != rank && matrix[i][c]) matrix[i] ^= matrix[rank];
+
+        rank++;
+    }
+}
+
+vector<vector<int>> masks(int C, int len) {
+    if (C == 3) {
+        if (len == 2) return {{1, 2}, {4, 8}, {16, 32}, {21, 42}, {27, 45}};
+        return {{1, 2, 4}, {8, 16, 32}, {64, 128, 256}, {73, 146, 292}, {83, 166, 287}};
+    }
+
+    if (len == 2) return {{1, 2}, {4, 8}, {5, 10}, {6, 11}};
+    return {{1, 2, 4}, {8, 16, 32}, {9, 18, 36}, {10, 20, 35}};
+}
+
+vector<string> encode(int C, int K, int N, string X) {
+    vector<string> S(K, string(N, '0'));
+
     for (int pos = 0, len; pos < N; pos += len) {
         len = pos + 3 == N ? 3 : 2;
+        auto M = masks(C, len);
 
-        auto M = C == 3 ? (len == 2 ? C3_len2 : C3_len3) : (len == 2 ? C2_len2 : C2_len3);
-
-        vector<bool> bits(9);
+        int bits = 0;
         for (int i = 0; i < C; i++)
-            for (int j = 0; j < len; j++) bits[i * len + j] = X[i * N + j + pos] - '0';
+            for (int j = 0; j < len; j++) bits |= (X[i * N + j + pos] - '0') << (i * len + j);
 
         for (int i = 0; i < K; i++)
-            for (int j = 0; j < len; j++) {
-                bool b = false;
-                for (int k = 0; k < len * C; k++)
-                    if ((M[i][j] >> k) & 1) b ^= bits[k];
-                S[i] += b + '0';
-            }
+            for (int j = 0; j < len; j++) S[i][j + pos] = '0' + (popcount((unsigned) (bits & M[i][j])) & 1);
     }
 
     return S;
@@ -33,39 +62,21 @@ vector<string> encode(int C, int K, int N, string X) {
 string decode(int C, int K, int N, vector<string> Y, vector<int> I) {
     string X(C * N, '0');
 
-    vector<vector<int>> C3_len3{{1, 2, 4}, {8, 16, 32}, {64, 128, 256}, {73, 146, 292}, {83, 166, 287}},
-                        C3_len2{{1, 2}, {4, 8}, {16, 32}, {21, 42}, {27, 45}},
-                        C2_len3{{1, 2, 4}, {8, 16, 32}, {9, 18, 36}, {10, 20, 35}},
-                        C2_len2{{1, 2}, {4, 8}, {5, 10}, {6, 11}};
     for (int pos = 0, len; pos < N; pos += len) {
         len = pos + 3 == N ? 3 : 2;
+        auto M = masks(C, len);
 
-        auto M = C == 3 ? (len == 2 ? C3_len2 : C3_len3) : (len == 2 ? C2_len2 : C2_len3);
-
-        vector<int> masks(len * C);
-        vector<bool> bits_rev(len * C);
+        int d = C * len;
+        GaloisField2Matrix<10> m(d);
         for (int i = 0; i < C; i++)
             for (int j = 0; j < len; j++) {
-                masks[i * len + j] = M[I[i]][j];
-                bits_rev[i * len + j] = Y[i][j + pos] - '0';
+                m[i * len + j] = bitset<10>(M[I[i]][j]);
+                m[i * len + j][d] = Y[i][pos + j] - '0';
             }
-
-        vector<int> bits(9);
-        for (int i = 0; i < len * C; i++)
-            for (int j = 0; j < 1 << (len * C); j++) {
-                int m = 0;
-                bool b = false;
-                for (int k = 0; k < len * C; k++)
-                    if ((j >> k) & 1) {
-                        m ^= masks[k];
-                        b ^= bits_rev[k];
-                    }
-
-                if (m == (1 << i)) bits[i] = b;
-            }
+        rref(m);
 
         for (int i = 0; i < C; i++)
-            for (int j = 0; j < len; j++) X[i * N + j + pos] = bits[i * len + j] + '0';
+            for (int j = 0; j < len; j++) X[i * N + j + pos] = '0' + m[i * len + j][d];
     }
 
     return X;
