@@ -24,7 +24,6 @@ struct SparseTable {
 };
 
 struct SuffixArray {
-    string s;
     vector<int> SA, ascii, SA_inv, lcp;
     SparseTable<int> st;
 
@@ -118,7 +117,7 @@ struct SuffixArray {
     }
 
     int substring_lcp(int i, int j) {
-        if (i == j) return s.size() - i;
+        if (i == j) return ascii.size() - i;
 
         auto [l, r] = minmax(SA_inv[i], SA_inv[j]);
         return st.range_query(l, r);
@@ -128,7 +127,7 @@ struct SuffixArray {
         return SA[i];
     }
 
-    SuffixArray(string &s, int r = 128) : s(s), ascii(s.begin(), s.end()) {
+    SuffixArray(string &s, int r = 128) : ascii(s.begin(), s.end()) {
         SA = sais(ascii, r);
         kasai();
         st = SparseTable<int>(lcp, [](int x, int y) { return min(x, y); });
