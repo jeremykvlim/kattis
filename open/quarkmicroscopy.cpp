@@ -90,7 +90,7 @@ int main() {
         }
 
         auto dnc = [&](auto &&self, auto l, auto r) {
-            if (l > r) return;
+            if (l + 1 == r) return;
 
             auto mid = l + (r - l) / 2;
 
@@ -99,14 +99,14 @@ int main() {
                 auto [x, p] = *it;
                 if (x <= a[i - 2]) {
                     curr = max(curr, x);
-                    return self(self, mid + 1, r);
+                    return self(self, mid, r);
                 }
             }
 
             if (it != memo.begin()) {
                 auto [x, p] = *(--it);
                 q = p;
-                if (x - d > a[i - 2]) return self(self, l, mid - 1);
+                if (x - d > a[i - 2]) return self(self, l, mid);
             }
 
             query(mid);
@@ -119,10 +119,10 @@ int main() {
 
             if (x <= a[i - 2]) {
                 curr = max(curr, mid);
-                self(self, mid + 1, r);
-            } else self(self, l, mid - 1);
+                self(self, mid, r);
+            } else self(self, l, mid);
         };
-        dnc(dnc, l, r);
+        dnc(dnc, l - 1, r + 1);
 
         if (a[i]) continue;
 

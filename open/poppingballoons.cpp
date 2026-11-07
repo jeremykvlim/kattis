@@ -629,16 +629,16 @@ int main() {
     string s;
     cin >> s;
 
-    int m = s.size(), B = count(s.begin(), s.end(), 'B'), Y = count(s.begin(), s.end(), 'Y'), R = m - B - Y;
-    vector<modint> inv(m + 2, 1), t0(m + 1), t1(m + 1, 0), t2(m + 1, 0);
-    for (int i = 2; i <= m + 1; i++) inv[i] = (MOD - MOD / i) * inv[MOD % i];
-    for (int i = 0; i <= m; i++) {
-        t0[i] = (m + 1) * inv[m - i + 1];
+    int n = s.size(), B = count(s.begin(), s.end(), 'B'), Y = count(s.begin(), s.end(), 'Y'), R = n - B - Y;
+    vector<modint> inv(n + 2, 1), t0(n + 1), t1(n + 1, 0), t2(n + 1, 0);
+    for (int i = 2; i <= n + 1; i++) inv[i] = (MOD - MOD / i) * inv[MOD % i];
+    for (int i = 0; i <= n; i++) {
+        t0[i] = (n + 1) * inv[n - i + 1];
         if (i) t1[i - 1] = t0[i] - t0[i - 1];
         if (i > 1) t2[i - 2] = t1[i - 1] - t1[i - 2];
     }
 
-    modint t = m - t0[Y] + 1;
+    modint t = n - t0[Y] + 1;
     vector<pair<char, int>> order;
     int b = 0, y = 0, r = 0;
     for (char c : s) {
@@ -656,15 +656,15 @@ int main() {
     }
 
     auto dnc = [&](auto &&self, int l, int r) -> void {
-        if (l + 1 >= r) return;
+        if (l + 1 == r) return;
 
-        int mid = l + (r - l) / 2, ll = 1e9, lr = -1e9, rl = 1e9, rr = -1e9;
-        for (int i = l; i < mid; i++)
+        int m = l + (r - l) / 2, ll = 1e9, lr = -1e9, rl = 1e9, rr = -1e9;
+        for (int i = l; i < m; i++)
             if (order[i].first == 'B') {
                 ll = min(ll, order[i].second);
                 lr = max(lr, order[i].second);
             }
-        for (int i = mid; i < r; i++)
+        for (int i = m; i < r; i++)
             if (order[i].first == 'R') {
                 rl = min(rl, order[i].second);
                 rr = max(rr, order[i].second);
@@ -672,19 +672,19 @@ int main() {
 
         if (ll <= lr && rl <= rr) {
             vector<modint> a(lr - ll + 1, 0), b(rr - rl + 1, 0);
-            for (int i = l; i < mid; i++)
+            for (int i = l; i < m; i++)
                 if (order[i].first == 'B') a[order[i].second - ll]++;
-            for (int i = mid; i < r; i++)
+            for (int i = m; i < r; i++)
                 if (order[i].first == 'R') b[order[i].second - rl]++;
 
             auto c = convolve(a, b);
             for (int i = 0; i < c.size(); i++) t -= c[i] * t2[i + ll + rl];
         }
 
-        self(self, l, mid);
-        self(self, mid, r);
+        self(self, l, m);
+        self(self, m, r);
     };
-    dnc(dnc, 0, B + R);
+    if (B + R) dnc(dnc, 0, B + R);
 
     cout << t;
 }

@@ -140,7 +140,7 @@ int main() {
     FenwickTree<int> count_d(diffs.size() + 1);
     FenwickTree<long long> sum_d(diffs.size() + 1);
     auto dnc = [&](auto &&self, int l, int r) -> void {
-        if (l + 1 >= r) return;
+        if (l + 1 == r) return;
 
         int m = l + (r - l) / 2;
         self(self, l, m);
