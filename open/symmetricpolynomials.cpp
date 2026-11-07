@@ -16,7 +16,7 @@ void cooley_tukey(int n, vector<T> &v, R root) {
         twiddles.resize(n, 1);
 
         for (int k = m; k < n; k <<= 1) {
-            auto w = root(k);
+            T w = root(k);
             for (int i = k; i < k << 1; i++) twiddles[i] = i & 1 ? twiddles[i >> 1] * w : twiddles[i >> 1];
         }
     }
@@ -27,7 +27,7 @@ void cooley_tukey(int n, vector<T> &v, R root) {
     for (int k = 1; k < n; k <<= 1)
         for (int i = 0; i < n; i += k << 1)
             for (int j = 0; j < k; j++) {
-                auto t = v[i + j + k] * twiddles[j + k];
+                T t = v[i + j + k] * twiddles[j + k];
                 v[i + j + k] = v[i + j] - t;
                 v[i + j] += t;
             }
