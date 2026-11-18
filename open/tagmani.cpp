@@ -24,25 +24,25 @@ template <typename T, typename F>
 void centroid_decomposition(const vector<vector<pair<int, T>>> &adj_list, F &&f) {
     vector<int> subtree_size(adj_list.size());
     vector<bool> removed(adj_list.size(), false);
-
-    auto dfs1 = [&](auto &&self, int v, int prev = -1) -> void {
-        subtree_size[v] = 1;
-        for (auto [u, w] : adj_list[v])
-            if (u != prev && !removed[u]) {
-                self(self, u, v);
-                subtree_size[v] += subtree_size[u];
-            }
-    };
-
-    auto dfs2 = [&](auto &&self, int size, int v, int prev = -1) -> int {
-        for (auto [u, w] : adj_list[v])
-            if (u != prev && !removed[u] && 2 * subtree_size[u] > size) return self(self, size, u, v);
-        return v;
-    };
-
     auto decompose = [&](auto &&self, int root = 1) -> void {
-        dfs1(dfs1, root);
-        int c = dfs2(dfs2, subtree_size[root], root);
+        auto dfs = [&](auto &&self, int v, int prev = -1) -> void {
+            subtree_size[v] = 1;
+            for (auto [u, w] : adj_list[v])
+                if (u != prev && !removed[u]) {
+                    self(self, u, v);
+                    subtree_size[v] += subtree_size[u];
+                }
+        };
+        dfs(dfs, root);
+        int c = root;
+        for (int size = subtree_size[root], prev = -1, next = -1;; prev = c, c = next, next = -1) {
+            for (auto [u, w] : adj_list[c])
+                if (u != prev && !removed[u] && 2 * subtree_size[u] > size) {
+                    next = u;
+                    break;
+                }
+            if (!~next) break;
+        }
         removed[c] = true;
 
         f(c, removed);
@@ -74,12 +74,12 @@ int main() {
 
     vector<vector<pair<int, long long>>> centroids(n + 1);
     centroid_decomposition(adj_list, [&](int c, const auto &removed) {
-        auto dfs3 = [&](auto &&self, int v, int prev = -1, long long d = 0) -> void {
+        auto dfs = [&](auto &&self, int v, int prev = -1, long long d = 0) -> void {
             centroids[v].emplace_back(c, d);
             for (auto [u, w] : adj_list[v])
                 if (u != prev && !removed[u]) self(self, u, v, d + w);
         };
-        dfs3(dfs3, c);
+        dfs(dfs, c);
     });
 
     vector<vector<long long>> times(n + 1);

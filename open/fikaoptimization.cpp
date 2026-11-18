@@ -5,25 +5,25 @@ template <typename F>
 void centroid_decomposition(const vector<vector<int>> &adj_list, F &&f) {
     vector<int> subtree_size(adj_list.size());
     vector<bool> removed(adj_list.size(), false);
-
-    auto dfs1 = [&](auto &&self, int v, int prev = -1) -> void {
-        subtree_size[v] = 1;
-        for (int u : adj_list[v])
-            if (u != prev && !removed[u]) {
-                self(self, u, v);
-                subtree_size[v] += subtree_size[u];
-            }
-    };
-
-    auto dfs2 = [&](auto &&self, int size, int v, int prev = -1) -> int {
-        for (int u : adj_list[v])
-            if (u != prev && !removed[u] && 2 * subtree_size[u] > size) return self(self, size, u, v);
-        return v;
-    };
-
     auto decompose = [&](auto &&self, int root = 1) -> void {
-        dfs1(dfs1, root);
-        int c = dfs2(dfs2, subtree_size[root], root);
+        auto dfs = [&](auto &&self, int v, int prev = -1) -> void {
+            subtree_size[v] = 1;
+            for (int u : adj_list[v])
+                if (u != prev && !removed[u]) {
+                    self(self, u, v);
+                    subtree_size[v] += subtree_size[u];
+                }
+        };
+        dfs(dfs, root);
+        int c = root;
+        for (int size = subtree_size[root], prev = -1, next = -1;; prev = c, c = next, next = -1) {
+            for (int u : adj_list[c])
+                if (u != prev && !removed[u] && 2 * subtree_size[u] > size) {
+                    next = u;
+                    break;
+                }
+            if (!~next) break;
+        }
         removed[c] = true;
 
         f(c, removed);
