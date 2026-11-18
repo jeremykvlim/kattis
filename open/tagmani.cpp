@@ -20,56 +20,37 @@ struct FenwickTree {
     FenwickTree(int n, function<T(T, T)> func, T unit) : BIT(n, unit), f(move(func)), unit(unit) {}
 };
 
-struct CentroidDecomposition {
-    vector<vector<pair<int, int>>> adj_list, centroids;
-    vector<bool> removed;
-    vector<int> subtree_size;
-    vector<vector<long long>> dist;
+template <typename T, typename F>
+void centroid_decomposition(const vector<vector<pair<int, T>>> &adj_list, F &&f) {
+    vector<int> subtree_size(adj_list.size());
+    vector<bool> removed(adj_list.size(), false);
 
-    CentroidDecomposition(int n) : adj_list(n), centroids(n), removed(n, false), subtree_size(n, 0) {}
+    auto dfs1 = [&](auto &&self, int v, int prev = -1) -> void {
+        subtree_size[v] = 1;
+        for (auto [u, w] : adj_list[v])
+            if (u != prev && !removed[u]) {
+                self(self, u, v);
+                subtree_size[v] += subtree_size[u];
+            }
+    };
 
-    void add_edge(int u, int v, int w) {
-        adj_list[u].emplace_back(v, w);
-        adj_list[v].emplace_back(u, w);
-    }
+    auto dfs2 = [&](auto &&self, int size, int v, int prev = -1) -> int {
+        for (auto [u, w] : adj_list[v])
+            if (u != prev && !removed[u] && 2 * subtree_size[u] > size) return self(self, size, u, v);
+        return v;
+    };
 
-    void decompose(int root = 1, int layer = 0) {
-        auto dfs1 = [&](auto &&self, int v, int prev = -1) -> void {
-            subtree_size[v] = 1;
-            for (auto [u, w] : adj_list[v])
-                if (u != prev && !removed[u]) {
-                    self(self, u, v);
-                    subtree_size[v] += subtree_size[u];
-                }
-        };
+    auto decompose = [&](auto &&self, int root = 1) -> void {
         dfs1(dfs1, root);
-
-        auto dfs2 = [&](auto &&self, int size, int v, int prev = -1) -> int {
-            for (auto [u, w] : adj_list[v])
-                if (u != prev && !removed[u])
-                    if (2 * subtree_size[u] > size) return self(self, size, u, v);
-            return v;
-        };
         int c = dfs2(dfs2, subtree_size[root], root);
         removed[c] = true;
 
-        if (dist.size() <= layer) dist.emplace_back(vector(adj_list.size(), 0LL));
-        auto dfs3 = [&](auto &&self, int v, int prev = -1, long long d = 0) -> void {
-            dist[layer][v] = d;
-            centroids[v].emplace_back(c, layer);
-            for (auto [u, w] : adj_list[v])
-                if (u != prev && !removed[u]) self(self, u, v, d + w);
-        };
-        dfs3(dfs3, c);
-
+        f(c, removed);
         for (auto [v, w] : adj_list[c])
-            if (!removed[v]) decompose(v, layer + 1);
-    }
-
-    auto & operator[](int i) {
-        return centroids[i];
-    }
-};
+            if (!removed[v]) self(self, v);
+    };
+    decompose(decompose);
+}
 
 int main() {
     ios::sync_with_stdio(false);
@@ -78,22 +59,32 @@ int main() {
     int n, k;
     cin >> n >> k;
 
-    CentroidDecomposition cd(n + 1);
+    vector<vector<pair<int, int>>> adj_list(n + 1);
     for (int _ = 0; _ < n - 1; _++) {
         int u, v, s;
         cin >> u >> v >> s;
 
-        cd.add_edge(u, v, s);
+        adj_list[u].emplace_back(v, s);
+        adj_list[v].emplace_back(u, s);
     }
-    cd.decompose();
 
     vector<array<int, 4>> trains(k);
     for (auto &[u, v, t, d] : trains) cin >> u >> v >> t >> d;
     sort(trains.begin(), trains.end(), [&](auto &t1, auto &t2) { return t1[2] > t2[2]; });
 
+    vector<vector<pair<int, long long>>> centroids(n + 1);
+    centroid_decomposition(adj_list, [&](int c, const auto &removed) {
+        auto dfs3 = [&](auto &&self, int v, int prev = -1, long long d = 0) -> void {
+            centroids[v].emplace_back(c, d);
+            for (auto [u, w] : adj_list[v])
+                if (u != prev && !removed[u]) self(self, u, v, d + w);
+        };
+        dfs3(dfs3, c);
+    });
+
     vector<vector<long long>> times(n + 1);
     for (auto [u, v, t, d] : trains)
-        for (auto [c, layer] : cd[u]) times[c].emplace_back(t - cd.dist[layer][u]);
+        for (auto [c, dist] : centroids[u]) times[c].emplace_back(t - dist);
 
     for (int c = 1; c <= n; c++) {
         sort(times[c].begin(), times[c].end());
@@ -101,28 +92,29 @@ int main() {
     }
 
     vector<FenwickTree<int>> fws;
-    for (int c = 0; c <= n; c++) fws.emplace_back(times[c].size() + 1, [&](int x, int y) { return max(x, y); }, 0);
+    for (int c = 0; c <= n; c++) fws.emplace_back(times[c].size() + 1, [](int x, int y) { return max(x, y); }, 0);
+
     for (int i = 0; i < k; i++) {
         auto [u, v, t, d] = trains[i];
         int dp = 0;
-        for (auto [c, layer] : cd[v])
+        for (auto [c, dist] : centroids[v])
             if (!times[c].empty()) {
-                int j = lower_bound(times[c].begin(), times[c].end(), cd.dist[layer][v] + t + d) - times[c].begin();
+                int j = lower_bound(times[c].begin(), times[c].end(), dist + t + d) - times[c].begin();
                 if (j < times[c].size()) dp = max(dp, fws[c].range_query(times[c].size() - j));
             }
-        
-        for (auto [c, layer] : cd[u]) 
+
+        for (auto [c, dist] : centroids[u])
             if (!times[c].empty()) {
-                int j = lower_bound(times[c].begin(), times[c].end(), t - cd.dist[layer][u]) - times[c].begin();
+                int j = lower_bound(times[c].begin(), times[c].end(), t - dist) - times[c].begin();
                 fws[c].update(times[c].size() - j, dp + 1);
             }
     }
 
     for (int v = 1; v <= n; v++) {
         int x = 0;
-        for (auto [c, layer] : cd[v]) 
+        for (auto [c, dist] : centroids[v])
             if (!times[c].empty()) {
-                int j = lower_bound(times[c].begin(), times[c].end(), cd.dist[layer][v]) - times[c].begin();
+                int j = lower_bound(times[c].begin(), times[c].end(), dist) - times[c].begin();
                 if (j < times[c].size()) x = max(x, fws[c].range_query(times[c].size() - j));
             }
         cout << x << " ";
