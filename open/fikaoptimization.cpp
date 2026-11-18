@@ -15,8 +15,9 @@ void centroid_decomposition(const vector<vector<int>> &adj_list, F &&f) {
                 }
         };
         dfs(dfs, root);
-        int c = root;
-        for (int size = subtree_size[root], prev = -1, next = -1;; prev = c, c = next, next = -1) {
+
+        int c = root, size = subtree_size[root];
+        for (int prev = -1, next = -1;; prev = c, c = next, next = -1) {
             for (int u : adj_list[c])
                 if (u != prev && !removed[u] && 2 * subtree_size[u] > size) {
                     next = u;
